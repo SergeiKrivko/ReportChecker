@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>AiAgent</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProtocolFiles Include="Protocol.yml"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalux.OpenAi.Client" Version="0.1.5"/>
+        <PackageReference Include="Avalux.OpenAi.Client.Tools" Version="0.1.24"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\ReportChecker.Abstractions\ReportChecker.Abstractions.csproj" />
+      <ProjectReference Include="..\ReportChecker.Models\ReportChecker.Models.csproj" />
+    </ItemGroup>
+
+</Project>

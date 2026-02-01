@@ -1,0 +1,6 @@
+@ReportChecker.Api_HostAddress = http://localhost:5131
+
+GET {{ReportChecker.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
