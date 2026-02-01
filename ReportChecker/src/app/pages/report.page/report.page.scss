@@ -1,0 +1,29 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+
+  .header-container {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    align-items: center;
+
+    h2 {
+      flex-grow: 5;
+    }
+
+    .file-uploader {
+      flex-grow: 1;
+    }
+  }
+
+  .issue-title {
+    flex-grow: 1;
+  }
+
+  .issue-chapter {
+    font-size: 1rem;
+    font-weight: normal;
+  }
+}

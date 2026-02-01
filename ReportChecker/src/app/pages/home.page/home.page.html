@@ -1,0 +1,10 @@
+<div class="container">
+  <button tuiButton (click)="newReport()">Добавить</button>
+  <div class="reports-container">
+    @for (report of reports$ | async; track report.id) {
+      <button tuiCardLarge tuiHeader tuiSurface="floating" [routerLink]="'reports/' + report.id">
+        <h3>{{ report.name }}</h3>
+      </button>
+    }
+  </div>
+</div>

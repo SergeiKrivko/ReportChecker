@@ -1,0 +1,37 @@
+<div class="container">
+  <div class="header-container">
+    <h2>{{ (selectedReport$ | async)?.name }}</h2>
+    <label>Загрузить новую версию:</label>
+    <app-file-uploader class="file-uploader" [formControl]="control"/>
+    <button tuiIconButton iconStart="@tui.check" appearance="positive" (click)="createCheck()"
+            [loading]="loading | async"></button>
+  </div>
+  <tui-accordion>
+    @for (issue of issues$ | async; track issue.id) {
+      <ng-container>
+        <button [tuiAccordion]="false">
+          @if (issue.status == 'Open') {
+            <tui-icon
+              [appearance]="issue.priority | issueAppearance"
+              [icon]="issue.priority | issueIcon"
+              size="xl"
+              tuiBadge
+            />
+          } @else {
+            <tui-icon
+              appearance="neutral"
+              [icon]="issue.status == 'Fixed' ? '@tui.check' : '@tui.x'"
+              size="xl"
+              tuiBadge
+            />
+          }
+          <div class="issue-title" [innerHtml]="issue.title"></div>
+          <div class="issue-chapter">{{ issue.chapter }}</div>
+        </button>
+        <tui-expand>
+          <app-comments [issue]="issue"/>
+        </tui-expand>
+      </ng-container>
+    }
+  </tui-accordion>
+</div>

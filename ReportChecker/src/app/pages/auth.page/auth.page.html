@@ -1,0 +1,9 @@
+<div class="container">
+  <h1>ReportChecker</h1>
+  <h2>Войдите через:</h2>
+  <div tuiCardLarge class="providers-container">
+    @for (authProvider of authProviders$; track authProvider.key) {
+      <a tuiButton [href]="authProvider.url">{{ authProvider.displayName }}</a>
+    }
+  </div>
+</div>

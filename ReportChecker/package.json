@@ -1,0 +1,57 @@
+{
+  "name": "report-checker",
+  "version": "0.0.0",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test"
+  },
+  "prettier": {
+    "printWidth": 100,
+    "singleQuote": true,
+    "overrides": [
+      {
+        "files": "*.html",
+        "options": {
+          "parser": "angular"
+        }
+      }
+    ]
+  },
+  "private": true,
+  "packageManager": "npm@11.5.1",
+  "dependencies": {
+    "@angular/common": "^21.1.0",
+    "@angular/compiler": "^21.1.0",
+    "@angular/core": "^21.1.0",
+    "@angular/forms": "^21.1.0",
+    "@angular/platform-browser": "^21.1.0",
+    "@angular/router": "^21.1.0",
+    "@ngrx/signals": "^21.0.1",
+    "@taiga-ui/addon-mobile": "^4.52.0",
+    "@taiga-ui/addon-table": "^4.52.0",
+    "@taiga-ui/cdk": "^4.52.0",
+    "@taiga-ui/core": "^4.52.0",
+    "@taiga-ui/event-plugins": "^4.0.2",
+    "@taiga-ui/icons": "^4.52.0",
+    "@taiga-ui/kit": "^4.52.0",
+    "@taiga-ui/layout": "^4.52.0",
+    "@taiga-ui/legacy": "^4.52.0",
+    "@taiga-ui/experimental": "^4.52.0",
+    "less": "^4.4.1",
+    "moment": "^2.30.1",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0",
+    "zone.js": "~0.15.0"
+  },
+  "devDependencies": {
+    "@angular/build": "^21.1.2",
+    "@angular/cli": "^21.1.2",
+    "@angular/compiler-cli": "^21.1.0",
+    "jsdom": "^27.1.0",
+    "typescript": "~5.9.2",
+    "vitest": "^4.0.8"
+  }
+}

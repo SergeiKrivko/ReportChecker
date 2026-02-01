@@ -1,0 +1,33 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  height: 100vh;
+  @supports (-webkit-touch-callout: none) {
+    height: -webkit-fill-available;
+  }
+
+  .header-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+
+    h1 {
+      cursor: pointer;
+    }
+
+    @media (min-width: 600px) {
+      padding: 0 5rem;
+    }
+
+  }
+
+  .content-container {
+    overflow-y: auto;
+
+    @media (min-width: 600px) {
+      padding: 0 5rem;
+    }
+  }
+}

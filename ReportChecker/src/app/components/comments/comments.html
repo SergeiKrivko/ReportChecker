@@ -1,0 +1,41 @@
+<div class="container">
+  @for (comment of issue().comments | orderByCreatedAt; track comment.id) {
+    <div class="comment-container">
+      <tui-avatar [src]="comment.userId | avatarByUserId" size="m"/>
+      <div class="content-container">
+        @if (comment.content) {
+          <div [innerHtml]="comment.content"></div>
+        }
+        @switch (comment.status) {
+          @case ('Fixed') {
+            <i>Ошибка отмечена как исправленная</i>
+          }
+          @case ('Closed') {
+            <i>Ошибка закрыта</i>
+          }
+        }
+      </div>
+    </div>
+  }
+  <div tuiGroup class="group" orientation="horizontal">
+    <tui-textfield class="input-field">
+      <input placeholder="Ваш комментарий" tuiTextfield [formControl]="control"/>
+    </tui-textfield>
+    <button tuiButton iconStart="@tui.send"
+            tuiTooltip="Отправить" [disabled]="!(control.valueChanges | async)"
+            [loading]="loading | async" (click)="addComment()"></button>
+    @if (issue().status == 'Open') {
+      <button tuiButton iconStart="@tui.check" appearance="positive"
+              tuiTooltip="Отправить и отметить ошибку как исправленную"
+              [loading]="loading | async" (click)="addComment('Fixed')"></button>
+      <button tuiButton iconStart="@tui.x" appearance="negative"
+              tuiTooltip="Отправить и закрыть ошибку"
+              [loading]="loading | async" (click)="addComment('Closed')"></button>
+    }
+    @if (issue().status != 'Open') {
+      <button tuiButton iconStart="@tui.book-open" appearance="neutral"
+              tuiTooltip="Отправить и открыть ошибку заново"
+              [loading]="loading | async" (click)="addComment('Open')"></button>
+    }
+  </div>
+</div>

@@ -1,0 +1,41 @@
+<div class="container">
+  <label
+    *ngIf="!control.value"
+    tuiInputFiles
+  >
+    <input
+      accept="application/*"
+      tuiInputFiles
+      [formControl]="control"
+    />
+  </label>
+
+  <tui-files class="tui-space_top-1">
+    <tui-file
+      *ngIf="control.value | tuiFileRejected: {accept: 'application/*'} | async as file"
+      state="error"
+      [file]="file"
+      (remove)="removeFile()"
+    />
+
+    <tui-file
+      *ngIf="loadedFiles$ | async as file"
+      [file]="file"
+      (remove)="removeFile()"
+    />
+
+    <tui-file
+      *ngIf="failedFiles$ | async as file"
+      state="error"
+      [file]="file"
+      (remove)="removeFile()"
+    />
+
+    <tui-file
+      *ngIf="loadingFiles$ | async as file"
+      state="loading"
+      [file]="file"
+      (remove)="removeFile()"
+    />
+  </tui-files>
+</div>
