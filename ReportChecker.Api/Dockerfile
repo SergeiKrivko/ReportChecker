@@ -27,6 +27,6 @@ RUN dotnet publish "./ReportChecker.Api.csproj" -c $BUILD_CONFIGURATION -o /app/
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENV ASPNETCORE_HTTP_PORTS=8081;3000.
+ENV ASPNETCORE_HTTP_PORTS=8081;3000
 ENTRYPOINT ["dotnet", "ReportChecker.Api.dll"]
 EXPOSE 3000
