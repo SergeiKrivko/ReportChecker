@@ -4,6 +4,7 @@
         <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
 
     <ItemGroup>
@@ -22,6 +23,12 @@
       <ProjectReference Include="..\ReportChecker.DataAccess\ReportChecker.DataAccess.csproj" />
       <ProjectReference Include="..\ReportChecker.S3\ReportChecker.S3.csproj" />
       <ProjectReference Include="..\SourceProviders\ReportChecker.SourceProviders.File\ReportChecker.SourceProviders.File.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="..\.dockerignore">
+        <Link>.dockerignore</Link>
+      </Content>
     </ItemGroup>
 
 </Project>
