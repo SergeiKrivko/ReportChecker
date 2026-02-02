@@ -8,7 +8,7 @@ namespace ReportChecker.Api.Controllers;
 [Route("api/v1")]
 public class UtilsController(ReportCheckerDbContext dbContext) : ControllerBase
 {
-    [HttpPost]
+    [HttpPost("migrate")]
     public async Task<IActionResult> Migrate()
     {
         await dbContext.Database.MigrateAsync();

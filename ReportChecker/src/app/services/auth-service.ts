@@ -66,12 +66,13 @@ export class AuthService {
           return NEVER;
         }
         return provider.getIdToken().pipe(
-          tap(idToken => {
-              this.apiClient.setAuthorization(`Bearer ${idToken}`);
+          switchMap(idToken => {
+            this.apiClient.setAuthorization(`Bearer ${idToken}`);
             patchState(this.store$$, {
-              isAuthorized: this.store$$.isAuthorized() || idToken !== null,
+              isAuthorized: true,
               providerLoaded: this.store$$.providerLoaded() + 1,
             });
+            return this.apiClient.authGET().pipe(map(() => true));
           }),
         )
       }),
