@@ -50,17 +50,14 @@ export class YandexAuthProvider implements IAuthProvider {
   }
 
   getIdToken(): Observable<string | null> {
-    return this.credentials$.pipe(
-      switchMap(credentials => {
-        if (credentials)
-          return this.httpClient.get("https://login.yandex.ru/info?format=jwt", {
-            headers: {
-              Authorization: `OAuth ${credentials.access_token}`
-            },
-            responseType: "text",
-          })
-        return of(null);
-      }),
-    )
+    const credentials = this.credentials$$.credentials()
+    if (credentials)
+      return this.httpClient.get("https://login.yandex.ru/info?format=jwt", {
+        headers: {
+          Authorization: `OAuth ${credentials.access_token}`
+        },
+        responseType: "text",
+      })
+    return of(null);
   }
 }

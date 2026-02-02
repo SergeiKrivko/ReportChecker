@@ -1,8 +1,15 @@
 import {inject, Injectable} from '@angular/core';
 import {IAuthProvider} from './providers/auth-provider';
 import {AccessTokenRequestSchema, ApiClient} from './api-client';
-import {combineLatest, map, NEVER, Observable, of, skip, switchMap, tap} from 'rxjs';
+import {combineLatest, map, NEVER, Observable, of, skip, skipWhile, switchMap, take, tap} from 'rxjs';
 import {YandexAuthProvider} from './providers/yandex-auth-provider';
+import {patchState, signalState} from '@ngrx/signals';
+import {toObservable} from '@angular/core/rxjs-interop';
+
+interface AuthState {
+  providerLoaded: number;
+  isAuthorized: boolean;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -10,9 +17,19 @@ import {YandexAuthProvider} from './providers/yandex-auth-provider';
 export class AuthService {
   private readonly apiClient = inject(ApiClient);
 
+  private readonly store$$ = signalState<AuthState>({
+    providerLoaded: 0,
+    isAuthorized: false,
+  });
+
   readonly providers$: IAuthProvider[] = [
     inject(YandexAuthProvider),
   ];
+
+  readonly isAuthorized$ = toObservable(this.store$$).pipe(
+    skipWhile(state => state.providerLoaded < this.providers$.length),
+    map(state => state.isAuthorized),
+  );
 
   authorize(provider: IAuthProvider, parameters: { [key: string]: string; }): Observable<boolean> {
     return this.apiClient.authPOST(provider.key, AccessTokenRequestSchema.fromJS({
@@ -39,25 +56,27 @@ export class AuthService {
     );
   }
 
-  loadProviders(): Observable<boolean> {
+  loadProviders(): Observable<never> {
     return combineLatest(this.providers$.map(provider => provider.load().pipe(
       switchMap(authorized => {
-        if (!authorized)
+        if (!authorized) {
+          patchState(this.store$$, {
+            providerLoaded: this.store$$.providerLoaded() + 1,
+          });
           return NEVER;
+        }
         return provider.getIdToken().pipe(
           tap(idToken => {
-            if (idToken)
               this.apiClient.setAuthorization(`Bearer ${idToken}`);
+            patchState(this.store$$, {
+              isAuthorized: this.store$$.isAuthorized() || idToken !== null,
+              providerLoaded: this.store$$.providerLoaded() + 1,
+            });
           }),
         )
       }),
     ))).pipe(
-      skip(1),
-      switchMap((tokens) => {
-        if (tokens.filter(e => e !== null).length > 0)
-          return this.apiClient.authGET().pipe(switchMap(() => of(true)));
-        return of(false);
-      }),
+      switchMap(() => NEVER),
     );
   }
 }
