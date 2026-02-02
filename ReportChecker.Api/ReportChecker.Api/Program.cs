@@ -42,16 +42,6 @@ builder.Services.AddSingleton<LatexFormatProvider>();
 builder.Services.AddControllers()
     .AddJsonOptions(options => { options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); });
 
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(policy =>
-    {
-        policy.WithOrigins("http://localhost:4200")
-            .AllowAnyHeader()
-            .AllowAnyMethod();
-    });
-});
-
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -89,10 +79,20 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseCors();
+app.UseCors(policy => policy
+    .WithOrigins("http://localhost:4200", "https://report-checker.vercel.app")
+    .AllowAnyHeader()
+    .AllowAnyMethod()
+);
 
 app.UseAuthorization();
 
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    await using var dbContext = scope.ServiceProvider.GetRequiredService<ReportCheckerDbContext>();
+    await dbContext.Database.MigrateAsync();
+}
 
 app.Run();
