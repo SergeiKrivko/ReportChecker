@@ -77,7 +77,7 @@ app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 app.UseCors(policy => policy
-    .AllowAnyOrigin()
+    .WithOrigins("http://localhost:4200", "https://report-checker.vercel.app")
     .AllowAnyHeader()
     .AllowAnyMethod()
 );

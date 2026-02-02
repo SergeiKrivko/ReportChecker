@@ -8,7 +8,8 @@ import {API_BASE_URL} from './services/api-client';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    { provide: API_BASE_URL, useValue: "http://localhost:5000" },
+    // { provide: API_BASE_URL, useValue: "http://localhost:5000" },
+    { provide: API_BASE_URL, useValue: "https://reportchecker.nachert.art" },
     provideAnimations(),
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
