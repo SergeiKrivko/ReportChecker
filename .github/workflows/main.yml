@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - ReportChecker/**
+      - .github/workflows/main.yml
 
 env:
   REGISTRY: ghcr.io
