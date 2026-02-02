@@ -89,10 +89,4 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-using (var scope = app.Services.CreateScope())
-{
-    await using var dbContext = scope.ServiceProvider.GetRequiredService<ReportCheckerDbContext>();
-    await dbContext.Database.MigrateAsync();
-}
-
 app.Run();
