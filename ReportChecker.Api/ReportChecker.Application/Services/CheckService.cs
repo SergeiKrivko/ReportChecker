@@ -71,10 +71,21 @@ public class CheckService(
 
     private async Task RunCheck(Report report, Check check, Stream source)
     {
-        var formatProvider = providerService.GetFormatProvider(report.Format);
-        var chapters = await formatProvider.GetChaptersAsync(source);
-        var issues = await issueRepository.GetAllIssuesOfReportAsync(report.Id);
-        await aiService.FindIssuesAsync(check.Id, chapters, issues.ToList());
+        await checkRepository.SetCheckStatusAsync(check.Id, ProgressStatus.InProgress);
+
+        try
+        {
+            var formatProvider = providerService.GetFormatProvider(report.Format);
+            var chapters = await formatProvider.GetChaptersAsync(source);
+            var issues = await issueRepository.GetAllIssuesOfReportAsync(report.Id);
+            await aiService.FindIssuesAsync(check.Id, chapters, issues.ToList());
+            await checkRepository.SetCheckStatusAsync(check.Id, ProgressStatus.Completed);
+        }
+        catch (Exception)
+        {
+            await checkRepository.SetCheckStatusAsync(check.Id, ProgressStatus.Failed);
+            throw;
+        }
     }
 
     public async Task WriteCommentAsync(Guid checkId, Guid issueId)

@@ -27,7 +27,23 @@ public class CheckController(
             return NotFound();
         if (report.OwnerId != userId)
             return Unauthorized();
-        var check = await checkRepository.GetAllChecksOfReportAsync(reportId);
+        var checks = await checkRepository.GetAllChecksOfReportAsync(reportId);
+        return Ok(checks);
+    }
+
+    [HttpGet("latest")]
+    [Authorize]
+    public async Task<ActionResult<Check>> GetLatestCheckAsync(Guid reportId)
+    {
+        var userId = await authService.AuthenticateAsync(User);
+        if (userId == null)
+            return Unauthorized();
+        var report = await reportRepository.GetReportByIdAsync(reportId);
+        if (report == null)
+            return NotFound();
+        if (report.OwnerId != userId)
+            return Unauthorized();
+        var check = await checkRepository.GetLatestCheckOfReportAsync(reportId);
         return Ok(check);
     }
 

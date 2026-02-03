@@ -1,10 +1,24 @@
 <div class="container">
   <div class="header-container">
-    <h2>{{ (selectedReport$ | async)?.name }}</h2>
-    <label>Загрузить новую версию:</label>
-    <app-file-uploader class="file-uploader" [formControl]="control"/>
-    <button tuiIconButton iconStart="@tui.check" appearance="positive" (click)="createCheck()"
-            [loading]="loading | async"></button>
+    <div class="title-container">
+      <h2>{{ (selectedReport$ | async)?.name }}</h2>
+      @if (isProgress$ | async) {
+        <div class="progress-container">
+          <tui-loader/>
+          <div>Поиск ошибок...</div>
+        </div>
+      }
+    </div>
+
+    <div class="upload-new-version-container">
+      <label>Загрузить новую версию:</label>
+      <div class="file-uploader-container">
+        <app-file-uploader class="file-uploader" [formControl]="control"/>
+        <button tuiIconButton iconStart="@tui.check" appearance="positive" (click)="createCheck()"
+                [loading]="loading | async" [disabled]="!(this.control.valueChanges | async)"></button>
+      </div>
+    </div>
+
   </div>
   <tui-accordion>
     @for (issue of issues$ | async; track issue.id) {

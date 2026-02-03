@@ -42,15 +42,13 @@ export class ReportsService {
     );
   }
 
-  createReport(name: string, source: string, format: string): Observable<never> {
+  createReport(name: string, source: string, format: string): Observable<string> {
     return this.apiClient.reportsPOST(CreateReportSchema.fromJS({
       name: name,
       source: source,
       sourceProvider: "File",
       format: format,
-    })).pipe(
-      switchMap(() => NEVER),
-    );
+    }));
   }
 
   createCheck(source: string): Observable<boolean> {

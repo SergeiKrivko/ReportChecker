@@ -5,12 +5,14 @@ import {CommentEntity} from '../entities/comment-entity';
 import moment from 'moment';
 import {patchState, signalState} from '@ngrx/signals';
 import {toObservable} from '@angular/core/rxjs-interop';
-import {combineLatest, map, NEVER, of, switchMap, take, tap} from 'rxjs';
+import {combineLatest, interval, map, NEVER, of, switchMap, take, takeWhile, tap} from 'rxjs';
 import {ReportsService} from './reports.service';
+import {ReportEntity} from '../entities/report-entity';
 
 interface IssuesStore {
   issues: IssueEntity[];
   selectedIssue: IssueEntity | null;
+  isProgress: boolean;
 }
 
 @Injectable({
@@ -23,22 +25,33 @@ export class IssuesService {
   private readonly store$$ = signalState<IssuesStore>({
     issues: [],
     selectedIssue: null,
+    isProgress: false,
   });
 
   readonly issues$ = toObservable(this.store$$.issues);
-  readonly selectedIssue$ = toObservable(this.store$$.selectedIssue);
+  readonly isProgress$ = toObservable(this.store$$.isProgress);
+
+  private loadIssues(report: ReportEntity) {
+    return this.apiClient.issuesAll(report.id).pipe(
+      tap(reports => {
+        patchState(this.store$$, {
+          issues: reports.map(issueToEntity),
+          selectedIssue: null,
+        })
+      }),
+    );
+  }
 
   loadIssuesOnReportChanged$ = this.reportsService.selectedReport$.pipe(
     switchMap(report => {
       if (report)
-        return this.apiClient.issuesAll(report.id);
+        return interval(2000).pipe(
+          switchMap(() => this.loadIssues(report)),
+          switchMap(() => this.apiClient.latest(report.id)),
+          tap(check => patchState(this.store$$, {isProgress: check.status == "InProgress"})),
+          takeWhile(check => check.status == "InProgress"),
+        );
       return NEVER;
-    }),
-    tap(reports => {
-      patchState(this.store$$, {
-        issues: reports.map(issueToEntity),
-        selectedIssue: null,
-      })
     }),
     switchMap(() => NEVER),
   );

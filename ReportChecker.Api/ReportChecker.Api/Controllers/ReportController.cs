@@ -41,7 +41,7 @@ public class ReportController(
 
     [HttpPost]
     [Authorize]
-    public async Task<ActionResult<Report>> CreateReport([FromBody] CreateReportSchema schema)
+    public async Task<ActionResult<Guid>> CreateReport([FromBody] CreateReportSchema schema)
     {
         var userId = await authService.AuthenticateAsync(User);
         if (userId == null)

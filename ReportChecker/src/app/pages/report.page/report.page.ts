@@ -6,7 +6,7 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {IssuesService} from '../../services/issues.service';
 import {AsyncPipe} from '@angular/common';
 import {TuiAccordion} from '@taiga-ui/experimental/components';
-import {TuiButton, TuiGroup, TuiHint, TuiIcon} from '@taiga-ui/core';
+import {TuiButton, TuiGroup, TuiHint, TuiIcon, TuiLoader} from '@taiga-ui/core';
 import {TuiAvatar, TuiBadge, TuiButtonLoading} from '@taiga-ui/kit';
 import {IssueAppearancePipe} from '../../pipes/issue-appearance-pipe';
 import {IssueIconPipe} from '../../pipes/issue-icon-pipe';
@@ -35,7 +35,8 @@ import {FileEntity} from '../../entities/file-entity';
     TuiButton,
     FileUploader,
     TuiButtonLoading,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    TuiLoader
   ],
   templateUrl: './report.page.html',
   styleUrl: './report.page.scss',
@@ -49,6 +50,7 @@ export class ReportPage implements OnInit {
   private readonly issuesService = inject(IssuesService);
 
   protected readonly issues$ = this.issuesService.issues$;
+  protected readonly isProgress$ = this.issuesService.isProgress$;
   protected readonly selectedReport$ = this.reportsService.selectedReport$;
 
   protected readonly control = new FormControl<FileEntity | null>(null);
