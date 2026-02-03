@@ -9,6 +9,7 @@
     <ItemGroup>
       <ProjectReference Include="..\AuthProviders\ReportChecker.AuthProviders.Yandex\ReportChecker.AuthProviders.Yandex.csproj" />
       <ProjectReference Include="..\FormatProviders\ReportChecker.FormatProviders.Latex\ReportChecker.FormatProviders.Latex.csproj" />
+      <ProjectReference Include="..\FormatProviders\ReportChecker.FormatProviders.Pdf\ReportChecker.FormatProviders.Pdf.csproj" />
       <ProjectReference Include="..\ReportChecker.Abstractions\ReportChecker.Abstractions.csproj" />
       <ProjectReference Include="..\SourceProviders\ReportChecker.SourceProviders.File\ReportChecker.SourceProviders.File.csproj" />
     </ItemGroup>

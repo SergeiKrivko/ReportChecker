@@ -10,6 +10,7 @@ using ReportChecker.AuthProviders.Yandex;
 using ReportChecker.DataAccess;
 using ReportChecker.DataAccess.Repositories;
 using ReportChecker.FormatProviders.Latex;
+using ReportChecker.FormatProviders.Pdf;
 using ReportChecker.S3;
 using ReportChecker.SourceProviders.File;
 
@@ -38,6 +39,7 @@ builder.Services.AddSingleton<IProviderService, ProviderService>();
 builder.Services.AddSingleton<YandexAuthProvider>();
 builder.Services.AddSingleton<FileSourceProvider>();
 builder.Services.AddSingleton<LatexFormatProvider>();
+builder.Services.AddSingleton<PdfFormatProvider>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options => { options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); });

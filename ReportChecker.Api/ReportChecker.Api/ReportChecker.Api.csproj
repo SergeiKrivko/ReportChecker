@@ -17,6 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\FormatProviders\ReportChecker.FormatProviders.Pdf\ReportChecker.FormatProviders.Pdf.csproj" />
       <ProjectReference Include="..\ReportChecker.Abstractions\ReportChecker.Abstractions.csproj" />
       <ProjectReference Include="..\ReportChecker.AiAgent\ReportChecker.AiAgent.csproj" />
       <ProjectReference Include="..\ReportChecker.Application\ReportChecker.Application.csproj" />
