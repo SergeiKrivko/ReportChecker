@@ -79,6 +79,18 @@ export class ReportsService {
       tap(report => patchState(this.store$$, {selectedReport: report})),
     );
   }
+
+  deleteSelectedReport() {
+    return this.selectedReport$.pipe(
+      take(1),
+      switchMap(report => {
+        if (report)
+          return this.apiClient.reportsDELETE(report.id);
+        return NEVER;
+      }),
+      switchMap(() => this.loadReports()),
+    );
+  }
 }
 
 const reportToEntity = (report: Report): ReportEntity => ({
