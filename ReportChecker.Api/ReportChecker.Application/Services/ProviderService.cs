@@ -1,4 +1,5 @@
 ﻿using ReportChecker.Abstractions;
+using ReportChecker.AuthProviders.Yandex;
 using ReportChecker.FormatProviders.Latex;
 using ReportChecker.FormatProviders.Pdf;
 using ReportChecker.SourceProviders.File;
@@ -7,10 +8,21 @@ using IFormatProvider = ReportChecker.Abstractions.IFormatProvider;
 namespace ReportChecker.Application.Services;
 
 public class ProviderService(
+    YandexAuthProvider yandexAuthProvider,
     FileSourceProvider fileSourceProvider,
     LatexFormatProvider latexFormatProvider,
     PdfFormatProvider pdfFormatProvider) : IProviderService
 {
+    private readonly Dictionary<string, IAuthProvider> _authProviders = new()
+    {
+        { yandexAuthProvider.Key, yandexAuthProvider },
+    };
+
+    public IAuthProvider GetAuthProvider(string providerName)
+    {
+        return _authProviders[providerName];
+    }
+
     private readonly Dictionary<string, ISourceProvider> _sourceProviders = new()
     {
         { fileSourceProvider.Key, fileSourceProvider },

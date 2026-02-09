@@ -41,6 +41,8 @@ builder.Services.AddSingleton<FileSourceProvider>();
 builder.Services.AddSingleton<LatexFormatProvider>();
 builder.Services.AddSingleton<PdfFormatProvider>();
 
+builder.Configuration.AddEnvironmentVariables();
+
 builder.Services.AddControllers()
     .AddJsonOptions(options => { options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); });
 

@@ -23,15 +23,15 @@ public class AccountRepository(ReportCheckerDbContext dbContext) : IAccountRepos
         return result is null ? null : FromEntity(result);
     }
 
-    public async Task<Account?> GetAccountByProviderIdAsync(string id)
+    public async Task<Account?> GetAccountByProviderIdAsync(string provider, string id)
     {
         var result = await dbContext.Accounts
-            .Where(e => e.ProviderUserId == id && e.DeletedAt == null)
+            .Where(e => e.ProviderUserId == id && e.Provider == provider && e.DeletedAt == null)
             .FirstOrDefaultAsync();
         return result is null ? null : FromEntity(result);
     }
 
-    public async Task<Guid> CreateAccountAsync(Guid userId, string provider, string providerUserId)
+    public async Task<Guid> CreateAccountAsync(Guid userId, string provider, string providerUserId, string credentials)
     {
         var id = Guid.NewGuid();
         var entity = new AccountEntity
@@ -40,12 +40,21 @@ public class AccountRepository(ReportCheckerDbContext dbContext) : IAccountRepos
             UserId = userId,
             Provider = provider,
             ProviderUserId = providerUserId,
+            Credentials = credentials,
             CreatedAt = DateTime.UtcNow,
             DeletedAt = null
         };
         await dbContext.Accounts.AddAsync(entity);
         await dbContext.SaveChangesAsync();
         return id;
+    }
+
+    public async Task UpdateAccountCredentialsAsync(Guid accountId, string credentials)
+    {
+        await dbContext.Accounts
+            .Where(e => e.AccountId == accountId && e.DeletedAt == null)
+            .ExecuteUpdateAsync(e => e.SetProperty(x => x.Credentials, credentials));
+        await dbContext.SaveChangesAsync();
     }
 
     public async Task DeleteAccountAsync(Guid accountId)
@@ -63,6 +72,7 @@ public class AccountRepository(ReportCheckerDbContext dbContext) : IAccountRepos
             UserId = entity.UserId,
             Provider = entity.Provider,
             ProviderUserId = entity.ProviderUserId,
+            Credentials = entity.Credentials,
             CreatedAt = entity.CreatedAt,
             DeletedAt = entity.DeletedAt,
         };

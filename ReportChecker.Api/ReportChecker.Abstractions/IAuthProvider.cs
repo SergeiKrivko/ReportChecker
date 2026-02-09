@@ -8,9 +8,7 @@ public interface IAuthProvider
 {
     public string Key { get; }
 
-    public Task<JsonObject?> AuthorizeAsync(Dictionary<string, string> parameters, string? redirectUrl);
+    public Uri GetAuthorizationUrl(string redirectUrl);
 
-    public Task<AccountInfo?> GetAccountInfoAsync(ClaimsPrincipal user);
-
-    public bool VerifyProvider(ClaimsPrincipal user);
+    public Task<AuthorizedAccount> AuthorizeAsync(Dictionary<string, string> parameters, string? redirectUrl);
 }

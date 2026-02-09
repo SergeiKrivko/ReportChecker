@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ReportChecker.Abstractions;
 using ReportChecker.Api.Schemas;
+using ReportChecker.Api.Utils;
 using ReportChecker.Models;
 
 namespace ReportChecker.Api.Controllers;
@@ -9,7 +10,6 @@ namespace ReportChecker.Api.Controllers;
 [ApiController]
 [Route("api/v1/reports/{reportId:guid}/issues")]
 public class IssuesController(
-    IAuthService authService,
     IReportRepository reportRepository,
     IIssueRepository issueRepository,
     ICheckRepository checkRepository,
@@ -20,7 +20,7 @@ public class IssuesController(
     [Authorize]
     public async Task<ActionResult<IEnumerable<Issue>>> GetAllIssues(Guid reportId)
     {
-        var userId = await authService.AuthenticateAsync(User);
+        var userId = User.Id;
         if (userId == null)
             return Unauthorized();
         var report = await reportRepository.GetReportByIdAsync(reportId);
@@ -36,7 +36,7 @@ public class IssuesController(
     [Authorize]
     public async Task<ActionResult<Issue>> GetIssueById(Guid reportId, Guid issueId)
     {
-        var userId = await authService.AuthenticateAsync(User);
+        var userId = User.Id;
         if (userId == null)
             return Unauthorized();
         var report = await reportRepository.GetReportByIdAsync(reportId);
@@ -60,7 +60,7 @@ public class IssuesController(
     [Authorize]
     public async Task<ActionResult<IEnumerable<Comment>>> GetAllIssueComments(Guid reportId, Guid issueId)
     {
-        var userId = await authService.AuthenticateAsync(User);
+        var userId = User.Id;
         if (userId == null)
             return Unauthorized();
 
@@ -87,7 +87,7 @@ public class IssuesController(
     public async Task<ActionResult<Guid>> CreateIssueComment(Guid reportId, Guid issueId,
         [FromBody] CreateCommentSchema schema)
     {
-        var userId = await authService.AuthenticateAsync(User);
+        var userId = User.Id;
         if (userId == null)
             return Unauthorized();
 
@@ -116,7 +116,7 @@ public class IssuesController(
     public async Task<ActionResult<Guid>> UpdateIssueComment(Guid reportId, Guid issueId, Guid commentId,
         [FromBody] UpdateCommentSchema schema)
     {
-        var userId = await authService.AuthenticateAsync(User);
+        var userId = User.Id;
         if (userId == null)
             return Unauthorized();
 

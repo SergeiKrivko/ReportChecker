@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ReportChecker.Abstractions;
 using ReportChecker.Api.Schemas;
+using ReportChecker.Api.Utils;
 using ReportChecker.Models;
 
 namespace ReportChecker.Api.Controllers;
@@ -9,7 +10,6 @@ namespace ReportChecker.Api.Controllers;
 [ApiController]
 [Route("api/v1/reports/{reportId:guid}/checks")]
 public class CheckController(
-    IAuthService authService,
     IReportRepository reportRepository,
     ICheckRepository checkRepository,
     IReportService reportService,
@@ -19,7 +19,7 @@ public class CheckController(
     [Authorize]
     public async Task<ActionResult<IEnumerable<Check>>> GetAllChecksAsync(Guid reportId)
     {
-        var userId = await authService.AuthenticateAsync(User);
+        var userId = User.Id;
         if (userId == null)
             return Unauthorized();
         var report = await reportRepository.GetReportByIdAsync(reportId);
@@ -35,7 +35,7 @@ public class CheckController(
     [Authorize]
     public async Task<ActionResult<Check>> GetLatestCheckAsync(Guid reportId)
     {
-        var userId = await authService.AuthenticateAsync(User);
+        var userId = User.Id;
         if (userId == null)
             return Unauthorized();
         var report = await reportRepository.GetReportByIdAsync(reportId);
@@ -51,7 +51,7 @@ public class CheckController(
     [Authorize]
     public async Task<ActionResult<Guid>> CreateCheckAsync(Guid reportId, [FromBody] CreateCheckSchema? schema)
     {
-        var userId = await authService.AuthenticateAsync(User);
+        var userId = User.Id;
         if (userId == null)
             return Unauthorized();
 

@@ -6,6 +6,7 @@ public class Account
     public required Guid UserId { get; init; }
     public required string Provider { get; init; }
     public required string ProviderUserId { get; init; }
+    public required string Credentials { get; init; }
     public DateTime CreatedAt { get; init; }
     public DateTime? DeletedAt { get; init; }
 }

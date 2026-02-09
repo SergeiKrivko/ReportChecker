@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ReportChecker.Abstractions;
 using ReportChecker.Api.Schemas;
+using ReportChecker.Api.Utils;
 using ReportChecker.Models;
 
 namespace ReportChecker.Api.Controllers;
@@ -9,7 +10,6 @@ namespace ReportChecker.Api.Controllers;
 [ApiController]
 [Route("api/v1/reports")]
 public class ReportController(
-    IAuthService authService,
     IReportRepository reportRepository,
     IReportService reportService) : ControllerBase
 {
@@ -17,7 +17,7 @@ public class ReportController(
     [Authorize]
     public async Task<ActionResult<IEnumerable<Report>>> GetAllReports()
     {
-        var userId = await authService.AuthenticateAsync(User);
+        var userId = User.Id;
         if (userId == null)
             return Unauthorized();
         var reports = await reportRepository.GetAllReportsOfUserAsync(userId.Value);
@@ -28,7 +28,7 @@ public class ReportController(
     [Authorize]
     public async Task<ActionResult<Report>> GetReportById(Guid reportId)
     {
-        var userId = await authService.AuthenticateAsync(User);
+        var userId = User.Id;
         if (userId == null)
             return Unauthorized();
         var report = await reportRepository.GetReportByIdAsync(reportId);
@@ -43,7 +43,7 @@ public class ReportController(
     [Authorize]
     public async Task<ActionResult<Guid>> CreateReport([FromBody] CreateReportSchema schema)
     {
-        var userId = await authService.AuthenticateAsync(User);
+        var userId = User.Id;
         if (userId == null)
             return Unauthorized();
         var reportId = await
@@ -56,7 +56,7 @@ public class ReportController(
     [Authorize]
     public async Task<ActionResult> DeleteReportById(Guid reportId)
     {
-        var userId = await authService.AuthenticateAsync(User);
+        var userId = User.Id;
         if (userId == null)
             return Unauthorized();
         var report = await reportRepository.GetReportByIdAsync(reportId);
@@ -72,7 +72,7 @@ public class ReportController(
     [Authorize]
     public async Task<ActionResult> UpdateReportById(Guid reportId, [FromBody] UpdateReportSchema schema)
     {
-        var userId = await authService.AuthenticateAsync(User);
+        var userId = User.Id;
         if (userId == null)
             return Unauthorized();
         var report = await reportRepository.GetReportByIdAsync(reportId);

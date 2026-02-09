@@ -14,6 +14,7 @@ public class AccountConfiguration : IEntityTypeConfiguration<AccountEntity>
         builder.Property(x => x.UserId).IsRequired();
         builder.Property(x => x.Provider).IsRequired();
         builder.Property(x => x.ProviderUserId).IsRequired();
+        builder.Property(x => x.Credentials).IsRequired();
         builder.Property(x => x.CreatedAt).IsRequired();
         builder.Property(x => x.DeletedAt);
     }

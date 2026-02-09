@@ -1,8 +1,9 @@
-﻿using System.Text.Json;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReportChecker.Abstractions;
 using ReportChecker.Api.Schemas;
+using ReportChecker.Api.Utils;
+using ReportChecker.Models;
 
 namespace ReportChecker.Api.Controllers;
 
@@ -10,24 +11,46 @@ namespace ReportChecker.Api.Controllers;
 [Route("api/v1/auth")]
 public class AuthController(IAuthService authService) : ControllerBase
 {
-    [HttpPost("{provider}")]
-    public async Task<ActionResult<Dictionary<string, object>>> HandleAuthorization(string provider,
-        [FromBody] AccessTokenRequestSchema schema)
+    [HttpGet("providers/{provider}/init")]
+    public ActionResult<Dictionary<string, object>> InitializeAuthorization(string provider,
+        string redirectUrl)
     {
-        var authProvider = authService.GetAuthProvider(provider);
-        if (authProvider is null)
-            return NotFound();
-        var credentials = await authProvider.AuthorizeAsync(schema.Parameters, schema.RedirectUrl);
-        if (credentials is null)
-            return Unauthorized();
-        return Ok(credentials);
+        var url = authService.GetAuthorizationUrl(provider, redirectUrl);
+        return Redirect(url.ToString());
     }
 
-    [HttpGet]
-    [Authorize]
-    public async Task<ActionResult<Guid>> GetAccountInfo()
+    [HttpPost("providers/{provider}/first")]
+    public async Task<ActionResult<TokenPair>> AuthorizeFirstAccount(string provider,
+        [FromBody] AccessTokenRequestSchema schema)
     {
-        var userId = await authService.AuthenticateOrCreateUserAsync(User);
-        return Ok(userId);
+        var userId = await authService.AuthorizeAsync(provider, schema.Parameters, schema.RedirectUrl);
+        var tokenPair = await authService.CreateTokenPairAsync(userId);
+        return Ok(tokenPair);
+    }
+
+    [HttpPost("providers/{provider}/second")]
+    [Authorize]
+    public async Task<ActionResult> AuthorizeSecondAccount(string provider,
+        [FromBody] AccessTokenRequestSchema schema)
+    {
+        var userId = User.Id;
+        if (userId == null)
+            return Unauthorized();
+        await authService.AuthorizeAsync(userId.Value, provider, schema.Parameters, schema.RedirectUrl);
+        return Ok();
+    }
+
+    [HttpPost("refresh")]
+    public async Task<ActionResult<TokenPair>> RefreshToken([FromBody] RefreshTokenSchema schema)
+    {
+        var tokenPair = await authService.RefreshTokenAsync(schema.RefreshToken);
+        return Ok(tokenPair);
+    }
+
+    [HttpPost("revoke")]
+    public async Task<ActionResult> RevokeToken([FromBody] RefreshTokenSchema schema)
+    {
+        await authService.RevokeTokenAsync(schema.RefreshToken);
+        return Ok();
     }
 }

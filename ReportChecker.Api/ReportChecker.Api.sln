@@ -34,6 +34,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReportChecker.FormatProviders.Pdf", "FormatProviders\ReportChecker.FormatProviders.Pdf\ReportChecker.FormatProviders.Pdf.csproj", "{88EA25E4-7B05-4675-A353-19EBC77E8F83}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReportChecker.AuthProviders.Github", "AuthProviders\ReportChecker.AuthProviders.Github\ReportChecker.AuthProviders.Github.csproj", "{3B5EE8D7-B7F0-479C-9F99-924053184018}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -84,11 +86,16 @@ Global
 		{88EA25E4-7B05-4675-A353-19EBC77E8F83}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{88EA25E4-7B05-4675-A353-19EBC77E8F83}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{88EA25E4-7B05-4675-A353-19EBC77E8F83}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B5EE8D7-B7F0-479C-9F99-924053184018}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B5EE8D7-B7F0-479C-9F99-924053184018}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B5EE8D7-B7F0-479C-9F99-924053184018}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B5EE8D7-B7F0-479C-9F99-924053184018}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{6C3A90E6-2F5A-4D02-9289-50BE04560CF7} = {1BC3A3C9-C6A5-4673-9276-333A7345B884}
 		{162726D2-9074-44AA-9744-910001C66F9C} = {F7B2194B-EE36-4784-AC14-1630E0C93151}
 		{D1A86CAF-BE53-4AAE-8F1A-759A6CD35C64} = {D530971F-CA0A-485B-B961-D3AF015A2396}
 		{88EA25E4-7B05-4675-A353-19EBC77E8F83} = {D530971F-CA0A-485B-B961-D3AF015A2396}
+		{3B5EE8D7-B7F0-479C-9F99-924053184018} = {1BC3A3C9-C6A5-4673-9276-333A7345B884}
 	EndGlobalSection
 EndGlobal

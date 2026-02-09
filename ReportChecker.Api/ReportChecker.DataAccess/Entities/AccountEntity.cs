@@ -8,6 +8,7 @@ public class AccountEntity
     public required Guid UserId { get; init; }
     [MaxLength(20)] public required string Provider { get; init; }
     [MaxLength(200)] public required string ProviderUserId { get; init; }
+    [MaxLength(2000)] public required string Credentials { get; init; }
     public DateTime CreatedAt { get; init; }
     public DateTime? DeletedAt { get; init; }
 

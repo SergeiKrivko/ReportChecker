@@ -9,4 +9,5 @@ public class UserEntity
     public virtual IEnumerable<AccountEntity> Accounts { get; init; } = null!;
     public virtual IEnumerable<ReportEntity> Reports { get; init; } = null!;
     public virtual IEnumerable<CheckEntity> Checks { get; init; } = null!;
+    public virtual IEnumerable<RefreshTokenEntity> RefreshTokens { get; init; } = null!;
 }
