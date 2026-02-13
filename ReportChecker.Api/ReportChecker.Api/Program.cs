@@ -44,6 +44,10 @@ builder.Services.AddHttpClient("Auth",
 builder.Services.AddControllers()
     .AddJsonOptions(options => { options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); });
 
+var httpClient = new HttpClient();
+Console.WriteLine(await httpClient.GetStringAsync($"{builder.Configuration["Security.AuthApiUrl"]}/api/v1/.well-known/openid-configuration"));
+Console.WriteLine(await httpClient.GetStringAsync($"{builder.Configuration["Security.AuthApiUrl"]}/api/v1/.well-known/jwks.json"));
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
     {
@@ -64,19 +68,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
         options.RefreshInterval = TimeSpan.FromMinutes(30);
         options.RefreshOnIssuerKeyNotFound = true;
-
-        options.Events = new JwtBearerEvents
-        {
-            OnAuthenticationFailed = context =>
-            {
-                var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
-
-                // Логируем детали ошибки
-                logger.LogError(context.Exception, "JWT Authentication failed");
-
-                return Task.CompletedTask;
-            }
-        };
     });
 
 builder.Services.AddEndpointsApiExplorer();
