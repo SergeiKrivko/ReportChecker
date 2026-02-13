@@ -44,10 +44,6 @@ builder.Services.AddHttpClient("Auth",
 builder.Services.AddControllers()
     .AddJsonOptions(options => { options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); });
 
-var httpClient = new HttpClient();
-Console.WriteLine(await httpClient.GetStringAsync($"{builder.Configuration["Security.AuthApiUrl"]}/api/v1/.well-known/openid-configuration"));
-Console.WriteLine(await httpClient.GetStringAsync($"{builder.Configuration["Security.AuthApiUrl"]}/api/v1/.well-known/jwks.json"));
-
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
     {

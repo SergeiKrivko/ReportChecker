@@ -40,6 +40,13 @@ public class AuthService(IConfiguration configuration, IHttpClientFactory httpCl
 
     public async Task<UserCredentials> RefreshTokenAsync(string refreshToken)
     {
-        throw new NotImplementedException();
+        var resp = await _httpClient.PostAsync("api/v1/auth/refresh", new FormUrlEncodedContent(
+            new Dictionary<string, string>()
+            {
+                { "refresh_token", ClientId },
+            }));
+        resp.EnsureSuccessStatusCode();
+        var token = await resp.Content.ReadFromJsonAsync<UserCredentials>();
+        return token ?? throw new Exception("Invalid token");
     }
 }

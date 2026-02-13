@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ReportChecker.Abstractions;
+using ReportChecker.Api.Schemas;
 using ReportChecker.Models;
 
 namespace ReportChecker.Api.Controllers;
@@ -18,6 +19,13 @@ public class AuthController(IAuthService authService) : ControllerBase
     public async Task<ActionResult<UserCredentials>> GetToken([FromQuery] string code)
     {
         var credentials = await authService.GetTokenAsync(code);
+        return Ok(credentials);
+    }
+
+    [HttpPost("refresh")]
+    public async Task<ActionResult<UserCredentials>> RefreshToken([FromBody] RefreshTokenRequestSchema schema)
+    {
+        var credentials = await authService.RefreshTokenAsync(schema.RefreshToken);
         return Ok(credentials);
     }
 }
