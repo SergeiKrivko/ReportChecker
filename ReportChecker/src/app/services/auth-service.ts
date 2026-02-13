@@ -1,9 +1,9 @@
 import {inject, Injectable} from '@angular/core';
-import {ApiClient, UserCredentials} from './api-client';
-import {catchError, combineLatest, map, NEVER, Observable, of, skipWhile, switchMap, tap} from 'rxjs';
+import {ApiClient, RefreshTokenRequestSchema, UserCredentials} from './api-client';
+import {catchError, map, Observable, of, skipWhile, tap} from 'rxjs';
 import {patchState, signalState} from '@ngrx/signals';
 import {toObservable} from '@angular/core/rxjs-interop';
-import {Moment} from 'moment';
+import moment, {Moment} from 'moment';
 
 interface AuthState {
   isLoaded: boolean;
@@ -44,6 +44,33 @@ export class AuthService {
     patchState(this.store$$, {isLoaded: true, isAuthorized: true, credentials});
     this.apiClient.setAuthorization("Bearer " + credentials.accessToken);
     return of(true);
+  }
+
+  refreshToken(): Observable<boolean> {
+    if (!this.store$$.isLoaded())
+      return of(false);
+    const expiresAt = this.store$$.credentials()?.expiresAt;
+    if (expiresAt === undefined || moment().diff(expiresAt) < 0)
+      return of(false);
+    return this.apiClient.refresh(RefreshTokenRequestSchema.fromJS({
+      refreshToken: this.store$$.credentials()?.refreshToken
+    })).pipe(
+      map(credentialsToEntity),
+      tap(credentials => {
+        patchState(this.store$$, {
+          credentials: credentials,
+        });
+        localStorage.setItem("reportCheckerCredentials", JSON.stringify(credentials));
+      }),
+      map(() => true),
+      catchError(() => {
+        patchState(this.store$$, {
+          isAuthorized: false,
+          credentials: null,
+        });
+        return of(false)
+      }),
+    )
   }
 
   getToken(code: string): Observable<boolean> {

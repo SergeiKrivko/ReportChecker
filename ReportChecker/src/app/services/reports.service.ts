@@ -4,6 +4,7 @@ import {catchError, map, NEVER, Observable, of, switchMap, take, tap} from 'rxjs
 import {ReportEntity} from '../entities/report-entity';
 import {patchState, signalState} from '@ngrx/signals';
 import {toObservable} from '@angular/core/rxjs-interop';
+import {AuthService} from './auth-service';
 
 interface ReportsStore {
   reports: ReportEntity[];
@@ -16,6 +17,7 @@ interface ReportsStore {
 })
 export class ReportsService {
   private readonly apiClient = inject(ApiClient);
+  private readonly authService = inject(AuthService);
 
   private readonly store$$ = signalState<ReportsStore>({
     reports: [],
@@ -31,7 +33,8 @@ export class ReportsService {
     patchState(this.store$$, {
       loaded: false,
     });
-    return this.apiClient.reportsAll().pipe(
+    return this.authService.refreshToken().pipe(
+      switchMap(() => this.apiClient.reportsAll()),
       tap(reports => {
         patchState(this.store$$, {
           reports: reports.map(reportToEntity),
@@ -43,16 +46,19 @@ export class ReportsService {
   }
 
   createReport(name: string, source: string, format: string): Observable<string> {
-    return this.apiClient.reportsPOST(CreateReportSchema.fromJS({
-      name: name,
-      source: source,
-      sourceProvider: "File",
-      format: format,
-    }));
+    return this.authService.refreshToken().pipe(
+      switchMap(() => this.apiClient.reportsPOST(CreateReportSchema.fromJS({
+        name: name,
+        source: source,
+        sourceProvider: "File",
+        format: format,
+      })))
+    );
   }
 
   createCheck(source: string): Observable<boolean> {
-    return this.selectedReport$.pipe(
+    return this.authService.refreshToken().pipe(
+      switchMap(() => this.selectedReport$),
       take(1),
       switchMap(report => {
         if (report)
@@ -81,7 +87,8 @@ export class ReportsService {
   }
 
   deleteSelectedReport() {
-    return this.selectedReport$.pipe(
+    return this.authService.refreshToken().pipe(
+      switchMap(() => this.selectedReport$),
       take(1),
       switchMap(report => {
         if (report)
