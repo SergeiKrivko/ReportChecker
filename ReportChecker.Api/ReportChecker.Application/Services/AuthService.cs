@@ -15,7 +15,7 @@ public class AuthService(IConfiguration configuration, IHttpClientFactory httpCl
     private string ClientSecret => configuration["Security.ClientSecret"] ??
                                    throw new InvalidOperationException("Security.ClientSecret is required");
 
-    private string ApiUrl => configuration["Security.AuthApiUrl"] ??
+    private string ApiUrl => configuration["Security.AuthApiUrl.Global"] ?? configuration["Security.AuthApiUrl"] ??
                              throw new InvalidOperationException("Security.AuthApiUrl is required");
 
     public string GetAuthUrl(string provider, string redirectUrl)

@@ -50,6 +50,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.MetadataAddress =
             $"{builder.Configuration["Security.AuthApiUrl"]}/api/v1/.well-known/openid-configuration";
         options.Authority = builder.Configuration["Security.AuthApiUrl"];
+        options.RequireHttpsMetadata = false;
 
         options.TokenValidationParameters = new TokenValidationParameters
         {
