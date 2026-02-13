@@ -47,19 +47,9 @@ builder.Services.AddControllers()
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
     {
-        // options.MetadataAddress =
-        //     $"{builder.Configuration["Security.AuthApiUrl"]}/api/v1/.well-known/openid-configuration";
-        // options.Authority = builder.Configuration["Security.AuthApiUrl"];
-
-        options.ConfigurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
-            "https://auth.nachert.art/api/v1/.well-known/openid-configuration",
-            new OpenIdConnectConfigurationRetriever(),
-            new HttpDocumentRetriever()
-            {
-                RequireHttps = false,
-                SendAdditionalHeaderData = true
-            }
-        );
+        options.MetadataAddress =
+            $"{builder.Configuration["Security.AuthApiUrl"]}/api/v1/.well-known/openid-configuration";
+        options.Authority = builder.Configuration["Security.AuthApiUrl"];
 
         options.TokenValidationParameters = new TokenValidationParameters
         {
