@@ -1,44 +1,45 @@
-﻿using System.Security.Claims;
+﻿using System.Net.Http.Json;
+using Microsoft.Extensions.Configuration;
 using ReportChecker.Abstractions;
-using ReportChecker.AuthProviders.Yandex;
+using ReportChecker.Models;
 
 namespace ReportChecker.Application.Services;
 
-public class AuthService(
-    IAccountRepository accountRepository,
-    IUserRepository userRepository,
-    YandexAuthProvider yandexAuthProvider) : IAuthService
+public class AuthService(IConfiguration configuration, IHttpClientFactory httpClientFactory) : IAuthService
 {
-    private readonly IAuthProvider[] _authProviders = [yandexAuthProvider];
+    private readonly HttpClient _httpClient = httpClientFactory.CreateClient("Auth");
 
-    public async Task<Guid?> AuthenticateAsync(ClaimsPrincipal principal)
+    private string ClientId => configuration["Security.ClientId"] ??
+                               throw new InvalidOperationException("Security.ClientId is required");
+
+    private string ClientSecret => configuration["Security.ClientSecret"] ??
+                                   throw new InvalidOperationException("Security.ClientSecret is required");
+
+    private string ApiUrl => configuration["Security.AuthApiUrl"] ??
+                             throw new InvalidOperationException("Security.AuthApiUrl is required");
+
+    public string GetAuthUrl(string provider, string redirectUrl)
     {
-        var provider = _authProviders.First(p => p.VerifyProvider(principal));
-        var accountInfo = await provider.GetAccountInfoAsync(principal);
-        if (accountInfo == null)
-            return null;
-        var account = await accountRepository.GetAccountByProviderIdAsync(accountInfo.Id);
-        if (account == null || account.DeletedAt != null)
-            return null;
-        return account.UserId;
+        return
+            $"{ApiUrl}/api/v1/auth/{provider}/authorize?redirect_uri={redirectUrl}&client_id={ClientId}&response_type=code";
     }
 
-    public async Task<Guid?> AuthenticateOrCreateUserAsync(ClaimsPrincipal principal)
+    public async Task<UserCredentials> GetTokenAsync(string code)
     {
-        var provider = _authProviders.First(p => p.VerifyProvider(principal));
-        var accountInfo = await provider.GetAccountInfoAsync(principal);
-        if (accountInfo == null)
-            return null;
-        var account = await accountRepository.GetAccountByProviderIdAsync(accountInfo.Id);
-        if (account != null && account.DeletedAt == null)
-            return account.UserId;
-        var userId = await userRepository.CreateUserAsync();
-        await accountRepository.CreateAccountAsync(userId, provider.Key, accountInfo.Id);
-        return userId;
+        var resp = await _httpClient.PostAsync("api/v1/auth/token", new FormUrlEncodedContent(
+            new Dictionary<string, string>()
+            {
+                { "client_id", ClientId },
+                { "client_secret", ClientSecret },
+                { "code", code },
+            }));
+        resp.EnsureSuccessStatusCode();
+        var token = await resp.Content.ReadFromJsonAsync<UserCredentials>();
+        return token ?? throw new Exception("Invalid token");
     }
 
-    public IAuthProvider? GetAuthProvider(string key)
+    public async Task<UserCredentials> RefreshTokenAsync(string refreshToken)
     {
-        return _authProviders.FirstOrDefault(e => e.Key.Equals(key, StringComparison.InvariantCultureIgnoreCase));
+        throw new NotImplementedException();
     }
 }

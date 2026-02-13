@@ -13,5 +13,5 @@ export const routes: Routes = [
     ]
   },
   {path: "auth", pathMatch: "full", component: AuthPage},
-  {path: "auth/:provider", pathMatch: "full", component: AuthRedirectPage},
+  {path: "auth/callback", pathMatch: "full", component: AuthRedirectPage},
 ];

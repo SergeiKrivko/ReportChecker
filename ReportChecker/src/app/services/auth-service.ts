@@ -1,14 +1,20 @@
 import {inject, Injectable} from '@angular/core';
-import {IAuthProvider} from './providers/auth-provider';
-import {AccessTokenRequestSchema, ApiClient} from './api-client';
-import {combineLatest, map, NEVER, Observable, of, skip, skipWhile, switchMap, take, tap} from 'rxjs';
-import {YandexAuthProvider} from './providers/yandex-auth-provider';
+import {ApiClient, UserCredentials} from './api-client';
+import {catchError, combineLatest, map, NEVER, Observable, of, skipWhile, switchMap, tap} from 'rxjs';
 import {patchState, signalState} from '@ngrx/signals';
 import {toObservable} from '@angular/core/rxjs-interop';
+import {Moment} from 'moment';
 
 interface AuthState {
-  providerLoaded: number;
+  isLoaded: boolean;
   isAuthorized: boolean;
+  credentials: Credentials | null;
+}
+
+interface Credentials {
+  accessToken: string;
+  refreshToken: string;
+  expiresAt: Moment;
 }
 
 @Injectable({
@@ -18,66 +24,58 @@ export class AuthService {
   private readonly apiClient = inject(ApiClient);
 
   private readonly store$$ = signalState<AuthState>({
-    providerLoaded: 0,
+    isLoaded: false,
     isAuthorized: false,
+    credentials: null,
   });
 
-  readonly providers$: IAuthProvider[] = [
-    inject(YandexAuthProvider),
-  ];
-
   readonly isAuthorized$ = toObservable(this.store$$).pipe(
-    skipWhile(state => state.providerLoaded < this.providers$.length),
+    skipWhile(state => !state.isLoaded),
     map(state => state.isAuthorized),
   );
 
-  authorize(provider: IAuthProvider, parameters: { [key: string]: string; }): Observable<boolean> {
-    return this.apiClient.authPOST(provider.key, AccessTokenRequestSchema.fromJS({
-      redirectUrl: provider.url,
-      parameters,
-    })).pipe(
-      switchMap(response => provider.authorize(response)),
-      switchMap(success => {
-        if (!success)
-          return of(false);
-        return this.loadIdTokenFromProvider(provider);
-      })
-    );
+  loadAuthorization(): Observable<boolean> {
+    const credentialsJson = localStorage.getItem('reportCheckerCredentials');
+    if (credentialsJson === null) {
+      patchState(this.store$$, {isLoaded: true, isAuthorized: false, credentials: null});
+      return of(false);
+    }
+    const credentials: Credentials = JSON.parse(credentialsJson);
+    patchState(this.store$$, {isLoaded: true, isAuthorized: true, credentials});
+    this.apiClient.setAuthorization("Bearer " + credentials.accessToken);
+    return of(true);
   }
 
-  private loadIdTokenFromProvider(provider: IAuthProvider): Observable<boolean> {
-    return provider.getIdToken().pipe(
-      map(idToken => {
-        if (!idToken)
-          return false;
-        this.apiClient.setAuthorization(`Bearer ${idToken}`);
-        return true;
-      })
-    );
-  }
-
-  loadProviders(): Observable<never> {
-    return combineLatest(this.providers$.map(provider => provider.load().pipe(
-      switchMap(authorized => {
-        if (!authorized) {
-          patchState(this.store$$, {
-            providerLoaded: this.store$$.providerLoaded() + 1,
-          });
-          return NEVER;
-        }
-        return provider.getIdToken().pipe(
-          switchMap(idToken => {
-            this.apiClient.setAuthorization(`Bearer ${idToken}`);
-            patchState(this.store$$, {
-              isAuthorized: true,
-              providerLoaded: this.store$$.providerLoaded() + 1,
-            });
-            return this.apiClient.authGET().pipe(map(() => true));
-          }),
-        )
+  getToken(code: string): Observable<boolean> {
+    return this.apiClient.token(code).pipe(
+      map(credentialsToEntity),
+      tap(credentials => {
+        patchState(this.store$$, {
+          isLoaded: true,
+          isAuthorized: true,
+          credentials: credentials,
+        });
+        localStorage.setItem("reportCheckerCredentials", JSON.stringify(credentials));
       }),
-    ))).pipe(
-      switchMap(() => NEVER),
+      map(() => true),
+      catchError(() => {
+        patchState(this.store$$, {
+          isLoaded: true,
+          isAuthorized: false,
+          credentials: null,
+        });
+        return of(false)
+      }),
     );
+  }
+}
+
+const credentialsToEntity = (credentials: UserCredentials): Credentials | null => {
+  if (credentials.accessToken == undefined || credentials.refreshToken === undefined || credentials.expiresAt === undefined)
+    return null;
+  return {
+    accessToken: credentials.accessToken,
+    refreshToken: credentials.refreshToken,
+    expiresAt: credentials.expiresAt,
   }
 }

@@ -22,7 +22,7 @@ export class RootPage implements OnInit {
   private readonly router = inject(Router);
 
   ngOnInit() {
-    this.authService.loadProviders().subscribe();
+    this.authService.loadAuthorization().subscribe();
     this.authService.isAuthorized$.pipe(
       switchMap(authorized => {
         if (authorized)

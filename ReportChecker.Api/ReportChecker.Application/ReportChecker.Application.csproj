@@ -7,7 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\AuthProviders\ReportChecker.AuthProviders.Yandex\ReportChecker.AuthProviders.Yandex.csproj" />
       <ProjectReference Include="..\FormatProviders\ReportChecker.FormatProviders.Latex\ReportChecker.FormatProviders.Latex.csproj" />
       <ProjectReference Include="..\FormatProviders\ReportChecker.FormatProviders.Pdf\ReportChecker.FormatProviders.Pdf.csproj" />
       <ProjectReference Include="..\ReportChecker.Abstractions\ReportChecker.Abstractions.csproj" />
@@ -15,6 +14,8 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.3" />
+      <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.2" />
       <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.2" />
     </ItemGroup>
 

@@ -1,8 +1,6 @@
-﻿using System.Text.Json;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using ReportChecker.Abstractions;
-using ReportChecker.Api.Schemas;
+using ReportChecker.Models;
 
 namespace ReportChecker.Api.Controllers;
 
@@ -10,24 +8,16 @@ namespace ReportChecker.Api.Controllers;
 [Route("api/v1/auth")]
 public class AuthController(IAuthService authService) : ControllerBase
 {
-    [HttpPost("{provider}")]
-    public async Task<ActionResult<Dictionary<string, object>>> HandleAuthorization(string provider,
-        [FromBody] AccessTokenRequestSchema schema)
+    [HttpGet("{provider}")]
+    public ActionResult StartAuthorization(string provider, [FromQuery] string redirectUrl)
     {
-        var authProvider = authService.GetAuthProvider(provider);
-        if (authProvider is null)
-            return NotFound();
-        var credentials = await authProvider.AuthorizeAsync(schema.Parameters, schema.RedirectUrl);
-        if (credentials is null)
-            return Unauthorized();
-        return Ok(credentials);
+        return Redirect(authService.GetAuthUrl(provider, redirectUrl));
     }
 
-    [HttpGet]
-    [Authorize]
-    public async Task<ActionResult<Guid>> GetAccountInfo()
+    [HttpPost("token")]
+    public async Task<ActionResult<UserCredentials>> GetToken([FromQuery] string code)
     {
-        var userId = await authService.AuthenticateOrCreateUserAsync(User);
-        return Ok(userId);
+        var credentials = await authService.GetTokenAsync(code);
+        return Ok(credentials);
     }
 }

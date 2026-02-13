@@ -13,7 +13,6 @@ public class CheckEntity
     [MaxLength(200)] public string? Source { get; init; }
     public ProgressStatus Status { get; init; }
 
-    public virtual UserEntity User { get; init; } = null!;
     public virtual ReportEntity Report { get; init; } = null!;
     public virtual IEnumerable<IssueEntity> Issues { get; init; } = null!;
 }

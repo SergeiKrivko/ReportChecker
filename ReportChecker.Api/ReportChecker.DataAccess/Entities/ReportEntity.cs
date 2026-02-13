@@ -14,5 +14,4 @@ public class ReportEntity
     public DateTime? DeletedAt { get; init; }
 
     public virtual IEnumerable<CheckEntity> Checks { get; init; } = null!;
-    public virtual UserEntity Owner { get; init; } = null!;
 }

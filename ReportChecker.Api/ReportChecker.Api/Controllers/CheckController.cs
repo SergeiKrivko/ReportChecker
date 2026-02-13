@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReportChecker.Abstractions;
+using ReportChecker.Api.Extensions;
 using ReportChecker.Api.Schemas;
 using ReportChecker.Models;
 
@@ -9,7 +10,6 @@ namespace ReportChecker.Api.Controllers;
 [ApiController]
 [Route("api/v1/reports/{reportId:guid}/checks")]
 public class CheckController(
-    IAuthService authService,
     IReportRepository reportRepository,
     ICheckRepository checkRepository,
     IReportService reportService,
@@ -19,9 +19,7 @@ public class CheckController(
     [Authorize]
     public async Task<ActionResult<IEnumerable<Check>>> GetAllChecksAsync(Guid reportId)
     {
-        var userId = await authService.AuthenticateAsync(User);
-        if (userId == null)
-            return Unauthorized();
+        var userId = User.UserId;
         var report = await reportRepository.GetReportByIdAsync(reportId);
         if (report == null)
             return NotFound();
@@ -35,9 +33,7 @@ public class CheckController(
     [Authorize]
     public async Task<ActionResult<Check>> GetLatestCheckAsync(Guid reportId)
     {
-        var userId = await authService.AuthenticateAsync(User);
-        if (userId == null)
-            return Unauthorized();
+        var userId = User.UserId;
         var report = await reportRepository.GetReportByIdAsync(reportId);
         if (report == null)
             return NotFound();
@@ -51,10 +47,7 @@ public class CheckController(
     [Authorize]
     public async Task<ActionResult<Guid>> CreateCheckAsync(Guid reportId, [FromBody] CreateCheckSchema? schema)
     {
-        var userId = await authService.AuthenticateAsync(User);
-        if (userId == null)
-            return Unauthorized();
-
+        var userId = User.UserId;
         var report = await reportRepository.GetReportByIdAsync(reportId);
         if (report == null)
             return NotFound();
@@ -63,7 +56,7 @@ public class CheckController(
 
         var checkId = schema?.Source == null
             ? await reportService.CreateCheckAsync(report)
-            : await checkService.CreateCheckAsync(reportId, userId.Value, schema.Source, schema.Name);
+            : await checkService.CreateCheckAsync(reportId, userId, schema.Source, schema.Name);
 
         return Ok(checkId);
     }

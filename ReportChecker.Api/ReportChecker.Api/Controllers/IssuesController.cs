@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReportChecker.Abstractions;
+using ReportChecker.Api.Extensions;
 using ReportChecker.Api.Schemas;
 using ReportChecker.Models;
 
@@ -9,7 +10,6 @@ namespace ReportChecker.Api.Controllers;
 [ApiController]
 [Route("api/v1/reports/{reportId:guid}/issues")]
 public class IssuesController(
-    IAuthService authService,
     IReportRepository reportRepository,
     IIssueRepository issueRepository,
     ICheckRepository checkRepository,
@@ -20,9 +20,7 @@ public class IssuesController(
     [Authorize]
     public async Task<ActionResult<IEnumerable<Issue>>> GetAllIssues(Guid reportId)
     {
-        var userId = await authService.AuthenticateAsync(User);
-        if (userId == null)
-            return Unauthorized();
+        var userId = User.UserId;
         var report = await reportRepository.GetReportByIdAsync(reportId);
         if (report == null)
             return NotFound();
@@ -36,9 +34,7 @@ public class IssuesController(
     [Authorize]
     public async Task<ActionResult<Issue>> GetIssueById(Guid reportId, Guid issueId)
     {
-        var userId = await authService.AuthenticateAsync(User);
-        if (userId == null)
-            return Unauthorized();
+        var userId = User.UserId;
         var report = await reportRepository.GetReportByIdAsync(reportId);
         if (report == null)
             return NotFound();
@@ -60,9 +56,7 @@ public class IssuesController(
     [Authorize]
     public async Task<ActionResult<IEnumerable<Comment>>> GetAllIssueComments(Guid reportId, Guid issueId)
     {
-        var userId = await authService.AuthenticateAsync(User);
-        if (userId == null)
-            return Unauthorized();
+        var userId = User.UserId;
 
         var report = await reportRepository.GetReportByIdAsync(reportId);
         if (report == null)
@@ -87,9 +81,7 @@ public class IssuesController(
     public async Task<ActionResult<Guid>> CreateIssueComment(Guid reportId, Guid issueId,
         [FromBody] CreateCommentSchema schema)
     {
-        var userId = await authService.AuthenticateAsync(User);
-        if (userId == null)
-            return Unauthorized();
+        var userId = User.UserId;
 
         var report = await reportRepository.GetReportByIdAsync(reportId);
         if (report == null)
@@ -105,7 +97,7 @@ public class IssuesController(
         if (issue.CheckId != check?.Id)
             return NotFound();
 
-        var id = await commentRepository.CreateCommentAsync(issueId, userId.Value, schema.Content, schema.Status);
+        var id = await commentRepository.CreateCommentAsync(issueId, userId, schema.Content, schema.Status);
         if (schema.Status == null)
             await checkService.WriteCommentAsync(check.Id, issueId);
         return Ok(id);
@@ -116,9 +108,7 @@ public class IssuesController(
     public async Task<ActionResult<Guid>> UpdateIssueComment(Guid reportId, Guid issueId, Guid commentId,
         [FromBody] UpdateCommentSchema schema)
     {
-        var userId = await authService.AuthenticateAsync(User);
-        if (userId == null)
-            return Unauthorized();
+        var userId = User.UserId;
 
         var comment = await commentRepository.GetCommentByIdAsync(commentId);
         if (comment == null)

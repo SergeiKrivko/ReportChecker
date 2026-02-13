@@ -2,8 +2,6 @@
   <h1>ReportChecker</h1>
   <h2>Войдите через:</h2>
   <div tuiCardLarge class="providers-container">
-    @for (authProvider of authProviders$; track authProvider.key) {
-      <a tuiButton [href]="authProvider.url">{{ authProvider.displayName }}</a>
-    }
+    <a tuiButton [href]="'yandex' | authUrlForProvider">Яндекс</a>
   </div>
 </div>

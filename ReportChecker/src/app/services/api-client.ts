@@ -33,45 +33,44 @@ export class ApiClient extends ApiClientBase {
     }
 
     /**
-     * @param body (optional)
+     * @param redirectUrl (optional)
      * @return OK
      */
-    authPOST(provider: string, body: AccessTokenRequestSchema | undefined): Observable<{ [key: string]: any; }> {
-        let url_ = this.baseUrl + "/api/v1/auth/{provider}";
+    auth(provider: string, redirectUrl: string | undefined): Observable<void> {
+        let url_ = this.baseUrl + "/api/v1/auth/{provider}?";
         if (provider === undefined || provider === null)
             throw new Error("The parameter 'provider' must be defined.");
         url_ = url_.replace("{provider}", encodeURIComponent("" + provider));
+        if (redirectUrl === null)
+            throw new Error("The parameter 'redirectUrl' cannot be null.");
+        else if (redirectUrl !== undefined)
+            url_ += "redirectUrl=" + encodeURIComponent("" + redirectUrl) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = JSON.stringify(body);
-
         let options_ : any = {
-            body: content_,
             observe: "response",
             responseType: "blob",
             headers: new HttpHeaders({
-                "Content-Type": "application/json",
-                "Accept": "text/plain"
             })
         };
 
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
-            return this.http.request("post", url_, transformedOptions_);
+            return this.http.request("get", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processAuthPOST(response_);
+            return this.processAuth(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processAuthPOST(response_ as any);
+                    return this.processAuth(response_ as any);
                 } catch (e) {
-                    return _observableThrow(e) as any as Observable<{ [key: string]: any; }>;
+                    return _observableThrow(e) as any as Observable<void>;
                 }
             } else
-                return _observableThrow(response_) as any as Observable<{ [key: string]: any; }>;
+                return _observableThrow(response_) as any as Observable<void>;
         }));
     }
 
-    protected processAuthPOST(response: HttpResponseBase): Observable<{ [key: string]: any; }> {
+    protected processAuth(response: HttpResponseBase): Observable<void> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -80,19 +79,7 @@ export class ApiClient extends ApiClientBase {
         let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
         if (status === 200) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (resultData200) {
-                result200 = {} as any;
-                for (let key in resultData200) {
-                    if (resultData200.hasOwnProperty(key))
-                        (<any>result200)![key] = resultData200[key] !== undefined ? resultData200[key] : <any>null;
-                }
-            }
-            else {
-                result200 = <any>null;
-            }
-            return _observableOf(result200);
+            return _observableOf(null as any);
             }));
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
@@ -103,10 +90,15 @@ export class ApiClient extends ApiClientBase {
     }
 
     /**
+     * @param code (optional)
      * @return OK
      */
-    authGET(): Observable<string> {
-        let url_ = this.baseUrl + "/api/v1/auth";
+    token(code: string | undefined): Observable<UserCredentials> {
+        let url_ = this.baseUrl + "/api/v1/auth/token?";
+        if (code === null)
+            throw new Error("The parameter 'code' cannot be null.");
+        else if (code !== undefined)
+            url_ += "code=" + encodeURIComponent("" + code) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
@@ -118,22 +110,22 @@ export class ApiClient extends ApiClientBase {
         };
 
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
-            return this.http.request("get", url_, transformedOptions_);
+            return this.http.request("post", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processAuthGET(response_);
+            return this.processToken(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processAuthGET(response_ as any);
+                    return this.processToken(response_ as any);
                 } catch (e) {
-                    return _observableThrow(e) as any as Observable<string>;
+                    return _observableThrow(e) as any as Observable<UserCredentials>;
                 }
             } else
-                return _observableThrow(response_) as any as Observable<string>;
+                return _observableThrow(response_) as any as Observable<UserCredentials>;
         }));
     }
 
-    protected processAuthGET(response: HttpResponseBase): Observable<string> {
+    protected processToken(response: HttpResponseBase): Observable<UserCredentials> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -144,8 +136,7 @@ export class ApiClient extends ApiClientBase {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-                result200 = resultData200 !== undefined ? resultData200 : <any>null;
-
+            result200 = UserCredentials.fromJS(resultData200);
             return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
@@ -1053,58 +1044,6 @@ export class ApiClient extends ApiClientBase {
     }
 }
 
-export class AccessTokenRequestSchema implements IAccessTokenRequestSchema {
-    redirectUrl?: string | undefined;
-    parameters?: { [key: string]: string; } | undefined;
-
-    constructor(data?: IAccessTokenRequestSchema) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.redirectUrl = _data["redirectUrl"];
-            if (_data["parameters"]) {
-                this.parameters = {} as any;
-                for (let key in _data["parameters"]) {
-                    if (_data["parameters"].hasOwnProperty(key))
-                        (<any>this.parameters)![key] = _data["parameters"][key];
-                }
-            }
-        }
-    }
-
-    static fromJS(data: any): AccessTokenRequestSchema {
-        data = typeof data === 'object' ? data : {};
-        let result = new AccessTokenRequestSchema();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["redirectUrl"] = this.redirectUrl;
-        if (this.parameters) {
-            data["parameters"] = {};
-            for (let key in this.parameters) {
-                if (this.parameters.hasOwnProperty(key))
-                    (<any>data["parameters"])[key] = (<any>this.parameters)[key];
-            }
-        }
-        return data;
-    }
-}
-
-export interface IAccessTokenRequestSchema {
-    redirectUrl?: string | undefined;
-    parameters?: { [key: string]: string; } | undefined;
-}
-
 export class Check implements ICheck {
     id!: string;
     reportId!: string;
@@ -1613,6 +1552,50 @@ export class UploadFileResponseSchema implements IUploadFileResponseSchema {
 export interface IUploadFileResponseSchema {
     id: string;
     fileName: string | undefined;
+}
+
+export class UserCredentials implements IUserCredentials {
+    accessToken!: string | undefined;
+    refreshToken!: string | undefined;
+    expiresAt!: moment.Moment;
+
+    constructor(data?: IUserCredentials) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.accessToken = _data["accessToken"];
+            this.refreshToken = _data["refreshToken"];
+            this.expiresAt = _data["expiresAt"] ? moment(_data["expiresAt"].toString()) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): UserCredentials {
+        data = typeof data === 'object' ? data : {};
+        let result = new UserCredentials();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["accessToken"] = this.accessToken;
+        data["refreshToken"] = this.refreshToken;
+        data["expiresAt"] = this.expiresAt ? this.expiresAt.toISOString() : <any>undefined;
+        return data;
+    }
+}
+
+export interface IUserCredentials {
+    accessToken: string | undefined;
+    refreshToken: string | undefined;
+    expiresAt: moment.Moment;
 }
 
 export interface FileParameter {

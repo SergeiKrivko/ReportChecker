@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReportChecker.Abstractions;
+using ReportChecker.Api.Extensions;
 using ReportChecker.Api.Schemas;
 using ReportChecker.Models;
 
@@ -9,18 +11,15 @@ namespace ReportChecker.Api.Controllers;
 [ApiController]
 [Route("api/v1/reports")]
 public class ReportController(
-    IAuthService authService,
     IReportRepository reportRepository,
     IReportService reportService) : ControllerBase
 {
     [HttpGet]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<ActionResult<IEnumerable<Report>>> GetAllReports()
     {
-        var userId = await authService.AuthenticateAsync(User);
-        if (userId == null)
-            return Unauthorized();
-        var reports = await reportRepository.GetAllReportsOfUserAsync(userId.Value);
+        var userId = User.UserId;
+        var reports = await reportRepository.GetAllReportsOfUserAsync(userId);
         return Ok(reports);
     }
 
@@ -28,9 +27,7 @@ public class ReportController(
     [Authorize]
     public async Task<ActionResult<Report>> GetReportById(Guid reportId)
     {
-        var userId = await authService.AuthenticateAsync(User);
-        if (userId == null)
-            return Unauthorized();
+        var userId = User.UserId;
         var report = await reportRepository.GetReportByIdAsync(reportId);
         if (report == null)
             return NotFound();
@@ -43,11 +40,9 @@ public class ReportController(
     [Authorize]
     public async Task<ActionResult<Guid>> CreateReport([FromBody] CreateReportSchema schema)
     {
-        var userId = await authService.AuthenticateAsync(User);
-        if (userId == null)
-            return Unauthorized();
+        var userId = User.UserId;
         var reportId = await
-            reportService.CreateReportAsync(userId.Value, schema.Name, schema.Format, schema.SourceProvider,
+            reportService.CreateReportAsync(userId, schema.Name, schema.Format, schema.SourceProvider,
                 schema.Source);
         return Ok(reportId);
     }
@@ -56,9 +51,7 @@ public class ReportController(
     [Authorize]
     public async Task<ActionResult> DeleteReportById(Guid reportId)
     {
-        var userId = await authService.AuthenticateAsync(User);
-        if (userId == null)
-            return Unauthorized();
+        var userId = User.UserId;
         var report = await reportRepository.GetReportByIdAsync(reportId);
         if (report == null)
             return NotFound();
@@ -72,9 +65,6 @@ public class ReportController(
     [Authorize]
     public async Task<ActionResult> UpdateReportById(Guid reportId, [FromBody] UpdateReportSchema schema)
     {
-        var userId = await authService.AuthenticateAsync(User);
-        if (userId == null)
-            return Unauthorized();
         var report = await reportRepository.GetReportByIdAsync(reportId);
         if (report == null)
             return NotFound();

@@ -22,38 +22,6 @@ namespace ReportChecker.DataAccess.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("ReportChecker.DataAccess.Entities.AccountEntity", b =>
-                {
-                    b.Property<Guid>("AccountId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Provider")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<string>("ProviderUserId")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("AccountId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Accounts");
-                });
-
             modelBuilder.Entity("ReportChecker.DataAccess.Entities.CheckEntity", b =>
                 {
                     b.Property<Guid>("CheckId")
@@ -83,8 +51,6 @@ namespace ReportChecker.DataAccess.Migrations
                     b.HasKey("CheckId");
 
                     b.HasIndex("ReportId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Checks");
                 });
@@ -188,37 +154,7 @@ namespace ReportChecker.DataAccess.Migrations
 
                     b.HasKey("ReportId");
 
-                    b.HasIndex("OwnerId");
-
                     b.ToTable("Reports");
-                });
-
-            modelBuilder.Entity("ReportChecker.DataAccess.Entities.UserEntity", b =>
-                {
-                    b.Property<Guid>("UserId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("UserId");
-
-                    b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("ReportChecker.DataAccess.Entities.AccountEntity", b =>
-                {
-                    b.HasOne("ReportChecker.DataAccess.Entities.UserEntity", "User")
-                        .WithMany("Accounts")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("ReportChecker.DataAccess.Entities.CheckEntity", b =>
@@ -229,15 +165,7 @@ namespace ReportChecker.DataAccess.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ReportChecker.DataAccess.Entities.UserEntity", "User")
-                        .WithMany("Checks")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Report");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("ReportChecker.DataAccess.Entities.CommentEntity", b =>
@@ -262,17 +190,6 @@ namespace ReportChecker.DataAccess.Migrations
                     b.Navigation("Check");
                 });
 
-            modelBuilder.Entity("ReportChecker.DataAccess.Entities.ReportEntity", b =>
-                {
-                    b.HasOne("ReportChecker.DataAccess.Entities.UserEntity", "Owner")
-                        .WithMany("Reports")
-                        .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Owner");
-                });
-
             modelBuilder.Entity("ReportChecker.DataAccess.Entities.CheckEntity", b =>
                 {
                     b.Navigation("Issues");
@@ -286,15 +203,6 @@ namespace ReportChecker.DataAccess.Migrations
             modelBuilder.Entity("ReportChecker.DataAccess.Entities.ReportEntity", b =>
                 {
                     b.Navigation("Checks");
-                });
-
-            modelBuilder.Entity("ReportChecker.DataAccess.Entities.UserEntity", b =>
-                {
-                    b.Navigation("Accounts");
-
-                    b.Navigation("Checks");
-
-                    b.Navigation("Reports");
                 });
 #pragma warning restore 612, 618
         }
