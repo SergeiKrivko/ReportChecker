@@ -148,6 +148,64 @@ export class ApiClient extends ApiClientBase {
     }
 
     /**
+     * @param code (optional)
+     * @return OK
+     */
+    link(code: string | undefined): Observable<UserCredentials> {
+        let url_ = this.baseUrl + "/api/v1/auth/link?";
+        if (code === null)
+            throw new Error("The parameter 'code' cannot be null.");
+        else if (code !== undefined)
+            url_ += "code=" + encodeURIComponent("" + code) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("post", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.processLink(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processLink(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<UserCredentials>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<UserCredentials>;
+        }));
+    }
+
+    protected processLink(response: HttpResponseBase): Observable<UserCredentials> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = UserCredentials.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
      * @param body (optional)
      * @return OK
      */
@@ -195,6 +253,59 @@ export class ApiClient extends ApiClientBase {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
             result200 = UserCredentials.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    userinfo(): Observable<UserInfo> {
+        let url_ = this.baseUrl + "/api/v1/auth/userinfo";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("get", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.processUserinfo(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processUserinfo(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<UserInfo>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<UserInfo>;
+        }));
+    }
+
+    protected processUserinfo(response: HttpResponseBase): Observable<UserInfo> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = UserInfo.fromJS(resultData200);
             return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
@@ -1053,6 +1164,58 @@ export class ApiClient extends ApiClientBase {
     }
 }
 
+export class AccountInfo implements IAccountInfo {
+    provider!: string | undefined;
+    id!: string | undefined;
+    name?: string | undefined;
+    email?: string | undefined;
+    avatarUrl?: string | undefined;
+
+    constructor(data?: IAccountInfo) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.provider = _data["provider"];
+            this.id = _data["id"];
+            this.name = _data["name"];
+            this.email = _data["email"];
+            this.avatarUrl = _data["avatarUrl"];
+        }
+    }
+
+    static fromJS(data: any): AccountInfo {
+        data = typeof data === 'object' ? data : {};
+        let result = new AccountInfo();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["provider"] = this.provider;
+        data["id"] = this.id;
+        data["name"] = this.name;
+        data["email"] = this.email;
+        data["avatarUrl"] = this.avatarUrl;
+        return data;
+    }
+}
+
+export interface IAccountInfo {
+    provider: string | undefined;
+    id: string | undefined;
+    name?: string | undefined;
+    email?: string | undefined;
+    avatarUrl?: string | undefined;
+}
+
 export class Check implements ICheck {
     id!: string;
     reportId!: string;
@@ -1641,6 +1804,54 @@ export interface IUserCredentials {
     accessToken: string | undefined;
     refreshToken: string | undefined;
     expiresAt: moment.Moment;
+}
+
+export class UserInfo implements IUserInfo {
+    id!: string;
+    accounts!: AccountInfo[] | undefined;
+
+    constructor(data?: IUserInfo) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            if (Array.isArray(_data["accounts"])) {
+                this.accounts = [] as any;
+                for (let item of _data["accounts"])
+                    this.accounts!.push(AccountInfo.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): UserInfo {
+        data = typeof data === 'object' ? data : {};
+        let result = new UserInfo();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        if (Array.isArray(this.accounts)) {
+            data["accounts"] = [];
+            for (let item of this.accounts)
+                data["accounts"].push(item.toJSON());
+        }
+        return data;
+    }
+}
+
+export interface IUserInfo {
+    id: string;
+    accounts: AccountInfo[] | undefined;
 }
 
 export interface FileParameter {

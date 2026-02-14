@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Json;
+﻿using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using Microsoft.Extensions.Configuration;
 using ReportChecker.Abstractions;
 using ReportChecker.Models;
@@ -16,7 +17,7 @@ public class AuthService(IConfiguration configuration, IHttpClientFactory httpCl
                                    throw new InvalidOperationException("Security.ClientSecret is required");
 
     private string ApiUrl => configuration["Security.AuthApiUrl.Global"] ?? configuration["Security.AuthApiUrl"] ??
-                             throw new InvalidOperationException("Security.AuthApiUrl is required");
+        throw new InvalidOperationException("Security.AuthApiUrl is required");
 
     public string GetAuthUrl(string provider, string redirectUrl)
     {
@@ -38,15 +39,41 @@ public class AuthService(IConfiguration configuration, IHttpClientFactory httpCl
         return token ?? throw new Exception("Invalid token");
     }
 
+    public async Task LinkAccountAsync(string code, string accessToken)
+    {
+        var resp = await _httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Post, "api/v1/auth/link")
+        {
+            Content = new FormUrlEncodedContent(
+                new Dictionary<string, string>
+                {
+                    { "client_id", ClientId },
+                    { "client_secret", ClientSecret },
+                    { "code", code },
+                }),
+            Headers = { Authorization = AuthenticationHeaderValue.Parse(accessToken) }
+        });
+        resp.EnsureSuccessStatusCode();
+    }
+
     public async Task<UserCredentials> RefreshTokenAsync(string refreshToken)
     {
         var resp = await _httpClient.PostAsync("api/v1/auth/refresh", new FormUrlEncodedContent(
             new Dictionary<string, string>()
             {
-                { "refresh_token", ClientId },
+                { "refresh_token", refreshToken },
             }));
         resp.EnsureSuccessStatusCode();
         var token = await resp.Content.ReadFromJsonAsync<UserCredentials>();
         return token ?? throw new Exception("Invalid token");
+    }
+
+    public async Task<UserInfo> GetUserInfoAsync(string accessToken)
+    {
+        var resp = await _httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Get, "api/v1/auth/userinfo")
+        {
+            Headers = { Authorization = AuthenticationHeaderValue.Parse(accessToken) }
+        });
+        resp.EnsureSuccessStatusCode();
+        return await resp.Content.ReadFromJsonAsync<UserInfo>() ?? throw new Exception("Invalid user info");
     }
 }

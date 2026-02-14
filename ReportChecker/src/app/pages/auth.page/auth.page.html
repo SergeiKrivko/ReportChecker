@@ -1,7 +1,21 @@
 <div class="container">
   <h1>ReportChecker</h1>
-  <h2>Войдите через:</h2>
-  <div tuiCardLarge class="providers-container">
-    <a tuiButton [href]="'yandex' | authUrlForProvider">Яндекс</a>
+  <div class="providers-container">
+    @for (authProvider of authProviders$ | async; track authProvider.key) {
+      <div tuiCardLarge class="provider-container">
+        <div class="h-container">
+          <h3>{{ authProvider.name }}</h3>
+          @if (!authProvider.userInfo) {
+            <a tuiButton [href]="authProvider.key | authUrlForProvider">Войти</a>
+          }
+        </div>
+        @if (authProvider.userInfo) {
+          <div class="h-container">
+            <tui-avatar [src]="authProvider.userInfo.avatarUrl"/>
+            <label tuiLabel class="username">{{ authProvider.userInfo.name }}</label>
+          </div>
+        }
+      </div>
+    }
   </div>
 </div>

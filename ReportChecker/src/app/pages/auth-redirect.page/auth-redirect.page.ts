@@ -1,7 +1,7 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject, OnInit} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {AuthService} from '../../services/auth-service';
-import {from, NEVER, switchMap} from 'rxjs';
+import {combineLatest, first, from, NEVER, switchMap} from 'rxjs';
 
 @Component({
   selector: 'app-auth-redirect.page',
@@ -15,12 +15,17 @@ export class AuthRedirectPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly authService: AuthService = inject(AuthService);
-  private readonly detectorRef = inject(ChangeDetectorRef);
 
   ngOnInit() {
-    this.route.queryParams.pipe(
-      switchMap(queryParams => {
+    combineLatest([
+      this.authService.isAuthorized$,
+      this.route.queryParams
+    ]).pipe(
+      first(),
+      switchMap(([isAuthorized, queryParams]) => {
         const code: string = queryParams['code'];
+        if (isAuthorized)
+          return this.authService.linkAccount(code)
         return this.authService.getToken(code);
       }),
       switchMap(success => {
