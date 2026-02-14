@@ -92,6 +92,7 @@ export class AuthService {
           credentials: credentials,
         });
         localStorage.setItem("reportCheckerCredentials", JSON.stringify(credentials));
+        this.apiClient.setAuthorization("Bearer " + credentials?.accessToken)
       }),
       switchMap(() => this.getUserInfo()),
       map(() => true),

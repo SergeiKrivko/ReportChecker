@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Net;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReportChecker.Abstractions;
 using ReportChecker.Api.Schemas;
@@ -19,29 +20,57 @@ public class AuthController(IAuthService authService) : ControllerBase
     [HttpPost("token")]
     public async Task<ActionResult<UserCredentials>> GetToken([FromQuery] string code)
     {
-        var credentials = await authService.GetTokenAsync(code);
-        return Ok(credentials);
+        try
+        {
+            var credentials = await authService.GetTokenAsync(code);
+            return Ok(credentials);
+        }
+        catch (HttpRequestException e)
+        {
+            return StatusCode((int)(e.StatusCode ?? HttpStatusCode.InternalServerError));
+        }
     }
 
     [HttpPost("link")]
     [Authorize]
     public async Task<ActionResult<UserCredentials>> LinkAccount([FromQuery] string code)
     {
-        await authService.LinkAccountAsync(code, Request.Headers.Authorization.ToString());
-        return Ok();
+        try
+        {
+            await authService.LinkAccountAsync(code, Request.Headers.Authorization.ToString());
+            return Ok();
+        }
+        catch (HttpRequestException e)
+        {
+            return StatusCode((int)(e.StatusCode ?? HttpStatusCode.InternalServerError));
+        }
     }
 
     [HttpPost("refresh")]
     public async Task<ActionResult<UserCredentials>> RefreshToken([FromBody] RefreshTokenRequestSchema schema)
     {
-        var credentials = await authService.RefreshTokenAsync(schema.RefreshToken);
-        return Ok(credentials);
+        try
+        {
+            var credentials = await authService.RefreshTokenAsync(schema.RefreshToken);
+            return Ok(credentials);
+        }
+        catch (HttpRequestException e)
+        {
+            return StatusCode((int)(e.StatusCode ?? HttpStatusCode.InternalServerError));
+        }
     }
 
     [HttpGet("userinfo")]
     [Authorize]
     public async Task<ActionResult<UserInfo>> GetUserInfo(CancellationToken ct = default)
     {
-        return Ok(await authService.GetUserInfoAsync(Request.Headers.Authorization.ToString()));
+        try
+        {
+            return Ok(await authService.GetUserInfoAsync(Request.Headers.Authorization.ToString()));
+        }
+        catch (HttpRequestException e)
+        {
+            return StatusCode((int)(e.StatusCode ?? HttpStatusCode.InternalServerError));
+        }
     }
 }

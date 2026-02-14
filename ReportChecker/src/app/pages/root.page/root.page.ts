@@ -4,12 +4,14 @@ import {combineLatest, from, switchMap} from 'rxjs';
 import {AuthService} from '../../services/auth-service';
 import {ReportsService} from '../../services/reports.service';
 import {IssuesService} from '../../services/issues.service';
+import {TuiButton} from '@taiga-ui/core';
 
 @Component({
   selector: 'app-root.page',
   imports: [
     RouterOutlet,
-    RouterLink
+    RouterLink,
+    TuiButton
   ],
   templateUrl: './root.page.html',
   styleUrl: './root.page.scss',
