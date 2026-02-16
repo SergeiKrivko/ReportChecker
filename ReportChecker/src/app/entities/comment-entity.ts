@@ -5,6 +5,7 @@ export interface CommentEntity {
   userId: string;
   content: string | null;
   status: string | null;
+  progressStatus: string | null;
   createdAt: Moment;
   updatedAt: Moment | null;
 }

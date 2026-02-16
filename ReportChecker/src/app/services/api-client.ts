@@ -812,6 +812,68 @@ export class ApiClient extends ApiClientBase {
     }
 
     /**
+     * @return OK
+     */
+    commentsGET(reportId: string, issueId: string, commentId: string): Observable<Comment> {
+        let url_ = this.baseUrl + "/api/v1/reports/{reportId}/issues/{issueId}/comments/{commentId}";
+        if (reportId === undefined || reportId === null)
+            throw new Error("The parameter 'reportId' must be defined.");
+        url_ = url_.replace("{reportId}", encodeURIComponent("" + reportId));
+        if (issueId === undefined || issueId === null)
+            throw new Error("The parameter 'issueId' must be defined.");
+        url_ = url_.replace("{issueId}", encodeURIComponent("" + issueId));
+        if (commentId === undefined || commentId === null)
+            throw new Error("The parameter 'commentId' must be defined.");
+        url_ = url_.replace("{commentId}", encodeURIComponent("" + commentId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("get", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.processCommentsGET(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processCommentsGET(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<Comment>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<Comment>;
+        }));
+    }
+
+    protected processCommentsGET(response: HttpResponseBase): Observable<Comment> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = Comment.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
      * @param body (optional)
      * @return OK
      */
@@ -1282,6 +1344,7 @@ export class Comment implements IComment {
     userId?: string;
     content?: string | undefined;
     status?: IssueStatus;
+    progressStatus?: ProgressStatus;
     createdAt?: moment.Moment;
     modifiedAt?: moment.Moment | undefined;
     deletedAt?: moment.Moment | undefined;
@@ -1302,6 +1365,7 @@ export class Comment implements IComment {
             this.userId = _data["userId"];
             this.content = _data["content"];
             this.status = _data["status"];
+            this.progressStatus = _data["progressStatus"];
             this.createdAt = _data["createdAt"] ? moment(_data["createdAt"].toString()) : <any>undefined;
             this.modifiedAt = _data["modifiedAt"] ? moment(_data["modifiedAt"].toString()) : <any>undefined;
             this.deletedAt = _data["deletedAt"] ? moment(_data["deletedAt"].toString()) : <any>undefined;
@@ -1322,6 +1386,7 @@ export class Comment implements IComment {
         data["userId"] = this.userId;
         data["content"] = this.content;
         data["status"] = this.status;
+        data["progressStatus"] = this.progressStatus;
         data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
         data["modifiedAt"] = this.modifiedAt ? this.modifiedAt.toISOString() : <any>undefined;
         data["deletedAt"] = this.deletedAt ? this.deletedAt.toISOString() : <any>undefined;
@@ -1335,6 +1400,7 @@ export interface IComment {
     userId?: string;
     content?: string | undefined;
     status?: IssueStatus;
+    progressStatus?: ProgressStatus;
     createdAt?: moment.Moment;
     modifiedAt?: moment.Moment | undefined;
     deletedAt?: moment.Moment | undefined;

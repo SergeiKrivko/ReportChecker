@@ -1,13 +1,12 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, input} from '@angular/core';
 import {AvatarByUserIdPipe} from '../../pipes/avatar-by-user-id-pipe';
 import {TuiAvatar, TuiButtonLoading, TuiTooltip} from '@taiga-ui/kit';
-import {CommentEntity} from '../../entities/comment-entity';
 import {TuiButton, TuiGroup, TuiIcon, TuiTextfield} from '@taiga-ui/core';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {AsyncPipe} from '@angular/common';
 import {IssueEntity} from '../../entities/issue-entity';
 import {IssuesService} from '../../services/issues.service';
-import {Subject, switchMap, tap} from 'rxjs';
+import {Subject, tap} from 'rxjs';
 import {OrderByCreatedAtPipe} from '../../pipes/order-by-created-at-pipe';
 
 @Component({
@@ -47,7 +46,6 @@ export class Comments {
     this.control.setValue("");
     this.issueService.addIssueComment(this.issue().id, content || null, status).pipe(
       tap(() => this.loading.next(false)),
-      switchMap(() => this.issueService.reloadIssueComments(this.issue().id)),
       tap(() => this.detectorRef.detectChanges()),
     ).subscribe();
   }
