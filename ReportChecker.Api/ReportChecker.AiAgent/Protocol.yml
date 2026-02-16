@@ -8,11 +8,16 @@ endpoints:
 
   WriteComment:
     input: WriteCommentRequest
-    output: CommentCreate
+    output: CommentResponse
     mode: json
-    
+  
   CheckIssues:
     input: Chapter[]
+    output: CommentCreate[]
+    mode: json
+  
+  ApplyInstruction:
+    input: InstructionRequest
     output: CommentCreate[]
     mode: json
 
@@ -50,15 +55,15 @@ schemas:
   IssueCreate:
     - name: chapter
       type: string
-      
+
     - name: title
       type: string
       description: Короткое описание ошибки
-      
+
     - name: priority
       type: int
       description: От 1 до 10, где 1 - наиболее критичные ошибки, 10 - незначительные предложения.
-      
+
     - name: comment
       type: string
       description: Расширенное описание ошибки
@@ -72,20 +77,47 @@ schemas:
 
     - name: status
       type: string?
-      
+  
   Chapter:
     - name: name
       type: string
-      
+
     - name: text
       type: string
 
     - name: issues
       type: IssueRead[]?
-      
+  
   WriteCommentRequest:
     - name: text
       type: string
 
     - name: issue
       type: IssueRead
+
+  InstructionCreate:
+    - name: instructionText
+      type: string
+
+    - name: apply
+      type: bool
+
+    - name: search
+      type: bool
+
+    - name: save
+      type: bool
+
+  CommentResponse:
+    - name: comment
+      type: CommentCreate
+
+    - name: instruction
+      type: InstructionCreate?
+  
+  InstructionRequest:
+    - name: instruction
+      type: string
+    
+    - name: chapters
+      type: Chapter[]

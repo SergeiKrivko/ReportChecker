@@ -15,6 +15,7 @@ public class CommentConfiguration : IEntityTypeConfiguration<CommentEntity>
         builder.Property(x => x.UserId).IsRequired();
         builder.Property(x => x.Content);
         builder.Property(x => x.Status);
+        builder.Property(x => x.ProgressStatus);
         builder.Property(x => x.CreatedAt).IsRequired();
         builder.Property(x => x.ModifiedAt);
         builder.Property(x => x.DeletedAt);

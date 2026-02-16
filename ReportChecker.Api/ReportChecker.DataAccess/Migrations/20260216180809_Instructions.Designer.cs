@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ReportChecker.DataAccess;
@@ -11,9 +12,11 @@ using ReportChecker.DataAccess;
 namespace ReportChecker.DataAccess.Migrations
 {
     [DbContext(typeof(ReportCheckerDbContext))]
-    partial class ReportCheckerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260216180809_Instructions")]
+    partial class Instructions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

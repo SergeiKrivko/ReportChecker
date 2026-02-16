@@ -115,6 +115,19 @@ public class CheckService(
 
         var formatProvider = providerService.GetFormatProvider(report.Format);
         var chapters = await formatProvider.GetChaptersAsync(sourceStream);
-        await aiService.WriteComment(issueId, chapters);
+        RunComment(issueId, chapters.ToList());
+    }
+
+    private async void RunComment(Guid issueId, List<Chapter> chapters)
+    {
+        try
+        {
+            var service = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<IAiService>();
+            await service.WriteComment(issueId, chapters);
+        }
+        catch (Exception e)
+        {
+            logger.LogError("Error during comment processing: {e}", e);
+        }
     }
 }

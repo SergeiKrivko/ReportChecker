@@ -10,6 +10,7 @@ public class CommentEntity
     public Guid UserId { get; init; }
     [MaxLength(8000)] public string? Content { get; init; }
     public IssueStatus? Status { get; init; }
+    public ProgressStatus? ProgressStatus { get; init; }
     public DateTime CreatedAt { get; init; }
     public DateTime? ModifiedAt { get; init; }
     public DateTime? DeletedAt { get; init; }

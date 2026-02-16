@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ReportChecker.DataAccess;
@@ -11,9 +12,11 @@ using ReportChecker.DataAccess;
 namespace ReportChecker.DataAccess.Migrations
 {
     [DbContext(typeof(ReportCheckerDbContext))]
-    partial class ReportCheckerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260216172206_CommentProgressStatus")]
+    partial class CommentProgressStatus
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -91,33 +94,6 @@ namespace ReportChecker.DataAccess.Migrations
                     b.HasIndex("IssueId");
 
                     b.ToTable("Comments");
-                });
-
-            modelBuilder.Entity("ReportChecker.DataAccess.Entities.InstructionEntity", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("ReportId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ReportId");
-
-                    b.ToTable("Instructions");
                 });
 
             modelBuilder.Entity("ReportChecker.DataAccess.Entities.IssueEntity", b =>
@@ -209,17 +185,6 @@ namespace ReportChecker.DataAccess.Migrations
                     b.Navigation("Issue");
                 });
 
-            modelBuilder.Entity("ReportChecker.DataAccess.Entities.InstructionEntity", b =>
-                {
-                    b.HasOne("ReportChecker.DataAccess.Entities.ReportEntity", "Report")
-                        .WithMany("Instructions")
-                        .HasForeignKey("ReportId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Report");
-                });
-
             modelBuilder.Entity("ReportChecker.DataAccess.Entities.IssueEntity", b =>
                 {
                     b.HasOne("ReportChecker.DataAccess.Entities.CheckEntity", "Check")
@@ -244,8 +209,6 @@ namespace ReportChecker.DataAccess.Migrations
             modelBuilder.Entity("ReportChecker.DataAccess.Entities.ReportEntity", b =>
                 {
                     b.Navigation("Checks");
-
-                    b.Navigation("Instructions");
                 });
 #pragma warning restore 612, 618
         }

@@ -13,6 +13,8 @@ public class AiService(
     IAiAgentClient aiAgentClient,
     IIssueRepository issueRepository,
     ICommentRepository commentRepository,
+    ICheckRepository checkRepository,
+    IInstructionRepository instructionRepository,
     ILogger<AiService> logger,
     IConfiguration configuration) : IAiService
 {
@@ -84,18 +86,31 @@ public class AiService(
         }
     }
 
-    public async Task WriteComment(Guid issueId, IEnumerable<Chapter> chapters)
+    public async Task WriteComment(Guid issueId, List<Chapter> chapters)
     {
         var issue = await issueRepository.GetIssueByIdAsync(issueId);
         if (issue is null)
             return;
-        var resp = await aiAgentClient.WriteComment(new IAiAgentClient.WriteCommentRequest
+        var lastCommentId = issue.Comments.Last().Id;
+        try
         {
-            Issue = IssueToAgent(issue),
-            Text = chapters.First(e => e.Name == issue.Chapter).Content,
-        });
-        await commentRepository.CreateCommentAsync(issueId, Guid.Empty, resp?.Content,
-            resp?.Status is null ? null : Enum.Parse<IssueStatus>(resp.Status));
+            await commentRepository.SetProgressStatusAsync(lastCommentId, ProgressStatus.InProgress);
+            var resp = await aiAgentClient.WriteComment(new IAiAgentClient.WriteCommentRequest
+            {
+                Issue = IssueToAgent(issue),
+                Text = chapters.First(e => e.Name == issue.Chapter).Content,
+            });
+            var id = await commentRepository.CreateCommentAsync(issueId, Guid.Empty, resp?.Comment.Content,
+                resp?.Comment.Status is null ? null : Enum.Parse<IssueStatus>(resp.Comment.Status));
+            await commentRepository.SetProgressStatusAsync(lastCommentId, ProgressStatus.Completed);
+            if (resp?.Instruction != null)
+                await ProcessInstructionAsync(id, issue, resp.Instruction, chapters);
+        }
+        catch (Exception)
+        {
+            await commentRepository.SetProgressStatusAsync(lastCommentId, ProgressStatus.Failed);
+            throw;
+        }
     }
 
     private static IAiAgentClient.IssueRead IssueToAgent(Issue issue)
@@ -165,5 +180,78 @@ public class AiService(
             lst.Add(chapter);
             length += chapter.Difference.Length;
         }
+    }
+
+    private IEnumerable<Chapter[]> GroupChapters(IEnumerable<Chapter> chapters)
+    {
+        var lst = new List<Chapter>();
+        var length = 0;
+        foreach (var chapter in chapters)
+        {
+            if (chapter.Content.Length < MinChapterSize)
+                continue;
+            if (length + chapter.Content.Length > MaxRequestSize && lst.Count > 0)
+            {
+                yield return lst.ToArray();
+                lst.Clear();
+                length = 0;
+            }
+
+            lst.Add(chapter);
+            length += chapter.Content.Length;
+        }
+    }
+
+    private async Task ProcessInstructionAsync(Guid commentId, Issue issue,
+        IAiAgentClient.InstructionCreate instruction,
+        List<Chapter> chapters)
+    {
+        if (instruction.Apply || instruction.Search)
+            await commentRepository.SetProgressStatusAsync(commentId, ProgressStatus.InProgress);
+
+        try
+        {
+            if (instruction.Save)
+            {
+                var check = await checkRepository.GetCheckByIdAsync(issue.CheckId);
+                if (check == null)
+                    throw new Exception("Report not found");
+                await instructionRepository.CreateInstructionAsync(check.ReportId, instruction.InstructionText);
+            }
+            if (instruction.Apply)
+            {
+                var issues = await issueRepository.GetAllIssuesOfCheckAsync(issue.CheckId);
+                foreach (var chapterGroup in GroupChapters(chapters))
+                {
+                    var comments = await aiAgentClient.ApplyInstruction(new IAiAgentClient.InstructionRequest
+                    {
+                        Instruction = instruction.InstructionText,
+                        Chapters = chapterGroup.Select(c => new IAiAgentClient.Chapter
+                        {
+                            Name = c.Name,
+                            Text = c.Content,
+                            Issues = issues
+                                .Where(e => e.Chapter == c.Name)
+                                .Select(IssueToAgent)
+                                .ToArray(),
+                        }).ToArray()
+                    });
+                    foreach (var comment in comments ?? [])
+                    {
+                        await commentRepository.CreateCommentAsync(comment.IssueId, Guid.Empty, comment.Content,
+                            comment.Status is null ? null : Enum.Parse<IssueStatus>(comment.Status));
+                    }
+                }
+            }
+        }
+        catch (Exception)
+        {
+            if (instruction.Apply || instruction.Search)
+                await commentRepository.SetProgressStatusAsync(commentId, ProgressStatus.Failed);
+            throw;
+        }
+
+        if (instruction.Apply || instruction.Search)
+            await commentRepository.SetProgressStatusAsync(commentId, ProgressStatus.Completed);
     }
 }

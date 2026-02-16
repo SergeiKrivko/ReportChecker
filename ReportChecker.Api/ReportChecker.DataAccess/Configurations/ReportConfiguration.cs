@@ -22,5 +22,8 @@ public class ReportConfiguration : IEntityTypeConfiguration<ReportEntity>
         builder.HasMany(x => x.Checks)
             .WithOne(x => x.Report)
             .HasForeignKey(x => x.ReportId);
+        builder.HasMany(x => x.Instructions)
+            .WithOne(x => x.Report)
+            .HasForeignKey(x => x.ReportId);
     }
 }

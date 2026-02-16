@@ -62,6 +62,14 @@ public class CommentRepository(ReportCheckerDbContext dbContext) : ICommentRepos
         await dbContext.SaveChangesAsync();
     }
 
+    public async Task SetProgressStatusAsync(Guid commentId, ProgressStatus status)
+    {
+        await dbContext.Comments
+            .Where(e => e.CommentId == commentId)
+            .ExecuteUpdateAsync(e => e.SetProperty(x => x.ProgressStatus, status));
+        await dbContext.SaveChangesAsync();
+    }
+
     internal static Comment FromEntity(CommentEntity entity)
     {
         return new Comment
@@ -71,6 +79,7 @@ public class CommentRepository(ReportCheckerDbContext dbContext) : ICommentRepos
             UserId = entity.UserId,
             Content = entity.Content,
             Status = entity.Status,
+            ProgressStatus = entity.ProgressStatus,
             CreatedAt = entity.CreatedAt,
             ModifiedAt = entity.ModifiedAt,
             DeletedAt = entity.DeletedAt,
