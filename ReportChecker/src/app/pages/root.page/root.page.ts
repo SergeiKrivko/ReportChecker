@@ -4,7 +4,7 @@ import {combineLatest, from, map, switchMap} from 'rxjs';
 import {AuthService} from '../../services/auth-service';
 import {ReportsService} from '../../services/reports.service';
 import {IssuesService} from '../../services/issues.service';
-import {TuiButton} from '@taiga-ui/core';
+import {TuiButton, TuiScrollbar} from '@taiga-ui/core';
 import {TuiAvatar} from '@taiga-ui/kit';
 import {TuiLet} from '@taiga-ui/cdk';
 import {AsyncPipe} from '@angular/common';
@@ -17,7 +17,8 @@ import {AsyncPipe} from '@angular/common';
     TuiButton,
     TuiAvatar,
     TuiLet,
-    AsyncPipe
+    AsyncPipe,
+    TuiScrollbar
   ],
   templateUrl: './root.page.html',
   styleUrl: './root.page.scss',

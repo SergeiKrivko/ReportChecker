@@ -1,0 +1,28 @@
+<div class="container">
+  @if (issue().status == 'Open') {
+    <tui-icon [appearance]="issue().priority | issueAppearance" [icon]="issue().priority | issueIcon" size="xl"
+              tuiBadge/>
+  } @else {
+    <tui-icon appearance="neutral" [icon]="issue().status == 'Fixed' ? '@tui.check' : '@tui.x'" size="xl"
+              tuiBadge/>
+  }
+  <div class="info-container">
+    <div class="issue-title" [innerHtml]="issue().title"></div>
+    <div class="issue-chapter">{{ issue().chapter }}</div>
+  </div>
+  @if (issue().comments.length > 1) {
+    <div class="comments-counter">
+      <div>{{ issue().comments.length }}</div>
+      <tui-icon icon="@tui.messages-square"/>
+    </div>
+  }
+  @if (issue().status == 'Open') {
+    <button tuiButton iconStart="@tui.check" appearance="positive"
+            (click)="addComment('Fixed')" size="m"></button>
+    <button tuiButton iconStart="@tui.x" appearance="negative"
+            (click)="addComment('Closed')" size="m"></button>
+  } @else {
+    <button tuiButton iconStart="@tui.book-open" appearance="neutral"
+            (click)="addComment('Open')" size="m"></button>
+  }
+</div>

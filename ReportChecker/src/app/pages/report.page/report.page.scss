@@ -41,12 +41,12 @@
     }
   }
 
-  .issue-title {
-    flex-grow: 1;
-  }
+  .issue-header {
+    padding: 1rem;
+    height: 4.5rem;
 
-  .issue-chapter {
-    font-size: 1rem;
-    font-weight: normal;
+    .header-content {
+      flex-grow: 1;
+    }
   }
 }

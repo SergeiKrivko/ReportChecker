@@ -13,6 +13,11 @@
           @case ('Closed') {
             <i>Ошибка закрыта</i>
           }
+          @case ('Open') {
+            @if (comment.userId != "00000000-0000-0000-0000-000000000000") {
+              <i>Ошибка переоткрыта</i>
+            }
+          }
         }
       </div>
     </div>
@@ -24,18 +29,5 @@
     <button tuiButton iconStart="@tui.send"
             tuiTooltip="Отправить" [disabled]="!(control.valueChanges | async)"
             [loading]="loading | async" (click)="addComment()"></button>
-    @if (issue().status == 'Open') {
-      <button tuiButton iconStart="@tui.check" appearance="positive"
-              tuiTooltip="Отправить и отметить ошибку как исправленную"
-              [loading]="loading | async" (click)="addComment('Fixed')"></button>
-      <button tuiButton iconStart="@tui.x" appearance="negative"
-              tuiTooltip="Отправить и закрыть ошибку"
-              [loading]="loading | async" (click)="addComment('Closed')"></button>
-    }
-    @if (issue().status != 'Open') {
-      <button tuiButton iconStart="@tui.book-open" appearance="neutral"
-              tuiTooltip="Отправить и открыть ошибку заново"
-              [loading]="loading | async" (click)="addComment('Open')"></button>
-    }
   </div>
 </div>

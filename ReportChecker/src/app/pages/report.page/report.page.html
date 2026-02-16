@@ -25,24 +25,8 @@
   <tui-accordion>
     @for (issue of issues$ | async; track issue.id) {
       <ng-container>
-        <button [tuiAccordion]="false">
-          @if (issue.status == 'Open') {
-            <tui-icon
-              [appearance]="issue.priority | issueAppearance"
-              [icon]="issue.priority | issueIcon"
-              size="xl"
-              tuiBadge
-            />
-          } @else {
-            <tui-icon
-              appearance="neutral"
-              [icon]="issue.status == 'Fixed' ? '@tui.check' : '@tui.x'"
-              size="xl"
-              tuiBadge
-            />
-          }
-          <div class="issue-title" [innerHtml]="issue.title"></div>
-          <div class="issue-chapter">{{ issue.chapter }}</div>
+        <button tuiAccordion class="issue-header">
+          <app-issue-header [issue]="issue" class="header-content"/>
         </button>
         <tui-expand>
           <app-comments [issue]="issue"/>
@@ -54,24 +38,8 @@
   <tui-accordion>
     @for (issue of closedIssues$ | async; track issue.id) {
       <ng-container>
-        <button [tuiAccordion]="false">
-          @if (issue.status == 'Open') {
-            <tui-icon
-              [appearance]="issue.priority | issueAppearance"
-              [icon]="issue.priority | issueIcon"
-              size="xl"
-              tuiBadge
-            />
-          } @else {
-            <tui-icon
-              appearance="neutral"
-              [icon]="issue.status == 'Fixed' ? '@tui.check' : '@tui.x'"
-              size="xl"
-              tuiBadge
-            />
-          }
-          <div class="issue-title" [innerHtml]="issue.title"></div>
-          <div class="issue-chapter">{{ issue.chapter }}</div>
+        <button tuiAccordion class="issue-header">
+          <app-issue-header [issue]="issue" class="header-content"/>
         </button>
         <tui-expand>
           <app-comments [issue]="issue"/>

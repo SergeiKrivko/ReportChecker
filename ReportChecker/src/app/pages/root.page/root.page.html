@@ -6,7 +6,9 @@
       <label>{{ userInfo?.name }}</label>
     </a>
   </div>
-  <div class="content-container">
-    <router-outlet/>
-  </div>
+  <tui-scrollbar>
+    <div class="content-container">
+      <router-outlet/>
+    </div>
+  </tui-scrollbar>
 </div>

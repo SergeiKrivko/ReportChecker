@@ -17,6 +17,7 @@ import {FileUploader} from '../../components/file-uploader/file-uploader';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {FileEntity} from '../../entities/file-entity';
 import {TuiResponsiveDialogService} from '@taiga-ui/addon-mobile';
+import {IssueHeader} from '../../components/issue-header/issue-header';
 
 @Component({
   selector: 'app-check.page',
@@ -37,7 +38,8 @@ import {TuiResponsiveDialogService} from '@taiga-ui/addon-mobile';
     FileUploader,
     TuiButtonLoading,
     ReactiveFormsModule,
-    TuiLoader
+    TuiLoader,
+    IssueHeader
   ],
   templateUrl: './report.page.html',
   styleUrl: './report.page.scss',
@@ -82,8 +84,6 @@ export class ReportPage implements OnInit {
   protected loading = new Subject<boolean>();
 
   protected createCheck() {
-    console.log("Creating check");
-    console.log(this.control.value);
     if (!this.control.value)
       return;
     this.loading.next(true);
