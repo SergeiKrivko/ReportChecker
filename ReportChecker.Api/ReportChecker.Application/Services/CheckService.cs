@@ -78,7 +78,18 @@ public class CheckService(
             var formatProvider = providerService.GetFormatProvider(report.Format);
             var chapters = await formatProvider.GetChaptersAsync(source);
             var issues = await issueRepository.GetAllIssuesOfReportAsync(report.Id);
-            await aiService.FindIssuesAsync(check.Id, chapters, issues.ToList());
+
+            List<Chapter> previousChapters = [];
+            var previousCheck = await checkRepository.GetPreviousCheckAsync(check);
+            if (previousCheck != null)
+            {
+                var sourceProvider = providerService.GetSourceProvider(report.SourceProvider);
+                var previousSource =
+                    await sourceProvider.GetStreamAsync(previousCheck.Source ?? throw new Exception("Source is null"));
+                previousChapters = (await formatProvider.GetChaptersAsync(previousSource)).ToList();
+            }
+
+            await aiService.FindIssuesAsync(check.Id, chapters, previousChapters, issues.ToList());
             await checkRepository.SetCheckStatusAsync(check.Id, ProgressStatus.Completed);
         }
         catch (Exception)

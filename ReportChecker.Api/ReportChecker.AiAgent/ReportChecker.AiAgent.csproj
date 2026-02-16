@@ -14,6 +14,7 @@
     <ItemGroup>
         <PackageReference Include="Avalux.OpenAi.Client" Version="0.1.5"/>
         <PackageReference Include="Avalux.OpenAi.Client.Tools" Version="0.1.24"/>
+        <PackageReference Include="DiffPlex" Version="1.9.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.2" />
     </ItemGroup>
 

@@ -32,6 +32,15 @@ public class CheckRepository(ReportCheckerDbContext dbContext) : ICheckRepositor
         return result is null ? null : FromEntity(result);
     }
 
+    public async Task<Check?> GetPreviousCheckAsync(Check offset)
+    {
+        var result = await dbContext.Checks
+            .Where(e => e.ReportId == offset.ReportId && e.CreatedAt < offset.CreatedAt)
+            .OrderByDescending(e => e.CreatedAt)
+            .FirstOrDefaultAsync();
+        return result is null ? null : FromEntity(result);
+    }
+
     public async Task<Check?> GetLatestCheckOfReportAsync(Guid reportId)
     {
         var result = await dbContext.Checks

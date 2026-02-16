@@ -1,4 +1,8 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Text;
+using DiffPlex;
+using DiffPlex.DiffBuilder;
+using DiffPlex.DiffBuilder.Model;
+using Microsoft.Extensions.Logging;
 using ReportChecker.Abstractions;
 using ReportChecker.Models;
 
@@ -10,7 +14,10 @@ public class AiService(
     ICommentRepository commentRepository,
     ILogger<AiService> logger) : IAiService
 {
-    public async Task FindIssuesAsync(Guid checkId, IEnumerable<Chapter> chapters, List<Issue> existingIssues)
+    private readonly InlineDiffBuilder _diffBuilder = new InlineDiffBuilder(new Differ());
+
+    public async Task FindIssuesAsync(Guid checkId, IEnumerable<Chapter> chapters, List<Chapter> existingChapters,
+        List<Issue> existingIssues)
     {
         foreach (var chapter in chapters)
         {
@@ -19,12 +26,16 @@ public class AiService(
                 .Where(e => e.Chapter == chapter.Name && e.Status == IssueStatus.Open)
                 .Select(IssueToAgent)
                 .ToArray();
+            var existingChapter = existingChapters.FirstOrDefault(e => e.Name == chapter.Name);
 
-            if (existingIssuesForChapter.Length > 0)
+            if (existingChapter is not null)
             {
+                if (existingChapter.Content == chapter.Content)
+                    continue;
+                var diff = GetDifference(existingChapter.Content, chapter.Content);
                 var comments = await aiAgentClient.CheckIssues(new IAiAgentClient.CheckIssuesRequest
                 {
-                    Text = chapter.Content,
+                    Text = diff,
                     Issues = existingIssuesForChapter,
                 });
                 foreach (var comment in comments ?? [])
@@ -33,20 +44,35 @@ public class AiService(
                     await commentRepository.CreateCommentAsync(comment.IssueId, Guid.Empty, comment.Content,
                         comment.Status is null ? null : Enum.Parse<IssueStatus>(comment.Status));
                 }
-            }
 
-            var issues = await aiAgentClient.FindIssues(new IAiAgentClient.FindIssuesRequest
-            {
-                Text = chapter.Content,
-                ExistingIssues = existingIssuesForChapter,
-            });
-            foreach (var issue in issues ?? [])
-            {
-                var issueId =
-                    await issueRepository.CreateIssueAsync(checkId, chapter.Name, issue.Title, issue.Priority);
-                logger.LogDebug("Adding issue '{title}'", issue.Title);
-                await commentRepository.CreateCommentAsync(issueId, Guid.Empty, issue.Comment, IssueStatus.Open);
+                var issues = await aiAgentClient.FindNewIssues(new IAiAgentClient.FindIssuesRequest
+                {
+                    Text = diff,
+                    ExistingIssues = existingIssuesForChapter,
+                });
+                await ProcessIssuesAsync(checkId, chapter.Name, issues ?? []);
             }
+            else
+            {
+                var issues = await aiAgentClient.FindInitialIssues(new IAiAgentClient.FindIssuesRequest
+                {
+                    Text = chapter.Content,
+                    ExistingIssues = [],
+                });
+                await ProcessIssuesAsync(checkId, chapter.Name, issues ?? []);
+            }
+        }
+    }
+
+    private async Task ProcessIssuesAsync(Guid checkId, string chapterName,
+        IEnumerable<IAiAgentClient.IssueCreate> issues)
+    {
+        foreach (var issue in issues)
+        {
+            var issueId =
+                await issueRepository.CreateIssueAsync(checkId, chapterName, issue.Title, issue.Priority);
+            logger.LogDebug("Adding issue '{title}'", issue.Title);
+            await commentRepository.CreateCommentAsync(issueId, Guid.Empty, issue.Comment, IssueStatus.Open);
         }
     }
 
@@ -80,5 +106,33 @@ public class AiService(
                 Role = c.UserId == Guid.Empty ? "assistant" : "user",
             }).ToArray()
         };
+    }
+
+
+    public string GetDifference(string oldText, string newText)
+    {
+        var diff = _diffBuilder.BuildDiffModel(oldText, newText);
+
+        var result = new StringBuilder();
+        foreach (var line in diff.Lines)
+        {
+            switch (line.Type)
+            {
+                case ChangeType.Inserted:
+                    result.AppendLine($"+ {line.Text}");
+                    break;
+                case ChangeType.Deleted:
+                    result.AppendLine($"- {line.Text}");
+                    break;
+                case ChangeType.Modified:
+                    result.AppendLine($"* {line.Text}");
+                    break;
+                default:
+                    result.AppendLine($"  {line.Text}");
+                    break;
+            }
+        }
+
+        return result.ToString();
     }
 }

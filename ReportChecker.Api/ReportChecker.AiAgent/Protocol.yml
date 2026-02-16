@@ -1,7 +1,12 @@
 ﻿name: AiAgent
 
 endpoints:
-  FindIssues:
+  FindInitialIssues:
+    input: FindIssuesRequest
+    output: IssueCreate[]
+    mode: json
+    
+  FindNewIssues:
     input: FindIssuesRequest
     output: IssueCreate[]
     mode: json
