@@ -23,7 +23,8 @@ public class CommentRepository(ReportCheckerDbContext dbContext) : ICommentRepos
         return result is null ? null : FromEntity(result);
     }
 
-    public async Task<Guid> CreateCommentAsync(Guid issueId, Guid userId, string? content, IssueStatus? status)
+    public async Task<Guid> CreateCommentAsync(Guid issueId, Guid userId, string? content, IssueStatus? status,
+        ProgressStatus? progressStatus = null)
     {
         var id = Guid.NewGuid();
         var entity = new CommentEntity
@@ -33,6 +34,7 @@ public class CommentRepository(ReportCheckerDbContext dbContext) : ICommentRepos
             UserId = userId,
             Content = content,
             Status = status,
+            ProgressStatus = progressStatus,
             CreatedAt = DateTime.UtcNow,
             ModifiedAt = null,
             DeletedAt = null,

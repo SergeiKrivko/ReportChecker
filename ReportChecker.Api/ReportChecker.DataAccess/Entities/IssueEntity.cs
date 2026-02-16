@@ -12,5 +12,5 @@ public class IssueEntity
     [MaxLength(100)] public required string Chapter { get; init; }
 
     public virtual CheckEntity Check { get; init; } = null!;
-    public virtual IEnumerable<CommentEntity> Comments { get; init; } = null!;
+    public virtual ICollection<CommentEntity> Comments { get; init; } = null!;
 }

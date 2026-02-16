@@ -1,6 +1,6 @@
 import {inject, Injectable} from '@angular/core';
 import {AccountInfo, ApiClient, ApiException, RefreshTokenRequestSchema, UserCredentials, UserInfo} from './api-client';
-import {catchError, map, NEVER, Observable, of, skipWhile, switchMap, tap} from 'rxjs';
+import {catchError, first, map, NEVER, Observable, of, skipWhile, switchMap, tap} from 'rxjs';
 import {patchState, signalState} from '@ngrx/signals';
 import {toObservable} from '@angular/core/rxjs-interop';
 import moment, {Moment} from 'moment';
@@ -11,6 +11,7 @@ interface AuthState {
   isAuthorized: boolean;
   credentials: Credentials | null;
   userInfo: UserInfoEntity | null;
+  isRefreshing: boolean;
 }
 
 interface Credentials {
@@ -30,6 +31,7 @@ export class AuthService {
     isAuthorized: false,
     credentials: null,
     userInfo: null,
+    isRefreshing: false,
   });
 
   readonly isAuthorized$ = toObservable(this.store$$).pipe(
@@ -37,6 +39,7 @@ export class AuthService {
     map(state => state.isAuthorized),
   );
   readonly userInfo$ = toObservable(this.store$$.userInfo);
+  private readonly isRefreshing$ = toObservable(this.store$$.isRefreshing);
 
   loadAuthorization(): Observable<boolean> {
     const credentialsJson = localStorage.getItem('reportCheckerCredentials');
@@ -56,11 +59,15 @@ export class AuthService {
   }
 
   refreshToken(): Observable<boolean> {
-    // if (!this.store$$.isLoaded())
-    //   return of(false);
     const expiresAt = this.store$$.credentials()?.expiresAt;
     if (expiresAt === undefined || moment().diff(expiresAt) < 0)
       return of(false);
+    if (this.store$$.isRefreshing())
+      return this.isRefreshing$.pipe(
+        skipWhile(e => !e),
+        first(),
+      );
+    patchState(this.store$$, {isRefreshing: true});
     return this.apiClient.refresh(RefreshTokenRequestSchema.fromJS({
       refreshToken: this.store$$.credentials()?.refreshToken
     })).pipe(
@@ -68,6 +75,7 @@ export class AuthService {
       tap(credentials => {
         patchState(this.store$$, {
           credentials: credentials,
+          isRefreshing: false,
         });
         localStorage.setItem("reportCheckerCredentials", JSON.stringify(credentials));
         this.apiClient.setAuthorization("Bearer " + credentials?.accessToken);
@@ -80,6 +88,7 @@ export class AuthService {
             isAuthorized: false,
             credentials: null,
             userInfo: null,
+            isRefreshing: false,
           });
         }
         return of(false)

@@ -13,6 +13,6 @@ public class ReportEntity
     public DateTime CreatedAt { get; init; }
     public DateTime? DeletedAt { get; init; }
 
-    public virtual IEnumerable<CheckEntity> Checks { get; init; } = [];
-    public virtual IEnumerable<InstructionEntity> Instructions { get; init; } = [];
+    public virtual ICollection<CheckEntity> Checks { get; init; } = [];
+    public virtual ICollection<InstructionEntity> Instructions { get; init; } = [];
 }

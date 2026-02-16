@@ -14,5 +14,5 @@ public class CheckEntity
     public ProgressStatus Status { get; init; }
 
     public virtual ReportEntity Report { get; init; } = null!;
-    public virtual IEnumerable<IssueEntity> Issues { get; init; } = null!;
+    public virtual ICollection<IssueEntity> Issues { get; init; } = null!;
 }

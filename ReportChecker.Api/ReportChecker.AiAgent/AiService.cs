@@ -101,7 +101,8 @@ public class AiService(
                 Text = chapters.First(e => e.Name == issue.Chapter).Content,
             });
             var id = await commentRepository.CreateCommentAsync(issueId, Guid.Empty, resp?.Comment.Content,
-                resp?.Comment.Status is null ? null : Enum.Parse<IssueStatus>(resp.Comment.Status));
+                resp?.Comment.Status is null ? null : Enum.Parse<IssueStatus>(resp.Comment.Status),
+                (resp?.Instruction?.Apply ?? false) || (resp?.Instruction?.Search ?? false) ? ProgressStatus.InProgress : null);
             await commentRepository.SetProgressStatusAsync(lastCommentId, ProgressStatus.Completed);
             if (resp?.Instruction != null)
                 await ProcessInstructionAsync(id, issue, resp.Instruction, chapters);
@@ -206,9 +207,6 @@ public class AiService(
         IAiAgentClient.InstructionCreate instruction,
         List<Chapter> chapters)
     {
-        if (instruction.Apply || instruction.Search)
-            await commentRepository.SetProgressStatusAsync(commentId, ProgressStatus.InProgress);
-
         try
         {
             if (instruction.Save)

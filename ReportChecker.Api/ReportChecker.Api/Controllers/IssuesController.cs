@@ -76,6 +76,32 @@ public class IssuesController(
         return Ok(comments);
     }
 
+    [HttpGet("{issueId:guid}/comments/{commentId:guid}")]
+    [Authorize]
+    public async Task<ActionResult<Comment>> GetCommentById(Guid reportId, Guid issueId, Guid commentId)
+    {
+        var userId = User.UserId;
+
+        var report = await reportRepository.GetReportByIdAsync(reportId);
+        if (report == null)
+            return NotFound();
+        if (report.OwnerId != userId)
+            return Unauthorized();
+
+        var issue = await issueRepository.GetIssueByIdAsync(issueId);
+        if (issue == null)
+            return NotFound();
+
+        var check = await checkRepository.GetCheckByIdAsync(issue.CheckId);
+        if (issue.CheckId != check?.Id)
+            return NotFound();
+
+        var comment = await commentRepository.GetCommentByIdAsync(commentId);
+        if (comment == null)
+            return NotFound();
+        return Ok(comment);
+    }
+
     [HttpPost("{issueId:guid}/comments")]
     [Authorize]
     public async Task<ActionResult<Guid>> CreateIssueComment(Guid reportId, Guid issueId,
