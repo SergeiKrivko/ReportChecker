@@ -45,6 +45,7 @@ export class AuthService {
       return of(false);
     }
     const credentials: Credentials = JSON.parse(credentialsJson);
+    patchState(this.store$$, {credentials})
     this.apiClient.setAuthorization("Bearer " + credentials.accessToken);
     return this.refreshToken().pipe(
       switchMap(() => this.getUserInfo()),
@@ -55,8 +56,8 @@ export class AuthService {
   }
 
   refreshToken(): Observable<boolean> {
-    if (!this.store$$.isLoaded())
-      return of(false);
+    // if (!this.store$$.isLoaded())
+    //   return of(false);
     const expiresAt = this.store$$.credentials()?.expiresAt;
     if (expiresAt === undefined || moment().diff(expiresAt) < 0)
       return of(false);
@@ -69,6 +70,7 @@ export class AuthService {
           credentials: credentials,
         });
         localStorage.setItem("reportCheckerCredentials", JSON.stringify(credentials));
+        this.apiClient.setAuthorization("Bearer " + credentials?.accessToken);
       }),
       map(() => true),
       catchError((err: ApiException) => {
@@ -95,7 +97,7 @@ export class AuthService {
           credentials: credentials,
         });
         localStorage.setItem("reportCheckerCredentials", JSON.stringify(credentials));
-        this.apiClient.setAuthorization("Bearer " + credentials?.accessToken)
+        this.apiClient.setAuthorization("Bearer " + credentials?.accessToken);
       }),
       switchMap(() => this.getUserInfo()),
       map(() => true),
