@@ -1,8 +1,12 @@
 <div class="container">
   <div class="header-container">
     <h1 routerLink="/">ReportChecker</h1>
+    <a tuiButton routerLink="/auth" *tuiLet="userInfo$ | async as userInfo" class="account-button">
+      <tui-avatar [src]="userInfo?.avatarUrl" size="m"/>
+      <label>{{ userInfo?.name }}</label>
+    </a>
   </div>
   <div class="content-container">
-    <router-outlet />
+    <router-outlet/>
   </div>
 </div>

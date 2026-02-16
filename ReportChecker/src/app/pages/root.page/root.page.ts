@@ -1,17 +1,23 @@
 import {Component, inject, OnInit} from '@angular/core';
 import {Router, RouterLink, RouterOutlet} from '@angular/router';
-import {combineLatest, from, switchMap} from 'rxjs';
+import {combineLatest, from, map, switchMap} from 'rxjs';
 import {AuthService} from '../../services/auth-service';
 import {ReportsService} from '../../services/reports.service';
 import {IssuesService} from '../../services/issues.service';
 import {TuiButton} from '@taiga-ui/core';
+import {TuiAvatar} from '@taiga-ui/kit';
+import {TuiLet} from '@taiga-ui/cdk';
+import {AsyncPipe} from '@angular/common';
 
 @Component({
   selector: 'app-root.page',
   imports: [
     RouterOutlet,
     RouterLink,
-    TuiButton
+    TuiButton,
+    TuiAvatar,
+    TuiLet,
+    AsyncPipe
   ],
   templateUrl: './root.page.html',
   styleUrl: './root.page.scss',
@@ -22,6 +28,10 @@ export class RootPage implements OnInit {
   private readonly reportsService = inject(ReportsService);
   private readonly issuesService = inject(IssuesService);
   private readonly router = inject(Router);
+
+  protected readonly userInfo$ = this.authService.userInfo$.pipe(
+    map(info => info?.accounts[0]),
+  );
 
   ngOnInit() {
     this.authService.isAuthorized$.pipe(

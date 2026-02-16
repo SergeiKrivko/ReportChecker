@@ -45,10 +45,10 @@ export class AuthService {
       return of(false);
     }
     const credentials: Credentials = JSON.parse(credentialsJson);
-    patchState(this.store$$, {isLoaded: true, isAuthorized: true, credentials});
     this.apiClient.setAuthorization("Bearer " + credentials.accessToken);
-    return this.getUserInfo().pipe(
-      tap(console.log),
+    return this.refreshToken().pipe(
+      switchMap(() => this.getUserInfo()),
+      tap(() => patchState(this.store$$, {isLoaded: true, isAuthorized: true, credentials})),
       map(() => true),
       catchError(() => of(false)),
     );
@@ -72,11 +72,14 @@ export class AuthService {
       }),
       map(() => true),
       catchError((err: ApiException) => {
-        if (err.status === 401)
+        if (err.status === 401) {
+          localStorage.removeItem("reportCheckerCredentials");
           patchState(this.store$$, {
             isAuthorized: false,
             credentials: null,
+            userInfo: null,
           });
+        }
         return of(false)
       }),
     )
