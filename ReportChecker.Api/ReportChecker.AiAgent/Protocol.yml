@@ -1,13 +1,8 @@
 ﻿name: AiAgent
 
 endpoints:
-  FindInitialIssues:
-    input: FindIssuesRequest
-    output: IssueCreate[]
-    mode: json
-    
-  FindNewIssues:
-    input: FindIssuesRequest
+  FindIssues:
+    input: Chapter[]
     output: IssueCreate[]
     mode: json
 
@@ -17,7 +12,7 @@ endpoints:
     mode: json
     
   CheckIssues:
-    input: CheckIssuesRequest
+    input: Chapter[]
     output: CommentCreate[]
     mode: json
 
@@ -25,20 +20,20 @@ schemas:
   IssueRead:
     - name: id
       type: uuid
-      
+
     - name: title
       type: string
-      
+
     - name: status
       type: string
-      
+
     - name: priority
       type: int
       description: От 1 до 10, где 1 - наиболее критичные ошибки, 10 - незначительные предложения.
-      
+
     - name: comments
       type: CommentRead[]
-  
+
   CommentRead:
     - name: id
       type: uuid
@@ -53,6 +48,9 @@ schemas:
       type: string
 
   IssueCreate:
+    - name: chapter
+      type: string
+      
     - name: title
       type: string
       description: Короткое описание ошибки
@@ -64,7 +62,7 @@ schemas:
     - name: comment
       type: string
       description: Расширенное описание ошибки
-  
+
   CommentCreate:
     - name: issueId
       type: uuid
@@ -75,23 +73,19 @@ schemas:
     - name: status
       type: string?
       
-  FindIssuesRequest:
-    - name: text
+  Chapter:
+    - name: name
       type: string
       
-    - name: existingIssues
-      type: IssueRead[]
+    - name: text
+      type: string
+
+    - name: issues
+      type: IssueRead[]?
       
   WriteCommentRequest:
     - name: text
       type: string
-      
+
     - name: issue
       type: IssueRead
-      
-  CheckIssuesRequest:
-    - name: text
-      type: string
-      
-    - name: issues
-      type: IssueRead[]
