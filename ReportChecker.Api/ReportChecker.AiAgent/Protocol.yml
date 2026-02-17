@@ -2,7 +2,7 @@
 
 endpoints:
   FindIssues:
-    input: Chapter[]
+    input: IssuesRequest
     output: IssueCreate[]
     mode: json
 
@@ -12,7 +12,7 @@ endpoints:
     mode: json
   
   CheckIssues:
-    input: Chapter[]
+    input: IssuesRequest
     output: CommentCreate[]
     mode: json
   
@@ -87,6 +87,13 @@ schemas:
 
     - name: issues
       type: IssueRead[]?
+      
+  IssuesRequest:
+    - name: chapters
+      type: Chapter[]
+
+    - name: instructions
+      type: string[]
   
   WriteCommentRequest:
     - name: text
@@ -94,6 +101,9 @@ schemas:
 
     - name: issue
       type: IssueRead
+      
+    - name: instructions
+      type: string[]
 
   InstructionCreate:
     - name: instructionText

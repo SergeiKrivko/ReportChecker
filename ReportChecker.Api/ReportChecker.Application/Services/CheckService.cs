@@ -89,7 +89,7 @@ public class CheckService(
                 previousChapters = (await formatProvider.GetChaptersAsync(previousSource)).ToList();
             }
 
-            await aiService.FindIssuesAsync(check.Id, chapters, previousChapters, issues.ToList());
+            await aiService.FindIssuesAsync(report.Id, check.Id, chapters, previousChapters, issues.ToList());
             await checkRepository.SetCheckStatusAsync(check.Id, ProgressStatus.Completed);
         }
         catch (Exception)
@@ -115,15 +115,15 @@ public class CheckService(
 
         var formatProvider = providerService.GetFormatProvider(report.Format);
         var chapters = await formatProvider.GetChaptersAsync(sourceStream);
-        RunComment(issueId, chapters.ToList());
+        RunComment(report, issueId, chapters.ToList());
     }
 
-    private async void RunComment(Guid issueId, List<Chapter> chapters)
+    private async void RunComment(Report report, Guid issueId, List<Chapter> chapters)
     {
         try
         {
             var service = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<IAiService>();
-            await service.WriteComment(issueId, chapters);
+            await service.WriteComment(report, issueId, chapters);
         }
         catch (Exception e)
         {
