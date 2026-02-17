@@ -1,0 +1,6 @@
+<div class="container">
+  <tui-textfield class="input">
+    <textarea tuiTextarea (blur)="save()" [limit]="1000"></textarea>
+  </tui-textfield>
+  <button tuiIconButton iconStart="@tui.trash" appearance="flat-destructive" (click)="delete()"></button>
+</div>

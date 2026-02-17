@@ -1,0 +1,6 @@
+<div class="container">
+  @for (instruction of instructions$ | async; track instruction.id) {
+    <app-instruction-input [instruction]="instruction"/>
+  }
+  <button tuiButton iconStart="@tui.plus" (click)="addInstruction()">Добавить</button>
+</div>

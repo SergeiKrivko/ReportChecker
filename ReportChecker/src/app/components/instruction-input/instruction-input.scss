@@ -1,0 +1,11 @@
+.container {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  align-items: center;
+
+  .input {
+    flex-grow: 1;
+    max-height: 30rem;
+  }
+}

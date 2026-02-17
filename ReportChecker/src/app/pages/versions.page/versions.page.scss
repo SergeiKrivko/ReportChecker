@@ -1,0 +1,21 @@
+.container {
+  display: flex;
+  flex-direction: column;
+
+  .upload-new-version-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      max-width: 25rem;
+
+      .file-uploader-container {
+        display: flex;
+        flex-direction: row;
+        gap: 0.6rem;
+
+        .file-uploader {
+          flex-grow: 1;
+        }
+      }
+    }
+}

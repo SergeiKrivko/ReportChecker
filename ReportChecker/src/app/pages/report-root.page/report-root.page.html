@@ -1,0 +1,13 @@
+<div class="container">
+  <div class="header-container">
+    <h2>{{ (selectedReport$ | async)?.name }}</h2>
+     <tui-segmented size="l">
+      <a routerLinkActive [routerLinkActiveOptions]="options" routerLink="./issues">Ошибки</a>
+      <a routerLinkActive [routerLinkActiveOptions]="options" routerLink="./versions">Версии</a>
+      <a routerLinkActive [routerLinkActiveOptions]="options" routerLink="./instructions">Инструкции</a>
+<!--      <a routerLinkActive [routerLinkActiveOptions]="options" routerLink="./settings">Настройки</a>-->
+    </tui-segmented>
+    <button tuiIconButton iconStart="@tui.trash" appearance="flat-destructive" (click)="deleteReport()"></button>
+  </div>
+  <router-outlet/>
+</div>
