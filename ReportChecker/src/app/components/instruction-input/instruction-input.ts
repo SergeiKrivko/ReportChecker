@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, DestroyRef, inject, input} from '@angular/core';
+import {ChangeDetectionStrategy, Component, DestroyRef, inject, input, OnInit} from '@angular/core';
 import {InstructionService} from '../../services/instruction.service';
 import {InstructionEntity} from '../../entities/instruction-entity';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
@@ -20,20 +20,25 @@ import {TuiButton, TuiTextfield} from '@taiga-ui/core';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class InstructionInput {
+export class InstructionInput implements OnInit {
   private readonly instructionService = inject(InstructionService);
   private readonly destroyRef = inject(DestroyRef);
   readonly instruction = input.required<InstructionEntity>();
 
   protected readonly control = new FormControl<string>("");
 
-  protected save(){
+  ngOnInit() {
+    this.control.setValue(this.instruction().content)
+  }
+
+  protected save() {
+    console.log(this.control.value);
     this.instructionService.updateInstruction(this.instruction().id, this.control.value ?? "").pipe(
       takeUntilDestroyed(this.destroyRef),
     ).subscribe();
   }
 
-  protected delete(){
+  protected delete() {
     this.instructionService.deleteInstruction(this.instruction().id).pipe(
       takeUntilDestroyed(this.destroyRef),
     ).subscribe();

@@ -18,15 +18,4 @@
       font-weight: normal;
     }
   }
-
-  .comments-counter {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 0.5rem;
-
-    @media (max-width: 900px) {
-      display: none;
-    }
-  }
 }

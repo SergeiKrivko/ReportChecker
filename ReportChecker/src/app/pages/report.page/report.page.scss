@@ -21,9 +21,11 @@
   .issue-header {
     padding: 1rem;
     height: 4.5rem;
+    display: flex;
+    flex-direction: row;
 
     .header-content {
-      flex-grow: 1;
+      width: 100%;
     }
   }
 }

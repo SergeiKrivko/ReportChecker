@@ -59,7 +59,7 @@ export class InstructionService {
     );
   }
 
-  updateInstruction(id: string, content: string = "") {
+  updateInstruction(id: string, content: string) {
     return this.authService.refreshToken().pipe(
       switchMap(() => this.reportsService.selectedReport$),
       first(),
