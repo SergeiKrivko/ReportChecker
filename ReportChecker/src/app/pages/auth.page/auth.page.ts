@@ -36,6 +36,7 @@ export class AuthPage {
     {key: "yandex", name: "Яндекс"},
     {key: "google", name: "Google"},
     {key: "github", name: "GitHub"},
+    {key: "gitlab", name: "GitLab"},
   ];
 
   protected authProviders$: Observable<AuthProvider[]> = this.authService.userInfo$.pipe(
