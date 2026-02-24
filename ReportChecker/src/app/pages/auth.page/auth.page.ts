@@ -37,6 +37,7 @@ export class AuthPage {
     {key: "google", name: "Google"},
     {key: "github", name: "GitHub"},
     {key: "gitlab", name: "GitLab"},
+    {key: "microsoft", name: "Microsoft"},
   ];
 
   protected authProviders$: Observable<AuthProvider[]> = this.authService.userInfo$.pipe(
