@@ -38,6 +38,11 @@
 
       .issue-card {
         padding: 0.5rem 1rem;
+
+        button {
+          margin: 0;
+          inline-size: auto;
+        }
       }
     }
   }
