@@ -1,1 +1,13 @@
-/* You can add global styles to this file, and also import other style files */
+.page-sized {
+  height: 100vh;
+  @supports (-webkit-touch-callout: none) {
+    height: -webkit-fill-available;
+  }
+}
+
+.page-padding {
+  padding: 0 0.5rem;
+  @media (min-width: 600px) {
+    padding: 0 5rem;
+  }
+}

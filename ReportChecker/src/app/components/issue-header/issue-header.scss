@@ -18,4 +18,11 @@
       font-weight: normal;
     }
   }
+
+  .comments-counter {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+    align-items: center;
+  }
 }

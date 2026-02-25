@@ -2,28 +2,30 @@ import {ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit} from '@a
 import {
   ActivatedRoute,
   IsActiveMatchOptions,
-  Router,
   RouterLink,
   RouterLinkActive,
   RouterOutlet
 } from '@angular/router';
 import {ReportsService} from '../../services/reports.service';
-import {TuiResponsiveDialogService} from '@taiga-ui/addon-mobile';
-import {combineLatest, from, NEVER, switchMap, take} from 'rxjs';
+import {combineLatest, NEVER, switchMap, take, tap} from 'rxjs';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {AsyncPipe} from '@angular/common';
-import {TUI_CONFIRM, TuiConfirmData, TuiSegmented} from '@taiga-ui/kit';
-import {TuiButton} from '@taiga-ui/core';
+import {TuiButton, TuiScrollbar} from '@taiga-ui/core';
+import {Header} from "../../components/header/header";
+import {IssuesService} from '../../services/issues.service';
+import {TuiLet} from '@taiga-ui/cdk';
 
 @Component({
   selector: 'app-report-root.page',
   imports: [
     AsyncPipe,
     RouterOutlet,
-    TuiSegmented,
     TuiButton,
     RouterLinkActive,
-    RouterLink
+    RouterLink,
+    Header,
+    TuiLet,
+    TuiScrollbar
   ],
   templateUrl: './report-root.page.html',
   styleUrl: './report-root.page.scss',
@@ -34,12 +36,16 @@ export class ReportRootPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly reportsService = inject(ReportsService);
-  private readonly router = inject(Router);
-  private readonly dialogs = inject(TuiResponsiveDialogService);
+  private readonly issuesService = inject(IssuesService);
 
   protected readonly selectedReport$ = this.reportsService.selectedReport$;
+  protected readonly selectedIssue$ = this.issuesService.selectedIssue$;
 
   ngOnInit() {
+    this.route.paramMap.pipe(
+      tap(console.log),
+    ).subscribe();
+
     combineLatest([
       this.route.params,
       this.reportsService.loaded$,
@@ -61,25 +67,4 @@ export class ReportRootPage implements OnInit {
     paths: 'subset',
     fragment: 'exact',
   };
-
-  protected deleteReport() {
-    const data: TuiConfirmData = {
-      content: 'Вы уверены, что хотите удалить этот отчет?',
-      yes: 'Удалить',
-      no: 'Отмена',
-    };
-
-    this.dialogs
-      .open<boolean>(TUI_CONFIRM, {
-        size: 's',
-        data,
-      }).pipe(
-      switchMap((response) => {
-        if (response)
-          return this.reportsService.deleteSelectedReport();
-        return NEVER;
-      }),
-      switchMap(() => from(this.router.navigate(['/']))),
-    ).subscribe();
-  }
 }

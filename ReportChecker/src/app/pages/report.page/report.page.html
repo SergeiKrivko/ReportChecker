@@ -1,35 +1,37 @@
 <div class="container">
-  <div class="header-container">
-    @if (isProgress$ | async) {
-      <div class="progress-container">
+  <div class="header-container page-padding">
+    <div class="progress-container">
+      @if (isProgress$ | async) {
         <tui-loader/>
         <div>Поиск ошибок...</div>
-      </div>
-    }
+      }
+    </div>
+    <div class="right-container">
+      @switch ((selectedReport$ | async)?.sourceProvider) {
+        @case ('File') {
+          <app-file-sp-version/>
+        }
+      }
+      <a tuiIconButton iconStart="@tui.settings" appearance="flat" routerLink="./settings"></a>
+    </div>
   </div>
-  <tui-accordion>
-    @for (issue of issues$ | async; track issue.id) {
-      <ng-container>
-        <button tuiAccordion class="issue-header">
-          <app-issue-header [issue]="issue" class="header-content"/>
-        </button>
-        <tui-expand>
-          <app-comments [issue]="issue"/>
-        </tui-expand>
-      </ng-container>
-    }
-  </tui-accordion>
+  <tui-scrollbar>
+    <div class="scroll-container">
+      <div class="issues-container page-padding">
+        @for (issue of issues$ | async; track issue.id) {
+          <a tuiCardLarge tuiSurface="floating" [routerLink]="'./issues/' + issue.id" class="issue-card">
+            <app-issue-header [issue]="issue"/>
+          </a>
+        }
+      </div>
 
-  <tui-accordion>
-    @for (issue of closedIssues$ | async; track issue.id) {
-      <ng-container>
-        <button tuiAccordion class="issue-header">
-          <app-issue-header [issue]="issue" class="header-content"/>
-        </button>
-        <tui-expand>
-          <app-comments [issue]="issue"/>
-        </tui-expand>
-      </ng-container>
-    }
-  </tui-accordion>
+      <div class="issues-container page-padding">
+        @for (issue of closedIssues$ | async; track issue.id) {
+          <a tuiCardLarge tuiSurface="floating" [routerLink]="'./issues/' + issue.id" class="issue-card">
+            <app-issue-header [issue]="issue"/>
+          </a>
+        }
+      </div>
+    </div>
+  </tui-scrollbar>
 </div>

@@ -16,16 +16,29 @@
       gap: 1rem;
       align-items: center;
     }
+
+    .right-container {
+      display: flex;
+      flex-direction: row;
+      gap: 1rem;
+      align-items: center;
+    }
   }
 
-  .issue-header {
-    padding: 1rem;
-    height: 4.5rem;
+  .scroll-container {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
+    gap: 2rem;
 
-    .header-content {
-      width: 100%;
+    .issues-container {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.5rem;
+
+      .issue-card {
+        padding: 0.5rem 1rem;
+      }
     }
   }
 }

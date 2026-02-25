@@ -1,0 +1,15 @@
+<div class="container">
+  <div class="logo" routerLink="/">
+    <tui-avatar src="@tui.notebook-tabs"/>
+    @if (showTitle()) {
+      <h1 routerLink="/">ReportChecker</h1>
+    }
+  </div>
+
+  <ng-content/>
+
+  <a tuiButton routerLink="/auth" *tuiLet="userInfo$ | async as userInfo" class="account-button">
+    <tui-avatar [src]="userInfo?.avatarUrl" size="m"/>
+    <label>{{ userInfo?.name }}</label>
+  </a>
+</div>

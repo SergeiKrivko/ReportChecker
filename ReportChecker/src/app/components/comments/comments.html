@@ -1,27 +1,38 @@
 <div class="container">
-  @for (comment of issue().comments | orderByCreatedAt; track comment.id) {
-    <div class="comment-container">
-      <tui-avatar [src]="comment.userId | avatarByUserId" size="m"/>
-      <div class="content-container">
-        @if (comment.content) {
-          <div [innerHtml]="comment.content"></div>
+  <div class="comments-container">
+    @for (comment of issue().comments | orderByCreatedAt; track comment.id) {
+      <div class="comment-container">
+        @if (comment.userId | isBot) {
+          <tui-avatar src="@tui.bot" size="m"/>
+        } @else {
+          <tui-avatar src="@tui.user" size="m"/>
         }
-        @switch (comment.status) {
-          @case ('Fixed') {
-            <i>Ошибка отмечена как исправленная</i>
+        <div class="content-container">
+          @if (comment.content) {
+            <div [innerHtml]="comment.content"></div>
           }
-          @case ('Closed') {
-            <i>Ошибка закрыта</i>
-          }
-          @case ('Open') {
-            @if (comment.userId != "00000000-0000-0000-0000-000000000000") {
-              <i>Ошибка переоткрыта</i>
+          <div class="status-container">
+            @switch (comment.status) {
+              @case ('Fixed') {
+                <tui-icon icon="@tui.check" class="fixed"/>
+                <i>Ошибка отмечена как исправленная</i>
+              }
+              @case ('Closed') {
+                <tui-icon icon="@tui.x" class="fixed"/>
+                <i>Ошибка закрыта</i>
+              }
+              @case ('Open') {
+                @if ($index > 0) {
+                  <tui-icon icon="@tui.book-open" class="open"/>
+                  <i>Ошибка переоткрыта</i>
+                }
+              }
             }
-          }
-        }
+          </div>
+        </div>
       </div>
-    </div>
-  }
+    }
+  </div>
   <div tuiGroup class="group" orientation="horizontal">
     <tui-textfield class="input-field">
       <input placeholder="Ваш комментарий" tuiTextfield [formControl]="control"/>

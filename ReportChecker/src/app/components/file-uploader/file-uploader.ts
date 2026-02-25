@@ -84,7 +84,6 @@ export class FileUploader implements ControlValueAccessor {
   };
 
   private readValue(): FileEntity | null {
-    console.log("Reading value:", this.uploadedFile)
     return this.uploadedFile ?? null;
   }
 

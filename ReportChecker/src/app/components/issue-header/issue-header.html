@@ -1,10 +1,10 @@
 <div class="container">
   @if (issue().status == 'Open') {
-    <tui-icon [appearance]="issue().priority | issueAppearance" [icon]="issue().priority | issueIcon" size="xl"
+    <tui-icon [appearance]="issue() | issueAppearance" [icon]="issue().priority | issueIcon" size="xl"
               tuiBadge/>
   } @else {
-    <tui-icon appearance="neutral" [icon]="issue().status == 'Fixed' ? '@tui.check' : '@tui.x'" size="xl"
-              tuiBadge/>
+    <tui-icon [appearance]="issue() | issueAppearance" [icon]="issue().status == 'Fixed' ? '@tui.check' : '@tui.x'"
+              size="xl" tuiBadge/>
   }
   <div class="info-container">
     <div class="issue-title" [innerHtml]="issue().title"></div>
@@ -17,12 +17,12 @@
     </div>
   }
   @if (issue().status == 'Open') {
-    <button tuiButton iconStart="@tui.check" appearance="positive"
-            (click)="addComment('Fixed')" size="m"></button>
-    <button tuiButton iconStart="@tui.x" appearance="negative"
-            (click)="addComment('Closed')" size="m"></button>
+    <button tuiButton iconStart="@tui.check" appearance="positive" [loading]="loading | async"
+            (click)="addComment('Fixed')" size="s"></button>
+    <button tuiButton iconStart="@tui.x" appearance="negative" [loading]="loading | async"
+            (click)="addComment('Closed')" size="s"></button>
   } @else {
-    <button tuiButton iconStart="@tui.book-open" appearance="neutral"
-            (click)="addComment('Open')" size="m"></button>
+    <button tuiButton iconStart="@tui.book-open" appearance="neutral" [loading]="loading | async"
+            (click)="addComment('Open')" size="s"></button>
   }
 </div>

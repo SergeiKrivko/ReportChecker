@@ -1,10 +1,15 @@
-<div class="container">
-  <button tuiButton (click)="newReport()">Добавить</button>
-  <div class="reports-container">
-    @for (report of reports$ | async; track report.id) {
-      <button tuiCardLarge tuiHeader tuiSurface="floating" [routerLink]="'reports/' + report.id + '/issues'">
-        <h3>{{ report.name }}</h3>
-      </button>
-    }
+<div class="container page-sized">
+  <app-header [showTitle]="true"/>
+  <div class="buttons-container">
+    <button tuiButton (click)="newReport()">Добавить</button>
   </div>
+  <tui-scrollbar>
+    <div class="reports-container">
+      @for (report of reports$ | async; track report.id) {
+        <a tuiCardLarge tuiHeader tuiSurface="floating" [routerLink]="'reports/' + report.id">
+          <h3>{{ report.name }}</h3>
+        </a>
+      }
+    </div>
+  </tui-scrollbar>
 </div>

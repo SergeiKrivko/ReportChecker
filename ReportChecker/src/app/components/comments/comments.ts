@@ -1,5 +1,4 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, input} from '@angular/core';
-import {AvatarByUserIdPipe} from '../../pipes/avatar-by-user-id-pipe';
 import {TuiAvatar, TuiButtonLoading, TuiTooltip} from '@taiga-ui/kit';
 import {TuiButton, TuiGroup, TuiIcon, TuiTextfield} from '@taiga-ui/core';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
@@ -8,11 +7,11 @@ import {IssueEntity} from '../../entities/issue-entity';
 import {IssuesService} from '../../services/issues.service';
 import {Subject, tap} from 'rxjs';
 import {OrderByCreatedAtPipe} from '../../pipes/order-by-created-at-pipe';
+import {IsBotPipe} from '../../pipes/is-bot-pipe';
 
 @Component({
   selector: 'app-comments',
   imports: [
-    AvatarByUserIdPipe,
     TuiAvatar,
     TuiGroup,
     TuiGroup,
@@ -23,7 +22,8 @@ import {OrderByCreatedAtPipe} from '../../pipes/order-by-created-at-pipe';
     ReactiveFormsModule,
     AsyncPipe,
     TuiButtonLoading,
-    OrderByCreatedAtPipe
+    OrderByCreatedAtPipe,
+    IsBotPipe,
   ],
   templateUrl: './comments.html',
   styleUrl: './comments.scss',

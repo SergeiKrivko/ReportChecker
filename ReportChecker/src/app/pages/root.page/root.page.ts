@@ -1,6 +1,6 @@
 import {Component, inject, OnInit} from '@angular/core';
 import {Router, RouterLink, RouterOutlet} from '@angular/router';
-import {combineLatest, from, map, switchMap} from 'rxjs';
+import {combineLatest, from, switchMap} from 'rxjs';
 import {AuthService} from '../../services/auth-service';
 import {ReportsService} from '../../services/reports.service';
 import {IssuesService} from '../../services/issues.service';
@@ -29,10 +29,6 @@ export class RootPage implements OnInit {
   private readonly reportsService = inject(ReportsService);
   private readonly issuesService = inject(IssuesService);
   private readonly router = inject(Router);
-
-  protected readonly userInfo$ = this.authService.userInfo$.pipe(
-    map(info => info?.accounts[0]),
-  );
 
   ngOnInit() {
     this.authService.isAuthorized$.pipe(

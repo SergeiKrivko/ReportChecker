@@ -30,6 +30,7 @@ export class IssuesService {
   });
 
   readonly issues$ = toObservable(this.store$$.issues);
+  readonly selectedIssue$ = toObservable(this.store$$.selectedIssue);
   readonly isProgress$ = toObservable(this.store$$.isProgress);
 
   private loadIssues(reportId: string) {
@@ -46,6 +47,7 @@ export class IssuesService {
 
   loadIssuesOnReportChanged$ = this.authService.refreshToken().pipe(
     switchMap(() => this.reportsService.selectedReport$),
+    tap(() => patchState(this.store$$, {issues: [], selectedIssue: null})),
     switchMap(report => {
       if (report)
         return interval(2000).pipe(
@@ -104,6 +106,20 @@ export class IssuesService {
       }),
       first(),
     );
+  }
+
+  selectIssue(issueId: string) {
+    return this.issues$.pipe(
+      tap(issues => {
+        patchState(this.store$$, {
+          selectedIssue: issues.find(e => e.id == issueId),
+        });
+      })
+    );
+  }
+
+  deselectIssue() {
+    patchState(this.store$$, {selectedIssue: null});
   }
 }
 

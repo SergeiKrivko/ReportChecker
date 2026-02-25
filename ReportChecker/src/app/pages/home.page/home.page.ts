@@ -1,10 +1,11 @@
 import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
 import {NewReportDialog} from '../../components/new-report-dialog/new-report-dialog';
-import {TuiButton, tuiDialog, TuiSurface} from '@taiga-ui/core';
+import {TuiButton, tuiDialog, TuiScrollbar, TuiSurface} from '@taiga-ui/core';
 import {ReportsService} from '../../services/reports.service';
 import {AsyncPipe} from '@angular/common';
 import {TuiCardLarge, TuiHeader} from '@taiga-ui/layout';
 import {RouterLink} from '@angular/router';
+import {Header} from '../../components/header/header';
 
 @Component({
   selector: 'app-home.page',
@@ -14,7 +15,9 @@ import {RouterLink} from '@angular/router';
     TuiCardLarge,
     TuiHeader,
     TuiSurface,
-    RouterLink
+    RouterLink,
+    Header,
+    TuiScrollbar
   ],
   templateUrl: './home.page.html',
   styleUrl: './home.page.scss',

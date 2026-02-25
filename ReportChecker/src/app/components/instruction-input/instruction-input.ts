@@ -32,7 +32,6 @@ export class InstructionInput implements OnInit {
   }
 
   protected save() {
-    console.log(this.control.value);
     this.instructionService.updateInstruction(this.instruction().id, this.control.value ?? "").pipe(
       takeUntilDestroyed(this.destroyRef),
     ).subscribe();

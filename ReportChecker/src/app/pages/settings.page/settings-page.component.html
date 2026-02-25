@@ -1,0 +1,15 @@
+<div class="container page-padding">
+  <div class="section-header">
+    <h3>Инструкции</h3>
+    <button tuiButton iconStart="@tui.plus" (click)="addInstruction()" appearance="flat">Добавить</button>
+  </div>
+  @for (instruction of instructions$ | async; track instruction.id) {
+    <app-instruction-input [instruction]="instruction"/>
+  }
+
+  <div class="section-header">
+    <h3>Управление</h3>
+  </div>
+  <button tuiButton appearance="outline-destructive" iconStart="@tui.trash" (click)="deleteReport()">Удалить отчет</button>
+
+</div>
