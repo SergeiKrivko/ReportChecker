@@ -221,6 +221,9 @@ public class AiService(
             lst.Add(chapter);
             length += chapter.Content.Length;
         }
+
+        if (lst.Count > 0)
+            yield return lst.ToArray();
     }
 
     private async Task ProcessInstructionAsync(Guid commentId, Issue issue,
