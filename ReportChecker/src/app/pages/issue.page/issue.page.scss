@@ -9,8 +9,16 @@
     align-items: center;
     gap: 1rem;
 
-    h2 {
-      flex-grow: 1;
+    @media (max-width: 600px) {
+      flex-direction: column;
+      align-items: start;
+    }
+
+    .side-container {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 1rem;
     }
   }
 }

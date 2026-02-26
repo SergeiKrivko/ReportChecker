@@ -1,30 +1,34 @@
 <div class="container page-padding" *tuiLet="selectedIssue$ | async as issue">
   @if (issue) {
     <div class="header-container">
-      <a tuiIconButton routerLink="../.." iconStart="@tui.chevron-left" appearance="flat"></a>
-      <h2>{{ issue.title }}</h2>
-      @if (issue.status == 'Open') {
-        <button tuiButton appearance="positive" iconStart="@tui.check" [loading]="loading | async"
-                (click)="addComment('Fixed')">
-          Исправлена
-        </button>
-        <button tuiButton appearance="negative" iconStart="@tui.x" [loading]="loading | async"
-                (click)="addComment('Closed')">
-          Закрыть
-        </button>
-      } @else {
-        @if (issue.status == 'Closed') {
-          <tui-icon appearance="info" icon="@tui.x" size="xl" tuiBadge/>
-          <label tuiLabel>Закрыта</label>
-        } @else if (issue.status == 'Fixed') {
-          <tui-icon appearance="positive" icon="@tui.check" size="xl" tuiBadge/>
-          <label tuiLabel>Исправлена</label>
+      <div class="side-container">
+        <a tuiIconButton routerLink="../.." iconStart="@tui.chevron-left" appearance="flat"></a>
+        <h2>{{ issue.title }}</h2>
+      </div>
+      <div class="side-container">
+        @if (issue.status == 'Open') {
+          <button tuiButton appearance="positive" iconStart="@tui.check" [loading]="loading | async"
+                  (click)="addComment('Fixed')">
+            Исправлена
+          </button>
+          <button tuiButton appearance="negative" iconStart="@tui.x" [loading]="loading | async"
+                  (click)="addComment('Closed')">
+            Закрыть
+          </button>
+        } @else {
+          @if (issue.status == 'Closed') {
+            <tui-icon appearance="info" icon="@tui.x" size="xl" tuiBadge/>
+            <label tuiLabel>Закрыта</label>
+          } @else if (issue.status == 'Fixed') {
+            <tui-icon appearance="positive" icon="@tui.check" size="xl" tuiBadge/>
+            <label tuiLabel>Исправлена</label>
+          }
+          <button tuiButton appearance="secondary" iconStart="@tui.book-open" [loading]="loading | async"
+                  (click)="addComment('Open')">
+            Переоткрыть
+          </button>
         }
-        <button tuiButton appearance="secondary" iconStart="@tui.book-open" [loading]="loading | async"
-                (click)="addComment('Open')">
-          Переоткрыть
-        </button>
-      }
+      </div>
     </div>
     <app-comments [issue]="issue"/>
   }
