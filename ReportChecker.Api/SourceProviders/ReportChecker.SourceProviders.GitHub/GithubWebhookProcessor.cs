@@ -18,7 +18,7 @@ public class GithubWebhookProcessor(
         await base.ProcessPushWebhookAsync(headers, pushEvent, cancellationToken);
         if (logger.IsEnabled(LogLevel.Information))
             logger.LogInformation("Webhook received: repo '{repo}', commit '{commit}'", pushEvent.Repository?.Name,
-                pushEvent.Ref);
+                pushEvent.After);
 
         var reports = await reportRepository.GetAllReportsOfSourceAsync("GitHub");
         foreach (var report in reports)
@@ -33,13 +33,13 @@ public class GithubWebhookProcessor(
             if (logger.IsEnabled(LogLevel.Information))
                 logger.LogInformation("Adding check to report '{report}'", report.Id);
 
-            await checkService.CreateCheckAsync(Guid.Empty, Guid.Empty, JsonSerializer.Serialize(
+            await checkService.CreateCheckAsync(report.Id, report.OwnerId, JsonSerializer.Serialize(
                 new GitHubCommitSourceSchema
                 {
                     RepositoryId = source.RepositoryId,
                     BranchName = source.BranchName,
                     FilePath = source.FilePath,
-                    CommitId = pushEvent.Ref
+                    CommitId = pushEvent.After
                 }));
         }
     }
