@@ -11,6 +11,7 @@ COPY ["ReportChecker.Models/ReportChecker.Models.csproj", "ReportChecker.Models/
 COPY ["ReportChecker.DataAccess/ReportChecker.DataAccess.csproj", "ReportChecker.DataAccess/"]
 COPY ["ReportChecker.Application/ReportChecker.Application.csproj", "ReportChecker.Application/"]
 COPY ["SourceProviders/ReportChecker.SourceProviders.File/ReportChecker.SourceProviders.File.csproj", "SourceProviders/ReportChecker.SourceProviders.File/"]
+COPY ["SourceProviders/ReportChecker.SourceProviders.GitHub/ReportChecker.SourceProviders.GitHub.csproj", "SourceProviders/ReportChecker.SourceProviders.GitHub/"]
 COPY ["FormatProviders/ReportChecker.FormatProviders.Latex/ReportChecker.FormatProviders.Latex.csproj", "FormatProviders/ReportChecker.FormatProviders.Latex/"]
 COPY ["FormatProviders/ReportChecker.FormatProviders.Pdf/ReportChecker.FormatProviders.Pdf.csproj", "FormatProviders/ReportChecker.FormatProviders.Pdf/"]
 COPY ["ReportChecker.AiAgent/ReportChecker.AiAgent.csproj", "ReportChecker.AiAgent/"]
