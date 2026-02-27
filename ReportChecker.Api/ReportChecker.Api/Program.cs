@@ -4,6 +4,7 @@ using AiAgent;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Octokit.Webhooks;
 using Octokit.Webhooks.AspNetCore;
 using ReportChecker.Abstractions;
 using ReportChecker.Application.Services;
@@ -37,7 +38,7 @@ builder.Services.AddScoped<IAiService, AiService>();
 builder.Services.AddSingleton<IProviderService, ProviderService>();
 builder.Services.AddSingleton<IUserRepository, AuthApiClient>();
 builder.Services.AddSingleton<GithubService>();
-builder.Services.AddScoped<GithubWebhookProcessor>();
+builder.Services.AddScoped<WebhookEventProcessor, GithubWebhookProcessor>();
 
 builder.Services.AddSingleton<FileSourceProvider>();
 builder.Services.AddSingleton<GitHubSourceProvider>();
