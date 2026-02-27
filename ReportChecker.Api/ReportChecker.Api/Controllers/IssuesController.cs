@@ -145,4 +145,19 @@ public class IssuesController(
         await commentRepository.UpdateCommentAsync(commentId, schema.Content);
         return Ok(commentId);
     }
+
+    [HttpDelete("{issueId:guid}/comments/{commentId:guid}")]
+    public async Task<ActionResult> DeleteIssueComment(Guid reportId, Guid issueId, Guid commentId)
+    {
+        var userId = User.UserId;
+
+        var comment = await commentRepository.GetCommentByIdAsync(commentId);
+        if (comment == null)
+            return NotFound();
+        if (comment.UserId != userId)
+            return Unauthorized();
+
+        await commentRepository.DeleteCommentAsync(commentId);
+        return Ok();
+    }
 }
