@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using GitHubJwt;
+﻿using GitHubJwt;
 using Microsoft.Extensions.Configuration;
 using Octokit;
 using ReportChecker.Abstractions;

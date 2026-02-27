@@ -201,6 +201,9 @@ public class AiService(
             lst.Add(chapter);
             length += chapter.Difference.Length;
         }
+
+        if (lst.Count > 0)
+            yield return lst.ToArray();
     }
 
     private IEnumerable<Chapter[]> GroupChapters(IEnumerable<Chapter> chapters)
