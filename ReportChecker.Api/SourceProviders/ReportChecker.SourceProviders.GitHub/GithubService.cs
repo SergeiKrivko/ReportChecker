@@ -20,7 +20,6 @@ public class GithubService(IUserRepository userRepository, IConfiguration config
             throw new Exception("User credentials not found");
 
         var installation = await _client.GitHubApps.GetUserInstallationForCurrent(account.Name);
-        Console.WriteLine(installation.Permissions.Contents);
         var token = await _client.GitHubApps.CreateInstallationToken(installation.Id);
 
         return new GitHubClient(new ProductHeaderValue(configuration["GitHub.AppName"]))

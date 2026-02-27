@@ -1,23 +1,33 @@
-<div class="container">
-  <div class="header-container page-padding">
-    <div class="progress-container">
-      @if (isProgress$ | async) {
-        <tui-loader/>
-        <div>Поиск ошибок...</div>
+<div class="container page-sized">
+  <app-header>
+    <tui-breadcrumbs size="l" class="path">
+      @let report = selectedReport$ | async;
+      @if (report) {
+        <ng-container>
+          <a *tuiItem tuiLink routerLink="." iconStart="@tui.book">{{ report.name }}</a>
+        </ng-container>
       }
-    </div>
-    <div class="right-container">
-      @switch ((selectedReport$ | async)?.sourceProvider) {
-        @case ('File') {
-          <app-file-sp-version/>
-        }
-      }
-      <a tuiIconButton iconStart="@tui.settings" appearance="flat" routerLink="./settings"></a>
-    </div>
-  </div>
+    </tui-breadcrumbs>
+  </app-header>
   <tui-scrollbar>
-    <div class="scroll-container">
-      <div class="issues-container page-padding">
+    <div class="body-container page-padding">
+      <div class="header-container">
+        <div class="progress-container">
+          @if (isProgress$ | async) {
+            <tui-loader/>
+            <div>Поиск ошибок...</div>
+          }
+        </div>
+        <div class="right-container">
+          @switch ((selectedReport$ | async)?.sourceProvider) {
+            @case ('File') {
+              <app-file-sp-version/>
+            }
+          }
+          <a tuiIconButton iconStart="@tui.settings" appearance="flat" routerLink="./settings"></a>
+        </div>
+      </div>
+      <div class="issues-container">
         @for (issue of issues$ | async; track issue.id) {
           <a tuiCardLarge tuiSurface="floating" [routerLink]="'./issues/' + issue.id" class="issue-card">
             <app-issue-header [issue]="issue"/>
@@ -25,7 +35,7 @@
         }
       </div>
 
-      <div class="issues-container page-padding">
+      <div class="issues-container">
         @for (issue of closedIssues$ | async; track issue.id) {
           <a tuiCardLarge tuiSurface="floating" [routerLink]="'./issues/' + issue.id" class="issue-card">
             <app-issue-header [issue]="issue"/>

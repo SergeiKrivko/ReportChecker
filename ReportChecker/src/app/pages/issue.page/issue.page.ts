@@ -1,7 +1,7 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, inject, OnInit} from '@angular/core';
-import {ActivatedRoute, RouterLink} from '@angular/router';
-import {TuiButton, TuiGroup, TuiIcon, TuiTextfield} from '@taiga-ui/core';
-import {TuiAvatar, TuiBadge, TuiButtonLoading} from '@taiga-ui/kit';
+import {ActivatedRoute, RouterLink, RouterLinkActive} from '@angular/router';
+import {TuiButton, TuiGroup, TuiIcon, TuiLink, TuiScrollbar, TuiTextfield} from '@taiga-ui/core';
+import {TuiAvatar, TuiBadge, TuiBreadcrumbs, TuiButtonLoading} from '@taiga-ui/kit';
 import {IssuesService} from '../../services/issues.service';
 import {ReactiveFormsModule} from '@angular/forms';
 import {first, NEVER, of, Subject, switchMap, tap} from 'rxjs';
@@ -11,6 +11,11 @@ import {TuiLet} from '@taiga-ui/cdk';
 import {OrderByCreatedAtPipe} from '../../pipes/order-by-created-at-pipe';
 import {IssueHeader} from '../../components/issue-header/issue-header';
 import {Comments} from '../../components/comments/comments';
+import {NextIssuePipe} from '../../pipes/next-issue-pipe';
+import {PreviousIssuePipe} from '../../pipes/previous-issue-pipe';
+import {Header} from '../../components/header/header';
+import {ReportsService} from '../../services/reports.service';
+import {IssueIconPipe} from '../../pipes/issue-icon-pipe';
 
 @Component({
   selector: 'app-issue.page',
@@ -28,7 +33,15 @@ import {Comments} from '../../components/comments/comments';
     IssueHeader,
     Comments,
     TuiBadge,
-    TuiIcon
+    TuiIcon,
+    NextIssuePipe,
+    PreviousIssuePipe,
+    Header,
+    RouterLinkActive,
+    TuiBreadcrumbs,
+    TuiLink,
+    TuiScrollbar,
+    IssueIconPipe
   ],
   templateUrl: './issue.page.html',
   styleUrl: './issue.page.scss',
@@ -37,13 +50,13 @@ import {Comments} from '../../components/comments/comments';
 })
 export class IssuePage implements OnInit {
   private readonly issueService = inject(IssuesService);
+  private readonly reportsService = inject(ReportsService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly detectorRef = inject(ChangeDetectorRef);
   private readonly route = inject(ActivatedRoute);
 
   ngOnInit() {
     this.route.params.pipe(
-      first(),
       switchMap(params => {
         const issueId = params['issueId'];
         if (issueId)
@@ -55,6 +68,7 @@ export class IssuePage implements OnInit {
   }
 
   protected readonly selectedIssue$ = this.issueService.selectedIssue$;
+  protected readonly selectedReport$ = this.reportsService.selectedReport$;
   protected loading = new Subject<boolean>();
 
   protected addComment(status: string | null = null) {

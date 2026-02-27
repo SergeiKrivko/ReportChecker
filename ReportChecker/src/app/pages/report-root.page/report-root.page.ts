@@ -10,10 +10,11 @@ import {ReportsService} from '../../services/reports.service';
 import {combineLatest, NEVER, switchMap, take, tap} from 'rxjs';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {AsyncPipe} from '@angular/common';
-import {TuiButton, TuiScrollbar} from '@taiga-ui/core';
+import {TuiButton, TuiLink, TuiScrollbar} from '@taiga-ui/core';
 import {Header} from "../../components/header/header";
 import {IssuesService} from '../../services/issues.service';
-import {TuiLet} from '@taiga-ui/cdk';
+import {TuiItem, TuiLet} from '@taiga-ui/cdk';
+import {TuiBreadcrumbs} from '@taiga-ui/kit';
 
 @Component({
   selector: 'app-report-root.page',
@@ -25,7 +26,10 @@ import {TuiLet} from '@taiga-ui/cdk';
     RouterLink,
     Header,
     TuiLet,
-    TuiScrollbar
+    TuiScrollbar,
+    TuiBreadcrumbs,
+    TuiLink,
+    TuiItem
   ],
   templateUrl: './report-root.page.html',
   styleUrl: './report-root.page.scss',
@@ -42,7 +46,7 @@ export class ReportRootPage implements OnInit {
   protected readonly selectedIssue$ = this.issuesService.selectedIssue$;
 
   ngOnInit() {
-    this.route.paramMap.pipe(
+    this.route.url.pipe(
       tap(console.log),
     ).subscribe();
 

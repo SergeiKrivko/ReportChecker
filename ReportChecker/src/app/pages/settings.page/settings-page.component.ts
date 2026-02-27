@@ -2,20 +2,28 @@ import {Component, DestroyRef, inject, OnInit} from '@angular/core';
 import {InstructionService} from '../../services/instruction.service';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {AsyncPipe} from '@angular/common';
-import {TuiButton} from '@taiga-ui/core';
+import {TuiButton, TuiLink, TuiScrollbar} from '@taiga-ui/core';
 import {InstructionInput} from '../../components/instruction-input/instruction-input';
-import {TUI_CONFIRM, TuiConfirmData} from '@taiga-ui/kit';
+import {TUI_CONFIRM, TuiBreadcrumbs, TuiConfirmData} from '@taiga-ui/kit';
 import {from, NEVER, switchMap} from 'rxjs';
-import {Router} from '@angular/router';
+import {Router, RouterLink} from '@angular/router';
 import {TuiResponsiveDialogService} from '@taiga-ui/addon-mobile';
 import {ReportsService} from '../../services/reports.service';
+import {Header} from '../../components/header/header';
+import {TuiItem} from '@taiga-ui/cdk';
 
 @Component({
   selector: 'app-instructions.page',
   imports: [
     AsyncPipe,
     TuiButton,
-    InstructionInput
+    InstructionInput,
+    TuiScrollbar,
+    Header,
+    RouterLink,
+    TuiBreadcrumbs,
+    TuiLink,
+    TuiItem
   ],
   templateUrl: './settings-page.component.html',
   styleUrl: './settings-page.component.scss',
@@ -28,6 +36,7 @@ export class SettingsPage implements OnInit {
   private readonly reportsService = inject(ReportsService);
   private readonly instructionService = inject(InstructionService);
 
+  protected readonly selectedReport$ = this.reportsService.selectedReport$;
   protected readonly instructions$ = this.instructionService.instructions$;
 
   ngOnInit() {

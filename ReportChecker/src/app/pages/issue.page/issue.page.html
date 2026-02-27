@@ -1,35 +1,70 @@
-<div class="container page-padding" *tuiLet="selectedIssue$ | async as issue">
-  @if (issue) {
-    <div class="header-container">
-      <div class="side-container">
-        <a tuiIconButton routerLink="../.." iconStart="@tui.chevron-left" appearance="flat"></a>
-        <h2>{{ issue.title }}</h2>
-      </div>
-      <div class="side-container">
-        @if (issue.status == 'Open') {
-          <button tuiButton appearance="positive" iconStart="@tui.check" [loading]="loading | async"
-                  (click)="addComment('Fixed')">
-            Исправлена
+<div class="container page-sized" *tuiLet="selectedIssue$ | async as issue">
+  <app-header>
+    <tui-breadcrumbs size="l" class="path">
+      @let report = selectedReport$ | async;
+      @if (report) {
+        <ng-container>
+          <a *tuiItem tuiLink routerLink="../.." iconStart="@tui.book">{{ report.name }}</a>
+        </ng-container>
+      }
+
+      @if (issue) {
+        <ng-container>
+          <a *tuiItem tuiLink routerLink="." [iconStart]="issue | issueIcon">{{ issue.title }}</a>
+        </ng-container>
+      }
+    </tui-breadcrumbs>
+  </app-header>
+  <tui-scrollbar>
+    <div class="body-container page-padding">
+      @if (issue) {
+        <div class="header-container">
+          <div class="side-container">
+            <a tuiIconButton routerLink="../.." iconStart="@tui.chevron-left" appearance="flat"></a>
+            <h2>{{ issue.title }}</h2>
+          </div>
+          <div class="side-container">
+            @if (issue.status == 'Open') {
+              <button tuiButton appearance="positive" iconStart="@tui.check" [loading]="loading | async"
+                      (click)="addComment('Fixed')">
+                Исправлена
+              </button>
+              <button tuiButton appearance="negative" iconStart="@tui.x" [loading]="loading | async"
+                      (click)="addComment('Closed')">
+                Закрыть
+              </button>
+            } @else {
+              @if (issue.status == 'Closed') {
+                <tui-icon appearance="info" icon="@tui.x" size="xl" tuiBadge/>
+                <label tuiLabel>Закрыта</label>
+              } @else if (issue.status == 'Fixed') {
+                <tui-icon appearance="positive" icon="@tui.check" size="xl" tuiBadge/>
+                <label tuiLabel>Исправлена</label>
+              }
+              <button tuiButton appearance="secondary" iconStart="@tui.book-open" [loading]="loading | async"
+                      (click)="addComment('Open')">
+                Переоткрыть
+              </button>
+            }
+          </div>
+        </div>
+        <div class="navigation-container">
+          @let previousIssue = issue | previousIssue | async;
+          <!--      @if (previousIssue) {-->
+          <button tuiButton size="s" iconStart="@tui.chevron-left" appearance="flat" [disabled]="!previousIssue"
+                  [routerLink]="'../' + previousIssue?.id">Предыдущая ошибка
           </button>
-          <button tuiButton appearance="negative" iconStart="@tui.x" [loading]="loading | async"
-                  (click)="addComment('Closed')">
-            Закрыть
+          <!--      }-->
+          @let nextIssue = issue | nextIssue | async;
+          <!--      @if (nextIssue) {-->
+          <button tuiButton size="s" iconEnd="@tui.chevron-right" appearance="flat" [disabled]="!nextIssue"
+                  [routerLink]="'../' + nextIssue?.id">
+            Следующая ошибка
           </button>
-        } @else {
-          @if (issue.status == 'Closed') {
-            <tui-icon appearance="info" icon="@tui.x" size="xl" tuiBadge/>
-            <label tuiLabel>Закрыта</label>
-          } @else if (issue.status == 'Fixed') {
-            <tui-icon appearance="positive" icon="@tui.check" size="xl" tuiBadge/>
-            <label tuiLabel>Исправлена</label>
-          }
-          <button tuiButton appearance="secondary" iconStart="@tui.book-open" [loading]="loading | async"
-                  (click)="addComment('Open')">
-            Переоткрыть
-          </button>
-        }
-      </div>
+          <!--      }-->
+        </div>
+        <app-comments [issue]="issue"/>
+      }
     </div>
-    <app-comments [issue]="issue"/>
-  }
+  </tui-scrollbar>
 </div>

@@ -1,6 +1,6 @@
 <div class="container">
   @if (issue().status == 'Open') {
-    <tui-icon [appearance]="issue() | issueAppearance" [icon]="issue().priority | issueIcon" size="xl"
+    <tui-icon [appearance]="issue() | issueAppearance" [icon]="issue() | issueIcon" size="xl"
               tuiBadge/>
   } @else {
     <tui-icon [appearance]="issue() | issueAppearance" [icon]="issue().status == 'Fixed' ? '@tui.check' : '@tui.x'"

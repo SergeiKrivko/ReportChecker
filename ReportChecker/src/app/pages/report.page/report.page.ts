@@ -1,11 +1,11 @@
 import {ChangeDetectionStrategy, Component, inject, OnInit} from '@angular/core';
-import {RouterLink} from '@angular/router';
+import {RouterLink, RouterLinkActive} from '@angular/router';
 import {map, Subject} from 'rxjs';
 import {IssuesService} from '../../services/issues.service';
 import {AsyncPipe} from '@angular/common';
 import {TuiAccordion} from '@taiga-ui/experimental/components';
-import {TuiButton, TuiGroup, TuiHint, TuiIcon, TuiLoader, TuiScrollbar, TuiSurface} from '@taiga-ui/core';
-import {TuiAvatar, TuiBadge, TuiButtonLoading} from '@taiga-ui/kit';
+import {TuiButton, TuiGroup, TuiHint, TuiIcon, TuiLink, TuiLoader, TuiScrollbar, TuiSurface} from '@taiga-ui/core';
+import {TuiAvatar, TuiBadge, TuiBreadcrumbs, TuiButtonLoading} from '@taiga-ui/kit';
 import {IssueAppearancePipe} from '../../pipes/issue-appearance-pipe';
 import {IssueIconPipe} from '../../pipes/issue-icon-pipe';
 import {Comments} from '../../components/comments/comments';
@@ -42,7 +42,10 @@ import {FileSpVersion} from '../../components/file-sp-version/file-sp-version';
     TuiSurface,
     Header,
     TuiScrollbar,
-    FileSpVersion
+    FileSpVersion,
+    RouterLinkActive,
+    TuiBreadcrumbs,
+    TuiLink
   ],
   templateUrl: './report.page.html',
   styleUrl: './report.page.scss',
