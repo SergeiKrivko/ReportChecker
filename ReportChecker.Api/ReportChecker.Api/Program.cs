@@ -35,13 +35,13 @@ builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<ICheckService, CheckService>();
 builder.Services.AddScoped<IAiAgentClient, AiAgent.AiAgent>();
 builder.Services.AddScoped<IAiService, AiService>();
-builder.Services.AddSingleton<IProviderService, ProviderService>();
-builder.Services.AddSingleton<IUserRepository, AuthApiClient>();
-builder.Services.AddSingleton<GithubService>();
+builder.Services.AddScoped<IProviderService, ProviderService>();
+builder.Services.AddScoped<IUserRepository, AuthApiClient>();
+builder.Services.AddScoped<GithubService>();
 builder.Services.AddScoped<WebhookEventProcessor, GithubWebhookProcessor>();
 
-builder.Services.AddSingleton<FileSourceProvider>();
-builder.Services.AddSingleton<GitHubSourceProvider>();
+builder.Services.AddScoped<ISourceProvider, FileSourceProvider>();
+builder.Services.AddScoped<ISourceProvider, GitHubSourceProvider>();
 builder.Services.AddSingleton<LatexFormatProvider>();
 builder.Services.AddSingleton<PdfFormatProvider>();
 

@@ -8,20 +8,13 @@ using IFormatProvider = ReportChecker.Abstractions.IFormatProvider;
 namespace ReportChecker.Application.Services;
 
 public class ProviderService(
-    FileSourceProvider fileSourceProvider,
-    GitHubSourceProvider gitHubSourceProvider,
+    IEnumerable<ISourceProvider> sourceProviders,
     LatexFormatProvider latexFormatProvider,
     PdfFormatProvider pdfFormatProvider) : IProviderService
 {
-    private readonly Dictionary<string, ISourceProvider> _sourceProviders = new()
-    {
-        { fileSourceProvider.Key, fileSourceProvider },
-        { gitHubSourceProvider.Key, gitHubSourceProvider },
-    };
-
     public ISourceProvider GetSourceProvider(string providerName)
     {
-        return _sourceProviders[providerName];
+        return sourceProviders.First(e => e.Key == providerName);
     }
 
     private readonly Dictionary<string, IFormatProvider> _formatProviders = new()
