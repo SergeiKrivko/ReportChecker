@@ -67,12 +67,9 @@ public class AuthService(IConfiguration configuration, IHttpClientFactory httpCl
         return token ?? throw new Exception("Invalid token");
     }
 
-    public async Task<UserInfo> GetUserInfoAsync(string accessToken)
+    public async Task<UserInfo> GetUserInfoAsync(Guid userId)
     {
-        var resp = await _httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Get, "api/v1/auth/userinfo")
-        {
-            Headers = { Authorization = AuthenticationHeaderValue.Parse(accessToken) }
-        });
+        var resp = await _httpClient.GetAsync($"api/v1/service/users/{userId}");
         resp.EnsureSuccessStatusCode();
         return await resp.Content.ReadFromJsonAsync<UserInfo>() ?? throw new Exception("Invalid user info");
     }

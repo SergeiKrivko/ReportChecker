@@ -1,10 +1,10 @@
+using System.Net.Http.Headers;
 using System.Text.Json.Serialization;
 using AiAgent;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Protocols;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
+using Octokit.Webhooks.AspNetCore;
 using ReportChecker.Abstractions;
 using ReportChecker.Application.Services;
 using ReportChecker.DataAccess;
@@ -13,6 +13,7 @@ using ReportChecker.FormatProviders.Latex;
 using ReportChecker.FormatProviders.Pdf;
 using ReportChecker.S3;
 using ReportChecker.SourceProviders.File;
+using ReportChecker.SourceProviders.GitHub;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,13 +35,22 @@ builder.Services.AddScoped<ICheckService, CheckService>();
 builder.Services.AddScoped<IAiAgentClient, AiAgent.AiAgent>();
 builder.Services.AddScoped<IAiService, AiService>();
 builder.Services.AddSingleton<IProviderService, ProviderService>();
+builder.Services.AddSingleton<IUserRepository, AuthApiClient>();
+builder.Services.AddSingleton<GithubService>();
+builder.Services.AddScoped<GithubWebhookProcessor>();
 
 builder.Services.AddSingleton<FileSourceProvider>();
+builder.Services.AddSingleton<GitHubSourceProvider>();
 builder.Services.AddSingleton<LatexFormatProvider>();
 builder.Services.AddSingleton<PdfFormatProvider>();
 
 builder.Services.AddHttpClient("Auth",
-    client => { client.BaseAddress = new Uri(builder.Configuration["Security.AuthApiUrl"] ?? throw new Exception()); });
+    client =>
+    {
+        client.BaseAddress = new Uri(builder.Configuration["Security.AuthApiUrl"] ?? throw new Exception());
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer",
+            builder.Configuration["Security.ApiToken"] ?? throw new Exception());
+    });
 
 builder.Services.AddControllers()
     .AddJsonOptions(options => { options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); });
@@ -85,6 +95,7 @@ app.UseCors(policy => policy
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapGitHubWebhooks();
 
 await using (var scope = app.Services.CreateAsyncScope())
 {

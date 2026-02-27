@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReportChecker.Abstractions;
+using ReportChecker.Api.Extensions;
 using ReportChecker.Api.Schemas;
 using ReportChecker.Models;
 
@@ -66,7 +67,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     {
         try
         {
-            return Ok(await authService.GetUserInfoAsync(Request.Headers.Authorization.ToString()));
+            return Ok(await authService.GetUserInfoAsync(User.UserId));
         }
         catch (HttpRequestException e)
         {

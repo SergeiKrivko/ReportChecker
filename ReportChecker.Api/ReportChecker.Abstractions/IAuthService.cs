@@ -8,5 +8,5 @@ public interface IAuthService
     public Task<UserCredentials> GetTokenAsync(string code);
     public Task LinkAccountAsync(string code, string accessToken);
     public Task<UserCredentials> RefreshTokenAsync(string refreshToken);
-    public Task<UserInfo> GetUserInfoAsync(string accessToken);
+    public Task<UserInfo> GetUserInfoAsync(Guid userId);
 }

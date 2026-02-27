@@ -61,6 +61,14 @@ public class ReportRepository(ReportCheckerDbContext dbContext) : IReportReposit
         return result.Select(FromEntity);
     }
 
+    public async Task<IEnumerable<Report>> GetAllReportsOfSourceAsync(string sourceProvider)
+    {
+        var result = await dbContext.Reports
+            .Where(e => e.SourceProvider == sourceProvider && e.DeletedAt == null)
+            .ToListAsync();
+        return result.Select(FromEntity);
+    }
+
     private static Report FromEntity(ReportEntity entity)
     {
         return new Report

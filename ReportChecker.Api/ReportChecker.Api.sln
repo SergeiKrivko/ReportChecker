@@ -31,6 +31,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReportChecker.FormatProviders.Pdf", "FormatProviders\ReportChecker.FormatProviders.Pdf\ReportChecker.FormatProviders.Pdf.csproj", "{88EA25E4-7B05-4675-A353-19EBC77E8F83}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReportChecker.SourceProviders.GitHub", "SourceProviders\ReportChecker.SourceProviders.GitHub\ReportChecker.SourceProviders.GitHub.csproj", "{20C88E06-11D8-4E22-BDC9-B252C5E9CEE7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -77,10 +79,15 @@ Global
 		{88EA25E4-7B05-4675-A353-19EBC77E8F83}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{88EA25E4-7B05-4675-A353-19EBC77E8F83}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{88EA25E4-7B05-4675-A353-19EBC77E8F83}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20C88E06-11D8-4E22-BDC9-B252C5E9CEE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20C88E06-11D8-4E22-BDC9-B252C5E9CEE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20C88E06-11D8-4E22-BDC9-B252C5E9CEE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20C88E06-11D8-4E22-BDC9-B252C5E9CEE7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{162726D2-9074-44AA-9744-910001C66F9C} = {F7B2194B-EE36-4784-AC14-1630E0C93151}
 		{D1A86CAF-BE53-4AAE-8F1A-759A6CD35C64} = {D530971F-CA0A-485B-B961-D3AF015A2396}
 		{88EA25E4-7B05-4675-A353-19EBC77E8F83} = {D530971F-CA0A-485B-B961-D3AF015A2396}
+		{20C88E06-11D8-4E22-BDC9-B252C5E9CEE7} = {F7B2194B-EE36-4784-AC14-1630E0C93151}
 	EndGlobalSection
 EndGlobal

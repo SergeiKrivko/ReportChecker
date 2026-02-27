@@ -14,6 +14,7 @@
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.2" />
+        <PackageReference Include="Octokit.Webhooks.AspNetCore" Version="3.2.1" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2"/>
     </ItemGroup>
 
@@ -25,6 +26,7 @@
       <ProjectReference Include="..\ReportChecker.DataAccess\ReportChecker.DataAccess.csproj" />
       <ProjectReference Include="..\ReportChecker.S3\ReportChecker.S3.csproj" />
       <ProjectReference Include="..\SourceProviders\ReportChecker.SourceProviders.File\ReportChecker.SourceProviders.File.csproj" />
+      <ProjectReference Include="..\SourceProviders\ReportChecker.SourceProviders.GitHub\ReportChecker.SourceProviders.GitHub.csproj" />
     </ItemGroup>
 
 </Project>

@@ -11,6 +11,7 @@
       <ProjectReference Include="..\FormatProviders\ReportChecker.FormatProviders.Pdf\ReportChecker.FormatProviders.Pdf.csproj" />
       <ProjectReference Include="..\ReportChecker.Abstractions\ReportChecker.Abstractions.csproj" />
       <ProjectReference Include="..\SourceProviders\ReportChecker.SourceProviders.File\ReportChecker.SourceProviders.File.csproj" />
+      <ProjectReference Include="..\SourceProviders\ReportChecker.SourceProviders.GitHub\ReportChecker.SourceProviders.GitHub.csproj" />
     </ItemGroup>
 
     <ItemGroup>

@@ -9,4 +9,5 @@ public interface IReportRepository
     public Task<bool> RenameReportAsync(Guid reportId, string newName);
     public Task<Report?> GetReportByIdAsync(Guid reportId);
     public Task<IEnumerable<Report>> GetAllReportsOfUserAsync(Guid userId);
+    public Task<IEnumerable<Report>> GetAllReportsOfSourceAsync(string sourceProvider);
 }
