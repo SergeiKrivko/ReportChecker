@@ -77,7 +77,7 @@ public class ReportRepository(ReportCheckerDbContext dbContext) : IReportReposit
             OwnerId = entity.OwnerId,
             Name = entity.Name,
             SourceProvider = entity.SourceProvider,
-            Source = entity.SourceProvider,
+            Source = entity.Source,
             Format = entity.Format,
             CreatedAt = entity.CreatedAt,
             DeletedAt = entity.DeletedAt,
