@@ -64,7 +64,7 @@ public class IssueRepository(ReportCheckerDbContext dbContext) : IIssueRepositor
                 .OrderByDescending(e => e.CreatedAt)
                 .FirstOrDefault()
                 ?.Status ?? IssueStatus.Open,
-            Comments = entity.Comments.Select(CommentRepository.FromEntity).ToArray(),
+            Comments = entity.Comments.Where(e => e.DeletedAt == null).Select(CommentRepository.FromEntity).ToArray(),
             Chapter = entity.Chapter,
         };
     }
