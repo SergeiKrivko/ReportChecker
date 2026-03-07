@@ -4,8 +4,8 @@ public interface ISourceProvider
 {
     public string Key { get; }
 
-    public Task<Stream> GetStreamAsync(string source);
+    public Task<IFileArchive> OpenAsync(string source);
     public Task<SourceSchema> FindSourceAsync(string source);
 }
 
-public record SourceSchema(string Source, Stream Stream, string? Name = null);
+public record SourceSchema(string Source, IFileArchive Archive, string? Name = null);

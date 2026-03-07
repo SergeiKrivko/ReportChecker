@@ -11,3 +11,8 @@
     padding: 0 5rem;
   }
 }
+
+.body-padding {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}

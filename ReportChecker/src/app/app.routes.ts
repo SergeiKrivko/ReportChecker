@@ -7,11 +7,13 @@ import {SettingsPage} from './pages/settings.page/settings-page.component';
 import {ReportRootPage} from './pages/report-root.page/report-root.page';
 import {IssuePage} from './pages/issue.page/issue.page';
 import {RootPage} from './pages/root.page/root.page';
+import {NewReportPage} from './pages/new-report.page/new-report.page';
 
 export const routes: Routes = [
   {
     path: "", component: RootPage, children: [
       {path: "", pathMatch: "full", component: HomePage},
+      {path: "reports/new", pathMatch: "full", component: NewReportPage},
       {
         path: "reports/:id", component: ReportRootPage, children: [
           {path: "", pathMatch: "full", component: ReportPage},

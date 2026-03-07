@@ -26,7 +26,7 @@ public class CheckService(
     {
         var checkId = await checkRepository.CreateCheckAsync(reportId, userId, source.Source, source.Name);
         var scope = serviceProvider.CreateScope();
-        scope.ServiceProvider.GetRequiredService<ICheckService>().RunCheck(checkId, source.Stream);
+        scope.ServiceProvider.GetRequiredService<ICheckService>().RunCheck(checkId, source.Archive);
         return checkId;
     }
 
@@ -42,7 +42,7 @@ public class CheckService(
                 throw new ArgumentException($"Report with id {check.ReportId} does not exist");
             var sourceProvider = providerService.GetSourceProvider(report.SourceProvider);
             var sourceStream =
-                await sourceProvider.GetStreamAsync(check.Source ?? throw new Exception("Source is null"));
+                await sourceProvider.OpenAsync(check.Source ?? throw new Exception("Source is null"));
             await RunCheck(report, check, sourceStream);
         }
         catch (Exception e)
@@ -51,7 +51,7 @@ public class CheckService(
         }
     }
 
-    public async void RunCheck(Guid checkId, Stream source)
+    public async void RunCheck(Guid checkId, IFileArchive source)
     {
         try
         {
@@ -69,7 +69,7 @@ public class CheckService(
         }
     }
 
-    private async Task RunCheck(Report report, Check check, Stream source)
+    private async Task RunCheck(Report report, Check check, IFileArchive source)
     {
         await checkRepository.SetCheckStatusAsync(check.Id, ProgressStatus.InProgress);
 
@@ -85,7 +85,7 @@ public class CheckService(
             {
                 var sourceProvider = providerService.GetSourceProvider(report.SourceProvider);
                 var previousSource =
-                    await sourceProvider.GetStreamAsync(previousCheck.Source ?? throw new Exception("Source is null"));
+                    await sourceProvider.OpenAsync(previousCheck.Source ?? throw new Exception("Source is null"));
                 previousChapters = (await formatProvider.GetChaptersAsync(previousSource)).ToList();
             }
 
@@ -111,7 +111,7 @@ public class CheckService(
 
         var sourceProvider = providerService.GetSourceProvider(report.SourceProvider);
         var sourceStream =
-            await sourceProvider.GetStreamAsync(check.Source ?? throw new Exception("Source is null"));
+            await sourceProvider.OpenAsync(check.Source ?? throw new Exception("Source is null"));
 
         var formatProvider = providerService.GetFormatProvider(report.Format);
         var chapters = await formatProvider.GetChaptersAsync(sourceStream);

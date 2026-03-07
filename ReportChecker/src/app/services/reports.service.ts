@@ -1,10 +1,18 @@
 import {inject, Injectable} from '@angular/core';
-import {ApiClient, CreateCheckSchema, CreateReportSchema, Report} from './api-client';
+import {
+  ApiClient,
+  CreateCheckSchema,
+  CreateReportSchema,
+  Report,
+  SourceInfo,
+  TestSourceRequestSchema
+} from './api-client';
 import {catchError, map, NEVER, Observable, of, switchMap, take, tap} from 'rxjs';
 import {ReportEntity} from '../entities/report-entity';
 import {patchState, signalState} from '@ngrx/signals';
 import {toObservable} from '@angular/core/rxjs-interop';
 import {AuthService} from './auth-service';
+import {SourceInfoEntity} from '../entities/source-info-entity';
 
 interface ReportsStore {
   reports: ReportEntity[];
@@ -45,12 +53,12 @@ export class ReportsService {
     );
   }
 
-  createReport(name: string, source: string, format: string): Observable<string> {
+  createReport(name: string, source: string, sourceProvider: string, format: string): Observable<string> {
     return this.authService.refreshToken().pipe(
       switchMap(() => this.apiClient.reportsPOST(CreateReportSchema.fromJS({
         name: name,
         source: source,
-        sourceProvider: "File",
+        sourceProvider: sourceProvider,
         format: format,
       })))
     );
@@ -98,6 +106,13 @@ export class ReportsService {
       switchMap(() => this.loadReports()),
     );
   }
+
+  testSource(provider: string, source: string) {
+    return this.authService.refreshToken().pipe(
+      switchMap(() => this.apiClient.testSource(TestSourceRequestSchema.fromJS({provider, source}))),
+      map(sourceInfoToEntity),
+    )
+  }
 }
 
 const reportToEntity = (report: Report): ReportEntity => ({
@@ -106,5 +121,10 @@ const reportToEntity = (report: Report): ReportEntity => ({
   sourceProvider: report.sourceProvider ?? "File",
   source: report.source ?? null,
   format: report.format ?? "Latex",
+});
+
+const sourceInfoToEntity = (info: SourceInfo): SourceInfoEntity => ({
+  status: info.status,
+  format: info.format,
 });
 

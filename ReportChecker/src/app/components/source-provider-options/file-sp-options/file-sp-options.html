@@ -1,0 +1,4 @@
+<div class="container page-padding body-padding">
+  <app-file-uploader [formControl]="control" />
+  <app-source-tester provider="File" [source]="source$ | async" [name]="reportName$ | async" />
+</div>

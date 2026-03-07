@@ -15,6 +15,7 @@ using ReportChecker.FormatProviders.Pdf;
 using ReportChecker.S3;
 using ReportChecker.SourceProviders.File;
 using ReportChecker.SourceProviders.GitHub;
+using IFormatProvider = ReportChecker.Abstractions.IFormatProvider;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,8 +43,8 @@ builder.Services.AddScoped<WebhookEventProcessor, GithubWebhookProcessor>();
 
 builder.Services.AddScoped<ISourceProvider, FileSourceProvider>();
 builder.Services.AddScoped<ISourceProvider, GitHubSourceProvider>();
-builder.Services.AddSingleton<LatexFormatProvider>();
-builder.Services.AddSingleton<PdfFormatProvider>();
+builder.Services.AddSingleton<IFormatProvider, LatexFormatProvider>();
+builder.Services.AddSingleton<IFormatProvider, PdfFormatProvider>();
 
 builder.Services.AddHttpClient("Auth",
     client =>
@@ -96,7 +97,7 @@ app.UseCors(policy => policy
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapGitHubWebhooks();
+app.MapGitHubWebhooks("api/v1/github/webhooks");
 
 await using (var scope = app.Services.CreateAsyncScope())
 {

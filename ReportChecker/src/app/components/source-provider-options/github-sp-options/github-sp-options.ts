@@ -1,0 +1,73 @@
+import {ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit} from '@angular/core';
+import {FormControl, FormGroup, FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {TuiForm} from '@taiga-ui/layout';
+import {TuiTextfield} from '@taiga-ui/core';
+import {TuiDataListWrapper, TuiSelect} from '@taiga-ui/kit';
+import {RepositoryEntity} from '../../../entities/github-entities';
+import {GithubService} from '../../../services/github.service';
+import {AsyncPipe} from '@angular/common';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {combineLatest, debounceTime, map, tap} from 'rxjs';
+import {SourceTester} from '../../source-tester/source-tester';
+
+@Component({
+  standalone: true,
+  selector: 'app-github-sp-options',
+  imports: [
+    TuiForm,
+    TuiTextfield,
+    FormsModule,
+    ReactiveFormsModule,
+    TuiSelect,
+    TuiDataListWrapper,
+    AsyncPipe,
+    SourceTester
+  ],
+  templateUrl: './github-sp-options.html',
+  styleUrl: './github-sp-options.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class GithubSpOptions implements OnInit {
+  private readonly githubService = inject(GithubService);
+  private readonly destroyRef = inject(DestroyRef);
+
+  ngOnInit() {
+    combineLatest([this.githubService.loadRepositories$, this.githubService.loadBranches$]).pipe(
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe();
+
+    this.control.get('repository')?.valueChanges.pipe(
+      tap(e => {
+        if (e)
+          this.githubService.selectRepository(e)
+      }),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe();
+  }
+
+  protected readonly repositories$ = this.githubService.repositories$;
+  protected readonly branches$ = this.githubService.branches$;
+
+  protected readonly control = new FormGroup({
+    repository: new FormControl<RepositoryEntity | null>(null),
+    branch: new FormControl<string | null>(null),
+    path: new FormControl<string>(""),
+  });
+
+  protected readonly source$ = this.control.valueChanges.pipe(
+    debounceTime(1000),
+    map(value => JSON.stringify({
+      RepositoryId: value.repository?.id,
+      BranchName: value.branch,
+      FilePath: value.path,
+    })),
+  );
+
+  protected readonly reportName$ = this.control.valueChanges.pipe(
+    map(value => value.repository?.name),
+  );
+
+  protected stringifyRepository(repository: RepositoryEntity) {
+    return repository.name;
+  }
+}

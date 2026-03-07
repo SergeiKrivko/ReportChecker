@@ -1,6 +1,4 @@
-﻿using System.IO.Compression;
-using System.Text.Json;
-using Octokit;
+﻿using System.Text.Json;
 using ReportChecker.Abstractions;
 
 namespace ReportChecker.SourceProviders.GitHub;
@@ -9,32 +7,19 @@ public class GitHubSourceProvider(GithubService githubService) : ISourceProvider
 {
     public string Key => "GitHub";
 
-    public async Task<Stream> GetStreamAsync(string sourceJson)
+    public async Task<IFileArchive> OpenAsync(string sourceJson)
     {
         var source = JsonSerializer.Deserialize<GitHubCommitSourceSchema>(sourceJson) ??
                      throw new InvalidOperationException();
-        return await GetStreamAsync(source);
+        return await OpenAsync(source);
     }
 
-    private async Task<Stream> GetStreamAsync(GitHubCommitSourceSchema source)
+    private async Task<IFileArchive> OpenAsync(GitHubCommitSourceSchema source)
     {
         var client = await githubService.CreateRepositoryClient(source.RepositoryId);
         var contents =
             await client.Repository.Content.GetAllContentsByRef(source.RepositoryId, source.FilePath, source.CommitId);
-        var httpClient = new HttpClient();
-        if (contents.Count == 1)
-            return await httpClient.GetStreamAsync(contents[0].DownloadUrl);
-
-        var stream = new MemoryStream();
-        await using (var zip = new ZipArchive(stream, ZipArchiveMode.Create))
-            foreach (var content in contents.Where(e => e.DownloadUrl != null))
-            {
-                await using var contentStream = await httpClient.GetStreamAsync(content.DownloadUrl);
-                await using var entryStream = await zip.CreateEntry(content.Name, CompressionLevel.Optimal).OpenAsync();
-                await contentStream.CopyToAsync(entryStream);
-            }
-        
-        return new MemoryStream(stream.ToArray());
+        return new GitHubArchive(contents, source.FilePath);
     }
 
     public async Task<SourceSchema> FindSourceAsync(string sourceJson)
@@ -52,6 +37,6 @@ public class GitHubSourceProvider(GithubService githubService) : ISourceProvider
             CommitId = branch.Commit.Sha
         };
 
-        return new SourceSchema(JsonSerializer.Serialize(result), await GetStreamAsync(result), branch.Commit.Label);
+        return new SourceSchema(JsonSerializer.Serialize(result), await OpenAsync(result), branch.Commit.Label);
     }
 }

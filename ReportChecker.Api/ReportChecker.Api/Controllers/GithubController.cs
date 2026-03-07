@@ -16,4 +16,17 @@ public class GithubController(GithubService githubService) : ControllerBase
     {
         return Ok(await githubService.GetRepositories(User.UserId));
     }
+
+    [HttpGet("branches")]
+    public async Task<ActionResult<IEnumerable<string>>> GetBranches([FromQuery] long repositoryId)
+    {
+        return Ok(await githubService.GetBranchesOfRepositoryAsync(User.UserId, repositoryId));
+    }
+
+    [HttpGet("files")]
+    public async Task<ActionResult<IEnumerable<RepositoryFile>>> GetFiles([FromQuery] long repositoryId,
+        [FromQuery] string branch)
+    {
+        return Ok(await githubService.GetFilesOfRepositoryAsync(User.UserId, repositoryId, branch));
+    }
 }

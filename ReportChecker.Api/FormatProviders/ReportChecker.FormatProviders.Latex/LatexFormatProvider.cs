@@ -1,4 +1,4 @@
-﻿using System.IO.Compression;
+﻿using ReportChecker.Abstractions;
 using ReportChecker.Models;
 using IFormatProvider = ReportChecker.Abstractions.IFormatProvider;
 
@@ -8,20 +8,18 @@ public class LatexFormatProvider : IFormatProvider
 {
     public string Key => "Latex";
 
-    public async Task<IEnumerable<Chapter>> GetChaptersAsync(Stream sourceStream)
+    public async Task<IEnumerable<Chapter>> GetChaptersAsync(IFileArchive archive)
     {
-        await using var zip = new ZipArchive(sourceStream, ZipArchiveMode.Read);
-        return await ParseFileAsync("report.tex", zip).ToListAsync();
+        return await ParseFileAsync("report.tex", archive).ToListAsync();
     }
 
     private const string IncludePrefix = "\\include{";
     private const string IncludeSuffix = "}";
 
-    private static async IAsyncEnumerable<Chapter> ParseFileAsync(string fileName, ZipArchive zip)
+    private static async IAsyncEnumerable<Chapter> ParseFileAsync(string fileName, IFileArchive archive)
     {
         string text;
-        var entry = zip.GetEntry(fileName) ?? throw new FileNotFoundException();
-        await using (var entryStream = await entry.OpenAsync())
+        await using (var entryStream = await archive.OpenAsync(fileName) ?? throw new FileNotFoundException())
         {
             text = await new StreamReader(entryStream).ReadToEndAsync();
         }
@@ -37,8 +35,14 @@ public class LatexFormatProvider : IFormatProvider
             {
                 var includeFileName = line.Substring(IncludePrefix.Length,
                     line.Length - IncludePrefix.Length - IncludeSuffix.Length);
-                await foreach (var chapter in ParseFileAsync(includeFileName + ".tex", zip))
+                await foreach (var chapter in ParseFileAsync(includeFileName + ".tex", archive))
                     yield return chapter;
             }
+    }
+
+    public async Task<bool> TestSourceAsync(IFileArchive archive)
+    {
+        await using var entry = await archive.OpenAsync("report.tex");
+        return entry != null;
     }
 }

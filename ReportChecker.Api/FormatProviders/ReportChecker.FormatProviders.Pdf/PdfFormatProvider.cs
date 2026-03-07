@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using ReportChecker.Abstractions;
 using ReportChecker.Models;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.Content;
@@ -11,8 +12,9 @@ public class PdfFormatProvider : IFormatProvider
 {
     public string Key => "Pdf";
 
-    public async Task<IEnumerable<Chapter>> GetChaptersAsync(Stream sourceStream)
+    public async Task<IEnumerable<Chapter>> GetChaptersAsync(IFileArchive archive)
     {
+        await using var sourceStream = await archive.OpenAsync() ?? throw new FileNotFoundException();
         using var document = PdfDocument.Open(sourceStream);
         if (document.TryGetBookmarks(out var bookmarks))
         {
@@ -121,5 +123,10 @@ public class PdfFormatProvider : IFormatProvider
         }
 
         return builder.ToString();
+    }
+
+    public Task<bool> TestSourceAsync(IFileArchive archive)
+    {
+        return Task.FromResult(archive.Name?.EndsWith(".pdf") ?? false);
     }
 }

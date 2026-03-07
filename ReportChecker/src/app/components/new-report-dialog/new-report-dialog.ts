@@ -1,8 +1,6 @@
 import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
-import {TuiFiles} from '@taiga-ui/kit';
 import {from, map, switchMap, tap} from 'rxjs';
-import {AsyncPipe, NgIf} from '@angular/common';
 import {injectContext} from '@taiga-ui/polymorpheus';
 import {TuiButton, TuiDialogContext} from '@taiga-ui/core';
 import {ReportsService} from '../../services/reports.service';
@@ -14,9 +12,6 @@ import {Router} from '@angular/router';
   selector: 'app-new-report-dialog',
   imports: [
     ReactiveFormsModule,
-    TuiFiles,
-    NgIf,
-    AsyncPipe,
     TuiButton,
     FileUploader
   ],
@@ -41,7 +36,7 @@ export class NewReportDialog {
     else if (this.control.value.fileName.endsWith(".pdf"))
       format = "Pdf";
 
-    this.reportsService.createReport(this.control.value.fileName, JSON.stringify(this.control.value), format).pipe(
+    this.reportsService.createReport(this.control.value.fileName, JSON.stringify(this.control.value), 'File', format).pipe(
       switchMap(reportId => this.reportsService.loadReports().pipe(map(() => reportId))),
       switchMap(reportId => from(this.router.navigate(['reports/' + reportId]))),
       tap(() => {

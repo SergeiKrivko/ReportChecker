@@ -1,0 +1,20 @@
+<div class="container">
+  @switch (sourceInfo?.status) {
+    @case ('NotFound') {
+      <tui-notification size="l" appearance="negative">
+        Источник не найден
+      </tui-notification>
+    }
+    @case ('WrongFormat') {
+      <tui-notification size="l" appearance="negative">
+        Некорректный формат
+      </tui-notification>
+    }
+    @case ('Success') {
+      <tui-notification size="l" appearance="positive">
+        Формат: <b>{{ sourceInfo?.format }}</b>
+      </tui-notification>
+      <button tuiButton iconStart="@tui.check" (click)="createReport()">Создать отчет</button>
+    }
+  }
+</div>

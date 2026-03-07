@@ -8,4 +8,5 @@ public interface IReportService
         string source);
 
     public Task<Guid> CreateCheckAsync(Report report);
+    public Task<SourceInfo> GetSourceInfoAsync(string sourceProvider, string source);
 }

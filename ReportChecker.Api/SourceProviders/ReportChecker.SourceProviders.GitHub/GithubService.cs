@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Octokit;
 using ReportChecker.Abstractions;
+using ReportChecker.SourceProviders.GitHub.Models;
 
 namespace ReportChecker.SourceProviders.GitHub;
 
@@ -12,7 +13,7 @@ public class GithubService(IUserRepository userRepository, IConfiguration config
         Credentials = new Credentials(GenerateJwt(), AuthenticationType.Bearer)
     };
 
-    public async Task<GitHubClient> CreateUserClient(Guid userId)
+    private async Task<GitHubClient> CreateUserClient(Guid userId)
     {
         var user = await userRepository.GetUserByIdAsync(userId);
         var account = user?.Accounts.FirstOrDefault(e => e.Provider == "github");
@@ -58,11 +59,31 @@ public class GithubService(IUserRepository userRepository, IConfiguration config
     {
         var client = await CreateUserClient(userId);
 
-        var repositories = await client.Repository.GetAllForCurrent();
-        return repositories.Select(e => new Models.Repository
+        var repositories = await client.GitHubApps.Installation.GetAllRepositoriesForCurrent();
+        return repositories.Repositories.Select(e => new Models.Repository
         {
             Id = e.Id,
             Name = e.Name
         });
+    }
+
+    public async Task<string[]> GetBranchesOfRepositoryAsync(Guid userId, long repositoryId)
+    {
+        var client = await CreateUserClient(userId);
+        var branches = await client.Repository.Branch.GetAll(repositoryId);
+        return branches.Select(e => e.Name).ToArray();
+    }
+
+    public async Task<RepositoryFile[]> GetFilesOfRepositoryAsync(Guid userId, long repositoryId, string branchName)
+    {
+        var client = await CreateUserClient(userId);
+        var branch = await client.Repository.Branch.Get(repositoryId, branchName);
+        var contents =
+            await client.Repository.Content.GetAllContents(repositoryId, branch.Commit.Sha);
+        return contents.Select(e => new RepositoryFile
+        {
+            Name = e.Name,
+            Path = e.Path,
+        }).ToArray();
     }
 }

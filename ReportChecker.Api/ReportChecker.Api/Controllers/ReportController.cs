@@ -71,4 +71,11 @@ public class ReportController(
         await reportRepository.RenameReportAsync(reportId, schema.Name);
         return Ok();
     }
+
+    [HttpPost("test-source")]
+    public async Task<ActionResult<SourceInfo>> CheckReportSource([FromBody] TestSourceRequestSchema schema)
+    {
+        var res = await reportService.GetSourceInfoAsync(schema.Provider, schema.Source);
+        return Ok(res);
+    }
 }

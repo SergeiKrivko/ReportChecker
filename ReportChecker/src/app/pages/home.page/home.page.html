@@ -1,7 +1,8 @@
 <div class="container page-sized">
   <app-header [showTitle]="true"/>
   <div class="buttons-container">
-    <button tuiButton (click)="newReport()">Добавить</button>
+<!--    <button tuiButton (click)="newReport()">Добавить</button>-->
+    <a tuiButton routerLink="./reports/new" iconStart="@tui.plus">Добавить</a>
   </div>
   <tui-scrollbar>
     <div class="reports-container">

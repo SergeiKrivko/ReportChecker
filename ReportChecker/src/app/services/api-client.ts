@@ -561,6 +561,201 @@ export class ApiClient extends ApiClientBase {
     /**
      * @return OK
      */
+    repositories(): Observable<Repository[]> {
+        let url_ = this.baseUrl + "/api/v1/github/repositories";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("get", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.processRepositories(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processRepositories(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<Repository[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<Repository[]>;
+        }));
+    }
+
+    protected processRepositories(response: HttpResponseBase): Observable<Repository[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(Repository.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param repositoryId (optional)
+     * @return OK
+     */
+    branches(repositoryId: number | undefined): Observable<string[]> {
+        let url_ = this.baseUrl + "/api/v1/github/branches?";
+        if (repositoryId === null)
+            throw new Error("The parameter 'repositoryId' cannot be null.");
+        else if (repositoryId !== undefined)
+            url_ += "repositoryId=" + encodeURIComponent("" + repositoryId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("get", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.processBranches(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processBranches(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<string[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<string[]>;
+        }));
+    }
+
+    protected processBranches(response: HttpResponseBase): Observable<string[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(item);
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param repositoryId (optional)
+     * @param branch (optional)
+     * @return OK
+     */
+    filesAll(repositoryId: number | undefined, branch: string | undefined): Observable<RepositoryFile[]> {
+        let url_ = this.baseUrl + "/api/v1/github/files?";
+        if (repositoryId === null)
+            throw new Error("The parameter 'repositoryId' cannot be null.");
+        else if (repositoryId !== undefined)
+            url_ += "repositoryId=" + encodeURIComponent("" + repositoryId) + "&";
+        if (branch === null)
+            throw new Error("The parameter 'branch' cannot be null.");
+        else if (branch !== undefined)
+            url_ += "branch=" + encodeURIComponent("" + branch) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("get", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.processFilesAll(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processFilesAll(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<RepositoryFile[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<RepositoryFile[]>;
+        }));
+    }
+
+    protected processFilesAll(response: HttpResponseBase): Observable<RepositoryFile[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(RepositoryFile.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
     instructionsAll(reportId: string): Observable<Instruction[]> {
         let url_ = this.baseUrl + "/api/v1/reports/{reportId}/instructions";
         if (reportId === undefined || reportId === null)
@@ -1184,6 +1379,64 @@ export class ApiClient extends ApiClientBase {
     /**
      * @return OK
      */
+    commentsDELETE(reportId: string, issueId: string, commentId: string): Observable<void> {
+        let url_ = this.baseUrl + "/api/v1/reports/{reportId}/issues/{issueId}/comments/{commentId}";
+        if (reportId === undefined || reportId === null)
+            throw new Error("The parameter 'reportId' must be defined.");
+        url_ = url_.replace("{reportId}", encodeURIComponent("" + reportId));
+        if (issueId === undefined || issueId === null)
+            throw new Error("The parameter 'issueId' must be defined.");
+        url_ = url_.replace("{issueId}", encodeURIComponent("" + issueId));
+        if (commentId === undefined || commentId === null)
+            throw new Error("The parameter 'commentId' must be defined.");
+        url_ = url_.replace("{commentId}", encodeURIComponent("" + commentId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("delete", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.processCommentsDELETE(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processCommentsDELETE(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<void>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<void>;
+        }));
+    }
+
+    protected processCommentsDELETE(response: HttpResponseBase): Observable<void> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return _observableOf(null as any);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
     reportsAll(): Observable<Report[]> {
         let url_ = this.baseUrl + "/api/v1/reports";
         url_ = url_.replace(/[?&]$/, "");
@@ -1456,6 +1709,64 @@ export class ApiClient extends ApiClientBase {
         if (status === 200) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
             return _observableOf(null as any);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional)
+     * @return OK
+     */
+    testSource(body: TestSourceRequestSchema | undefined): Observable<SourceInfo> {
+        let url_ = this.baseUrl + "/api/v1/reports/test-source";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("post", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.processTestSource(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processTestSource(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<SourceInfo>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<SourceInfo>;
+        }));
+    }
+
+    protected processTestSource(response: HttpResponseBase): Observable<SourceInfo> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = SourceInfo.fromJS(resultData200);
+            return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
@@ -2006,6 +2317,172 @@ export interface IReport {
     source?: string | undefined;
     createdAt?: moment.Moment;
     deletedAt?: moment.Moment | undefined;
+}
+
+export class Repository implements IRepository {
+    id!: number;
+    name!: string | undefined;
+
+    constructor(data?: IRepository) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.name = _data["name"];
+        }
+    }
+
+    static fromJS(data: any): Repository {
+        data = typeof data === 'object' ? data : {};
+        let result = new Repository();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["name"] = this.name;
+        return data;
+    }
+}
+
+export interface IRepository {
+    id: number;
+    name: string | undefined;
+}
+
+export class RepositoryFile implements IRepositoryFile {
+    name!: string | undefined;
+    path!: string | undefined;
+
+    constructor(data?: IRepositoryFile) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["name"];
+            this.path = _data["path"];
+        }
+    }
+
+    static fromJS(data: any): RepositoryFile {
+        data = typeof data === 'object' ? data : {};
+        let result = new RepositoryFile();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name;
+        data["path"] = this.path;
+        return data;
+    }
+}
+
+export interface IRepositoryFile {
+    name: string | undefined;
+    path: string | undefined;
+}
+
+export class SourceInfo implements ISourceInfo {
+    status!: SourceStatus;
+    format?: string | undefined;
+
+    constructor(data?: ISourceInfo) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.status = _data["status"];
+            this.format = _data["format"];
+        }
+    }
+
+    static fromJS(data: any): SourceInfo {
+        data = typeof data === 'object' ? data : {};
+        let result = new SourceInfo();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["status"] = this.status;
+        data["format"] = this.format;
+        return data;
+    }
+}
+
+export interface ISourceInfo {
+    status: SourceStatus;
+    format?: string | undefined;
+}
+
+export enum SourceStatus {
+    NotFound = "NotFound",
+    WrongFormat = "WrongFormat",
+    Success = "Success",
+}
+
+export class TestSourceRequestSchema implements ITestSourceRequestSchema {
+    provider!: string | undefined;
+    source!: string | undefined;
+
+    constructor(data?: ITestSourceRequestSchema) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.provider = _data["provider"];
+            this.source = _data["source"];
+        }
+    }
+
+    static fromJS(data: any): TestSourceRequestSchema {
+        data = typeof data === 'object' ? data : {};
+        let result = new TestSourceRequestSchema();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["provider"] = this.provider;
+        data["source"] = this.source;
+        return data;
+    }
+}
+
+export interface ITestSourceRequestSchema {
+    provider: string | undefined;
+    source: string | undefined;
 }
 
 export class UpdateCommentSchema implements IUpdateCommentSchema {

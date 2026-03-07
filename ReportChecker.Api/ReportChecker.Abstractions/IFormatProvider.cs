@@ -6,5 +6,6 @@ public interface IFormatProvider
 {
     public string Key { get; }
 
-    public Task<IEnumerable<Chapter>> GetChaptersAsync(Stream sourceStream);
+    public Task<IEnumerable<Chapter>> GetChaptersAsync(IFileArchive archive);
+    public Task<bool> TestSourceAsync(IFileArchive archive);
 }
