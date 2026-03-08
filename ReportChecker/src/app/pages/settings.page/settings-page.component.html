@@ -15,6 +15,13 @@
   <tui-scrollbar>
     <div class="body-container page-padding">
       <div class="section-header">
+        <h3>Название</h3>
+      </div>
+      <tui-textfield>
+        <input tuiTextfield [formControl]="reportNameControl">
+      </tui-textfield>
+
+      <div class="section-header">
         <h3>Инструкции</h3>
         <button tuiButton iconStart="@tui.plus" (click)="addInstruction()" appearance="flat">Добавить</button>
       </div>

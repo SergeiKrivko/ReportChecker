@@ -2,15 +2,16 @@ import {Component, DestroyRef, inject, OnInit} from '@angular/core';
 import {InstructionService} from '../../services/instruction.service';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {AsyncPipe} from '@angular/common';
-import {TuiButton, TuiLink, TuiScrollbar} from '@taiga-ui/core';
+import {TuiButton, TuiLink, TuiScrollbar, TuiTextfield} from '@taiga-ui/core';
 import {InstructionInput} from '../../components/instruction-input/instruction-input';
 import {TUI_CONFIRM, TuiBreadcrumbs, TuiConfirmData} from '@taiga-ui/kit';
-import {from, NEVER, switchMap} from 'rxjs';
+import {debounceTime, from, NEVER, switchMap, tap} from 'rxjs';
 import {Router, RouterLink} from '@angular/router';
 import {TuiResponsiveDialogService} from '@taiga-ui/addon-mobile';
 import {ReportsService} from '../../services/reports.service';
 import {Header} from '../../components/header/header';
 import {TuiItem} from '@taiga-ui/cdk';
+import {FormControl, ReactiveFormsModule} from '@angular/forms';
 
 @Component({
   selector: 'app-instructions.page',
@@ -23,7 +24,9 @@ import {TuiItem} from '@taiga-ui/cdk';
     RouterLink,
     TuiBreadcrumbs,
     TuiLink,
-    TuiItem
+    TuiItem,
+    TuiTextfield,
+    ReactiveFormsModule
   ],
   templateUrl: './settings-page.component.html',
   styleUrl: './settings-page.component.scss',
@@ -39,7 +42,22 @@ export class SettingsPage implements OnInit {
   protected readonly selectedReport$ = this.reportsService.selectedReport$;
   protected readonly instructions$ = this.instructionService.instructions$;
 
+  protected readonly reportNameControl = new FormControl<string>("");
+
   ngOnInit() {
+    this.reportsService.selectedReport$.pipe(
+      tap(report => this.reportNameControl.setValue(report?.name ?? "")),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe();
+    this.reportNameControl.valueChanges.pipe(
+      debounceTime(1000),
+      switchMap(newName => {
+        if (newName)
+          return this.reportsService.renameReport(newName);
+        return NEVER;
+      }),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe();
     this.instructionService.loadInstructionsOnReportChanged$.pipe(
       takeUntilDestroyed(this.destroyRef),
     ).subscribe();

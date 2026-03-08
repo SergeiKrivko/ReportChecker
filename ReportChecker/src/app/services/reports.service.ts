@@ -5,9 +5,9 @@ import {
   CreateReportSchema,
   Report,
   SourceInfo,
-  TestSourceRequestSchema
+  TestSourceRequestSchema, UpdateReportSchema
 } from './api-client';
-import {catchError, map, NEVER, Observable, of, switchMap, take, tap} from 'rxjs';
+import {catchError, first, map, NEVER, Observable, of, switchMap, take, tap} from 'rxjs';
 import {ReportEntity} from '../entities/report-entity';
 import {patchState, signalState} from '@ngrx/signals';
 import {toObservable} from '@angular/core/rxjs-interop';
@@ -78,6 +78,20 @@ export class ReportsService {
     ).pipe(
       catchError(() => of(false)),
       map(() => true),
+    );
+  }
+
+  renameReport(newName: string): Observable<any> {
+    return this.authService.refreshToken().pipe(
+      switchMap(() => this.selectedReport$),
+      first(),
+      switchMap(report => {
+        if (report)
+          return this.apiClient.reportsPUT(report.id, UpdateReportSchema.fromJS({
+            name: newName,
+          }));
+        return NEVER;
+      }),
     );
   }
 
