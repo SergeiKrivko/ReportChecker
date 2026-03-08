@@ -1,0 +1,12 @@
+@let sourceSchema = source$ | async;
+@let repositoryInfo = repositoryInfo$ | async;
+<a icon="" iconEnd="@tui.chevron-right" size="l" tuiNotification type="button"
+   [href]="repositoryInfo?.url" appearance="secondary">
+  <div class="container">
+    <tui-avatar src="github.svg" size="m"/>
+    <span tuiTitle>
+        {{ repositoryInfo?.name }}
+      <span tuiSubtitle>{{ sourceSchema?.BranchName }}</span>
+  </span>
+  </div>
+</a>

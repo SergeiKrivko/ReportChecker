@@ -1,6 +1,6 @@
 import {inject, Injectable} from '@angular/core';
-import {RepositoryEntity} from '../entities/github-entities';
-import {ApiClient, Repository} from './api-client';
+import {RepositoryEntity, RepositoryInfoEntity} from '../entities/github-entities';
+import {ApiClient, Repository, RepositoryInfo} from './api-client';
 import {patchState, signalState} from '@ngrx/signals';
 import {toObservable} from '@angular/core/rxjs-interop';
 import {AuthService} from './auth-service';
@@ -34,7 +34,7 @@ export class GithubService {
 
   readonly loadRepositories$ = this.authService.refreshToken().pipe(
     tap(() => patchState(this.store$$, {repositories: []})),
-    switchMap(() => this.apiClient.repositories()),
+    switchMap(() => this.apiClient.repositoriesAll()),
     tap(resp => patchState(this.store$$, {repositories: resp.map(repositoryToEntity)})),
     switchMap(() => NEVER),
   );
@@ -57,11 +57,26 @@ export class GithubService {
   selectBranch(branch: string) {
     patchState(this.store$$, {selectedBranch: branch});
   }
+
+  getRepositoryInfo(id: number) {
+    return this.authService.refreshToken().pipe(
+      switchMap(() => this.apiClient.repositories(id)),
+      map(repositoryInfoToEntity),
+    );
+  }
 }
 
 const repositoryToEntity = (repository: Repository): RepositoryEntity => {
   return {
     id: repository.id,
     name: repository.name ?? "Unknown",
+  };
+}
+
+const repositoryInfoToEntity = (repository: RepositoryInfo): RepositoryInfoEntity => {
+  return {
+    id: repository.id,
+    name: repository.name ?? "Unknown",
+    url: repository.url,
   };
 }

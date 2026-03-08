@@ -29,4 +29,10 @@ public class GithubController(GithubService githubService) : ControllerBase
     {
         return Ok(await githubService.GetFilesOfRepositoryAsync(User.UserId, repositoryId, branch));
     }
+
+    [HttpGet("repositories/{repositoryId:long}")]
+    public async Task<ActionResult<RepositoryInfo>> GetRepository(long repositoryId)
+    {
+        return Ok(await githubService.GetRepositoryInfoAsync(User.UserId, repositoryId));
+    }
 }

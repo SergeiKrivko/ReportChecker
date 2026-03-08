@@ -11,3 +11,8 @@ public class RepositoryFile
     public required string Name { get; init; }
     public required string Path { get; init; }
 }
+
+public class RepositoryInfo : Repository
+{
+    public required string Url { get; init; }
+}

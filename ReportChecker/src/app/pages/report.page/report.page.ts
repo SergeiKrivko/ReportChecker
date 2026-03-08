@@ -1,15 +1,11 @@
 import {ChangeDetectionStrategy, Component, inject, OnInit} from '@angular/core';
-import {RouterLink, RouterLinkActive} from '@angular/router';
+import {RouterLink} from '@angular/router';
 import {map, Subject} from 'rxjs';
 import {IssuesService} from '../../services/issues.service';
 import {AsyncPipe} from '@angular/common';
 import {TuiAccordion} from '@taiga-ui/experimental/components';
-import {TuiButton, TuiGroup, TuiHint, TuiIcon, TuiLink, TuiLoader, TuiScrollbar, TuiSurface} from '@taiga-ui/core';
-import {TuiAvatar, TuiBadge, TuiBreadcrumbs, TuiButtonLoading} from '@taiga-ui/kit';
-import {IssueAppearancePipe} from '../../pipes/issue-appearance-pipe';
-import {IssueIconPipe} from '../../pipes/issue-icon-pipe';
-import {Comments} from '../../components/comments/comments';
-import {FileUploader} from '../../components/file-uploader/file-uploader';
+import {TuiButton, TuiLink, TuiLoader, TuiScrollbar, TuiSurface} from '@taiga-ui/core';
+import {TuiBreadcrumbs} from '@taiga-ui/kit';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {FileEntity} from '../../entities/file-entity';
 import {IssueHeader} from '../../components/issue-header/issue-header';
@@ -17,23 +13,14 @@ import {TuiCard} from '@taiga-ui/layout';
 import {Header} from '../../components/header/header';
 import {ReportsService} from '../../services/reports.service';
 import {FileSpVersion} from '../../components/file-sp-version/file-sp-version';
+import {GithubSpVersion} from '../../components/github-sp-version/github-sp-version';
 
 @Component({
   selector: 'app-check.page',
   imports: [
     AsyncPipe,
     TuiAccordion,
-    TuiIcon,
-    TuiBadge,
-    IssueAppearancePipe,
-    IssueIconPipe,
-    TuiAvatar,
-    TuiGroup,
-    TuiHint,
-    Comments,
     TuiButton,
-    FileUploader,
-    TuiButtonLoading,
     ReactiveFormsModule,
     TuiLoader,
     IssueHeader,
@@ -43,9 +30,9 @@ import {FileSpVersion} from '../../components/file-sp-version/file-sp-version';
     Header,
     TuiScrollbar,
     FileSpVersion,
-    RouterLinkActive,
     TuiBreadcrumbs,
-    TuiLink
+    TuiLink,
+    GithubSpVersion
   ],
   templateUrl: './report.page.html',
   styleUrl: './report.page.scss',

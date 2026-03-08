@@ -1,7 +1,7 @@
 <div class="container page-sized">
+  @let report = selectedReport$ | async;
   <app-header>
     <tui-breadcrumbs size="l" class="path">
-      @let report = selectedReport$ | async;
       @if (report) {
         <ng-container>
           <a *tuiItem tuiLink routerLink="." iconStart="@tui.book">{{ report.name }}</a>
@@ -19,9 +19,12 @@
           }
         </div>
         <div class="right-container">
-          @switch ((selectedReport$ | async)?.sourceProvider) {
+          @switch (report?.sourceProvider) {
             @case ('File') {
               <app-file-sp-version/>
+            }
+            @case ('GitHub') {
+              <app-github-sp-version [source]="report?.source"/>
             }
           }
           <a tuiIconButton iconStart="@tui.settings" appearance="flat" routerLink="./settings"></a>
