@@ -60,10 +60,11 @@ public class GitHubSourceProvider(
         _ = allSuites.CheckSuites.FirstOrDefault(e => e.App.Id == GitHubAppId) ??
             await client.Check.Suite.Create(source.RepositoryId, new NewCheckSuite(source.CommitId));
 
+        var checkName = $"ReportChecker - {report.Name}";
         var allChecks = await client.Check.Run.GetAllForReference(source.RepositoryId, source.CommitId);
-        var existingCheck = allChecks.CheckRuns.FirstOrDefault(e => e.App.Id == GitHubAppId) ??
+        var existingCheck = allChecks.CheckRuns.FirstOrDefault(e => e.App.Id == GitHubAppId && e.Name == checkName) ??
                             await client.Check.Run.Create(source.RepositoryId,
-                                new NewCheckRun("ReportChecker", source.CommitId)
+                                new NewCheckRun(checkName, source.CommitId)
                                 {
                                     CompletedAt = DateTimeOffset.UtcNow,
                                     Status = CheckStatus.Queued,
