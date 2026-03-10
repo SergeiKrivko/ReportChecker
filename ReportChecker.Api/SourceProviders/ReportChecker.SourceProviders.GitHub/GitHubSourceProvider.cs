@@ -71,7 +71,7 @@ public class GitHubSourceProvider(
                                     Conclusion = CheckConclusion.Neutral,
                                 });
 
-        var issues = (await issueRepository.GetAllIssuesOfReportAsync(check.Id))
+        var issues = (await issueRepository.GetAllIssuesOfReportAsync(report.Id))
             .Where(e => e.Status == IssueStatus.Open)
             .ToList();
 
