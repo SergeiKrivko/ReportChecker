@@ -70,7 +70,9 @@ public class GitHubSourceProvider(
                                     Conclusion = CheckConclusion.Neutral,
                                 });
 
-        var issues = (await issueRepository.GetAllIssuesOfCheckAsync(check.Id)).ToList();
+        var issues = (await issueRepository.GetAllIssuesOfReportAsync(check.Id))
+            .Where(e => e.Status == IssueStatus.Open)
+            .ToList();
 
         await client.Check.Run.Update(source.RepositoryId, existingCheck.Id, new CheckRunUpdate
         {
