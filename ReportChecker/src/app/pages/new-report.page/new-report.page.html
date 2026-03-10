@@ -3,6 +3,14 @@
     <h2 class="title">Новый отчет</h2>
   </app-header>
   <tui-scrollbar>
+    <div class="page-padding body-padding">
+      @if (selectedProvider) {
+        <button tuiButton iconStart="@tui.chevron-left" (click)="deselectProvider()" appearance="flat">Назад
+        </button>
+      } @else {
+        <a tuiButton iconStart="@tui.chevron-left" routerLink="../.." appearance="flat">Назад</a>
+      }
+    </div>
     @switch (selectedProvider?.key) {
       @case (null) {
         <div class="providers-container page-padding body-padding">
@@ -19,10 +27,10 @@
         </div>
       }
       @case ('File') {
-        <app-file-sp-options />
+        <app-file-sp-options/>
       }
       @case ('GitHub') {
-        <app-github-sp-options />
+        <app-github-sp-options/>
       }
     }
   </tui-scrollbar>

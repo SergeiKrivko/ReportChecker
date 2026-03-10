@@ -14,7 +14,9 @@
       <tui-notification size="l" appearance="positive">
         Формат: <b>{{ sourceInfo?.format }}</b>
       </tui-notification>
-      <button tuiButton iconStart="@tui.check" (click)="createReport()">Создать отчет</button>
     }
   }
+  <button tuiButton iconStart="@tui.check" (click)="createReport()" [disabled]="sourceInfo?.status !== 'Success'">
+    Создать отчет
+  </button>
 </div>
