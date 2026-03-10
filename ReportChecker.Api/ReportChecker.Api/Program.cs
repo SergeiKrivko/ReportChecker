@@ -10,6 +10,7 @@ using ReportChecker.Abstractions;
 using ReportChecker.Application.Services;
 using ReportChecker.DataAccess;
 using ReportChecker.DataAccess.Repositories;
+using ReportChecker.FormatProviders.Docx;
 using ReportChecker.FormatProviders.Latex;
 using ReportChecker.FormatProviders.Pdf;
 using ReportChecker.S3;
@@ -45,6 +46,7 @@ builder.Services.AddScoped<ISourceProvider, FileSourceProvider>();
 builder.Services.AddScoped<ISourceProvider, GitHubSourceProvider>();
 builder.Services.AddSingleton<IFormatProvider, LatexFormatProvider>();
 builder.Services.AddSingleton<IFormatProvider, PdfFormatProvider>();
+builder.Services.AddSingleton<IFormatProvider, DocxFormatProvider>();
 
 builder.Services.AddHttpClient("Auth",
     client =>
