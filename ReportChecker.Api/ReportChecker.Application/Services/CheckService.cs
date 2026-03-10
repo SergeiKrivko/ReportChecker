@@ -71,7 +71,9 @@ public class CheckService(
 
     private async Task RunCheck(Report report, Check check, IFileArchive source)
     {
+        var sourceProvider = providerService.GetSourceProvider(report.SourceProvider);
         await checkRepository.SetCheckStatusAsync(check.Id, ProgressStatus.InProgress);
+        await sourceProvider.WriteCheckStatusAsync(report, check, false);
 
         try
         {
@@ -83,7 +85,6 @@ public class CheckService(
             var previousCheck = await checkRepository.GetPreviousCheckAsync(check);
             if (previousCheck != null)
             {
-                var sourceProvider = providerService.GetSourceProvider(report.SourceProvider);
                 var previousSource =
                     await sourceProvider.OpenAsync(previousCheck.Source ?? throw new Exception("Source is null"));
                 previousChapters = (await formatProvider.GetChaptersAsync(previousSource)).ToList();
@@ -91,10 +92,12 @@ public class CheckService(
 
             await aiService.FindIssuesAsync(report.Id, check.Id, chapters, previousChapters, issues.ToList());
             await checkRepository.SetCheckStatusAsync(check.Id, ProgressStatus.Completed);
+            await sourceProvider.WriteCheckStatusAsync(report, check, true);
         }
         catch (Exception)
         {
             await checkRepository.SetCheckStatusAsync(check.Id, ProgressStatus.Failed);
+            await sourceProvider.WriteCheckStatusAsync(report, check, true);
             throw;
         }
     }

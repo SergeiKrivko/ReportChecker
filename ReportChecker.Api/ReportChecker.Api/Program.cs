@@ -89,7 +89,7 @@ app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 app.UseCors(policy => policy
-    .WithOrigins("http://localhost:4200", "https://report-checker.vercel.app")
+    .WithOrigins("http://localhost:4200", app.Configuration["Frontend.Url"] ?? "https://report-checker.vercel.app")
     .AllowAnyHeader()
     .AllowAnyMethod()
 );
@@ -102,6 +102,18 @@ app.MapGitHubWebhooks("api/v1/github/webhooks");
 await using (var scope = app.Services.CreateAsyncScope())
 {
     await scope.ServiceProvider.GetRequiredService<ReportCheckerDbContext>().Database.MigrateAsync();
+}
+
+await using (var scope = app.Services.CreateAsyncScope())
+{
+    var sourceProvider = scope.ServiceProvider.GetRequiredService<IProviderService>().GetSourceProvider("GitHub");
+    var reportRepository = scope.ServiceProvider.GetRequiredService<IReportRepository>();
+    var checkRepository = scope.ServiceProvider.GetRequiredService<ICheckRepository>();
+
+    var report = await reportRepository.GetReportByIdAsync(Guid.Parse("771911b2-0a84-49eb-a7fc-a4ffbd9485db"));
+    var check = await checkRepository.GetLatestCheckOfReportAsync(report!.Id);
+
+    await sourceProvider.WriteCheckStatusAsync(report, check!, false);
 }
 
 app.Run();
