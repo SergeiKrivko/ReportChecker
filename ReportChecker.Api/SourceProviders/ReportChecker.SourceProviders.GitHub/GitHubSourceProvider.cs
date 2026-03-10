@@ -66,6 +66,7 @@ public class GitHubSourceProvider(
                                 new NewCheckRun("ReportChecker", source.CommitId)
                                 {
                                     CompletedAt = DateTimeOffset.UtcNow,
+                                    Status = CheckStatus.Queued,
                                     Conclusion = CheckConclusion.Neutral,
                                 });
 
@@ -77,6 +78,7 @@ public class GitHubSourceProvider(
             Status = isCompleted ? CheckStatus.Completed : CheckStatus.InProgress,
             StartedAt = isCompleted ? null : DateTimeOffset.UtcNow,
             CompletedAt = isCompleted ? DateTimeOffset.UtcNow : null,
+            Conclusion = CheckConclusion.Success,
             Output = new NewCheckRunOutput("Проверка отчета", $"Найдено {issues.Count} ошибок:\n" +
                                                               $"**{issues.Count(e => e.Priority >= 1 && e.Priority <= 2)}** критических\n" +
                                                               $"**{issues.Count(e => e.Priority >= 3 && e.Priority <= 5)}** средних\n" +
