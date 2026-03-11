@@ -10,7 +10,7 @@ namespace ReportChecker.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/auth")]
-public class AuthController(IAuthService authService) : ControllerBase
+public class AuthController(IAuthService authService, ILimitsService limitsService) : ControllerBase
 {
     [HttpGet("{provider}")]
     public ActionResult StartAuthorization(string provider, [FromQuery] string redirectUrl)
@@ -73,5 +73,12 @@ public class AuthController(IAuthService authService) : ControllerBase
         {
             return StatusCode((int)(e.StatusCode ?? HttpStatusCode.InternalServerError));
         }
+    }
+
+    [HttpGet("limits")]
+    [Authorize]
+    public async Task<ActionResult<Limits>> GetLimits(CancellationToken ct = default)
+    {
+        return Ok(await limitsService.GetLimitsAsync(User.UserId, User.Subscriptions));
     }
 }

@@ -67,6 +67,15 @@ public class CheckRepository(ReportCheckerDbContext dbContext) : ICheckRepositor
         await dbContext.SaveChangesAsync();
     }
 
+    public async Task<int> CountChecksAsync(Guid userId, DateTime startDate)
+    {
+        return await dbContext.Checks
+            .Where(e => e.CreatedAt > startDate)
+            .Include(e => e.Report)
+            .Where(e => e.Report.OwnerId == userId)
+            .CountAsync();
+    }
+
     private static Check FromEntity(CheckEntity entity)
     {
         return new Check

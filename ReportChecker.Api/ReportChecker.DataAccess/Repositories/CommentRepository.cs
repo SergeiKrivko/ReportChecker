@@ -72,6 +72,13 @@ public class CommentRepository(ReportCheckerDbContext dbContext) : ICommentRepos
         await dbContext.SaveChangesAsync();
     }
 
+    public async Task<int> CountAiCommentsAsync(Guid userId, DateTime startDate)
+    {
+        return await dbContext.Comments
+            .Where(e => e.UserId == userId && e.ProgressStatus != null)
+            .CountAsync();
+    }
+
     internal static Comment FromEntity(CommentEntity entity)
     {
         return new Comment

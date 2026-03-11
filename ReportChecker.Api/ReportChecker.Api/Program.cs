@@ -41,6 +41,7 @@ builder.Services.AddScoped<IProviderService, ProviderService>();
 builder.Services.AddScoped<IUserRepository, AuthApiClient>();
 builder.Services.AddScoped<GithubService>();
 builder.Services.AddScoped<WebhookEventProcessor, GithubWebhookProcessor>();
+builder.Services.AddScoped<ILimitsService, LimitsService>();
 
 builder.Services.AddScoped<ISourceProvider, FileSourceProvider>();
 builder.Services.AddScoped<ISourceProvider, GitHubSourceProvider>();

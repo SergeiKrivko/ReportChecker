@@ -13,4 +13,5 @@ public interface ICommentRepository
     public Task UpdateCommentAsync(Guid commentId, string comment);
     public Task DeleteCommentAsync(Guid commentId);
     public Task SetProgressStatusAsync(Guid commentId, ProgressStatus status);
+    public Task<int> CountAiCommentsAsync(Guid userId, DateTime startDate);
 }

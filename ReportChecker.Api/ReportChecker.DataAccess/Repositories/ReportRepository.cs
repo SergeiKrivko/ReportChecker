@@ -69,6 +69,13 @@ public class ReportRepository(ReportCheckerDbContext dbContext) : IReportReposit
         return result.Select(FromEntity);
     }
 
+    public async Task<int> CountReportsAsync(Guid userId)
+    {
+        return await dbContext.Reports
+            .Where(e => e.OwnerId == userId && e.DeletedAt == null)
+            .CountAsync();
+    }
+
     private static Report FromEntity(ReportEntity entity)
     {
         return new Report
