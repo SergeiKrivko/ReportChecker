@@ -14,7 +14,8 @@ public class IssuesController(
     IIssueRepository issueRepository,
     ICheckRepository checkRepository,
     ICheckService checkService,
-    ICommentRepository commentRepository) : ControllerBase
+    ICommentRepository commentRepository,
+    ILimitsService limitsService) : ControllerBase
 {
     [HttpGet]
     [Authorize]
@@ -124,7 +125,8 @@ public class IssuesController(
             return NotFound();
 
         var id = await commentRepository.CreateCommentAsync(issueId, userId, schema.Content, schema.Status);
-        if (schema.Status == null)
+
+        if (await limitsService.CheckCommentsLimitAsync(userId, User.Subscriptions) && schema.Status == null)
             await checkService.WriteCommentAsync(check.Id, issueId);
         return Ok(id);
     }

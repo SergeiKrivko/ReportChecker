@@ -12,7 +12,8 @@ namespace ReportChecker.Api.Controllers;
 [Route("api/v1/reports")]
 public class ReportController(
     IReportRepository reportRepository,
-    IReportService reportService) : ControllerBase
+    IReportService reportService,
+    ILimitsService limitsService) : ControllerBase
 {
     [HttpGet]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -41,6 +42,13 @@ public class ReportController(
     public async Task<ActionResult<Guid>> CreateReport([FromBody] CreateReportSchema schema)
     {
         var userId = User.UserId;
+        var subscriptions = User.Subscriptions;
+
+        if (!await limitsService.CheckReportsLimitAsync(userId, subscriptions))
+            return StatusCode(StatusCodes.Status402PaymentRequired, "Reports limit is reached");
+        if (!await limitsService.CheckChecksLimitAsync(userId, subscriptions))
+            return StatusCode(StatusCodes.Status402PaymentRequired, "Checks limit is reached");
+
         var reportId = await
             reportService.CreateReportAsync(userId, schema.Name, schema.Format, schema.SourceProvider,
                 schema.Source);

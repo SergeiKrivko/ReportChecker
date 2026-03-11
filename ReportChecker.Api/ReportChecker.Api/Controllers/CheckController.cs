@@ -13,7 +13,8 @@ public class CheckController(
     IReportRepository reportRepository,
     ICheckRepository checkRepository,
     IReportService reportService,
-    ICheckService checkService) : ControllerBase
+    ICheckService checkService,
+    ILimitsService limitsService) : ControllerBase
 {
     [HttpGet]
     [Authorize]
@@ -48,6 +49,10 @@ public class CheckController(
     public async Task<ActionResult<Guid>> CreateCheckAsync(Guid reportId, [FromBody] CreateCheckSchema? schema)
     {
         var userId = User.UserId;
+
+        if (!await limitsService.CheckChecksLimitAsync(userId, User.Subscriptions))
+            return StatusCode(StatusCodes.Status402PaymentRequired, "Checks limit is reached");
+
         var report = await reportRepository.GetReportByIdAsync(reportId);
         if (report == null)
             return NotFound();
