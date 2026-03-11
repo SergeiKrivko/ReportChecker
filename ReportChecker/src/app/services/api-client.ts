@@ -319,6 +319,59 @@ export class ApiClient extends ApiClientBase {
     /**
      * @return OK
      */
+    limits(): Observable<Limits> {
+        let url_ = this.baseUrl + "/api/v1/auth/limits";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("get", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.processLimits(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processLimits(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<Limits>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<Limits>;
+        }));
+    }
+
+    protected processLimits(response: HttpResponseBase): Observable<Limits> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = Limits.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
     checksAll(reportId: string): Observable<Check[]> {
         let url_ = this.baseUrl + "/api/v1/reports/{reportId}/checks";
         if (reportId === undefined || reportId === null)
@@ -1837,6 +1890,7 @@ export class AccountInfo implements IAccountInfo {
     provider!: string | undefined;
     id!: string | undefined;
     name?: string | undefined;
+    login?: string | undefined;
     email?: string | undefined;
     avatarUrl?: string | undefined;
 
@@ -1854,6 +1908,7 @@ export class AccountInfo implements IAccountInfo {
             this.provider = _data["provider"];
             this.id = _data["id"];
             this.name = _data["name"];
+            this.login = _data["login"];
             this.email = _data["email"];
             this.avatarUrl = _data["avatarUrl"];
         }
@@ -1871,6 +1926,7 @@ export class AccountInfo implements IAccountInfo {
         data["provider"] = this.provider;
         data["id"] = this.id;
         data["name"] = this.name;
+        data["login"] = this.login;
         data["email"] = this.email;
         data["avatarUrl"] = this.avatarUrl;
         return data;
@@ -1881,6 +1937,7 @@ export interface IAccountInfo {
     provider: string | undefined;
     id: string | undefined;
     name?: string | undefined;
+    login?: string | undefined;
     email?: string | undefined;
     avatarUrl?: string | undefined;
 }
@@ -2097,7 +2154,7 @@ export class CreateReportSchema implements ICreateReportSchema {
     name!: string | undefined;
     format!: string | undefined;
     sourceProvider!: string | undefined;
-    source?: string | undefined;
+    source!: string | undefined;
 
     constructor(data?: ICreateReportSchema) {
         if (data) {
@@ -2138,7 +2195,7 @@ export interface ICreateReportSchema {
     name: string | undefined;
     format: string | undefined;
     sourceProvider: string | undefined;
-    source?: string | undefined;
+    source: string | undefined;
 }
 
 export class Instruction implements IInstruction {
@@ -2191,6 +2248,46 @@ export interface IInstruction {
     content: string | undefined;
     createdAt?: moment.Moment;
     deletedAt?: moment.Moment | undefined;
+}
+
+export class Int32Limit implements IInt32Limit {
+    current!: number;
+    maximum!: number;
+
+    constructor(data?: IInt32Limit) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.current = _data["current"];
+            this.maximum = _data["maximum"];
+        }
+    }
+
+    static fromJS(data: any): Int32Limit {
+        data = typeof data === 'object' ? data : {};
+        let result = new Int32Limit();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["current"] = this.current;
+        data["maximum"] = this.maximum;
+        return data;
+    }
+}
+
+export interface IInt32Limit {
+    current: number;
+    maximum: number;
 }
 
 export class Issue implements IIssue {
@@ -2266,6 +2363,55 @@ export enum IssueStatus {
     InProgress = "InProgress",
     Closed = "Closed",
     Fixed = "Fixed",
+}
+
+export class Limits implements ILimits {
+    reports!: Int32Limit;
+    checks!: Int32Limit;
+    comments!: Int32Limit;
+
+    constructor(data?: ILimits) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.reports = new Int32Limit();
+            this.checks = new Int32Limit();
+            this.comments = new Int32Limit();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.reports = _data["reports"] ? Int32Limit.fromJS(_data["reports"]) : new Int32Limit();
+            this.checks = _data["checks"] ? Int32Limit.fromJS(_data["checks"]) : new Int32Limit();
+            this.comments = _data["comments"] ? Int32Limit.fromJS(_data["comments"]) : new Int32Limit();
+        }
+    }
+
+    static fromJS(data: any): Limits {
+        data = typeof data === 'object' ? data : {};
+        let result = new Limits();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["reports"] = this.reports ? this.reports.toJSON() : <any>undefined;
+        data["checks"] = this.checks ? this.checks.toJSON() : <any>undefined;
+        data["comments"] = this.comments ? this.comments.toJSON() : <any>undefined;
+        return data;
+    }
+}
+
+export interface ILimits {
+    reports: Int32Limit;
+    checks: Int32Limit;
+    comments: Int32Limit;
 }
 
 export enum ProgressStatus {

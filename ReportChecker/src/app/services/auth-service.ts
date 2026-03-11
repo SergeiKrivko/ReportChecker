@@ -147,6 +147,15 @@ export class AuthService {
       })
     )
   }
+
+  logOut() {
+    return this.refreshToken().pipe(
+      tap(() => {
+        patchState(this.store$$, {isLoaded: true, isAuthorized: false, credentials: null, userInfo: null});
+        localStorage.removeItem("reportCheckerCredentials");
+      })
+    );
+  }
 }
 
 const credentialsToEntity = (credentials: UserCredentials): Credentials | null => {

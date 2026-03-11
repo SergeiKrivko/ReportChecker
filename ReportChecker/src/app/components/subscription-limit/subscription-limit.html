@@ -1,0 +1,6 @@
+<div class="container">
+  @if (name()) {
+    <label tuiLabel>{{name()}}</label>
+  }
+  <tui-chip [appearance]="(appearance$ | async) ?? ''">{{limit().current}} / {{limit().maximum}}</tui-chip>
+</div>

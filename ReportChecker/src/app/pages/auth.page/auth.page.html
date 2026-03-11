@@ -1,21 +1,37 @@
-<div class="container">
-  <h1>ReportChecker</h1>
-  <div class="providers-container">
-    @for (authProvider of authProviders$ | async; track authProvider.key) {
-      <div tuiCardLarge class="provider-container">
-        <div class="h-container">
-          <h3>{{ authProvider.name }}</h3>
-          @if (!authProvider.userInfo) {
-            <a tuiButton [href]="authProvider.key | authUrlForProvider">Войти</a>
+<div class="page-sized page-container">
+  <app-header [showTitle]="true"/>
+  <tui-scrollbar class="scrollbar">
+    <div class="container page-padding body-padding">
+      <div class="subscriptions-container">
+        <a tuiButton iconStart="@tui.chevron-left" appearance="flat" routerLink="..">Назад</a>
+        <div class="limits-container">
+          @let limits = limits$ | async;
+          @if (limits) {
+            <app-subscription-limit name="Отчеты" [limit]="limits.reports"/>
+            <app-subscription-limit name="Проверки" [limit]="limits.checks"/>
+            <app-subscription-limit name="Комментарии" [limit]="limits.comments"/>
           }
         </div>
-        @if (authProvider.userInfo) {
-          <div class="h-container">
-            <tui-avatar [src]="authProvider.userInfo.avatarUrl"/>
-            <label tuiLabel class="username">{{ authProvider.userInfo.name }}</label>
+      </div>
+      <div class="providers-container">
+        @for (authProvider of authProviders$ | async; track authProvider.key) {
+          <div tuiCardLarge class="provider-container">
+            <div class="h-container">
+              <h3>{{ authProvider.name }}</h3>
+              @if (!authProvider.userInfo) {
+                <a tuiButton [href]="authProvider.key | authUrlForProvider">Войти</a>
+              }
+            </div>
+            @if (authProvider.userInfo) {
+              <div class="h-container">
+                <tui-avatar [src]="authProvider.userInfo.avatarUrl"/>
+                <label tuiLabel class="username">{{ authProvider.userInfo.name }}</label>
+              </div>
+            }
           </div>
         }
+        <button tuiButton appearance="outline-destructive" iconStart="@tui.log-out" (click)="logOut()">Выйти</button>
       </div>
-    }
-  </div>
+    </div>
+  </tui-scrollbar>
 </div>

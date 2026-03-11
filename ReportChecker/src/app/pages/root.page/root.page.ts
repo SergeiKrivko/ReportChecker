@@ -1,24 +1,14 @@
 import {Component, inject, OnInit} from '@angular/core';
-import {Router, RouterLink, RouterOutlet} from '@angular/router';
+import {Router, RouterOutlet} from '@angular/router';
 import {combineLatest, from, switchMap} from 'rxjs';
 import {AuthService} from '../../services/auth-service';
 import {ReportsService} from '../../services/reports.service';
 import {IssuesService} from '../../services/issues.service';
-import {TuiButton, TuiScrollbar} from '@taiga-ui/core';
-import {TuiAvatar} from '@taiga-ui/kit';
-import {TuiLet} from '@taiga-ui/cdk';
-import {AsyncPipe} from '@angular/common';
 
 @Component({
   selector: 'app-root.page',
   imports: [
     RouterOutlet,
-    RouterLink,
-    TuiButton,
-    TuiAvatar,
-    TuiLet,
-    AsyncPipe,
-    TuiScrollbar
   ],
   templateUrl: './root.page.html',
   styleUrl: './root.page.scss',
