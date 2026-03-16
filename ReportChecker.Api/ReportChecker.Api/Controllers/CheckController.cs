@@ -44,6 +44,21 @@ public class CheckController(
         return Ok(check);
     }
 
+    [HttpGet("latest/chapters")]
+    [Authorize]
+    public async Task<ActionResult<IEnumerable<Chapter>>> GetLatestCheckChaptersAsync(Guid reportId)
+    {
+        var userId = User.UserId;
+        var report = await reportRepository.GetReportByIdAsync(reportId);
+        if (report == null)
+            return NotFound();
+        if (report.OwnerId != userId)
+            return Unauthorized();
+        var check = await checkRepository.GetLatestCheckOfReportAsync(reportId);
+        var chapters = await checkService.GetChaptersAsync(report, check);
+        return Ok(chapters);
+    }
+
     [HttpPost]
     [Authorize]
     public async Task<ActionResult<Guid>> CreateCheckAsync(Guid reportId, [FromBody] CreateCheckSchema? schema)

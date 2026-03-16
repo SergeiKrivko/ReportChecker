@@ -133,4 +133,15 @@ public class CheckService(
             logger.LogError("Error during comment processing: {e}", e);
         }
     }
+
+    public async Task<IEnumerable<Chapter>> GetChaptersAsync(Report report, Check check)
+    {
+        var sourceProvider = providerService.GetSourceProvider(report.SourceProvider);
+        var sourceStream =
+            await sourceProvider.OpenAsync(check.Source ?? throw new Exception("Source is null"));
+
+        var formatProvider = providerService.GetFormatProvider(report.Format);
+        var chapters = await formatProvider.GetChaptersAsync(sourceStream);
+        return chapters;
+    }
 }

@@ -6,6 +6,9 @@ import {AsyncPipe} from '@angular/common';
 import {TuiCardLarge, TuiHeader} from '@taiga-ui/layout';
 import {RouterLink} from '@angular/router';
 import {Header} from '../../components/header/header';
+import {SubscriptionLimit} from '../../components/subscription-limit/subscription-limit';
+import {SubscriptionsService} from '../../services/subscriptions.service';
+import {LimitReachedPipe} from '../../pipes/limit-reached-pipe';
 
 @Component({
   selector: 'app-home.page',
@@ -17,7 +20,9 @@ import {Header} from '../../components/header/header';
     TuiSurface,
     RouterLink,
     Header,
-    TuiScrollbar
+    TuiScrollbar,
+    SubscriptionLimit,
+    LimitReachedPipe
   ],
   templateUrl: './home.page.html',
   styleUrl: './home.page.scss',
@@ -26,6 +31,7 @@ import {Header} from '../../components/header/header';
 })
 export class HomePage {
   private readonly reportService = inject(ReportsService);
+  private readonly subscriptionService = inject(SubscriptionsService);
 
   protected readonly reports$ = this.reportService.reports$;
 
@@ -34,7 +40,5 @@ export class HomePage {
     label: 'Новый отчет',
   });
 
-  protected newReport(): void {
-    this.newReportDialog(undefined).subscribe();
-  }
+  readonly limits$ = this.subscriptionService.limits$;
 }
