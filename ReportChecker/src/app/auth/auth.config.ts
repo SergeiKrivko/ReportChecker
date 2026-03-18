@@ -8,8 +8,8 @@ export const OAUTH_CONFIG = new InjectionToken<AuthConfig>('OAUTH_CONFIG', {
       clientId: "7c4a1272396979451d2a2d311f087050",
       dummyClientSecret: "64305c89201a3fce41287675d2c9b0a5",
       responseType: 'code',
-      redirectUri: "http://localhost:4200/auth/callback",
-      postLogoutRedirectUri: "http://localhost:4200/auth/callback",
+      redirectUri: `${window.location.origin}/auth/callback`,
+      postLogoutRedirectUri: `${window.location.origin}/auth/callback`,
       showDebugInformation: true,
     };
   },

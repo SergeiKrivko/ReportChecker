@@ -17,7 +17,7 @@ interface AuthState {
 export class AuthClient {
   private readonly authService = inject(AuthService);
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = "https://auth.nachert.art/"
+  private readonly baseUrl = "https://auth.nachert.art/";
 
   private readonly accessToken$ = toObservable(this.authService.accessToken);
 
