@@ -19,7 +19,7 @@
             <div class="h-container">
               <h3>{{ authProvider.name }}</h3>
               @if (!authProvider.userInfo) {
-                <a tuiButton [href]="authProvider.key | authUrlForProvider">Войти</a>
+                <a tuiButton (click)="logIn(authProvider.key)">Войти</a>
               }
             </div>
             @if (authProvider.userInfo) {

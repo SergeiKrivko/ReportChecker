@@ -1,9 +1,10 @@
 import {Component, inject, OnInit} from '@angular/core';
 import {Router, RouterOutlet} from '@angular/router';
-import {combineLatest, from, switchMap} from 'rxjs';
-import {AuthService} from '../../services/auth-service';
+import {combineLatest, from, switchMap, tap} from 'rxjs';
 import {ReportsService} from '../../services/reports.service';
 import {IssuesService} from '../../services/issues.service';
+import {AuthService} from '../../auth/auth.service';
+import {toObservable} from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-root.page',
@@ -20,8 +21,11 @@ export class RootPage implements OnInit {
   private readonly issuesService = inject(IssuesService);
   private readonly router = inject(Router);
 
+  private readonly isAuthenticated$ = toObservable(this.authService.isAuthenticated);
+
   ngOnInit() {
-    this.authService.isAuthorized$.pipe(
+    this.isAuthenticated$.pipe(
+      tap(console.log),
       switchMap(authorized => {
         if (authorized)
           return combineLatest([

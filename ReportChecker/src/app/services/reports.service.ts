@@ -11,7 +11,6 @@ import {catchError, first, map, NEVER, Observable, of, switchMap, take, tap} fro
 import {ReportEntity} from '../entities/report-entity';
 import {patchState, signalState} from '@ngrx/signals';
 import {toObservable} from '@angular/core/rxjs-interop';
-import {AuthService} from './auth-service';
 import {SourceInfoEntity} from '../entities/source-info-entity';
 
 interface ReportsStore {
@@ -25,7 +24,6 @@ interface ReportsStore {
 })
 export class ReportsService {
   private readonly apiClient = inject(ApiClient);
-  private readonly authService = inject(AuthService);
 
   private readonly store$$ = signalState<ReportsStore>({
     reports: [],
@@ -41,8 +39,7 @@ export class ReportsService {
     patchState(this.store$$, {
       loaded: false,
     });
-    return this.authService.refreshToken().pipe(
-      switchMap(() => this.apiClient.reportsAll()),
+    return this.apiClient.reportsAll().pipe(
       tap(reports => {
         patchState(this.store$$, {
           reports: reports.map(reportToEntity),
@@ -54,19 +51,16 @@ export class ReportsService {
   }
 
   createReport(name: string, source: string, sourceProvider: string, format: string): Observable<string> {
-    return this.authService.refreshToken().pipe(
-      switchMap(() => this.apiClient.reportsPOST(CreateReportSchema.fromJS({
+    return this.apiClient.reportsPOST(CreateReportSchema.fromJS({
         name: name,
         source: source,
         sourceProvider: sourceProvider,
         format: format,
-      })))
-    );
+      }));
   }
 
   createCheck(source: string): Observable<boolean> {
-    return this.authService.refreshToken().pipe(
-      switchMap(() => this.selectedReport$),
+    return this.selectedReport$.pipe(
       take(1),
       switchMap(report => {
         if (report)
@@ -82,8 +76,7 @@ export class ReportsService {
   }
 
   renameReport(newName: string): Observable<any> {
-    return this.authService.refreshToken().pipe(
-      switchMap(() => this.selectedReport$),
+    return this.selectedReport$.pipe(
       first(),
       switchMap(report => {
         if (report)
@@ -109,8 +102,7 @@ export class ReportsService {
   }
 
   deleteSelectedReport() {
-    return this.authService.refreshToken().pipe(
-      switchMap(() => this.selectedReport$),
+    return this.selectedReport$.pipe(
       take(1),
       switchMap(report => {
         if (report)
@@ -122,8 +114,7 @@ export class ReportsService {
   }
 
   testSource(provider: string, source: string) {
-    return this.authService.refreshToken().pipe(
-      switchMap(() => this.apiClient.testSource(TestSourceRequestSchema.fromJS({provider, source}))),
+    return this.apiClient.testSource(TestSourceRequestSchema.fromJS({provider, source})).pipe(
       map(sourceInfoToEntity),
     )
   }

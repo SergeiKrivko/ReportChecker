@@ -3,7 +3,6 @@ import {RepositoryEntity, RepositoryInfoEntity} from '../entities/github-entitie
 import {ApiClient, Repository, RepositoryInfo} from './api-client';
 import {patchState, signalState} from '@ngrx/signals';
 import {toObservable} from '@angular/core/rxjs-interop';
-import {AuthService} from './auth-service';
 import {map, NEVER, switchMap, tap} from 'rxjs';
 
 interface GitHubStore {
@@ -18,7 +17,6 @@ interface GitHubStore {
 })
 export class GithubService {
   private readonly apiClient = inject(ApiClient);
-  private readonly authService = inject(AuthService);
 
   private readonly store$$ = signalState<GitHubStore>({
     repositories: [],
@@ -32,9 +30,7 @@ export class GithubService {
   readonly branches$ = toObservable(this.store$$.branches);
   readonly selectedBranch$ = toObservable(this.store$$.selectedBranch);
 
-  readonly loadRepositories$ = this.authService.refreshToken().pipe(
-    tap(() => patchState(this.store$$, {repositories: []})),
-    switchMap(() => this.apiClient.repositoriesAll()),
+  readonly loadRepositories$ = this.apiClient.repositoriesAll().pipe(
     tap(resp => patchState(this.store$$, {repositories: resp.map(repositoryToEntity)})),
     switchMap(() => NEVER),
   );
@@ -44,7 +40,6 @@ export class GithubService {
   }
 
   readonly loadBranches$ = this.selectedRepository$.pipe(
-    switchMap(repo => this.authService.refreshToken().pipe(map(() => repo))),
     switchMap(repo => {
       if (!repo)
         return NEVER;
@@ -59,8 +54,7 @@ export class GithubService {
   }
 
   getRepositoryInfo(id: number) {
-    return this.authService.refreshToken().pipe(
-      switchMap(() => this.apiClient.repositories(id)),
+    return this.apiClient.repositories(id).pipe(
       map(repositoryInfoToEntity),
     );
   }

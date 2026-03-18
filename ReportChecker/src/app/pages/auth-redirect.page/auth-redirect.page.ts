@@ -1,7 +1,8 @@
-import {ChangeDetectionStrategy, Component, inject, OnInit} from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
-import {AuthService} from '../../services/auth-service';
-import {combineLatest, first, from, NEVER, switchMap} from 'rxjs';
+import {ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit} from '@angular/core';
+import {AuthService} from '../../auth/auth.service';
+import {Router} from '@angular/router';
+import {takeUntilDestroyed, toObservable} from '@angular/core/rxjs-interop';
+import {NEVER, switchMap} from 'rxjs';
 
 @Component({
   selector: 'app-auth-redirect.page',
@@ -12,27 +13,19 @@ import {combineLatest, first, from, NEVER, switchMap} from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AuthRedirectPage implements OnInit {
-  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly authService: AuthService = inject(AuthService);
+  private readonly destroyRef = inject(DestroyRef);
+
+  private readonly isAuthenticated$ = toObservable(inject(AuthService).isAuthenticated);
 
   ngOnInit() {
-    combineLatest([
-      this.authService.isAuthorized$,
-      this.route.queryParams
-    ]).pipe(
-      first(),
-      switchMap(([isAuthorized, queryParams]) => {
-        const code: string = queryParams['code'];
-        if (isAuthorized)
-          return this.authService.linkAccount(code)
-        return this.authService.getToken(code);
-      }),
-      switchMap(success => {
-        if (success)
-          return from(this.router.navigate(['/']));
+    this.isAuthenticated$.pipe(
+      switchMap(isAuthenticated => {
+        if (isAuthenticated)
+          return this.router.navigate(['/']);
         return NEVER;
       }),
+      takeUntilDestroyed(this.destroyRef),
     ).subscribe();
   }
 }

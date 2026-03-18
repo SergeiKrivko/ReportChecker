@@ -3,7 +3,6 @@ import {InstructionEntity} from '../entities/instruction-entity';
 import {first, NEVER, switchMap, tap} from 'rxjs';
 import {patchState, signalState} from '@ngrx/signals';
 import {ApiClient, Instruction} from './api-client';
-import {AuthService} from './auth-service';
 import {ReportsService} from './reports.service';
 import {toObservable} from '@angular/core/rxjs-interop';
 
@@ -16,7 +15,6 @@ interface InstructionStore {
 })
 export class InstructionService {
   private readonly apiClient = inject(ApiClient);
-  private readonly authService = inject(AuthService);
   private readonly reportsService = inject(ReportsService);
 
   private readonly store$$ = signalState<InstructionStore>({
@@ -25,8 +23,7 @@ export class InstructionService {
   readonly instructions$ = toObservable(this.store$$.instructions);
 
   private loadInstructions(reportId: string) {
-    return this.authService.refreshToken().pipe(
-      switchMap(() => this.apiClient.instructionsAll(reportId)),
+    return this.apiClient.instructionsAll(reportId).pipe(
       tap(reports => {
         patchState(this.store$$, {
           instructions: reports.map(instructionToEntity),
@@ -35,8 +32,7 @@ export class InstructionService {
     );
   }
 
-  loadInstructionsOnReportChanged$ = this.authService.refreshToken().pipe(
-    switchMap(() => this.reportsService.selectedReport$),
+  loadInstructionsOnReportChanged$ = this.reportsService.selectedReport$.pipe(
     switchMap(report => {
       if (report)
         return this.loadInstructions(report.id);
@@ -46,8 +42,7 @@ export class InstructionService {
   );
 
   createInstruction(content: string = "") {
-    return this.authService.refreshToken().pipe(
-      switchMap(() => this.reportsService.selectedReport$),
+    return this.reportsService.selectedReport$.pipe(
       first(),
       switchMap(report => {
         if (report)
@@ -60,8 +55,7 @@ export class InstructionService {
   }
 
   updateInstruction(id: string, content: string) {
-    return this.authService.refreshToken().pipe(
-      switchMap(() => this.reportsService.selectedReport$),
+    return this.reportsService.selectedReport$.pipe(
       first(),
       switchMap(report => {
         if (report)
@@ -74,8 +68,7 @@ export class InstructionService {
   }
 
   deleteInstruction(id: string) {
-    return this.authService.refreshToken().pipe(
-      switchMap(() => this.reportsService.selectedReport$),
+    return this.reportsService.selectedReport$.pipe(
       first(),
       switchMap(report => {
         if (report)

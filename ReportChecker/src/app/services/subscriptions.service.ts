@@ -3,8 +3,8 @@ import {LimitsEntity} from '../entities/limits-entity';
 import {ApiClient, Limits} from './api-client';
 import {patchState, signalState} from '@ngrx/signals';
 import {toObservable} from '@angular/core/rxjs-interop';
-import {AuthService} from './auth-service';
-import {NEVER, Observable, switchMap, tap} from 'rxjs';
+import {Observable, of, switchMap, tap} from 'rxjs';
+import {AuthService} from '../auth/auth.service';
 
 interface SubscriptionsStore {
   limits: LimitsEntity | null;
@@ -23,17 +23,18 @@ export class SubscriptionsService {
 
   readonly limits$: Observable<LimitsEntity | null> = toObservable(this.store$$.limits);
 
-  readonly loadLimits$ = this.authService.isAuthorized$.pipe(
+  readonly loadLimits$ = toObservable(this.authService.isAuthenticated).pipe(
     switchMap(authorized => {
       if (!authorized)
-        return NEVER;
-      return this.authService.refreshToken();
+        return of(null);
+      return this.apiClient.limits();
     }),
-    switchMap(() => this.apiClient.limits()),
     tap(limits => patchState(this.store$$, {limits: limitsToEntity(limits)}))
   );
 }
 
-const limitsToEntity = (limits: Limits): LimitsEntity => {
+const limitsToEntity = (limits: Limits | null): LimitsEntity | null => {
+  if (!limits)
+    return null;
   return limits;
 }

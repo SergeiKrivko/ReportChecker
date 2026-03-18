@@ -7,7 +7,6 @@ import {patchState, signalState} from '@ngrx/signals';
 import {toObservable} from '@angular/core/rxjs-interop';
 import {combineLatest, first, interval, map, NEVER, Observable, of, switchMap, take, takeWhile, tap} from 'rxjs';
 import {ReportsService} from './reports.service';
-import {AuthService} from './auth-service';
 
 interface IssuesStore {
   issues: IssueEntity[];
@@ -20,7 +19,6 @@ interface IssuesStore {
 })
 export class IssuesService {
   private readonly apiClient = inject(ApiClient);
-  private readonly authService = inject(AuthService);
   private readonly reportsService = inject(ReportsService);
 
   private readonly store$$ = signalState<IssuesStore>({
@@ -34,8 +32,7 @@ export class IssuesService {
   readonly isProgress$ = toObservable(this.store$$.isProgress);
 
   private loadIssues(reportId: string) {
-    return this.authService.refreshToken().pipe(
-      switchMap(() => this.apiClient.issuesAll(reportId)),
+    return this.apiClient.issuesAll(reportId).pipe(
       tap(reports => {
         patchState(this.store$$, {
           issues: reports.map(issueToEntity),
@@ -45,8 +42,7 @@ export class IssuesService {
     );
   }
 
-  loadIssuesOnReportChanged$ = this.authService.refreshToken().pipe(
-    switchMap(() => this.reportsService.selectedReport$),
+  loadIssuesOnReportChanged$ = this.reportsService.selectedReport$.pipe(
     tap(() => patchState(this.store$$, {issues: [], selectedIssue: null})),
     switchMap(report => {
       if (report)
@@ -62,8 +58,7 @@ export class IssuesService {
   );
 
   addIssueComment(issueId: string, content: string | null, status: string | null) {
-    return this.authService.refreshToken().pipe(
-      switchMap(() => this.reportsService.selectedReport$),
+    return this.reportsService.selectedReport$.pipe(
       take(1),
       switchMap(report => {
         if (report)
@@ -76,11 +71,10 @@ export class IssuesService {
   }
 
   private reloadIssue(reportId: string, issueId: string): Observable<IssueEntity> {
-    return this.authService.refreshToken().pipe(
-      switchMap(() => combineLatest([
+    return combineLatest([
         this.apiClient.issues(reportId, issueId),
         this.issues$
-      ])),
+      ]).pipe(
       first(),
       map(([issue, issues]) => {
         issues = issues.filter(i => i.id !== issueId);
@@ -92,8 +86,7 @@ export class IssuesService {
   }
 
   private pollComment(reportId: string, issueId: string, commentId: string): Observable<boolean> {
-    return this.authService.refreshToken().pipe(
-      switchMap(() => this.reloadIssue(reportId, issueId)),
+    return this.reloadIssue(reportId, issueId).pipe(
       switchMap(() => interval(2000)),
       switchMap(() => this.apiClient.commentsGET(reportId, issueId, commentId)),
       switchMap(comment => {

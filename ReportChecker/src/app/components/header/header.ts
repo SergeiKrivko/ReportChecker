@@ -1,11 +1,11 @@
 import {ChangeDetectionStrategy, Component, inject, input} from '@angular/core';
-import {AuthService} from '../../services/auth-service';
 import {RouterLink} from '@angular/router';
 import {map} from 'rxjs';
 import {TuiAvatar} from '@taiga-ui/kit';
-import {TuiButton, TuiIcon} from '@taiga-ui/core';
+import {TuiButton} from '@taiga-ui/core';
 import {TuiLet} from '@taiga-ui/cdk';
 import {AsyncPipe} from '@angular/common';
+import {AuthClient} from '../../auth/auth.client';
 
 @Component({
   selector: 'app-header',
@@ -15,7 +15,6 @@ import {AsyncPipe} from '@angular/common';
     TuiButton,
     TuiLet,
     AsyncPipe,
-    TuiIcon
   ],
   templateUrl: './header.html',
   styleUrl: './header.scss',
@@ -23,11 +22,11 @@ import {AsyncPipe} from '@angular/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Header {
-  private readonly authService = inject(AuthService);
+  private readonly authClient = inject(AuthClient);
 
   showTitle = input<boolean>();
 
-  protected readonly userInfo$ = this.authService.userInfo$.pipe(
+  protected readonly userInfo$ = this.authClient.userInfo$.pipe(
     map(info => info?.accounts[0]),
   );
 }
