@@ -42,6 +42,7 @@ export class AuthPage {
   private readonly authClient = inject(AuthClient);
 
   private readonly authProviders$$: AuthProvider[] = [
+    {key: "password", name: "Логин и пароль"},
     {key: "yandex", name: "Яндекс"},
     {key: "google", name: "Google"},
     {key: "github", name: "GitHub"},
