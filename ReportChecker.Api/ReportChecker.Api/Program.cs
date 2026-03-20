@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using System.Text.Json.Serialization;
 using AiAgent;
+using Avalux.Auth.ApiClient;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -20,9 +21,10 @@ using IFormatProvider = ReportChecker.Abstractions.IFormatProvider;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddDbContext<ReportCheckerDbContext>(options =>
 {
-    options.UseNpgsql(Environment.GetEnvironmentVariable("DB_CONNECTION_STRING"));
+    options.UseNpgsql(builder.Configuration["DB_CONNECTION_STRING"]);
 });
 
 builder.Services.AddScoped<ICheckRepository, CheckRepository>();
@@ -30,18 +32,21 @@ builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 builder.Services.AddScoped<IIssueRepository, IssueRepository>();
 builder.Services.AddScoped<IReportRepository, ReportRepository>();
 builder.Services.AddScoped<IInstructionRepository, InstructionRepository>();
+builder.Services.AddScoped<IInstructionTaskRepository, InstructionTaskRepository>();
 builder.Services.AddSingleton<IFileRepository, S3Repository>();
 
-builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<ICheckService, CheckService>();
 builder.Services.AddScoped<IAiAgentClient, AiAgent.AiAgent>();
 builder.Services.AddScoped<IAiService, AiService>();
 builder.Services.AddScoped<IProviderService, ProviderService>();
-builder.Services.AddScoped<IUserRepository, AuthApiClient>();
 builder.Services.AddScoped<GithubService>();
 builder.Services.AddScoped<WebhookEventProcessor, GithubWebhookProcessor>();
 builder.Services.AddScoped<ILimitsService, LimitsService>();
+builder.Services.AddAvaluxAuthApiClient(
+    builder.Configuration["Security.AuthApiUrl"] ?? throw new Exception("Auth api URL not found"),
+    builder.Configuration["Security.ApiToken"] ?? throw new Exception("Auth api token not found"));
+builder.Services.AddScoped<IUserRepository, AvaluxAuthUserRepository>();
 
 builder.Services.AddScoped<ISourceProvider, FileSourceProvider>();
 builder.Services.AddScoped<ISourceProvider, GitHubSourceProvider>();

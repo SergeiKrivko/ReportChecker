@@ -10,6 +10,7 @@ public class ReportCheckerDbContext : DbContext
     public DbSet<ReportEntity> Reports { get; init; }
     public DbSet<IssueEntity> Issues { get; init; }
     public DbSet<InstructionEntity> Instructions { get; init; }
+    public DbSet<InstructionTaskEntity> InstructionTasks { get; init; }
 
     public ReportCheckerDbContext(DbContextOptions<ReportCheckerDbContext> options) : base(options)
     {

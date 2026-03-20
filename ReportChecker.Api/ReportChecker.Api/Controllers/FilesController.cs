@@ -8,7 +8,7 @@ namespace ReportChecker.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/files")]
-public class FilesController(IFileRepository fileRepository, IAuthService authService) : ControllerBase
+public class FilesController(IFileRepository fileRepository) : ControllerBase
 {
     [HttpPost]
     [Authorize]

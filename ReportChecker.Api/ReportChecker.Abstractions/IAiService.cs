@@ -8,4 +8,6 @@ public interface IAiService
         List<Chapter> existingChapters, List<Issue> existingIssues);
 
     public Task WriteComment(Report report, Guid issueId, List<Chapter> chapters);
+    public Task ProcessInstructionApplyAsync(Guid checkId, List<Chapter> chapters, string instruction);
+    public Task ProcessInstructionSearchAsync(Guid checkId, List<Chapter> chapters, string instruction);
 }

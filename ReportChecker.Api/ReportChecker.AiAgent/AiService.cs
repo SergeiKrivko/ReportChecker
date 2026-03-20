@@ -15,10 +15,11 @@ public class AiService(
     ICommentRepository commentRepository,
     ICheckRepository checkRepository,
     IInstructionRepository instructionRepository,
+    IInstructionTaskRepository instructionTaskRepository,
     ILogger<AiService> logger,
     IConfiguration configuration) : IAiService
 {
-    private readonly InlineDiffBuilder _diffBuilder = new InlineDiffBuilder(new Differ());
+    private readonly InlineDiffBuilder _diffBuilder = new(new Differ());
 
     public async Task FindIssuesAsync(Guid reportId, Guid checkId, IEnumerable<Chapter> chapters,
         List<Chapter> existingChapters,
@@ -229,6 +230,37 @@ public class AiService(
             yield return lst.ToArray();
     }
 
+    public async Task ProcessInstructionApplyAsync(Guid checkId, List<Chapter> chapters, string instruction)
+    {
+        var issues = await issueRepository.GetAllIssuesOfCheckAsync(checkId);
+        foreach (var chapterGroup in GroupChapters(chapters))
+        {
+            var comments = await aiAgentClient.ApplyInstruction(new IAiAgentClient.InstructionRequest
+            {
+                Instruction = instruction,
+                Chapters = chapterGroup.Select(c => new IAiAgentClient.Chapter
+                {
+                    Name = c.Name,
+                    Text = c.Content,
+                    Issues = issues
+                        .Where(e => e.Chapter == c.Name)
+                        .Select(IssueToAgent)
+                        .ToArray(),
+                }).ToArray()
+            });
+            foreach (var comment in comments ?? [])
+            {
+                await commentRepository.CreateCommentAsync(comment.IssueId, Guid.Empty, comment.Content,
+                    comment.Status is null ? null : Enum.Parse<IssueStatus>(comment.Status));
+            }
+        }
+    }
+
+    public async Task ProcessInstructionSearchAsync(Guid checkId, List<Chapter> chapters, string instruction)
+    {
+        throw new NotImplementedException();
+    }
+
     private async Task ProcessInstructionAsync(Guid commentId, Issue issue,
         IAiAgentClient.InstructionCreate instruction,
         List<Chapter> chapters)
@@ -245,28 +277,7 @@ public class AiService(
 
             if (instruction.Apply)
             {
-                var issues = await issueRepository.GetAllIssuesOfCheckAsync(issue.CheckId);
-                foreach (var chapterGroup in GroupChapters(chapters))
-                {
-                    var comments = await aiAgentClient.ApplyInstruction(new IAiAgentClient.InstructionRequest
-                    {
-                        Instruction = instruction.InstructionText,
-                        Chapters = chapterGroup.Select(c => new IAiAgentClient.Chapter
-                        {
-                            Name = c.Name,
-                            Text = c.Content,
-                            Issues = issues
-                                .Where(e => e.Chapter == c.Name)
-                                .Select(IssueToAgent)
-                                .ToArray(),
-                        }).ToArray()
-                    });
-                    foreach (var comment in comments ?? [])
-                    {
-                        await commentRepository.CreateCommentAsync(comment.IssueId, Guid.Empty, comment.Content,
-                            comment.Status is null ? null : Enum.Parse<IssueStatus>(comment.Status));
-                    }
-                }
+                await ProcessInstructionApplyAsync(issue.CheckId, chapters, instruction.InstructionText);
             }
         }
         catch (Exception)

@@ -15,4 +15,5 @@ public class ReportEntity
 
     public virtual ICollection<CheckEntity> Checks { get; init; } = [];
     public virtual ICollection<InstructionEntity> Instructions { get; init; } = [];
+    public virtual ICollection<InstructionTaskEntity> InstructionTasks { get; init; } = [];
 }

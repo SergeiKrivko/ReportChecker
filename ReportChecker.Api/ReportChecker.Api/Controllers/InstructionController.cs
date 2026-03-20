@@ -8,7 +8,10 @@ namespace ReportChecker.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/reports/{reportId:guid}/instructions")]
-public class InstructionController(IInstructionRepository instructionRepository, IReportRepository reportRepository)
+public class InstructionController(
+    IInstructionRepository instructionRepository,
+    IReportRepository reportRepository,
+    IInstructionTaskRepository instructionTaskRepository)
     : ControllerBase
 {
     [HttpGet]
@@ -65,5 +68,18 @@ public class InstructionController(IInstructionRepository instructionRepository,
             return Unauthorized();
         var id = await instructionRepository.DeleteInstructionAsync(instructionId);
         return Ok(id);
+    }
+
+    [HttpGet("tasks")]
+    public async Task<ActionResult<IEnumerable<InstructionTask>>> GetInstructionTasks(Guid reportId)
+    {
+        var userId = User.UserId;
+        var report = await reportRepository.GetReportByIdAsync(reportId);
+        if (report == null)
+            return NotFound();
+        if (report.OwnerId != userId)
+            return Unauthorized();
+        var tasks = await instructionTaskRepository.GetAllForReportAsync(reportId, ProgressStatus.InProgress);
+        return Ok(tasks);
     }
 }
