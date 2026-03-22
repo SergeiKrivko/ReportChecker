@@ -43,6 +43,8 @@ builder.Services.AddScoped<IProviderService, ProviderService>();
 builder.Services.AddScoped<GithubService>();
 builder.Services.AddScoped<WebhookEventProcessor, GithubWebhookProcessor>();
 builder.Services.AddScoped<ILimitsService, LimitsService>();
+builder.Services.AddScoped<IDifferenceService, DifferenceService>();
+builder.Services.AddScoped<IChapterGroupService, ChapterGroupService>();
 builder.Services.AddAvaluxAuthApiClient(
     builder.Configuration["Security.AuthApiUrl"] ?? throw new Exception("Auth api URL not found"),
     builder.Configuration["Security.ApiToken"] ?? throw new Exception("Auth api token not found"));

@@ -59,7 +59,7 @@ public class PdfFormatProvider(IConfiguration configuration) : IFormatProvider
         {
             var currentBookmark = bookmarks[i];
 
-            while (currentBookmark.Level <= name.Count)
+            while (currentBookmark.Level < name.Count)
                 name.RemoveAt(name.Count - 1);
             name.Add(currentBookmark.Title);
 
