@@ -54,6 +54,9 @@
 
   .input-wrapper {
     padding: 0.5rem 5rem;
+    @media (max-width: 600px) {
+      padding: 0.5rem;
+    }
 
     .group {
       background-color: var(--tui-background-base);
