@@ -1,55 +1,31 @@
-import {ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, DestroyRef, inject, OnDestroy, OnInit} from '@angular/core';
 import {
   ActivatedRoute,
   IsActiveMatchOptions,
-  RouterLink,
-  RouterLinkActive,
   RouterOutlet
 } from '@angular/router';
 import {ReportsService} from '../../services/reports.service';
-import {combineLatest, NEVER, switchMap, take, tap} from 'rxjs';
+import {combineLatest, map, NEVER, switchMap, take} from 'rxjs';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {AsyncPipe} from '@angular/common';
-import {TuiButton, TuiLink, TuiScrollbar} from '@taiga-ui/core';
-import {Header} from "../../components/header/header";
-import {IssuesService} from '../../services/issues.service';
-import {TuiItem, TuiLet} from '@taiga-ui/cdk';
-import {TuiBreadcrumbs} from '@taiga-ui/kit';
+import {PathService} from '../../services/path.service';
 
 @Component({
   selector: 'app-report-root.page',
   imports: [
-    AsyncPipe,
     RouterOutlet,
-    TuiButton,
-    RouterLinkActive,
-    RouterLink,
-    Header,
-    TuiLet,
-    TuiScrollbar,
-    TuiBreadcrumbs,
-    TuiLink,
-    TuiItem
   ],
   templateUrl: './report-root.page.html',
   styleUrl: './report-root.page.scss',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ReportRootPage implements OnInit {
+export class ReportRootPage implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly reportsService = inject(ReportsService);
-  private readonly issuesService = inject(IssuesService);
-
-  protected readonly selectedReport$ = this.reportsService.selectedReport$;
-  protected readonly selectedIssue$ = this.issuesService.selectedIssue$;
+  private readonly pathService = inject(PathService);
 
   ngOnInit() {
-    this.route.url.pipe(
-      tap(console.log),
-    ).subscribe();
-
     combineLatest([
       this.route.params,
       this.reportsService.loaded$,
@@ -63,6 +39,20 @@ export class ReportRootPage implements OnInit {
       take(1),
       takeUntilDestroyed(this.destroyRef),
     ).subscribe();
+
+    this.pathService.add(this.reportsService.selectedReport$.pipe(
+      map(report => {
+        return {
+          name: report?.name,
+          link: '/reports/' + report?.id,
+          icon: "@tui.book"
+        }
+      })
+    ), 0);
+  }
+
+  ngOnDestroy() {
+    this.pathService.clear(0);
   }
 
   protected readonly options: IsActiveMatchOptions = {

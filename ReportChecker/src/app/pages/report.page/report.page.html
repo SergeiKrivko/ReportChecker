@@ -1,50 +1,39 @@
-<div class="container page-sized">
+<div class="container page-padding">
   @let report = selectedReport$ | async;
-  <app-header>
-    <tui-breadcrumbs size="l" class="path">
-      @if (report) {
-        <ng-container>
-          <a *tuiItem tuiLink routerLink="." iconStart="@tui.book">{{ report.name }}</a>
-        </ng-container>
+  <div class="header-container">
+    <div class="progress-container">
+      @if (isProgress$ | async) {
+        <tui-loader/>
+        <div>Поиск ошибок...</div>
       }
-    </tui-breadcrumbs>
-  </app-header>
-  <tui-scrollbar>
-    <div class="body-container page-padding">
-      <div class="header-container">
-        <div class="progress-container">
-          @if (isProgress$ | async) {
-            <tui-loader/>
-            <div>Поиск ошибок...</div>
-          }
-        </div>
-        <div class="right-container">
-          @switch (report?.sourceProvider) {
-            @case ('File') {
-              <app-file-sp-version/>
-            }
-            @case ('GitHub') {
-              <app-github-sp-version [source]="report?.source"/>
-            }
-          }
-          <a tuiIconButton iconStart="@tui.settings" appearance="flat" routerLink="./settings"></a>
-        </div>
-      </div>
-      <div class="issues-container">
-        @for (issue of issues$ | async; track issue.id) {
-          <a tuiCardLarge tuiSurface="floating" [routerLink]="'./issues/' + issue.id" class="issue-card">
-            <app-issue-header [issue]="issue"/>
-          </a>
-        }
-      </div>
-
-      <div class="issues-container">
-        @for (issue of closedIssues$ | async; track issue.id) {
-          <a tuiCardLarge tuiSurface="floating" [routerLink]="'./issues/' + issue.id" class="issue-card">
-            <app-issue-header [issue]="issue"/>
-          </a>
-        }
-      </div>
     </div>
-  </tui-scrollbar>
+    <div class="right-container">
+      <div class="version-wrapper">
+        @switch (report?.sourceProvider) {
+          @case ('File') {
+            <app-file-sp-version/>
+          }
+          @case ('GitHub') {
+            <app-github-sp-version [source]="report?.source"/>
+          }
+        }
+      </div>
+      <a tuiIconButton iconStart="@tui.settings" appearance="flat" routerLink="./settings"></a>
+    </div>
+  </div>
+  <div class="issues-container">
+    @for (issue of issues$ | async; track issue.id) {
+      <a tuiCardLarge tuiSurface="floating" [routerLink]="'./issues/' + issue.id" class="issue-card">
+        <app-issue-header [issue]="issue"/>
+      </a>
+    }
+  </div>
+
+  <div class="issues-container">
+    @for (issue of closedIssues$ | async; track issue.id) {
+      <a tuiCardLarge tuiSurface="floating" [routerLink]="'./issues/' + issue.id" class="issue-card">
+        <app-issue-header [issue]="issue"/>
+      </a>
+    }
+  </div>
 </div>

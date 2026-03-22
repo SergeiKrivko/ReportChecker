@@ -39,4 +39,12 @@ export class IssueHeader {
       tap(() => this.detectorRef.detectChanges()),
     ).subscribe();
   }
+
+  protected getChapter() {
+    return this.issue().chapter?.split('//').join(' • ');
+  }
+
+  protected commentsCount() {
+    return this.issue().comments.filter(e => e.content).length;
+  }
 }

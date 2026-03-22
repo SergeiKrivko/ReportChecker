@@ -86,6 +86,8 @@ public class PdfFormatProvider(IConfiguration configuration) : IFormatProvider
             // Извлекаем текст для диапазона страниц
             string content = ExtractTextFromPageRange(document, startPage, startY, endPage, endY);
 
+            Console.WriteLine(string.Join(ChapterSeparator, name));
+            Console.WriteLine(content);
             chapters.Add(new Chapter
             {
                 Name = string.Join(ChapterSeparator, name),

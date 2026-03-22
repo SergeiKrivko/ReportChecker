@@ -1,51 +1,45 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 2rem;
 
-  .path {
-    flex-grow: 1;
-    overflow-x: auto;
-  }
-
-  .body-container {
+  .header-container {
     display: flex;
-    flex-direction: column;
-    gap: 2rem;
-    padding-bottom: 1rem;
-    padding-top: 1rem;
+    flex-direction: row;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
 
-    .header-container {
+    .progress-container {
       display: flex;
       flex-direction: row;
       gap: 1rem;
       align-items: center;
-      justify-content: space-between;
-
-      .progress-container {
-        display: flex;
-        flex-direction: row;
-        gap: 1rem;
-        align-items: center;
-      }
-
-      .right-container {
-        display: flex;
-        flex-direction: row;
-        gap: 1rem;
-        align-items: center;
-      }
     }
 
-    .issues-container {
+    .right-container {
       display: flex;
-      flex-direction: column;
-      align-items: stretch;
-      gap: 0.5rem;
+      flex-direction: row;
+      gap: 1rem;
+      align-items: center;
+      flex-grow: 1;
+      justify-content: end;
 
-      .issue-card {
-        padding: 0.5rem 1rem;
+      .version-wrapper {
+        max-width: 20rem;
+        flex-grow: 1;
       }
+    }
+  }
+
+  .issues-container {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+
+    .issue-card {
+      padding: 0.5rem 1rem;
     }
   }
 }

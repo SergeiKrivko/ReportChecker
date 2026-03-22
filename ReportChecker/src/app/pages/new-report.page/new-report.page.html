@@ -1,37 +1,30 @@
-<div class="container page-sized">
-  <app-header>
-    <h2 class="title">Новый отчет</h2>
-  </app-header>
-  <tui-scrollbar>
-    <div class="page-padding body-padding">
-      @if (selectedProvider) {
-        <button tuiButton iconStart="@tui.chevron-left" (click)="deselectProvider()" appearance="flat">Назад
-        </button>
-      } @else {
-        <a tuiButton iconStart="@tui.chevron-left" routerLink="../.." appearance="flat">Назад</a>
-      }
-    </div>
-    @switch (selectedProvider?.key) {
-      @case (null) {
-        <div class="providers-container page-padding body-padding">
-          @for (sourceProvider of sourceProviders$; track sourceProvider.key) {
-            <button tuiCardLarge tuiAppearance="flat-grayscale" class="source-provider-container"
-                    (click)="selectProvider(sourceProvider)">
-              <tui-avatar size="xxl" [src]="sourceProvider.icon"/>
-              <span tuiTitle>
+<div class="container page-padding">
+  @if (selectedProvider) {
+    <button tuiButton iconStart="@tui.chevron-left" (click)="deselectProvider()" appearance="flat">Назад
+    </button>
+  } @else {
+    <a tuiButton iconStart="@tui.chevron-left" routerLink="../.." appearance="flat">Назад</a>
+  }
+  @switch (selectedProvider?.key) {
+    @case (null) {
+      <div class="providers-container page-padding body-padding">
+        @for (sourceProvider of sourceProviders$; track sourceProvider.key) {
+          <button tuiCardLarge tuiAppearance="flat-grayscale" class="source-provider-container"
+                  (click)="selectProvider(sourceProvider)">
+            <tui-avatar size="xxl" [src]="sourceProvider.icon"/>
+            <span tuiTitle>
             <b>{{ sourceProvider.name }}</b>
             <span tuiSubtitle class="subtitle">{{ sourceProvider.description }}</span>
           </span>
-            </button>
-          }
-        </div>
-      }
-      @case ('File') {
-        <app-file-sp-options/>
-      }
-      @case ('GitHub') {
-        <app-github-sp-options/>
-      }
+          </button>
+        }
+      </div>
     }
-  </tui-scrollbar>
+    @case ('File') {
+      <app-file-sp-options/>
+    }
+    @case ('GitHub') {
+      <app-github-sp-options/>
+    }
+  }
 </div>

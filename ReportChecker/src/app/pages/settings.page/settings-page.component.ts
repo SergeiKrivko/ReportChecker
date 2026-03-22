@@ -1,17 +1,16 @@
-import {Component, DestroyRef, inject, OnInit} from '@angular/core';
+import {Component, DestroyRef, inject, OnDestroy, OnInit} from '@angular/core';
 import {InstructionService} from '../../services/instruction.service';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {AsyncPipe} from '@angular/common';
-import {TuiButton, TuiLink, TuiScrollbar, TuiTextfield} from '@taiga-ui/core';
+import {TuiButton, TuiTextfield} from '@taiga-ui/core';
 import {InstructionInput} from '../../components/instruction-input/instruction-input';
-import {TUI_CONFIRM, TuiBreadcrumbs, TuiConfirmData} from '@taiga-ui/kit';
-import {debounceTime, from, NEVER, switchMap, tap} from 'rxjs';
-import {Router, RouterLink} from '@angular/router';
+import {TUI_CONFIRM, TuiConfirmData} from '@taiga-ui/kit';
+import {debounceTime, from, map, NEVER, switchMap, tap} from 'rxjs';
+import {Router} from '@angular/router';
 import {TuiResponsiveDialogService} from '@taiga-ui/addon-mobile';
 import {ReportsService} from '../../services/reports.service';
-import {Header} from '../../components/header/header';
-import {TuiItem} from '@taiga-ui/cdk';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
+import {PathService} from '../../services/path.service';
 
 @Component({
   selector: 'app-instructions.page',
@@ -19,12 +18,6 @@ import {FormControl, ReactiveFormsModule} from '@angular/forms';
     AsyncPipe,
     TuiButton,
     InstructionInput,
-    TuiScrollbar,
-    Header,
-    RouterLink,
-    TuiBreadcrumbs,
-    TuiLink,
-    TuiItem,
     TuiTextfield,
     ReactiveFormsModule
   ],
@@ -32,14 +25,14 @@ import {FormControl, ReactiveFormsModule} from '@angular/forms';
   styleUrl: './settings-page.component.scss',
   standalone: true
 })
-export class SettingsPage implements OnInit {
+export class SettingsPage implements OnInit, OnDestroy {
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
   private readonly dialogs = inject(TuiResponsiveDialogService);
   private readonly reportsService = inject(ReportsService);
   private readonly instructionService = inject(InstructionService);
+  private readonly pathService = inject(PathService);
 
-  protected readonly selectedReport$ = this.reportsService.selectedReport$;
   protected readonly instructions$ = this.instructionService.instructions$;
 
   protected readonly reportNameControl = new FormControl<string>("");
@@ -61,6 +54,20 @@ export class SettingsPage implements OnInit {
     this.instructionService.loadInstructionsOnReportChanged$.pipe(
       takeUntilDestroyed(this.destroyRef),
     ).subscribe();
+
+    this.pathService.add(this.reportsService.selectedReport$.pipe(
+      map(report => {
+        return {
+          name: report?.name,
+          link: '/reports/' + report?.id,
+          icon: "@tui.settings"
+        }
+      })
+    ), 1);
+  }
+
+  ngOnDestroy() {
+    this.pathService.clear(1);
   }
 
   protected addInstruction() {

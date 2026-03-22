@@ -1,15 +1,24 @@
 <div class="container">
-  <div class="logo" routerLink="/">
-    <tui-avatar src="@tui.notebook-tabs"/>
-    @if (showTitle()) {
-      <h1 routerLink="/">ReportChecker</h1>
-    }
+  <div class="header-container">
+    <div class="logo" routerLink="/">
+      <tui-avatar src="@tui.notebook-tabs"/>
+      @if (showTitle$ | async) {
+        <h1 routerLink="/">ReportChecker</h1>
+      }
+    </div>
+
+    <tui-breadcrumbs size="l" class="path">
+      @for (itemObservable of items$ | async; track itemObservable) {
+        <ng-container>
+          @let item = itemObservable | async;
+          <a *tuiItem tuiLink [routerLink]="item?.link" [iconStart]="item?.icon">{{ item?.name }}</a>
+        </ng-container>
+      }
+    </tui-breadcrumbs>
+
+    <a tuiButton routerLink="/auth" *tuiLet="userInfo$ | async as userInfo" class="account-button" appearance="secondary">
+      <tui-avatar [src]="userInfo?.avatarUrl" size="m"/>
+      <label>{{ userInfo?.name }}</label>
+    </a>
   </div>
-
-  <ng-content/>
-
-  <a tuiButton routerLink="/auth" *tuiLet="userInfo$ | async as userInfo" class="account-button">
-    <tui-avatar [src]="userInfo?.avatarUrl" size="m"/>
-    <label>{{ userInfo?.name }}</label>
-  </a>
 </div>

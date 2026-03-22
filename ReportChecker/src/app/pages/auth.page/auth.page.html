@@ -1,40 +1,36 @@
-<div class="page-sized page-container">
-  <app-header [showTitle]="true"/>
-  <tui-scrollbar class="scrollbar">
-    <div class="container page-padding body-padding">
-      <div class="subscriptions-container">
-        <a tuiButton iconStart="@tui.chevron-left" appearance="flat" routerLink="..">Назад</a>
-        <div class="limits-container">
-          @let limits = limits$ | async;
-          @if (limits) {
-            <app-subscription-limit name="Отчеты" [limit]="limits.reports"/>
-            <app-subscription-limit name="Проверки" [limit]="limits.checks"/>
-            <app-subscription-limit name="Комментарии" [limit]="limits.comments"/>
+<div class="container page-padding">
+  <div class="subscriptions-container">
+    <a tuiButton iconStart="@tui.chevron-left" appearance="flat" routerLink="..">Назад</a>
+    <div class="limits-container">
+      @let limits = limits$ | async;
+      @if (limits) {
+        <app-subscription-limit name="Отчеты" [limit]="limits.reports"/>
+        <app-subscription-limit name="Проверки" [limit]="limits.checks"/>
+        <app-subscription-limit name="Комментарии" [limit]="limits.comments"/>
+      }
+    </div>
+  </div>
+  <div class="providers-container">
+    @for (authProvider of authProviders$ | async; track authProvider.key) {
+      <div tuiCardLarge class="provider-container">
+        <div class="h-container">
+          <h3>{{ authProvider.name }}</h3>
+          @if (!authProvider.userInfo) {
+            <button tuiButton (click)="logIn(authProvider.key)" class="button">Войти</button>
+          } @else if (authProvider.key == 'password') {
+            <button tuiButton (click)="logIn(authProvider.key)" class="button" iconStart="@tui.edit"
+                    appearance="flat" size="m"></button>
           }
         </div>
-      </div>
-      <div class="providers-container">
-        @for (authProvider of authProviders$ | async; track authProvider.key) {
-          <div tuiCardLarge class="provider-container">
-            <div class="h-container">
-              <h3>{{ authProvider.name }}</h3>
-              @if (!authProvider.userInfo) {
-                <button tuiButton (click)="logIn(authProvider.key)" class="button">Войти</button>
-              } @else if (authProvider.key == 'password') {
-                <button tuiButton (click)="logIn(authProvider.key)" class="button" iconStart="@tui.edit"
-                        appearance="flat" size="m"></button>
-              }
-            </div>
-            @if (authProvider.userInfo) {
-              <div class="h-container">
-                <tui-avatar [src]="authProvider.userInfo.avatarUrl"/>
-                <label tuiLabel class="username">{{ authProvider.userInfo.name }}</label>
-              </div>
-            }
+        @if (authProvider.userInfo) {
+          <div class="h-container">
+            <tui-avatar [src]="authProvider.userInfo.avatarUrl"/>
+            <label tuiLabel class="username">{{ authProvider.userInfo.name }}</label>
           </div>
         }
-        <button tuiButton appearance="outline-destructive" iconStart="@tui.log-out" (click)="logOut()">Выйти</button>
       </div>
-    </div>
-  </tui-scrollbar>
+    }
+    <button tuiButton appearance="outline-destructive" iconStart="@tui.log-out" (click)="logOut()">Выйти</button>
+  </div>
 </div>
+<app-header/>

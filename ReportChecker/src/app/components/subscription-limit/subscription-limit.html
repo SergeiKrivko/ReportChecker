@@ -2,5 +2,11 @@
   @if (name()) {
     <label tuiLabel>{{name()}}</label>
   }
-  <tui-chip [appearance]="(appearance$ | async) ?? ''">{{limit().current}} / {{limit().maximum}}</tui-chip>
+  <tui-chip [appearance]="(appearance$ | async) ?? ''">
+    @if (limit().maximum < 2147483647) {
+      {{limit().current}} / {{limit().maximum}}
+    } @else {
+      Нет лимита
+    }
+  </tui-chip>
 </div>

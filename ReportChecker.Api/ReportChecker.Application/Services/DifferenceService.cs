@@ -11,18 +11,18 @@ public class DifferenceService : IDifferenceService
 {
     private readonly InlineDiffBuilder _diffBuilder = new(new Differ());
 
-    public IEnumerable<ChapterDifference> GetDifference(IEnumerable<Chapter> oldChapters,
-        IEnumerable<Chapter> newChapters)
+    public IEnumerable<ChapterDifference> GetDifference(IEnumerable<Chapter> newChapters,
+        IEnumerable<Chapter> oldChapters)
     {
         oldChapters = oldChapters.ToList();
         foreach (var newChapter in newChapters)
         {
             var oldChapter = oldChapters.FirstOrDefault(e => e.Name == newChapter.Name);
-            yield return GetDifference(oldChapter, newChapter);
+            yield return GetDifference(newChapter, oldChapter);
         }
     }
 
-    public ChapterDifference GetDifference(Chapter? oldChapter, Chapter newChapter)
+    public ChapterDifference GetDifference(Chapter newChapter, Chapter? oldChapter)
     {
         if (oldChapter != null && oldChapter.Name != newChapter.Name)
             throw new InvalidOperationException("Different chapters are not supported.");

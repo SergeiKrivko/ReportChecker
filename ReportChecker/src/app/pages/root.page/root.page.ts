@@ -5,11 +5,13 @@ import {ReportsService} from '../../services/reports.service';
 import {IssuesService} from '../../services/issues.service';
 import {AuthService} from '../../auth/auth.service';
 import {toObservable} from '@angular/core/rxjs-interop';
+import {Header} from '../../components/header/header';
 
 @Component({
   selector: 'app-root.page',
   imports: [
     RouterOutlet,
+    Header,
   ],
   templateUrl: './root.page.html',
   styleUrl: './root.page.scss',

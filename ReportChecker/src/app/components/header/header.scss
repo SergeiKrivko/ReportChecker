@@ -1,41 +1,54 @@
 .container {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  padding: 1rem;
-  gap: 1rem;
-  justify-content: space-between;
-  background: var(--tui-background-base-alt);
-  border-radius: 0  0 2rem 2rem;
-  border: 1px solid var(--tui-border-normal);
-  border-top: none;
 
-  .logo {
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
+
+  .header-container {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 1rem;
-    cursor: pointer;
-
-    h1 {
-      margin: 0;
-    }
-  }
-
-  @media (min-width: 600px) {
-    margin: 0 4rem;
-  }
-
-  .account-button {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 1rem;
     padding: 1rem;
+    gap: 1rem;
+    justify-content: space-between;
+    background: var(--tui-background-base-alt);
+    border-radius: 0 0 2rem 2rem;
+    border: 1px solid var(--tui-border-normal);
+    border-top: none;
+    opacity: 95%;
 
-    @media (max-width: 600px) {
-      label {
-        display: none;
+    .logo {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 1rem;
+      cursor: pointer;
+
+      h1 {
+        margin: 0;
+      }
+    }
+
+    @media (min-width: 600px) {
+      margin: 0 4rem;
+    }
+
+    .path {
+      flex-grow: 1;
+    }
+
+    .account-button {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+
+      @media (max-width: 600px) {
+        label {
+          display: none;
+        }
       }
     }
   }

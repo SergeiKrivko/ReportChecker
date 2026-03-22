@@ -8,11 +8,11 @@
   }
   <div class="info-container">
     <div class="issue-title" [innerHtml]="issue().title"></div>
-    <div class="issue-chapter">{{ issue().chapter }}</div>
+    <div class="issue-chapter">{{ getChapter() }}</div>
   </div>
-  @if (issue().comments.length > 1) {
+  @if (commentsCount() > 1) {
     <div class="comments-counter">
-      <div>{{ issue().comments.length }}</div>
+      <div>{{ commentsCount() }}</div>
       <tui-icon icon="@tui.messages-square"/>
     </div>
   }
