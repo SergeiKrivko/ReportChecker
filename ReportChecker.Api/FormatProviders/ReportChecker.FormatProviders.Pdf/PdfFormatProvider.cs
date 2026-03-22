@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Microsoft.Extensions.Configuration;
 using ReportChecker.Abstractions;
 using ReportChecker.Models;
 using UglyToad.PdfPig;
@@ -8,9 +9,11 @@ using IFormatProvider = ReportChecker.Abstractions.IFormatProvider;
 
 namespace ReportChecker.FormatProviders.Pdf;
 
-public class PdfFormatProvider : IFormatProvider
+public class PdfFormatProvider(IConfiguration configuration) : IFormatProvider
 {
     public string Key => "Pdf";
+
+    private string ChapterSeparator { get; } = configuration["Reports.ChapterSeparator"] ?? "//";
 
     public async Task<IEnumerable<Chapter>> GetChaptersAsync(IFileArchive archive)
     {
@@ -50,10 +53,16 @@ public class PdfFormatProvider : IFormatProvider
         List<DocumentBookmarkNode> bookmarks)
     {
         var chapters = new List<Chapter>();
+        var name = new List<string> { "" };
 
         for (int i = 0; i < bookmarks.Count; i++)
         {
             var currentBookmark = bookmarks[i];
+
+            while (currentBookmark.Level <= name.Count)
+                name.RemoveAt(name.Count - 1);
+            name.Add(currentBookmark.Title);
+
             var startPage = currentBookmark.Destination.PageNumber;
             var startY = currentBookmark.Destination.Coordinates.Top ?? 10000;
             int endPage;
@@ -79,7 +88,7 @@ public class PdfFormatProvider : IFormatProvider
 
             chapters.Add(new Chapter
             {
-                Name = currentBookmark.Title,
+                Name = string.Join(ChapterSeparator, name),
                 Content = content,
             });
         }
