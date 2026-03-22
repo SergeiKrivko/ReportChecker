@@ -1,0 +1,48 @@
+﻿using ReportChecker.Models;
+
+namespace AiAgent;
+
+public static class Converter
+{
+    public static IAiAgentClient.Chapter ToAgent(this Chapter chapter, ICollection<Issue> issues)
+    {
+        return new IAiAgentClient.Chapter
+        {
+            Name = chapter.Name,
+            Text = chapter.Content,
+            Issues = issues.Where(e => e.Chapter == chapter.Name).Select(e => e.ToAgent()).ToArray(),
+        };
+    }
+
+    public static IAiAgentClient.Chapter ToAgent(this ChapterDifference chapter, ICollection<Issue> issues)
+    {
+        return new IAiAgentClient.Chapter
+        {
+            Name = chapter.Name,
+            Text = chapter.Difference,
+            Issues = issues.Where(e => e.Chapter == chapter.Name).Select(e => e.ToAgent()).ToArray(),
+        };
+    }
+
+    public static IAiAgentClient.IssueRead ToAgent(this Issue issue)
+    {
+        return new IAiAgentClient.IssueRead
+        {
+            Id = issue.Id,
+            Title = issue.Title,
+            Comments = issue.Comments.Select(e => e.ToAgent()).ToArray(),
+            Priority = issue.Priority,
+        };
+    }
+
+    public static IAiAgentClient.CommentRead ToAgent(this Comment comment)
+    {
+        return new IAiAgentClient.CommentRead
+        {
+            Id = comment.Id,
+            Content = comment.Content,
+            Role = comment.UserId == Guid.Empty ? "assistant" : "user",
+            Status = comment.Status.ToString(),
+        };
+    }
+}

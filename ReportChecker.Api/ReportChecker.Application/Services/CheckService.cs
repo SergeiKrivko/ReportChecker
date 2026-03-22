@@ -90,7 +90,7 @@ public class CheckService(
                 previousChapters = (await formatProvider.GetChaptersAsync(previousSource)).ToList();
             }
 
-            await aiService.FindIssuesAsync(report.Id, check.Id, chapters, previousChapters, issues.ToList());
+            await aiService.FindIssuesAsync(report.Id, check.Id, chapters.ToList(), previousChapters, issues.ToList());
             await checkRepository.SetCheckStatusAsync(check.Id, ProgressStatus.Completed);
             await sourceProvider.WriteCheckStatusAsync(report, check, true);
         }
