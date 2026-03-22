@@ -35,7 +35,9 @@ public class AiService(
 
             var comments = await aiAgentClient.CheckIssues(new IAiAgentClient.IssuesRequest
             {
-                Chapters = chapterGroup.Select(e => e.ToAgent(existingIssues)).ToArray(),
+                Chapters = chapterGroup
+                    .Select(e => e.ToAgent(existingIssues.Where(x => x.Status == IssueStatus.Open).ToList()))
+                    .ToArray(),
                 Instructions = instructions,
             });
             foreach (var comment in comments ?? [])
@@ -116,7 +118,8 @@ public class AiService(
         }
     }
 
-    public async Task ProcessInstructionApplyAsync(Guid reportId, Guid checkId, List<Chapter> chapters, string instruction)
+    public async Task ProcessInstructionApplyAsync(Guid reportId, Guid checkId, List<Chapter> chapters,
+        string instruction)
     {
         var issues = (await issueRepository.GetAllIssuesOfCheckAsync(checkId)).ToList();
         var taskId = await instructionTaskRepository.CreateAsync(reportId, instruction, ProgressStatus.InProgress);
@@ -145,7 +148,8 @@ public class AiService(
         }
     }
 
-    public async Task ProcessInstructionSearchAsync(Guid reportId, Guid checkId, List<Chapter> chapters, string instruction)
+    public async Task ProcessInstructionSearchAsync(Guid reportId, Guid checkId, List<Chapter> chapters,
+        string instruction)
     {
         throw new NotImplementedException();
     }
