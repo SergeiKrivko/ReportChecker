@@ -1,30 +1,31 @@
 <div class="container page-padding">
   @if (selectedProvider) {
-    <button tuiButton iconStart="@tui.chevron-left" (click)="deselectProvider()" appearance="flat">Назад
-    </button>
+    <button tuiButton iconStart="@tui.chevron-left" (click)="deselectProvider()" appearance="flat">Назад</button>
   } @else {
     <a tuiButton iconStart="@tui.chevron-left" routerLink="../.." appearance="flat">Назад</a>
   }
-  @switch (selectedProvider?.key) {
-    @case (null) {
-      <div class="providers-container page-padding body-padding">
-        @for (sourceProvider of sourceProviders$; track sourceProvider.key) {
-          <button tuiCardLarge tuiAppearance="flat-grayscale" class="source-provider-container"
-                  (click)="selectProvider(sourceProvider)">
-            <tui-avatar size="xxl" [src]="sourceProvider.icon"/>
-            <span tuiTitle>
+  <div class="body-container">
+    @switch (selectedProvider?.key) {
+      @case (null) {
+        <div class="providers-container">
+          @for (sourceProvider of sourceProviders$; track sourceProvider.key) {
+            <button tuiCardLarge tuiAppearance="flat-grayscale" class="source-provider-container"
+                    (click)="selectProvider(sourceProvider)">
+              <tui-avatar size="xxl" [src]="sourceProvider.icon"/>
+              <span tuiTitle>
             <b>{{ sourceProvider.name }}</b>
             <span tuiSubtitle class="subtitle">{{ sourceProvider.description }}</span>
           </span>
-          </button>
-        }
-      </div>
+            </button>
+          }
+        </div>
+      }
+      @case ('File') {
+        <app-file-sp-options/>
+      }
+      @case ('GitHub') {
+        <app-github-sp-options/>
+      }
     }
-    @case ('File') {
-      <app-file-sp-options/>
-    }
-    @case ('GitHub') {
-      <app-github-sp-options/>
-    }
-  }
+  </div>
 </div>

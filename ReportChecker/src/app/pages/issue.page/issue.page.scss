@@ -20,6 +20,11 @@
       flex-direction: row;
       align-items: center;
       gap: 1rem;
+
+      .issue-title {
+        text-wrap: wrap;
+        margin: 0;
+      }
     }
   }
 

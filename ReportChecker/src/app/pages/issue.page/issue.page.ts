@@ -97,8 +97,11 @@ export class IssuePage implements OnInit, OnDestroy {
   }
 
   protected readonly selectedIssue$ = this.issueService.selectedIssue$;
-  protected readonly selectedReport$ = this.reportsService.selectedReport$;
   protected loading = new Subject<boolean>();
+  protected readonly frozenStatus$ = this.issueService.selectedIssue$.pipe(
+    first(e => e !== null),
+    map(e => e?.status),
+  );
 
   protected addComment(status: string | null = null) {
     this.loading.next(true);

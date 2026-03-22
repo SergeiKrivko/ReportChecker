@@ -33,12 +33,17 @@
       </div>
     }
   </div>
-  <div tuiGroup class="group" orientation="horizontal">
-    <tui-textfield class="input-field">
-      <input placeholder="Ваш комментарий" tuiTextfield [formControl]="control"/>
-    </tui-textfield>
-    <button tuiButton iconStart="@tui.send"
-            tuiTooltip="Отправить" [disabled]="!(control.valueChanges | async)"
-            [loading]="loading | async" (click)="addComment()"></button>
+</div>
+
+<div class="bottom-wrapper">
+  <div class="input-wrapper">
+    <div tuiGroup class="group" orientation="horizontal">
+      <tui-textfield class="input-field">
+        <input placeholder="Ваш комментарий" tuiTextfield [formControl]="control"/>
+      </tui-textfield>
+      <button tuiButton iconStart="@tui.send"
+              tuiTooltip="Отправить" [disabled]="!(control.valueChanges | async)"
+              [loading]="loading | async" (click)="addComment()"></button>
+    </div>
   </div>
 </div>

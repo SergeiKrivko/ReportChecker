@@ -2,6 +2,7 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  padding-bottom: 5rem;
 
   .comments-container {
     padding: 1rem;
@@ -35,15 +36,32 @@
       .fixed {
         color: var(--tui-text-positive);
       }
+
       .open {
         color: var(--tui-text-negative);
       }
     }
   }
+}
 
-  .group {
-    .input-field {
-      flex-grow: 100;
+.bottom-wrapper {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100vw;
+  margin: 0;
+
+  .input-wrapper {
+    padding: 0.5rem 5rem;
+
+    .group {
+      background-color: var(--tui-background-base);
+      opacity: 95;
+
+      .input-field {
+        flex-grow: 100;
+      }
     }
   }
 }

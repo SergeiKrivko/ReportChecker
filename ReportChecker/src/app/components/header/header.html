@@ -7,16 +7,19 @@
       }
     </div>
 
-    <tui-breadcrumbs size="l" class="path">
-      @for (itemObservable of items$ | async; track itemObservable) {
-        <ng-container>
-          @let item = itemObservable | async;
-          <a *tuiItem tuiLink [routerLink]="item?.link" [iconStart]="item?.icon">{{ item?.name }}</a>
-        </ng-container>
-      }
-    </tui-breadcrumbs>
+    <tui-scrollbar class="path">
+      <tui-breadcrumbs size="l">
+        @for (itemObservable of items$ | async; track itemObservable) {
+          <ng-container>
+            @let item = itemObservable | async;
+            <a *tuiItem tuiLink [routerLink]="item?.link" [iconStart]="item?.icon">{{ item?.name }}</a>
+          </ng-container>
+        }
+      </tui-breadcrumbs>
+    </tui-scrollbar>
 
-    <a tuiButton routerLink="/auth" *tuiLet="userInfo$ | async as userInfo" class="account-button" appearance="secondary">
+    <a tuiButton routerLink="/auth" *tuiLet="userInfo$ | async as userInfo" class="account-button"
+       appearance="secondary">
       <tui-avatar [src]="userInfo?.avatarUrl" size="m"/>
       <label>{{ userInfo?.name }}</label>
     </a>

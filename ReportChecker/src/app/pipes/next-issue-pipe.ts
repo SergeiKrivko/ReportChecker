@@ -10,11 +10,11 @@ import {IssueEntity} from '../entities/issue-entity';
 export class NextIssuePipe implements PipeTransform {
   private readonly issueService = inject(IssuesService);
 
-  transform(issue: IssueEntity): Observable<IssueEntity | null> {
+  transform(issue: IssueEntity, status: string | null = null): Observable<IssueEntity | null> {
     return this.issueService.issues$.pipe(
       map(issues => {
         issues = issues
-          .filter(e => (e.status === 'Open') == (issue.status === 'Open'))
+          .filter(e => e.id == issue.id || (e.status === 'Open') == ((status ?? issue.status) === 'Open'))
           .sort((a, b) => a.priority - b.priority);
         const index = issues.indexOf(issue);
         if (index < 0 || index >= issues.length - 1)
