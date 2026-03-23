@@ -2,8 +2,8 @@ import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
 import {RouterLink} from '@angular/router';
 import {map} from 'rxjs';
 import {TuiAvatar, TuiBreadcrumbs} from '@taiga-ui/kit';
-import {TuiButton, TuiLink, TuiScrollbar} from '@taiga-ui/core';
-import {TuiItem, TuiLet} from '@taiga-ui/cdk';
+import {TuiButton, TuiIcon, TuiLink, TuiScrollbar} from '@taiga-ui/core';
+import {TuiItem} from '@taiga-ui/cdk';
 import {AsyncPipe} from '@angular/common';
 import {AuthClient} from '../../auth/auth.client';
 import {PathService} from '../../services/path.service';
@@ -14,12 +14,12 @@ import {PathService} from '../../services/path.service';
     TuiAvatar,
     RouterLink,
     TuiButton,
-    TuiLet,
     AsyncPipe,
     TuiBreadcrumbs,
     TuiLink,
     TuiItem,
     TuiScrollbar,
+    TuiIcon,
   ],
   templateUrl: './header.html',
   styleUrl: './header.scss',

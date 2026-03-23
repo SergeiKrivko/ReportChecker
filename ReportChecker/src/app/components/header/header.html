@@ -18,10 +18,16 @@
       </tui-breadcrumbs>
     </tui-scrollbar>
 
-    <a tuiButton routerLink="/auth" *tuiLet="userInfo$ | async as userInfo" class="account-button"
+    @let userInfo = userInfo$ | async;
+    <a tuiButton routerLink="/auth" class="account-button"
        appearance="secondary">
-      <tui-avatar [src]="userInfo?.avatarUrl" size="m"/>
-      <label>{{ userInfo?.name }}</label>
+      @if (userInfo) {
+        <tui-avatar [src]="userInfo?.avatarUrl" size="m"/>
+        <label>{{ userInfo?.name }}</label>
+      } @else {
+        <tui-icon icon="@tui.log-in" />
+        <label>Войти</label>
+      }
     </a>
   </div>
 </div>

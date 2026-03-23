@@ -3,10 +3,11 @@ import {RouterOutlet} from '@angular/router';
 import {TuiRoot} from '@taiga-ui/core';
 import {AuthClient} from './auth/auth.client';
 import {SubscriptionsService} from './services/subscriptions.service';
+import {Header} from './components/header/header';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, TuiRoot],
+  imports: [RouterOutlet, TuiRoot, Header],
   templateUrl: './app.html',
   standalone: true,
   styleUrl: './app.scss'

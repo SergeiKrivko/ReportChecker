@@ -1,15 +1,15 @@
-<app-header/>
 <div class="container page-padding">
   <div class="subscriptions-container">
     <a tuiButton iconStart="@tui.chevron-left" appearance="flat" routerLink="..">Назад</a>
-    <div class="limits-container">
-      @let limits = limits$ | async;
-      @if (limits) {
+    @let limits = limits$ | async;
+    @if (limits) {
+      <div class="limits-container" tuiCardLarge>
+        <h3>Лимиты</h3>
         <app-subscription-limit name="Отчеты" [limit]="limits.reports"/>
         <app-subscription-limit name="Проверки" [limit]="limits.checks"/>
         <app-subscription-limit name="Комментарии" [limit]="limits.comments"/>
-      }
-    </div>
+      </div>
+    }
   </div>
   <div class="providers-container">
     @for (authProvider of authProviders$ | async; track authProvider.key) {
@@ -31,6 +31,8 @@
         }
       </div>
     }
-    <button tuiButton appearance="outline-destructive" iconStart="@tui.log-out" (click)="logOut()">Выйти</button>
+    @if (isAuthenticated()) {
+      <button tuiButton appearance="outline-destructive" iconStart="@tui.log-out" (click)="logOut()">Выйти</button>
+    }
   </div>
 </div>

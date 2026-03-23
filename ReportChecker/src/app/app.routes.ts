@@ -8,14 +8,16 @@ import {ReportRootPage} from './pages/report-root.page/report-root.page';
 import {IssuePage} from './pages/issue.page/issue.page';
 import {RootPage} from './pages/root.page/root.page';
 import {NewReportPage} from './pages/new-report.page/new-report.page';
+import {LandingPage} from './pages/landing-page/landing-page';
 
 export const routes: Routes = [
+  {path: '', pathMatch: "full", component: LandingPage},
   {
-    path: "", component: RootPage, children: [
+    path: "reports", component: RootPage, children: [
       {path: "", pathMatch: "full", component: HomePage},
-      {path: "reports/new", pathMatch: "full", component: NewReportPage},
+      {path: "new", pathMatch: "full", component: NewReportPage},
       {
-        path: "reports/:id", component: ReportRootPage, children: [
+        path: ":id", component: ReportRootPage, children: [
           {path: "", pathMatch: "full", component: ReportPage},
           {path: "issues/:issueId", pathMatch: "full", component: IssuePage},
           {path: "settings", pathMatch: "full", component: SettingsPage},

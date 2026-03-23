@@ -2,11 +2,10 @@ import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
 import {AuthService} from '../../auth/auth.service';
 import {AsyncPipe} from '@angular/common';
 import {TuiCard} from '@taiga-ui/layout';
-import {TuiButton, TuiScrollbar} from '@taiga-ui/core';
+import {TuiButton} from '@taiga-ui/core';
 import {AccountInfoEntity} from '../../entities/user-info-entity';
 import {map, Observable, switchMap} from 'rxjs';
 import {TuiAvatar, TuiInputRange} from '@taiga-ui/kit';
-import {Header} from '../../components/header/header';
 import {SubscriptionsService} from '../../services/subscriptions.service';
 import {SubscriptionLimit} from '../../components/subscription-limit/subscription-limit';
 import {RouterLink} from '@angular/router';
@@ -26,8 +25,6 @@ interface AuthProvider {
     TuiButton,
     TuiAvatar,
     TuiInputRange,
-    Header,
-    TuiScrollbar,
     SubscriptionLimit,
     RouterLink
   ],
@@ -58,6 +55,8 @@ export class AuthPage {
       return {key: provider.key, name: provider.name, userInfo: accountInfo};
     })),
   );
+
+  protected readonly isAuthenticated = this.authService.isAuthenticated;
 
   protected logIn(provider: string) {
     if (this.authService.isAuthenticated()) {
