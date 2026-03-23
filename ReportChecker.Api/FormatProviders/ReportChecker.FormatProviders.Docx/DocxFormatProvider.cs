@@ -1,21 +1,24 @@
 ﻿using System.Text;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
+using Microsoft.Extensions.Configuration;
 using ReportChecker.Abstractions;
 using ReportChecker.Models;
 using IFormatProvider = ReportChecker.Abstractions.IFormatProvider;
 
 namespace ReportChecker.FormatProviders.Docx;
 
-public class DocxFormatProvider : IFormatProvider
+public class DocxFormatProvider(IConfiguration configuration) : IFormatProvider
 {
     public string Key => "Docx";
+
+    private string ChapterSeparator { get; } = configuration["Reports.ChapterSeparator"] ?? "//";
 
     public async Task<IEnumerable<Chapter>> GetChaptersAsync(IFileArchive archive)
     {
         var chapters = new List<Chapter>();
-        string? currentChapter = null;
         var currentText = new StringBuilder();
+        var path = new List<string> { "" };
 
         await using var stream = await archive.OpenAsync();
         using var document = WordprocessingDocument.Open(stream ?? throw new Exception(), false);
@@ -23,22 +26,28 @@ public class DocxFormatProvider : IFormatProvider
         foreach (var paragraph in document.MainDocumentPart?.Document?.Body?.Elements<Paragraph>() ?? [])
         {
             var style = GetParagraphStyle(paragraph);
+            var level = headingStyles.GetValueOrDefault(style ?? "", 10);
+            Console.WriteLine(level);
             // Проверяем стиль параграфа
-            if (style != null && headingStyles.Contains(style))
+            if (style != null && level <= 3)
             {
                 // Сохраняем предыдущую главу
-                if (currentChapter != null && currentText.Length > 0)
+                if (currentText.Length > 0)
                 {
                     chapters.Add(new Chapter
                     {
-                        Name = currentChapter,
+                        Name = string.Join(ChapterSeparator, path.Where(e => !string.IsNullOrWhiteSpace(e))),
                         Content = currentText.ToString(),
                     });
                     currentText.Clear();
                 }
 
                 // Создаем новую главу
-                currentChapter = paragraph.InnerText;
+                while (level < path.Count)
+                    path.RemoveAt(path.Count - 1);
+                while (level > path.Count)
+                    path.Add("");
+                path.Add(paragraph.InnerText);
             }
             else
             {
@@ -52,7 +61,7 @@ public class DocxFormatProvider : IFormatProvider
         {
             chapters.Add(new Chapter
             {
-                Name = currentChapter ?? "<Root>",
+                Name = string.Join(ChapterSeparator, path.Where(e => !string.IsNullOrWhiteSpace(e))),
                 Content = currentText.ToString(),
             });
         }
@@ -71,9 +80,9 @@ public class DocxFormatProvider : IFormatProvider
         return null;
     }
 
-    private static HashSet<string> GuessHeadingStyles(WordprocessingDocument document)
+    private static Dictionary<string, int> GuessHeadingStyles(WordprocessingDocument document)
     {
-        var result = new HashSet<string>();
+        var result = new Dictionary<string, int>();
 
         var stylesPart = document.MainDocumentPart?.StyleDefinitionsPart;
         if (stylesPart != null)
@@ -85,9 +94,8 @@ public class DocxFormatProvider : IFormatProvider
                 if (outlineLvl?.Val != null)
                 {
                     int level = outlineLvl.Val.Value;
-                    Console.WriteLine(level);
-                    if (level <= 2 && style.StyleId != null)
-                        result.Add(style.StyleId.Value ?? "");
+                    if (level <= 2 && style.StyleId?.Value != null)
+                        result[style.StyleId.Value] = level;
                 }
             }
         }

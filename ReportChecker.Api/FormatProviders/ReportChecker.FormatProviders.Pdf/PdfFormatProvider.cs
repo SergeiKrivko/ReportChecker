@@ -61,6 +61,8 @@ public class PdfFormatProvider(IConfiguration configuration) : IFormatProvider
 
             while (currentBookmark.Level < name.Count)
                 name.RemoveAt(name.Count - 1);
+            while (currentBookmark.Level > name.Count)
+                name.Add("");
             name.Add(currentBookmark.Title);
 
             var startPage = currentBookmark.Destination.PageNumber;
@@ -86,11 +88,9 @@ public class PdfFormatProvider(IConfiguration configuration) : IFormatProvider
             // Извлекаем текст для диапазона страниц
             string content = ExtractTextFromPageRange(document, startPage, startY, endPage, endY);
 
-            Console.WriteLine(string.Join(ChapterSeparator, name));
-            Console.WriteLine(content);
             chapters.Add(new Chapter
             {
-                Name = string.Join(ChapterSeparator, name),
+                Name = string.Join(ChapterSeparator, name.Where(e => !string.IsNullOrWhiteSpace(e))),
                 Content = content,
             });
         }
