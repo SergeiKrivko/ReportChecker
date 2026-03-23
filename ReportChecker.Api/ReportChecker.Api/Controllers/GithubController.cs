@@ -30,6 +30,12 @@ public class GithubController(GithubService githubService) : ControllerBase
         return Ok(await githubService.GetFilesOfRepositoryAsync(User.UserId, repositoryId, branch));
     }
 
+    [HttpGet("installation")]
+    public async Task<ActionResult<bool>> CheckInstallation()
+    {
+        return Ok(await githubService.CheckInstallation(User.UserId));
+    }
+
     [HttpGet("repositories/{repositoryId:long}")]
     public async Task<ActionResult<RepositoryInfo>> GetRepository(long repositoryId)
     {

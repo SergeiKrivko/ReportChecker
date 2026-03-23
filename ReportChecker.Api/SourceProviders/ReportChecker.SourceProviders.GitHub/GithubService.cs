@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using GitHubJwt;
+﻿using GitHubJwt;
 using Microsoft.Extensions.Configuration;
 using Octokit;
 using ReportChecker.Abstractions;
@@ -92,12 +91,29 @@ public class GithubService(IUserRepository userRepository, IConfiguration config
     {
         var client = await CreateUserClient(userId);
         var repository = await client.Repository.Get(repositoryId);
-        Console.WriteLine(JsonSerializer.Serialize(repository));
         return new RepositoryInfo
         {
             Id = repositoryId,
             Name = repository.Name,
             Url = repository.HtmlUrl,
         };
+    }
+
+    public async Task<bool> CheckInstallation(Guid userId)
+    {
+        var user = await userRepository.GetUserByIdAsync(userId);
+        var account = user?.Accounts.FirstOrDefault(e => e.Provider == "github");
+        if (account == null)
+            return false;
+
+        try
+        {
+            await _client.GitHubApps.GetUserInstallationForCurrent(account.Login ?? account.Name);
+            return true;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
     }
 }

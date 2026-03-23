@@ -58,6 +58,10 @@ export class GithubService {
       map(repositoryInfoToEntity),
     );
   }
+
+  checkInstallation() {
+    return this.apiClient.installation()
+  }
 }
 
 const repositoryToEntity = (repository: Repository): RepositoryEntity => {

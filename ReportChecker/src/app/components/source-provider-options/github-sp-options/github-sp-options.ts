@@ -1,7 +1,7 @@
 import {ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit} from '@angular/core';
 import {FormControl, FormGroup, FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {TuiForm} from '@taiga-ui/layout';
-import {TuiTextfield} from '@taiga-ui/core';
+import {TuiButton, TuiTextfield} from '@taiga-ui/core';
 import {TuiDataListWrapper, TuiSelect} from '@taiga-ui/kit';
 import {RepositoryEntity} from '../../../entities/github-entities';
 import {GithubService} from '../../../services/github.service';
@@ -21,7 +21,8 @@ import {SourceTester} from '../../source-tester/source-tester';
     TuiSelect,
     TuiDataListWrapper,
     AsyncPipe,
-    SourceTester
+    SourceTester,
+    TuiButton
   ],
   templateUrl: './github-sp-options.html',
   styleUrl: './github-sp-options.scss',
@@ -47,6 +48,7 @@ export class GithubSpOptions implements OnInit {
 
   protected readonly repositories$ = this.githubService.repositories$;
   protected readonly branches$ = this.githubService.branches$;
+  protected readonly installed$ = this.githubService.checkInstallation();
 
   protected readonly control = new FormGroup({
     repository: new FormControl<RepositoryEntity | null>(null),

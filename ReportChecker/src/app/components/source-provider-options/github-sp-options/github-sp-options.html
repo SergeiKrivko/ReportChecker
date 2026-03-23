@@ -1,24 +1,29 @@
 <div class="container">
-  <form tuiForm [formGroup]="control">
-    <label tuiLabel>Репозиторий:</label>
-    <tui-textfield [stringify]="stringifyRepository">
-      <input placeholder="Выберите репозиторий из списка" tuiSelect formControlName="repository"/>
-      @let repositories = repositories$ | async;
-      <tui-data-list-wrapper *tuiTextfieldDropdown new [items]="repositories"/>
-    </tui-textfield>
+  @if (installed$ | async) {
+    <form tuiForm [formGroup]="control">
+      <label tuiLabel>Репозиторий:</label>
+      <tui-textfield [stringify]="stringifyRepository">
+        <input placeholder="Выберите репозиторий из списка" tuiSelect formControlName="repository"/>
+        @let repositories = repositories$ | async;
+        <tui-data-list-wrapper *tuiTextfieldDropdown new [items]="repositories"/>
+      </tui-textfield>
 
-    <label tuiLabel>Ветка:</label>
-    <tui-textfield>
-      <input placeholder="Выберите ветку из списка" tuiSelect formControlName="branch"/>
-      @let branches = branches$ | async;
-      <tui-data-list-wrapper *tuiTextfieldDropdown new [items]="branches"/>
-    </tui-textfield>
+      <label tuiLabel>Ветка:</label>
+      <tui-textfield>
+        <input placeholder="Выберите ветку из списка" tuiSelect formControlName="branch"/>
+        @let branches = branches$ | async;
+        <tui-data-list-wrapper *tuiTextfieldDropdown new [items]="branches"/>
+      </tui-textfield>
 
-    <label tuiLabel>Файл:</label>
-    <tui-textfield>
-      <input tuiTextfield formControlName="path">
-    </tui-textfield>
+      <label tuiLabel>Файл:</label>
+      <tui-textfield>
+        <input tuiTextfield formControlName="path">
+      </tui-textfield>
 
-    <app-source-tester provider="GitHub" [source]="source$ | async" [name]="reportName$ | async" />
-  </form>
+      <app-source-tester provider="GitHub" [source]="source$ | async" [name]="reportName$ | async"/>
+    </form>
+  } @else {
+    <a tuiButton iconStart="@tui.link" appearance="flat"
+       href="https://github.com/apps/ReportChecker/installations/new">Подключить GitHub</a>
+  }
 </div>
