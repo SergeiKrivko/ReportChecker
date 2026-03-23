@@ -1,9 +1,8 @@
 .container {
-
-  position: fixed;
-  width: 100%;
   top: 0;
-  left: 0;
+  position: sticky;
+  z-index: 20;
+  display: block;
 
   .header-container {
     display: flex;
@@ -12,11 +11,13 @@
     padding: 1rem;
     gap: 1rem;
     justify-content: space-between;
-    background: var(--tui-background-base-alt);
+    background: color-mix(in srgb, var(--tui-background-base-alt) 78%, transparent);
     border-radius: 0 0 2rem 2rem;
     border: 1px solid var(--tui-border-normal);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: var(--tui-shadow);
     border-top: none;
-    opacity: 95%;
 
     .logo {
       display: flex;
