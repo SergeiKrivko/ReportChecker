@@ -8,7 +8,7 @@ import {map, Observable, switchMap} from 'rxjs';
 import {TuiAvatar, TuiInputRange} from '@taiga-ui/kit';
 import {SubscriptionsService} from '../../services/subscriptions.service';
 import {SubscriptionLimit} from '../../components/subscription-limit/subscription-limit';
-import {RouterLink} from '@angular/router';
+import {ActivatedRoute, RouterLink} from '@angular/router';
 import {AuthClient} from '../../auth/auth.client';
 
 interface AuthProvider {
@@ -37,6 +37,7 @@ export class AuthPage {
   private readonly subscriptionsService = inject(SubscriptionsService);
   private readonly authService = inject(AuthService);
   private readonly authClient = inject(AuthClient);
+  private readonly activatedRoute = inject(ActivatedRoute);
 
   private readonly authProviders$$: AuthProvider[] = [
     {key: "password", name: "Логин и пароль"},
@@ -61,10 +62,11 @@ export class AuthPage {
   protected logIn(provider: string) {
     if (this.authService.isAuthenticated()) {
       this.authClient.getLinkCode().pipe(
-        switchMap(linkCode => this.authService.login$(provider, linkCode ?? undefined))
+        switchMap(linkCode => this.authService.login$(provider, linkCode ?? undefined,
+          this.activatedRoute.snapshot.queryParams["returnUrl"])),
       ).subscribe();
     } else
-      this.authService.startOrContinueLogin$(provider).subscribe();
+      this.authService.startOrContinueLogin$(provider, undefined, this.activatedRoute.snapshot.queryParams["returnUrl"]).subscribe();
   }
 
   protected logOut() {

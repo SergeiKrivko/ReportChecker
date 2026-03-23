@@ -1,17 +1,15 @@
 import {Component, inject, OnInit} from '@angular/core';
-import {Router, RouterOutlet} from '@angular/router';
+import {ActivatedRoute, Router, RouterOutlet} from '@angular/router';
 import {combineLatest, from, switchMap, tap} from 'rxjs';
 import {ReportsService} from '../../services/reports.service';
 import {IssuesService} from '../../services/issues.service';
 import {AuthService} from '../../auth/auth.service';
 import {toObservable} from '@angular/core/rxjs-interop';
-import {Header} from '../../components/header/header';
 
 @Component({
   selector: 'app-root.page',
   imports: [
     RouterOutlet,
-    Header,
   ],
   templateUrl: './root.page.html',
   styleUrl: './root.page.scss',
@@ -27,14 +25,13 @@ export class RootPage implements OnInit {
 
   ngOnInit() {
     this.isAuthenticated$.pipe(
-      tap(console.log),
       switchMap(authorized => {
         if (authorized)
           return combineLatest([
             this.reportsService.loadReports(),
             this.issuesService.loadIssuesOnReportChanged$,
           ]);
-        return from(this.router.navigate(["auth"]));
+        return from(this.router.navigateByUrl(`auth?returnUrl=${encodeURIComponent(window.location.pathname)}`));
       }),
     ).subscribe();
   }

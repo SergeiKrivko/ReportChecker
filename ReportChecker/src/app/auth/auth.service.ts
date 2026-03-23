@@ -5,7 +5,7 @@ import {
   EMPTY,
   finalize,
   from,
-  map,
+  map, NEVER,
   Observable,
   of,
   shareReplay,
@@ -13,11 +13,13 @@ import {
 } from 'rxjs';
 
 import {OAUTH_CONFIG} from './auth.config';
+import {Router} from '@angular/router';
 
 @Injectable({providedIn: 'root'})
 export class AuthService {
   private readonly oauthConfig = inject(OAUTH_CONFIG);
   private readonly oauthService = inject(OAuthService);
+  private readonly router = inject(Router);
   private readonly accessTokenState = signal<string | null>(null);
 
   private refreshing$?: Observable<string | null>;
@@ -42,12 +44,12 @@ export class AuthService {
     );
   }
 
-  startOrContinueLogin$(provider?: string, linkCode?: string): Observable<string | null> {
+  startOrContinueLogin$(provider?: string, linkCode?: string, returnUrl?: string): Observable<string | null> {
     this.configure();
 
     return this.ensureDiscoveryDocumentLoaded$().pipe(
       switchMap(() => this.completeLoginFromRedirect$()),
-      switchMap((token) => (token ? of(token) : this.refreshOrLogin$(provider, linkCode))),
+      switchMap((token) => (token ? of(token) : this.refreshOrLogin$(provider, linkCode, returnUrl))),
     );
   }
 
@@ -60,7 +62,7 @@ export class AuthService {
     this.accessTokenState.set(null);
   }
 
-  refreshOrLogin$(provider?: string, linkCode?: string): Observable<string | null> {
+  refreshOrLogin$(provider?: string, linkCode?: string, returnUrl?: string): Observable<string | null> {
     const existingToken = this.token();
 
     if (existingToken) {
@@ -68,11 +70,15 @@ export class AuthService {
     }
 
     return this.refresh$().pipe(
-      switchMap((newToken) => (newToken ? of(newToken) : this.login$(provider, linkCode))),
+      switchMap((newToken) => (newToken ? of(newToken) : this.login$(provider, linkCode, returnUrl))),
     );
   }
 
-  login$(provider?: string, linkCode?: string): Observable<never> {
+  login$(provider?: string, linkCode?: string, returnUrl?: string): Observable<never> {
+    if (returnUrl)
+      sessionStorage.setItem("returnUrl", returnUrl);
+    else
+      sessionStorage.removeItem("returnUrl");
     this.oauthService.initLoginFlow('', linkCode ? {provider, link_code: linkCode} : {provider});
 
     return EMPTY;
@@ -117,6 +123,13 @@ export class AuthService {
     return from(this.oauthService.tryLoginCodeFlow()).pipe(
       switchMap(() => of(this.syncTokenState())),
       catchError(() => of(null)),
+      switchMap(e => {
+        const returnUrl = sessionStorage.getItem("returnUrl");
+        sessionStorage.removeItem("returnUrl");
+        if (returnUrl)
+          return from(this.router.navigateByUrl(returnUrl)).pipe(map(() => e));
+        return of(e);
+      })
     );
   }
 
