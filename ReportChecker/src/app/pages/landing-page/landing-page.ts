@@ -1,8 +1,8 @@
 import {Component, DestroyRef, inject, OnInit} from '@angular/core';
 import {Router, RouterLink} from '@angular/router';
-import {TuiButton, TuiScrollbar} from '@taiga-ui/core';
+import {TuiAppearance, TuiButton} from '@taiga-ui/core';
 import {TuiCard} from '@taiga-ui/layout';
-import {TuiAvatar} from '@taiga-ui/kit';
+import {TuiChip} from '@taiga-ui/kit';
 import {AuthService} from '../../auth/auth.service';
 import {takeUntilDestroyed, toObservable} from '@angular/core/rxjs-interop';
 import {from, NEVER, switchMap} from 'rxjs';
@@ -13,8 +13,8 @@ import {from, NEVER, switchMap} from 'rxjs';
     RouterLink,
     TuiButton,
     TuiCard,
-    TuiAvatar,
-    TuiScrollbar
+    TuiAppearance,
+    TuiChip
   ],
   templateUrl: './landing-page.html',
   styleUrl: './landing-page.scss',

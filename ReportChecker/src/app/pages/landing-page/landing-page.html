@@ -1,24 +1,124 @@
-<div class="container page-padding">
+<div class="container">
   <div class="top-container">
-    <h1>Поиск ошибок в отчетах с помощью ИИ</h1>
-    <a tuiButton routerLink="reports/new" appearance="accent">Начать</a>
-  </div>
-
-  <h2>Поддерживаемые форматы</h2>
-  <tui-scrollbar>
-    <div class="cards-container">
-      <div tuiCardLarge class="format-card">
-        <tui-avatar size="xxl" src="latex.svg"/>
-        <h4>LaTeX</h4>
-      </div>
-      <div tuiCardLarge class="format-card">
-        <tui-avatar size="xxl" src="ms-word.svg"/>
-        <h4>DOCX</h4>
-      </div>
-      <div tuiCardLarge class="format-card">
-        <tui-avatar size="xxl" src="pdf.svg"/>
-        <h4>PDF</h4>
+    <div class="top-left-container">
+      <h1>Проверяйте отчеты через ИИ и держите весь процесс ревью в одном месте.</h1>
+      <h3>ReportChecker находит ошибки в отчетах, ведет обсуждение по каждому замечанию,
+        пересматривает их после новых версий документа и адаптирует проверку под ваши инструкции.</h3>
+      <div class="buttons-container">
+        <a tuiButton routerLink="reports/new" appearance="accent" iconEnd="@tui.chevron-right">Загрузить отчет</a>
       </div>
     </div>
-  </tui-scrollbar>
+    <div tuiCardLarge>
+      <img src="screen.png">
+    </div>
+  </div>
+
+  <div class="section-header">
+    <h2>Возможности</h2>
+    <span>
+      От первой загрузки до повторной проверки после правок —
+      ReportChecker поддерживает полный цикл работы с замечаниями и версиями документа.
+    </span>
+  </div>
+  <div class="features-container">
+    <article tuiCardLarge class="card" tuiAppearance="outline-grayscale">
+      <img class="image" src="issues.png" alt="GitHub icon"/>
+      <h3>Проверка отчетов через ИИ</h3>
+      <span>
+        Агент читает отчет, находит ошибки, спорные места и несоответствия вашим правилам проверки.
+      </span>
+    </article>
+
+    <article tuiCardLarge class="card" tuiAppearance="outline-grayscale">
+      <div class="image-container">
+        <img src="latex.svg" alt="LaTeX icon"/>
+        <img src="ms-word.svg" alt="DOCX icon"/>
+        <img class="image" src="pdf.svg" alt="PDF icon"/>
+      </div>
+      <h3>TeX, DOCX и PDF</h3>
+      <span>
+        Загружайте отчеты напрямую в сервис независимо от того, в каком формате они подготовлены.
+      </span>
+    </article>
+
+    <article tuiCardLarge class="card" tuiAppearance="outline-grayscale">
+      <img class="image" src="github.svg" alt="GitHub icon"/>
+      <h3>Подключение GitHub</h3>
+      <span>
+        Проверяйте документы из репозитория и работайте с историей изменений без ручной пересборки процесса.
+      </span>
+    </article>
+
+    <article tuiCardLarge class="card" tuiAppearance="outline-grayscale">
+      <img class="image" src="comments.png" alt="GitHub icon"/>
+      <h3>Комментарии и диалог</h3>
+      <span>
+        Оставляйте комментарии к найденным ошибкам, а агент автоматически отвечает и уточняет контекст.
+      </span>
+    </article>
+
+    <article tuiCardLarge class="card" tuiAppearance="outline-grayscale">
+      <img class="image" src="close-issue.png" alt="GitHub icon"/>
+      <h3>Закрытие замечаний</h3>
+      <span>
+        Каждую ошибку можно закрыть или отметить как исправленную вручную.
+      </span>
+    </article>
+
+    <article tuiCardLarge class="card" tuiAppearance="outline-grayscale">
+      <img class="image" src="github.svg" alt="GitHub icon"/>
+      <h3>Проверка новых версий</h3>
+      <span>
+        При загрузке новой версии агент анализирует измененный текст, пересматривает старые замечания и ищет новые.
+      </span>
+    </article>
+
+    <article tuiCardLarge class="card" tuiAppearance="outline-grayscale">
+      <img class="image" src="instructions.png" alt="GitHub icon"/>
+      <h3>Инструкции на уровень отчета</h3>
+      <span>
+        Задавайте агенту, что считать ошибкой, а что игнорировать, чтобы проверка соответствовала вашему процессу.
+      </span>
+    </article>
+
+    <article tuiCardLarge class="card" tuiAppearance="outline-grayscale">
+      <img class="image" src="github.svg" alt="GitHub icon"/>
+      <h3>Самообучение на комментариях</h3>
+      <span>
+        Агент может сам дополнять инструкции на основе обсуждений и автоматически запускать повторную проверку.
+      </span>
+    </article>
+  </div>
+
+  <div class="user-flow-container">
+    <div class="section-header">
+      <h2>Как это работает</h2>
+      <span>
+      Сервис не просто выдает список ошибок, а поддерживает живой процесс проверки,
+      обсуждения и актуализации замечаний на новых версиях документа.
+    </span>
+    </div>
+    <div class="steps-container">
+      <div tuiCardLarge class="step" tuiAppearance="outline-grayscale">
+        <tui-chip appearance="secondary-grayscale">Шаг 1</tui-chip>
+        <h3>Загрузите файл или подключите репозиторий</h3>
+        <span>Импортируйте tex, docx, pdf или свяжите проект с GitHub.</span>
+      </div>
+      <div tuiCardLarge class="step" tuiAppearance="outline-grayscale">
+        <tui-chip appearance="secondary-grayscale">Шаг 2</tui-chip>
+        <h3>Получите список замечаний</h3>
+        <span>Агент отмечает найденные ошибки, сомнительные места и расхождения с инструкциями.</span>
+      </div>
+      <div tuiCardLarge class="step" tuiAppearance="outline-grayscale">
+        <tui-chip appearance="secondary-grayscale">Шаг 3</tui-chip>
+        <h3>Обсуждайте и закрывайте</h3>
+        <span>Комментируйте, подтверждайте или отклоняйте замечания, а агент продолжает диалог по каждому пункту.</span>
+      </div>
+      <div tuiCardLarge class="step" tuiAppearance="outline-grayscale">
+        <tui-chip appearance="secondary-grayscale">Шаг 4</tui-chip>
+        <h3>Загружайте новую версию</h3>
+        <span>Система пересматривает старые ошибки на измененном тексте и автоматически ищет новые.</span>
+      </div>
+    </div>
+  </div>
 </div>
