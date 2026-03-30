@@ -118,13 +118,11 @@ public class AiService(
         }
     }
 
-    public async Task ProcessInstructionApplyAsync(Guid reportId, Guid checkId, List<Chapter> chapters,
+    public async Task ProcessInstructionApplyAsync(Guid taskId, Guid reportId, Guid checkId, List<Chapter> chapters,
         string instruction)
     {
         var issues = (await issueRepository.GetAllIssuesOfCheckAsync(checkId)).ToList();
-        var taskId = await instructionTaskRepository.CreateAsync(reportId, instruction, InstructionTaskMode.Apply,
-            ProgressStatus.InProgress);
-        await Task.Delay(20000);
+        await instructionTaskRepository.SetStatusAsync(taskId, ProgressStatus.InProgress);
         try
         {
             foreach (var chapterGroup in chapterGroupService.GroupChapters(chapters))
@@ -150,10 +148,30 @@ public class AiService(
         }
     }
 
-    public async Task ProcessInstructionSearchAsync(Guid reportId, Guid checkId, List<Chapter> chapters,
+    public async Task ProcessInstructionSearchAsync(Guid taskId, Guid reportId, Guid checkId, List<Chapter> chapters,
         string instruction)
     {
-        throw new NotImplementedException();
+        var issues = (await issueRepository.GetAllIssuesOfCheckAsync(checkId)).ToList();
+        await instructionTaskRepository.SetStatusAsync(taskId, ProgressStatus.InProgress);
+        try
+        {
+            foreach (var chapterGroup in chapterGroupService.GroupChapters(chapters))
+            {
+                var newIssues = await aiAgentClient.SearchInstruction(new IAiAgentClient.InstructionRequest
+                {
+                    Instruction = instruction,
+                    Chapters = chapterGroup.Select(c => c.ToAgent(issues)).ToArray()
+                });
+                await ProcessIssuesAsync(checkId, newIssues ?? []);
+
+                await instructionTaskRepository.SetStatusAsync(taskId, ProgressStatus.Completed);
+            }
+        }
+        catch (Exception e)
+        {
+            logger.LogError("Ошибка при поиске новых ошибок по инструкции:\n{error}", e.ToString());
+            await instructionTaskRepository.SetStatusAsync(taskId, ProgressStatus.Failed);
+        }
     }
 
     private async Task ProcessInstructionAsync(Guid reportId, Guid commentId, Issue issue,
@@ -172,12 +190,18 @@ public class AiService(
 
             if (instruction.Apply)
             {
-                await ProcessInstructionApplyAsync(reportId, issue.CheckId, chapters, instruction.InstructionText);
+                var taskId = await instructionTaskRepository.CreateAsync(reportId, instruction.InstructionText,
+                    InstructionTaskMode.Apply);
+                await ProcessInstructionApplyAsync(taskId, reportId, issue.CheckId, chapters,
+                    instruction.InstructionText);
             }
 
             if (instruction.Search)
             {
-                await ProcessInstructionSearchAsync(reportId, issue.CheckId, chapters, instruction.InstructionText);
+                var taskId = await instructionTaskRepository.CreateAsync(reportId, instruction.InstructionText,
+                    InstructionTaskMode.Search);
+                await ProcessInstructionSearchAsync(taskId, reportId, issue.CheckId, chapters,
+                    instruction.InstructionText);
             }
         }
         catch (Exception e)

@@ -49,11 +49,11 @@ public class InstructionTaskService(
         var formatProvider = providerService.GetFormatProvider(report.Format);
         var chapters = await formatProvider.GetChaptersAsync(sourceStream);
 
-        RunInstructionTask(report, check, chapters.ToList(), instruction, mode);
+        RunInstructionTask(id, report, check, chapters.ToList(), instruction, mode);
         return id;
     }
 
-    private async void RunInstructionTask(Report report, Check check, List<Chapter> chapters, string instruction,
+    private async void RunInstructionTask(Guid taskId, Report report, Check check, List<Chapter> chapters, string instruction,
         InstructionTaskMode mode)
     {
         try
@@ -62,10 +62,10 @@ public class InstructionTaskService(
             switch (mode)
             {
                 case InstructionTaskMode.Apply:
-                    await service.ProcessInstructionApplyAsync(report.Id, check.Id, chapters, instruction);
+                    await service.ProcessInstructionApplyAsync(taskId, report.Id, check.Id, chapters, instruction);
                     break;
                 case InstructionTaskMode.Search:
-                    await service.ProcessInstructionSearchAsync(report.Id, check.Id, chapters, instruction);
+                    await service.ProcessInstructionSearchAsync(taskId, report.Id, check.Id, chapters, instruction);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(mode), mode, null);

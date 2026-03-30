@@ -20,6 +20,11 @@ endpoints:
     input: InstructionRequest
     output: CommentCreate[]
     mode: json
+  
+  SearchInstruction:
+    input: InstructionRequest
+    output: IssueCreate[]
+    mode: json
 
 schemas:
   IssueRead:

@@ -8,6 +8,10 @@ public interface IAiService
         ICollection<Chapter> existingChapters, ICollection<Issue> existingIssues);
 
     public Task WriteComment(Report report, Guid issueId, List<Chapter> chapters);
-    public Task ProcessInstructionApplyAsync(Guid reportId, Guid checkId, List<Chapter> chapters, string instruction);
-    public Task ProcessInstructionSearchAsync(Guid reportId, Guid checkId, List<Chapter> chapters, string instruction);
+
+    public Task ProcessInstructionApplyAsync(Guid taskId, Guid reportId, Guid checkId, List<Chapter> chapters,
+        string instruction);
+
+    public Task ProcessInstructionSearchAsync(Guid taskId, Guid reportId, Guid checkId, List<Chapter> chapters,
+        string instruction);
 }
