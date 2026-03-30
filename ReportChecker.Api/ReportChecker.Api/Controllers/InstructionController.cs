@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ReportChecker.Abstractions;
 using ReportChecker.Api.Extensions;
+using ReportChecker.Api.Schemas;
 using ReportChecker.Models;
 
 namespace ReportChecker.Api.Controllers;
@@ -11,7 +12,8 @@ namespace ReportChecker.Api.Controllers;
 public class InstructionController(
     IInstructionRepository instructionRepository,
     IReportRepository reportRepository,
-    IInstructionTaskRepository instructionTaskRepository)
+    IInstructionTaskRepository instructionTaskRepository,
+    IInstructionTaskService instructionTaskService)
     : ControllerBase
 {
     [HttpGet]
@@ -81,5 +83,24 @@ public class InstructionController(
             return Unauthorized();
         var tasks = await instructionTaskRepository.GetAllForReportAsync(reportId, ProgressStatus.InProgress);
         return Ok(tasks);
+    }
+
+    [HttpPost("tasks")]
+    public async Task<ActionResult<Guid>> CreateInstructionTaskAsync(Guid reportId,
+        [FromBody] CreateInstructionTaskSchema schema, CancellationToken ct)
+    {
+        if (schema.InstructionId != null)
+        {
+            var id = await instructionTaskService.CreateInstructionTaskAsync(reportId, schema.InstructionId.Value, schema.Mode,
+                ct);
+            return Ok(id);
+        }
+        if (schema.Instruction != null)
+        {
+            var id = await instructionTaskService.CreateInstructionTaskAsync(reportId, schema.Instruction, schema.Mode,
+                ct);
+            return Ok(id);
+        }
+        return BadRequest("Both InstructionId and Instruction fields are empty");
     }
 }

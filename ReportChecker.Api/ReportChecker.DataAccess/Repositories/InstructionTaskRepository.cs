@@ -7,20 +7,20 @@ namespace ReportChecker.DataAccess.Repositories;
 
 public class InstructionTaskRepository(ReportCheckerDbContext dbContext) : IInstructionTaskRepository
 {
-    public async Task<IEnumerable<InstructionTask>> GetAllForReportAsync(Guid reportId)
+    public async Task<IReadOnlyList<InstructionTask>> GetAllForReportAsync(Guid reportId)
     {
         var entities = await dbContext.InstructionTasks
             .Where(e => e.ReportId == reportId)
             .ToListAsync();
-        return entities.Select(FromEntity);
+        return entities.Select(FromEntity).ToList();
     }
 
-    public async Task<IEnumerable<InstructionTask>> GetAllForReportAsync(Guid reportId, ProgressStatus status)
+    public async Task<IReadOnlyList<InstructionTask>> GetAllForReportAsync(Guid reportId, ProgressStatus status)
     {
         var entities = await dbContext.InstructionTasks
             .Where(e => e.ReportId == reportId && e.Status == status)
             .ToListAsync();
-        return entities.Select(FromEntity);
+        return entities.Select(FromEntity).ToList();
     }
 
     public async Task<Guid> CreateAsync(Guid reportId, string instruction, ProgressStatus status = ProgressStatus.Queued)
