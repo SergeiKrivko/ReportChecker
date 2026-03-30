@@ -122,7 +122,9 @@ public class AiService(
         string instruction)
     {
         var issues = (await issueRepository.GetAllIssuesOfCheckAsync(checkId)).ToList();
-        var taskId = await instructionTaskRepository.CreateAsync(reportId, instruction, ProgressStatus.InProgress);
+        var taskId = await instructionTaskRepository.CreateAsync(reportId, instruction, InstructionTaskMode.Apply,
+            ProgressStatus.InProgress);
+        await Task.Delay(20000);
         try
         {
             foreach (var chapterGroup in chapterGroupService.GroupChapters(chapters))

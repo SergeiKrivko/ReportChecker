@@ -5,7 +5,20 @@ import {CommentEntity} from '../entities/comment-entity';
 import moment from 'moment';
 import {patchState, signalState} from '@ngrx/signals';
 import {toObservable} from '@angular/core/rxjs-interop';
-import {combineLatest, first, interval, map, NEVER, Observable, of, switchMap, take, takeWhile, tap} from 'rxjs';
+import {
+  combineLatest,
+  first,
+  interval,
+  map,
+  NEVER,
+  Observable,
+  of,
+  switchMap,
+  take,
+  takeWhile,
+  tap,
+  timer
+} from 'rxjs';
 import {ReportsService} from './reports.service';
 
 interface IssuesStore {
@@ -31,7 +44,7 @@ export class IssuesService {
   readonly selectedIssue$ = toObservable(this.store$$.selectedIssue);
   readonly isProgress$ = toObservable(this.store$$.isProgress);
 
-  private loadIssues(reportId: string) {
+  loadIssues(reportId: string) {
     return this.apiClient.issuesAll(reportId).pipe(
       tap(reports => {
         patchState(this.store$$, {
@@ -45,16 +58,30 @@ export class IssuesService {
   loadIssuesOnReportChanged$ = this.reportsService.selectedReport$.pipe(
     tap(() => patchState(this.store$$, {issues: [], selectedIssue: null})),
     switchMap(report => {
-      if (report)
-        return interval(2000).pipe(
-          switchMap(() => this.loadIssues(report.id)),
-          switchMap(() => this.apiClient.latest(report.id)),
-          tap(check => patchState(this.store$$, {isProgress: check.status == "InProgress"})),
-          takeWhile(check => check.status == "InProgress"),
-        );
-      return NEVER;
-    }),
-    switchMap(() => NEVER),
+      if (!report) return NEVER;
+
+      let currentInterval = 16000; // базовый интервал
+
+      return timer(0, currentInterval).pipe(
+        switchMap(() => this.apiClient.latest(report.id)),
+        tap(check => patchState(this.store$$, {isProgress: check.status === "InProgress"})),
+        switchMap(check => {
+          // Если InProgress - поллим issues каждые 2 секунды
+          if (check.status === "InProgress") {
+            return interval(2000).pipe(
+              switchMap(() => this.loadIssues(report.id)),
+              switchMap(() => this.apiClient.latest(report.id)),
+              tap(nextCheck => patchState(this.store$$, {isProgress: nextCheck.status === "InProgress"})),
+              takeWhile(nextCheck => nextCheck.status === "InProgress", true)
+            );
+          }
+          // Иначе просто загружаем issues по базовому интервалу
+          return this.loadIssues(report.id).pipe(
+            map(a => a.map(issueToEntity))
+          );
+        })
+      );
+    })
   );
 
   addIssueComment(issueId: string, content: string | null, status: string | null) {
@@ -72,9 +99,9 @@ export class IssuesService {
 
   private reloadIssue(reportId: string, issueId: string): Observable<IssueEntity> {
     return combineLatest([
-        this.apiClient.issues(reportId, issueId),
-        this.issues$
-      ]).pipe(
+      this.apiClient.issues(reportId, issueId),
+      this.issues$
+    ]).pipe(
       first(),
       map(([issue, issues]) => {
         issues = issues.filter(i => i.id !== issueId);

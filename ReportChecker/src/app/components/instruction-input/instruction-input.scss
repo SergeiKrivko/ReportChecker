@@ -2,10 +2,16 @@
   display: flex;
   flex-direction: row;
   gap: 1rem;
-  align-items: center;
+  align-items: stretch;
 
   .input {
     flex-grow: 1;
     max-height: 30rem;
+  }
+
+  .buttons-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
   }
 }

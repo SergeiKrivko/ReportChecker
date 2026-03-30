@@ -9,9 +9,11 @@ public class InstructionRepository(ReportCheckerDbContext dbContext) : IInstruct
 {
     public async Task<Instruction?> GetInstructionByIdAsync(Guid id, CancellationToken ct = default)
     {
+        Console.WriteLine(id);
         var entity = await dbContext.Instructions
-            .Where(i => i.Id == id && i.DeletedAt != null)
+            .Where(i => i.Id == id && i.DeletedAt == null)
             .FirstOrDefaultAsync(ct);
+        Console.WriteLine(entity is null);
         return entity is null ? null : FromEntity(entity);
     }
 

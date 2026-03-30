@@ -7,6 +7,17 @@
         <div>Поиск ошибок...</div>
       }
     </div>
+    <div class="progress-container">
+      @let instructionTasks = instructionTasks$ | async;
+      @if ((instructionTasks?.length ?? 0) > 0) {
+        <tui-loader/>
+        @if (instructionTasks?.length == 1) {
+          <div>Применение инструкции...</div>
+        } @else {
+          <div>Применение инструкций ({{ instructionTasks?.length }})...</div>
+        }
+      }
+    </div>
     <div class="right-container">
       <div class="version-wrapper">
         @switch (report?.sourceProvider) {

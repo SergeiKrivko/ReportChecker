@@ -2,5 +2,22 @@
   <tui-textfield class="input">
     <textarea tuiTextarea (blur)="save()" [limit]="1000" [formControl]="control"></textarea>
   </tui-textfield>
-  <button tuiIconButton iconStart="@tui.trash" appearance="flat-destructive" (click)="delete()"></button>
+  <div class="buttons-container">
+    <button tuiIconButton iconStart="@tui.trash" size="m" appearance="flat-destructive" (click)="delete()"></button>
+    <button tuiIconButton iconStart="@tui.ellipsis" size="m" appearance="flat" [tuiDropdown]="dropdown"
+            tuiDropdownAlign="center" type="button" [(tuiDropdownOpen)]="open"></button>
+  </div>
 </div>
+
+<ng-template #dropdown>
+  <tui-data-list>
+    <tui-opt-group>
+      <button tuiOption (click)="createTask('Apply')">Применить к текущим ошибкам</button>
+      <button tuiOption (click)="createTask('Search')">Искать новые ошибки</button>
+    </tui-opt-group>
+    <tui-opt-group>
+      <button tuiOption tuiAppearance="flat-destructive">Удалить</button>
+    </tui-opt-group>
+  </tui-data-list>
+</ng-template>
+

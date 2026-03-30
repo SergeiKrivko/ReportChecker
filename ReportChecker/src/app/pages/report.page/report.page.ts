@@ -3,23 +3,20 @@ import {RouterLink} from '@angular/router';
 import {map, Subject} from 'rxjs';
 import {IssuesService} from '../../services/issues.service';
 import {AsyncPipe} from '@angular/common';
-import {TuiAccordion} from '@taiga-ui/experimental/components';
-import {TuiButton, TuiLink, TuiLoader, TuiScrollbar, TuiSurface} from '@taiga-ui/core';
-import {TuiBreadcrumbs} from '@taiga-ui/kit';
+import {TuiButton, TuiLoader, TuiSurface} from '@taiga-ui/core';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {FileEntity} from '../../entities/file-entity';
 import {IssueHeader} from '../../components/issue-header/issue-header';
 import {TuiCard} from '@taiga-ui/layout';
-import {Header} from '../../components/header/header';
 import {ReportsService} from '../../services/reports.service';
 import {FileSpVersion} from '../../components/file-sp-version/file-sp-version';
 import {GithubSpVersion} from '../../components/github-sp-version/github-sp-version';
+import {InstructionService} from '../../services/instruction.service';
 
 @Component({
   selector: 'app-check.page',
   imports: [
     AsyncPipe,
-    TuiAccordion,
     TuiButton,
     ReactiveFormsModule,
     TuiLoader,
@@ -27,11 +24,7 @@ import {GithubSpVersion} from '../../components/github-sp-version/github-sp-vers
     RouterLink,
     TuiCard,
     TuiSurface,
-    Header,
-    TuiScrollbar,
     FileSpVersion,
-    TuiBreadcrumbs,
-    TuiLink,
     GithubSpVersion
   ],
   templateUrl: './report.page.html',
@@ -42,6 +35,7 @@ import {GithubSpVersion} from '../../components/github-sp-version/github-sp-vers
 export class ReportPage implements OnInit {
   private readonly issuesService = inject(IssuesService);
   private readonly reportsService = inject(ReportsService);
+  private readonly instructionService = inject(InstructionService);
 
   protected readonly selectedReport$ = this.reportsService.selectedReport$;
   protected readonly issues$ = this.issuesService.issues$.pipe(
@@ -51,6 +45,7 @@ export class ReportPage implements OnInit {
     map(issues => issues.filter(e => e.status != "Open").sort((a, b) => a.priority - b.priority))
   );
   protected readonly isProgress$ = this.issuesService.isProgress$;
+  protected readonly instructionTasks$ = this.instructionService.tasks$;
 
   protected readonly control = new FormControl<FileEntity | null>(null);
 

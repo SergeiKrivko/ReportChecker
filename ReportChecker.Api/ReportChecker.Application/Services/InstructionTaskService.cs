@@ -32,7 +32,7 @@ public class InstructionTaskService(
     public async Task<Guid> CreateInstructionTaskAsync(Guid reportId, string instruction, InstructionTaskMode mode,
         CancellationToken ct = default)
     {
-        var id = await instructionTaskRepository.CreateAsync(reportId, instruction);
+        var id = await instructionTaskRepository.CreateAsync(reportId, instruction, mode);
 
         var report = await reportRepository.GetReportByIdAsync(reportId);
         if (report == null)

@@ -4,7 +4,7 @@ import {InstructionEntity} from '../../entities/instruction-entity';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {TuiTextarea, TuiTextareaLimit} from '@taiga-ui/kit';
-import {TuiButton, TuiTextfield} from '@taiga-ui/core';
+import {TuiAppearance, TuiButton, TuiDataList, TuiDropdown, TuiTextfield} from '@taiga-ui/core';
 
 @Component({
   selector: 'app-instruction-input',
@@ -13,7 +13,10 @@ import {TuiButton, TuiTextfield} from '@taiga-ui/core';
     ReactiveFormsModule,
     TuiButton,
     TuiTextfield,
-    TuiTextareaLimit
+    TuiTextareaLimit,
+    TuiDropdown,
+    TuiDataList,
+    TuiAppearance
   ],
   templateUrl: './instruction-input.html',
   styleUrl: './instruction-input.scss',
@@ -39,6 +42,15 @@ export class InstructionInput implements OnInit {
 
   protected delete() {
     this.instructionService.deleteInstruction(this.instruction().id).pipe(
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe();
+  }
+
+  protected open = false;
+
+  protected createTask(mode: 'Apply' | 'Search') {
+    this.open = false;
+    this.instructionService.createTask(this.instruction().id, mode).pipe(
       takeUntilDestroyed(this.destroyRef),
     ).subscribe();
   }

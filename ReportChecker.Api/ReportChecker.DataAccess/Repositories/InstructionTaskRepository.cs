@@ -23,7 +23,8 @@ public class InstructionTaskRepository(ReportCheckerDbContext dbContext) : IInst
         return entities.Select(FromEntity).ToList();
     }
 
-    public async Task<Guid> CreateAsync(Guid reportId, string instruction, ProgressStatus status = ProgressStatus.Queued)
+    public async Task<Guid> CreateAsync(Guid reportId, string instruction, InstructionTaskMode mode,
+        ProgressStatus status = ProgressStatus.Queued)
     {
         var id = Guid.NewGuid();
         var entity = new InstructionTaskEntity
@@ -31,6 +32,7 @@ public class InstructionTaskRepository(ReportCheckerDbContext dbContext) : IInst
             Id = id,
             ReportId = reportId,
             Status = status,
+            Mode = mode,
             Instruction = instruction,
             CreatedAt = DateTime.UtcNow
         };
