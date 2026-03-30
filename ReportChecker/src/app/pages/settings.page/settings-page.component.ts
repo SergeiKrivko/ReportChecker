@@ -58,7 +58,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     this.pathService.add(this.reportsService.selectedReport$.pipe(
       map(report => {
         return {
-          name: report?.name,
+          name: "Настройки",
           link: '/reports/' + report?.id,
           icon: "@tui.settings"
         }
