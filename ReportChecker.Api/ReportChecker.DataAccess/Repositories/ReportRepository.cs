@@ -7,8 +7,7 @@ namespace ReportChecker.DataAccess.Repositories;
 
 public class ReportRepository(ReportCheckerDbContext dbContext) : IReportRepository
 {
-    public async Task<Guid> CreateReportAsync(Guid ownerId, string name, string format, string sourceProvider,
-        string? source)
+    public async Task<Guid> CreateReportAsync(Guid ownerId, string name, string format, string sourceProvider)
     {
         var id = Guid.NewGuid();
         var entity = new ReportEntity
@@ -17,7 +16,6 @@ public class ReportRepository(ReportCheckerDbContext dbContext) : IReportReposit
             OwnerId = ownerId,
             Name = name,
             SourceProvider = sourceProvider,
-            Source = source,
             Format = format,
             CreatedAt = DateTime.UtcNow,
             DeletedAt = null,
@@ -84,7 +82,6 @@ public class ReportRepository(ReportCheckerDbContext dbContext) : IReportReposit
             OwnerId = entity.OwnerId,
             Name = entity.Name,
             SourceProvider = entity.SourceProvider,
-            Source = entity.Source,
             Format = entity.Format,
             CreatedAt = entity.CreatedAt,
             DeletedAt = entity.DeletedAt,

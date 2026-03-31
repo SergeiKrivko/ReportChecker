@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using ReportChecker.Abstractions;
 using ReportChecker.Models;
+using ReportChecker.Models.Sources;
 
 namespace ReportChecker.Application.Services;
 
@@ -14,19 +15,21 @@ public class CheckService(
     IIssueRepository issueRepository,
     ILogger<CheckService> logger) : ICheckService
 {
-    public async Task<Guid> CreateCheckAsync(Guid reportId, Guid userId, string source, string? name = null)
+    public async Task<Guid> CreateCheckAsync(Guid reportId, Guid userId, CheckSourceUnion source, string? name = null)
     {
-        var checkId = await checkRepository.CreateCheckAsync(reportId, userId, source, name);
+        var checkId = await checkRepository.CreateCheckAsync(reportId, userId, name);
+        var report = await reportRepository.GetReportByIdAsync(reportId);
+        if (report == null)
+            throw new ArgumentException($"Report with id {reportId} does not exist");
+        var sourceProvider = providerService.GetSourceProvider(report.SourceProvider);
+
+        if (source.Id.HasValue)
+            await sourceProvider.AttachCheckAsync(source.Id.Value, checkId);
+        else
+            await sourceProvider.SaveAsync(checkId, source);
+
         var scope = serviceProvider.CreateScope();
         scope.ServiceProvider.GetRequiredService<ICheckService>().RunCheck(checkId);
-        return checkId;
-    }
-
-    public async Task<Guid> CreateCheckAsync(Guid reportId, Guid userId, SourceSchema source)
-    {
-        var checkId = await checkRepository.CreateCheckAsync(reportId, userId, source.Source, source.Name);
-        var scope = serviceProvider.CreateScope();
-        scope.ServiceProvider.GetRequiredService<ICheckService>().RunCheck(checkId, source.Archive);
         return checkId;
     }
 
@@ -41,8 +44,7 @@ public class CheckService(
             if (report == null)
                 throw new ArgumentException($"Report with id {check.ReportId} does not exist");
             var sourceProvider = providerService.GetSourceProvider(report.SourceProvider);
-            var sourceStream =
-                await sourceProvider.OpenAsync(check.Source ?? throw new Exception("Source is null"));
+            var sourceStream = await sourceProvider.OpenAsync(report.Id, check.Id);
             await RunCheck(report, check, sourceStream);
         }
         catch (Exception e)
@@ -86,7 +88,7 @@ public class CheckService(
             if (previousCheck != null)
             {
                 var previousSource =
-                    await sourceProvider.OpenAsync(previousCheck.Source ?? throw new Exception("Source is null"));
+                    await sourceProvider.OpenAsync(report.Id, previousCheck.Id);
                 previousChapters = (await formatProvider.GetChaptersAsync(previousSource)).ToList();
             }
 
@@ -113,8 +115,7 @@ public class CheckService(
             throw new ArgumentException($"Report with id {check.ReportId} does not exist");
 
         var sourceProvider = providerService.GetSourceProvider(report.SourceProvider);
-        var sourceStream =
-            await sourceProvider.OpenAsync(check.Source ?? throw new Exception("Source is null"));
+        var sourceStream = await sourceProvider.OpenAsync(report.Id, check.Id);
 
         var formatProvider = providerService.GetFormatProvider(report.Format);
         var chapters = await formatProvider.GetChaptersAsync(sourceStream);
@@ -137,8 +138,7 @@ public class CheckService(
     public async Task<IEnumerable<Chapter>> GetChaptersAsync(Report report, Check check)
     {
         var sourceProvider = providerService.GetSourceProvider(report.SourceProvider);
-        var sourceStream =
-            await sourceProvider.OpenAsync(check.Source ?? throw new Exception("Source is null"));
+        var sourceStream = await sourceProvider.OpenAsync(report.Id, check.Id);
 
         var formatProvider = providerService.GetFormatProvider(report.Format);
         var chapters = await formatProvider.GetChaptersAsync(sourceStream);

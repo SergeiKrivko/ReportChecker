@@ -12,6 +12,11 @@ public class ReportCheckerDbContext : DbContext
     public DbSet<InstructionEntity> Instructions { get; init; }
     public DbSet<InstructionTaskEntity> InstructionTasks { get; init; }
 
+    public DbSet<FileReportSourceEntity> FileReportSources { get; init; }
+    public DbSet<FileCheckSourceEntity> FileCheckSources { get; init; }
+    public DbSet<GitHubReportSourceEntity> GitHubReportSources { get; init; }
+    public DbSet<GitHubCheckSourceEntity> GitHubCheckSources { get; init; }
+
     public ReportCheckerDbContext(DbContextOptions<ReportCheckerDbContext> options) : base(options)
     {
     }

@@ -3,7 +3,7 @@ using ReportChecker.Abstractions;
 
 namespace ReportChecker.SourceProviders.File;
 
-public class ZipFileArchive(ZipArchive archive, string zipName) : IFileArchive
+public class ZipFileArchive(ZipArchive archive, string zipName, string? entryFile = null) : IFileArchive
 {
     public string? Name => zipName;
 
@@ -15,8 +15,5 @@ public class ZipFileArchive(ZipArchive archive, string zipName) : IFileArchive
         return await entry.OpenAsync();
     }
 
-    public Task<Stream?> OpenAsync()
-    {
-        return Task.FromResult<Stream?>(null);
-    }
+    public async Task<Stream?> OpenAsync() => entryFile == null ? null : await OpenAsync(entryFile);
 }

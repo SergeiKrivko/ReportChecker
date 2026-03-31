@@ -93,6 +93,109 @@ namespace ReportChecker.DataAccess.Migrations
                     b.ToTable("Comments");
                 });
 
+            modelBuilder.Entity("ReportChecker.DataAccess.Entities.FileCheckSourceEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("CheckId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FileName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CheckId")
+                        .IsUnique();
+
+                    b.ToTable("FileCheckSources");
+                });
+
+            modelBuilder.Entity("ReportChecker.DataAccess.Entities.FileReportSourceEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("EntryFilePath")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<Guid>("InitialFileId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ReportId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReportId")
+                        .IsUnique();
+
+                    b.ToTable("FileReportSources");
+                });
+
+            modelBuilder.Entity("ReportChecker.DataAccess.Entities.GitHubCheckSourceEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("CheckId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CommitHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CheckId")
+                        .IsUnique();
+
+                    b.ToTable("GitHubCheckSources");
+                });
+
+            modelBuilder.Entity("ReportChecker.DataAccess.Entities.GitHubReportSourceEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Branch")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<Guid>("ReportId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("RepositoryId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReportId")
+                        .IsUnique();
+
+                    b.ToTable("GitHubReportSources");
+                });
+
             modelBuilder.Entity("ReportChecker.DataAccess.Entities.InstructionEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -241,6 +344,46 @@ namespace ReportChecker.DataAccess.Migrations
                     b.Navigation("Issue");
                 });
 
+            modelBuilder.Entity("ReportChecker.DataAccess.Entities.FileCheckSourceEntity", b =>
+                {
+                    b.HasOne("ReportChecker.DataAccess.Entities.CheckEntity", "Check")
+                        .WithOne("FileSource")
+                        .HasForeignKey("ReportChecker.DataAccess.Entities.FileCheckSourceEntity", "CheckId");
+
+                    b.Navigation("Check");
+                });
+
+            modelBuilder.Entity("ReportChecker.DataAccess.Entities.FileReportSourceEntity", b =>
+                {
+                    b.HasOne("ReportChecker.DataAccess.Entities.ReportEntity", "Report")
+                        .WithOne("FileSource")
+                        .HasForeignKey("ReportChecker.DataAccess.Entities.FileReportSourceEntity", "ReportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Report");
+                });
+
+            modelBuilder.Entity("ReportChecker.DataAccess.Entities.GitHubCheckSourceEntity", b =>
+                {
+                    b.HasOne("ReportChecker.DataAccess.Entities.CheckEntity", "Check")
+                        .WithOne("GitHubSource")
+                        .HasForeignKey("ReportChecker.DataAccess.Entities.GitHubCheckSourceEntity", "CheckId");
+
+                    b.Navigation("Check");
+                });
+
+            modelBuilder.Entity("ReportChecker.DataAccess.Entities.GitHubReportSourceEntity", b =>
+                {
+                    b.HasOne("ReportChecker.DataAccess.Entities.ReportEntity", "Report")
+                        .WithOne("GitHubSource")
+                        .HasForeignKey("ReportChecker.DataAccess.Entities.GitHubReportSourceEntity", "ReportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Report");
+                });
+
             modelBuilder.Entity("ReportChecker.DataAccess.Entities.InstructionEntity", b =>
                 {
                     b.HasOne("ReportChecker.DataAccess.Entities.ReportEntity", "Report")
@@ -276,6 +419,10 @@ namespace ReportChecker.DataAccess.Migrations
 
             modelBuilder.Entity("ReportChecker.DataAccess.Entities.CheckEntity", b =>
                 {
+                    b.Navigation("FileSource");
+
+                    b.Navigation("GitHubSource");
+
                     b.Navigation("Issues");
                 });
 
@@ -287,6 +434,10 @@ namespace ReportChecker.DataAccess.Migrations
             modelBuilder.Entity("ReportChecker.DataAccess.Entities.ReportEntity", b =>
                 {
                     b.Navigation("Checks");
+
+                    b.Navigation("FileSource");
+
+                    b.Navigation("GitHubSource");
 
                     b.Navigation("InstructionTasks");
 

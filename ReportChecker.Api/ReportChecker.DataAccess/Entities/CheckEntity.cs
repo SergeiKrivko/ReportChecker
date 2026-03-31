@@ -15,4 +15,7 @@ public class CheckEntity
 
     public virtual ReportEntity Report { get; init; } = null!;
     public virtual ICollection<IssueEntity> Issues { get; init; } = null!;
+
+    public virtual GitHubCheckSourceEntity? GitHubSource { get; init; }
+    public virtual FileCheckSourceEntity? FileSource { get; init; }
 }

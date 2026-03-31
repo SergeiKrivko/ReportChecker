@@ -7,8 +7,9 @@ import {RepositoryEntity} from '../../../entities/github-entities';
 import {GithubService} from '../../../services/github.service';
 import {AsyncPipe} from '@angular/common';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {combineLatest, debounceTime, map, tap} from 'rxjs';
+import {combineLatest, debounceTime, map, Observable, tap} from 'rxjs';
 import {SourceTester} from '../../source-tester/source-tester';
+import {IGitHubReportSource} from '../../../services/api-client';
 
 @Component({
   standalone: true,
@@ -56,12 +57,12 @@ export class GithubSpOptions implements OnInit {
     path: new FormControl<string>(""),
   });
 
-  protected readonly source$ = this.control.valueChanges.pipe(
+  protected readonly source$: Observable<IGitHubReportSource> = this.control.valueChanges.pipe(
     debounceTime(1000),
-    map(value => JSON.stringify({
-      RepositoryId: value.repository?.id,
-      BranchName: value.branch,
-      FilePath: value.path,
+    map(value => ({
+      repositoryId: value.repository?.id ?? 0,
+      branch: value.branch ?? "",
+      path: value.path ?? "",
     })),
   );
 

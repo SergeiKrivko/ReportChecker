@@ -1902,7 +1902,6 @@ export class Check implements ICheck {
     userId!: string;
     name?: string | undefined;
     createdAt?: moment.Moment;
-    source?: string | undefined;
     status?: ProgressStatus;
 
     constructor(data?: ICheck) {
@@ -1921,7 +1920,6 @@ export class Check implements ICheck {
             this.userId = _data["userId"];
             this.name = _data["name"];
             this.createdAt = _data["createdAt"] ? moment(_data["createdAt"].toString()) : <any>undefined;
-            this.source = _data["source"];
             this.status = _data["status"];
         }
     }
@@ -1940,7 +1938,6 @@ export class Check implements ICheck {
         data["userId"] = this.userId;
         data["name"] = this.name;
         data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
-        data["source"] = this.source;
         data["status"] = this.status;
         return data;
     }
@@ -1952,8 +1949,51 @@ export interface ICheck {
     userId: string;
     name?: string | undefined;
     createdAt?: moment.Moment;
-    source?: string | undefined;
     status?: ProgressStatus;
+}
+
+export class CheckSourceUnion implements ICheckSourceUnion {
+    id?: string | undefined;
+    gitHub?: GitHubCheckSource;
+    file?: FileCheckSource;
+
+    constructor(data?: ICheckSourceUnion) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.gitHub = _data["gitHub"] ? GitHubCheckSource.fromJS(_data["gitHub"]) : <any>undefined;
+            this.file = _data["file"] ? FileCheckSource.fromJS(_data["file"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): CheckSourceUnion {
+        data = typeof data === 'object' ? data : {};
+        let result = new CheckSourceUnion();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["gitHub"] = this.gitHub ? this.gitHub.toJSON() : <any>undefined;
+        data["file"] = this.file ? this.file.toJSON() : <any>undefined;
+        return data;
+    }
+}
+
+export interface ICheckSourceUnion {
+    id?: string | undefined;
+    gitHub?: GitHubCheckSource;
+    file?: FileCheckSource;
 }
 
 export class Comment implements IComment {
@@ -2025,7 +2065,7 @@ export interface IComment {
 }
 
 export class CreateCheckSchema implements ICreateCheckSchema {
-    source?: string | undefined;
+    source?: CheckSourceUnion;
     name?: string | undefined;
 
     constructor(data?: ICreateCheckSchema) {
@@ -2039,7 +2079,7 @@ export class CreateCheckSchema implements ICreateCheckSchema {
 
     init(_data?: any) {
         if (_data) {
-            this.source = _data["source"];
+            this.source = _data["source"] ? CheckSourceUnion.fromJS(_data["source"]) : <any>undefined;
             this.name = _data["name"];
         }
     }
@@ -2053,14 +2093,14 @@ export class CreateCheckSchema implements ICreateCheckSchema {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["source"] = this.source;
+        data["source"] = this.source ? this.source.toJSON() : <any>undefined;
         data["name"] = this.name;
         return data;
     }
 }
 
 export interface ICreateCheckSchema {
-    source?: string | undefined;
+    source?: CheckSourceUnion;
     name?: string | undefined;
 }
 
@@ -2152,7 +2192,7 @@ export class CreateReportSchema implements ICreateReportSchema {
     name!: string | undefined;
     format!: string | undefined;
     sourceProvider!: string | undefined;
-    source!: string | undefined;
+    source!: ReportSourceUnion;
 
     constructor(data?: ICreateReportSchema) {
         if (data) {
@@ -2161,6 +2201,9 @@ export class CreateReportSchema implements ICreateReportSchema {
                     (<any>this)[property] = (<any>data)[property];
             }
         }
+        if (!data) {
+            this.source = new ReportSourceUnion();
+        }
     }
 
     init(_data?: any) {
@@ -2168,7 +2211,7 @@ export class CreateReportSchema implements ICreateReportSchema {
             this.name = _data["name"];
             this.format = _data["format"];
             this.sourceProvider = _data["sourceProvider"];
-            this.source = _data["source"];
+            this.source = _data["source"] ? ReportSourceUnion.fromJS(_data["source"]) : new ReportSourceUnion();
         }
     }
 
@@ -2184,7 +2227,7 @@ export class CreateReportSchema implements ICreateReportSchema {
         data["name"] = this.name;
         data["format"] = this.format;
         data["sourceProvider"] = this.sourceProvider;
-        data["source"] = this.source;
+        data["source"] = this.source ? this.source.toJSON() : <any>undefined;
         return data;
     }
 }
@@ -2193,7 +2236,171 @@ export interface ICreateReportSchema {
     name: string | undefined;
     format: string | undefined;
     sourceProvider: string | undefined;
-    source: string | undefined;
+    source: ReportSourceUnion;
+}
+
+export class FileCheckSource implements IFileCheckSource {
+    fileName?: string | undefined;
+    createdAt?: moment.Moment;
+    deletedAt?: moment.Moment | undefined;
+
+    constructor(data?: IFileCheckSource) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.fileName = _data["fileName"];
+            this.createdAt = _data["createdAt"] ? moment(_data["createdAt"].toString()) : <any>undefined;
+            this.deletedAt = _data["deletedAt"] ? moment(_data["deletedAt"].toString()) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): FileCheckSource {
+        data = typeof data === 'object' ? data : {};
+        let result = new FileCheckSource();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["fileName"] = this.fileName;
+        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
+        data["deletedAt"] = this.deletedAt ? this.deletedAt.toISOString() : <any>undefined;
+        return data;
+    }
+}
+
+export interface IFileCheckSource {
+    fileName?: string | undefined;
+    createdAt?: moment.Moment;
+    deletedAt?: moment.Moment | undefined;
+}
+
+export class FileReportSource implements IFileReportSource {
+    initialFileId!: string;
+    entryFilePath?: string | undefined;
+
+    constructor(data?: IFileReportSource) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.initialFileId = _data["initialFileId"];
+            this.entryFilePath = _data["entryFilePath"];
+        }
+    }
+
+    static fromJS(data: any): FileReportSource {
+        data = typeof data === 'object' ? data : {};
+        let result = new FileReportSource();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["initialFileId"] = this.initialFileId;
+        data["entryFilePath"] = this.entryFilePath;
+        return data;
+    }
+}
+
+export interface IFileReportSource {
+    initialFileId: string;
+    entryFilePath?: string | undefined;
+}
+
+export class GitHubCheckSource implements IGitHubCheckSource {
+    commitHash!: string | undefined;
+
+    constructor(data?: IGitHubCheckSource) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.commitHash = _data["commitHash"];
+        }
+    }
+
+    static fromJS(data: any): GitHubCheckSource {
+        data = typeof data === 'object' ? data : {};
+        let result = new GitHubCheckSource();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["commitHash"] = this.commitHash;
+        return data;
+    }
+}
+
+export interface IGitHubCheckSource {
+    commitHash: string | undefined;
+}
+
+export class GitHubReportSource implements IGitHubReportSource {
+    repositoryId!: number;
+    branch!: string | undefined;
+    path!: string | undefined;
+
+    constructor(data?: IGitHubReportSource) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.repositoryId = _data["repositoryId"];
+            this.branch = _data["branch"];
+            this.path = _data["path"];
+        }
+    }
+
+    static fromJS(data: any): GitHubReportSource {
+        data = typeof data === 'object' ? data : {};
+        let result = new GitHubReportSource();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["repositoryId"] = this.repositoryId;
+        data["branch"] = this.branch;
+        data["path"] = this.path;
+        return data;
+    }
+}
+
+export interface IGitHubReportSource {
+    repositoryId: number;
+    branch: string | undefined;
+    path: string | undefined;
 }
 
 export class Instruction implements IInstruction {
@@ -2482,7 +2689,6 @@ export class Report implements IReport {
     name?: string | undefined;
     sourceProvider!: string | undefined;
     format!: string | undefined;
-    source?: string | undefined;
     createdAt?: moment.Moment;
     deletedAt?: moment.Moment | undefined;
 
@@ -2502,7 +2708,6 @@ export class Report implements IReport {
             this.name = _data["name"];
             this.sourceProvider = _data["sourceProvider"];
             this.format = _data["format"];
-            this.source = _data["source"];
             this.createdAt = _data["createdAt"] ? moment(_data["createdAt"].toString()) : <any>undefined;
             this.deletedAt = _data["deletedAt"] ? moment(_data["deletedAt"].toString()) : <any>undefined;
         }
@@ -2522,7 +2727,6 @@ export class Report implements IReport {
         data["name"] = this.name;
         data["sourceProvider"] = this.sourceProvider;
         data["format"] = this.format;
-        data["source"] = this.source;
         data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
         data["deletedAt"] = this.deletedAt ? this.deletedAt.toISOString() : <any>undefined;
         return data;
@@ -2535,9 +2739,48 @@ export interface IReport {
     name?: string | undefined;
     sourceProvider: string | undefined;
     format: string | undefined;
-    source?: string | undefined;
     createdAt?: moment.Moment;
     deletedAt?: moment.Moment | undefined;
+}
+
+export class ReportSourceUnion implements IReportSourceUnion {
+    gitHub?: GitHubReportSource;
+    file?: FileReportSource;
+
+    constructor(data?: IReportSourceUnion) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.gitHub = _data["gitHub"] ? GitHubReportSource.fromJS(_data["gitHub"]) : <any>undefined;
+            this.file = _data["file"] ? FileReportSource.fromJS(_data["file"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): ReportSourceUnion {
+        data = typeof data === 'object' ? data : {};
+        let result = new ReportSourceUnion();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["gitHub"] = this.gitHub ? this.gitHub.toJSON() : <any>undefined;
+        data["file"] = this.file ? this.file.toJSON() : <any>undefined;
+        return data;
+    }
+}
+
+export interface IReportSourceUnion {
+    gitHub?: GitHubReportSource;
+    file?: FileReportSource;
 }
 
 export class Repository implements IRepository {
@@ -2712,7 +2955,7 @@ export enum SourceStatus {
 
 export class TestSourceRequestSchema implements ITestSourceRequestSchema {
     provider!: string | undefined;
-    source!: string | undefined;
+    source!: ReportSourceUnion;
 
     constructor(data?: ITestSourceRequestSchema) {
         if (data) {
@@ -2721,12 +2964,15 @@ export class TestSourceRequestSchema implements ITestSourceRequestSchema {
                     (<any>this)[property] = (<any>data)[property];
             }
         }
+        if (!data) {
+            this.source = new ReportSourceUnion();
+        }
     }
 
     init(_data?: any) {
         if (_data) {
             this.provider = _data["provider"];
-            this.source = _data["source"];
+            this.source = _data["source"] ? ReportSourceUnion.fromJS(_data["source"]) : new ReportSourceUnion();
         }
     }
 
@@ -2740,14 +2986,14 @@ export class TestSourceRequestSchema implements ITestSourceRequestSchema {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["provider"] = this.provider;
-        data["source"] = this.source;
+        data["source"] = this.source ? this.source.toJSON() : <any>undefined;
         return data;
     }
 }
 
 export interface ITestSourceRequestSchema {
     provider: string | undefined;
-    source: string | undefined;
+    source: ReportSourceUnion;
 }
 
 export class UpdateCommentSchema implements IUpdateCommentSchema {

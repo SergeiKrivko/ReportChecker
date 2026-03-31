@@ -2,7 +2,8 @@ import {inject, Injectable} from '@angular/core';
 import {
   ApiClient,
   CreateCheckSchema,
-  CreateReportSchema,
+  CreateReportSchema, FileReportSource, GitHubReportSource,
+  IFileCheckSource, IFileReportSource, IGitHubCheckSource, IGitHubReportSource,
   Report,
   SourceInfo,
   TestSourceRequestSchema, UpdateReportSchema
@@ -50,22 +51,22 @@ export class ReportsService {
     );
   }
 
-  createReport(name: string, source: string, sourceProvider: string, format: string): Observable<string> {
+  createReport(name: string, source: IGitHubReportSource | IFileReportSource, sourceProvider: string, format: string): Observable<string> {
     return this.apiClient.reportsPOST(CreateReportSchema.fromJS({
-        name: name,
-        source: source,
-        sourceProvider: sourceProvider,
-        format: format,
-      }));
+      name: name,
+      source: sourceProvider == 'GitHub' ? {gitHub: source} : {file: source},
+      sourceProvider: sourceProvider,
+      format: format,
+    }));
   }
 
-  createCheck(source: string): Observable<boolean> {
+  createCheck(source: IGitHubCheckSource | IFileCheckSource, id?: string): Observable<boolean> {
     return this.selectedReport$.pipe(
       take(1),
       switchMap(report => {
         if (report)
           return this.apiClient.checks(report.id, CreateCheckSchema.fromJS({
-            source: source,
+            source: report.sourceProvider == 'GitHub' ? {gitHub: source, id} : {file: source, id},
           }));
         return NEVER;
       })
@@ -113,8 +114,11 @@ export class ReportsService {
     );
   }
 
-  testSource(provider: string, source: string) {
-    return this.apiClient.testSource(TestSourceRequestSchema.fromJS({provider, source})).pipe(
+  testSource(provider: string, source: IGitHubReportSource | IFileReportSource) {
+    return this.apiClient.testSource(TestSourceRequestSchema.fromJS({
+      provider,
+      source: provider == 'GitHub' ? {gitHub: source} : {file: source}
+    })).pipe(
       map(sourceInfoToEntity),
     )
   }
@@ -124,7 +128,6 @@ const reportToEntity = (report: Report): ReportEntity => ({
   id: report.id ?? "",
   name: report.name ?? "",
   sourceProvider: report.sourceProvider ?? "File",
-  source: report.source ?? null,
   format: report.format ?? "Latex",
 });
 

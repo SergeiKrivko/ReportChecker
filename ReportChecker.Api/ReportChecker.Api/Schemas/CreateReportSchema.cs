@@ -1,9 +1,11 @@
-﻿namespace ReportChecker.Api.Schemas;
+﻿using ReportChecker.Models.Sources;
+
+namespace ReportChecker.Api.Schemas;
 
 public class CreateReportSchema
 {
     public required string Name { get; init; }
     public required string Format { get; init; }
     public required string SourceProvider { get; init; }
-    public required string Source { get; init; }
+    public required ReportSourceUnion Source { get; init; }
 }

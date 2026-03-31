@@ -28,7 +28,9 @@ export class FileSpVersion implements OnInit {
       switchMap(() => timer(1000)),
       switchMap(() => {
         if (this.control.value?.id)
-          return this.reportsService.createCheck(JSON.stringify(this.control.value));
+          return this.reportsService.createCheck({
+            fileName: this.control.value?.fileName,
+          }, this.control.value?.id);
         return NEVER;
       }),
       tap(() => this.control.setValue(undefined)),

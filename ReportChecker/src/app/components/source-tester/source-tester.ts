@@ -5,6 +5,7 @@ import {ReportsService} from '../../services/reports.service';
 import {SourceInfoEntity} from '../../entities/source-info-entity';
 import {TuiButton, TuiNotification} from '@taiga-ui/core';
 import {Router} from '@angular/router';
+import {IFileReportSource, IGitHubReportSource} from '../../services/api-client';
 
 @Component({
   selector: 'app-source-tester',
@@ -22,7 +23,7 @@ export class SourceTester implements OnInit {
   private readonly router = inject(Router);
 
   name = input<string | null>();
-  source = input.required<string | null>();
+  source = input.required<IFileReportSource | IGitHubReportSource | null>();
   provider = input.required<string>();
 
   protected readonly source$ = toObservable(this.source);

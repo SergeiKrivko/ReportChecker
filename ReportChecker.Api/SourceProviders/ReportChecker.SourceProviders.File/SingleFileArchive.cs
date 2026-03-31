@@ -2,13 +2,13 @@
 
 namespace ReportChecker.SourceProviders.File;
 
-public class SingleFileArchive(Stream stream, string name) : IFileArchive
+public class SingleFileArchive(Stream stream, string? name) : IFileArchive
 {
     public string? Name => name;
 
-    public Task<Stream?> OpenAsync(string _)
+    public Task<Stream?> OpenAsync(string n)
     {
-        return Task.FromResult<Stream?>(null);
+        return n == name ? OpenAsync() : Task.FromResult<Stream?>(null);
     }
 
     public Task<Stream?> OpenAsync()

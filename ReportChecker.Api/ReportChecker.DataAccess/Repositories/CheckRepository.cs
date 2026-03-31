@@ -7,7 +7,7 @@ namespace ReportChecker.DataAccess.Repositories;
 
 public class CheckRepository(ReportCheckerDbContext dbContext) : ICheckRepository
 {
-    public async Task<Guid> CreateCheckAsync(Guid reportId, Guid userId, string? source = null, string? name = null)
+    public async Task<Guid> CreateCheckAsync(Guid reportId, Guid userId, string? name = null)
     {
         var id = Guid.NewGuid();
         var entity = new CheckEntity
@@ -15,7 +15,6 @@ public class CheckRepository(ReportCheckerDbContext dbContext) : ICheckRepositor
             CheckId = id,
             ReportId = reportId,
             UserId = userId,
-            Source = source,
             Name = name,
             CreatedAt = DateTime.UtcNow,
         };
@@ -84,7 +83,6 @@ public class CheckRepository(ReportCheckerDbContext dbContext) : ICheckRepositor
             ReportId = entity.ReportId,
             UserId = entity.UserId,
             Name = entity.Name,
-            Source = entity.Source,
             CreatedAt = entity.CreatedAt,
             Status = entity.Status,
         };

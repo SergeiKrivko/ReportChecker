@@ -43,8 +43,7 @@ public class InstructionTaskService(
             throw new ArgumentException($"Report {reportId} have no checks");
 
         var sourceProvider = providerService.GetSourceProvider(report.SourceProvider);
-        var sourceStream =
-            await sourceProvider.OpenAsync(check.Source ?? throw new Exception("Source is null"));
+        var sourceStream = await sourceProvider.OpenAsync(reportId, check.Id);
 
         var formatProvider = providerService.GetFormatProvider(report.Format);
         var chapters = await formatProvider.GetChaptersAsync(sourceStream);

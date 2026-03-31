@@ -1,5 +1,6 @@
 ﻿using ReportChecker.Abstractions;
 using ReportChecker.Models;
+using ReportChecker.Models.Sources;
 using IFormatProvider = ReportChecker.Abstractions.IFormatProvider;
 
 namespace ReportChecker.Application.Services;
@@ -11,13 +12,15 @@ public class ReportService(
     IEnumerable<IFormatProvider> formatProviders) : IReportService
 {
     public async Task<Guid> CreateReportAsync(Guid ownerId, string name, string format, string sourceProviderKey,
-        string source)
+        ReportSourceUnion source)
     {
-        var reportId = await reportRepository.CreateReportAsync(ownerId, name, format, sourceProviderKey, source);
+        var reportId = await reportRepository.CreateReportAsync(ownerId, name, format, sourceProviderKey);
         var provider = providerService.GetSourceProvider(sourceProviderKey);
-        var firstSource = await provider.FindSourceAsync(source);
+        await provider.SaveAsync(reportId, source);
 
-        await checkService.CreateCheckAsync(reportId, ownerId, firstSource);
+        var firstSource = await provider.GetFirstSourceAsync(reportId);
+
+        await checkService.CreateCheckAsync(reportId, ownerId, firstSource.Source, firstSource.Name);
 
         return reportId;
     }
@@ -25,19 +28,19 @@ public class ReportService(
     public async Task<Guid> CreateCheckAsync(Report report)
     {
         var provider = providerService.GetSourceProvider(report.SourceProvider);
-        var source = await provider.FindSourceAsync(report.Source ?? throw new Exception("Source not found"));
-        return await checkService.CreateCheckAsync(report.Id, report.OwnerId, source);
+        var source = await provider.GetFirstSourceAsync(report.Id);
+        return await checkService.CreateCheckAsync(report.Id, report.OwnerId, source.Source, source.Name);
     }
 
-    public async Task<SourceInfo> GetSourceInfoAsync(string sourceProviderKey, string source)
+    public async Task<SourceInfo> GetSourceInfoAsync(string sourceProviderKey, ReportSourceUnion source)
     {
         var sourceProvider = providerService.GetSourceProvider(sourceProviderKey);
         try
         {
-            var schema = await sourceProvider.FindSourceAsync(source);
+            var archive = await sourceProvider.OpenAsync(source);
             foreach (var formatProvider in formatProviders)
             {
-                if (await formatProvider.TestSourceAsync(schema.Archive))
+                if (await formatProvider.TestSourceAsync(archive))
                     return new SourceInfo
                     {
                         Status = SourceStatus.Success,

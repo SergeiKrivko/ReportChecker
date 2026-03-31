@@ -8,12 +8,14 @@ using Microsoft.IdentityModel.Tokens;
 using Octokit.Webhooks;
 using Octokit.Webhooks.AspNetCore;
 using ReportChecker.Abstractions;
+using ReportChecker.Api.BackgroundServices;
 using ReportChecker.Application.Services;
 using ReportChecker.DataAccess;
 using ReportChecker.DataAccess.Repositories;
 using ReportChecker.FormatProviders.Docx;
 using ReportChecker.FormatProviders.Latex;
 using ReportChecker.FormatProviders.Pdf;
+using ReportChecker.Models.Sources;
 using ReportChecker.S3;
 using ReportChecker.SourceProviders.File;
 using ReportChecker.SourceProviders.GitHub;
@@ -33,6 +35,10 @@ builder.Services.AddScoped<IIssueRepository, IssueRepository>();
 builder.Services.AddScoped<IReportRepository, ReportRepository>();
 builder.Services.AddScoped<IInstructionRepository, InstructionRepository>();
 builder.Services.AddScoped<IInstructionTaskRepository, InstructionTaskRepository>();
+builder.Services.AddScoped<IReportSourceRepository<FileReportSource>, FileReportSourceRepository>();
+builder.Services.AddScoped<ICheckSourceRepository<FileCheckSource>, FileCheckSourceRepository>();
+builder.Services.AddScoped<IReportSourceRepository<GitHubReportSource>, GitHubReportSourceRepository>();
+builder.Services.AddScoped<ICheckSourceRepository<GitHubCheckSource>, GitHubCheckSourceRepository>();
 builder.Services.AddSingleton<IFileRepository, S3Repository>();
 
 builder.Services.AddScoped<IReportService, ReportService>();
@@ -56,6 +62,9 @@ builder.Services.AddScoped<ISourceProvider, GitHubSourceProvider>();
 builder.Services.AddSingleton<IFormatProvider, LatexFormatProvider>();
 builder.Services.AddSingleton<IFormatProvider, PdfFormatProvider>();
 builder.Services.AddSingleton<IFormatProvider, DocxFormatProvider>();
+
+builder.Services.AddScoped<MigrationService>();
+builder.Services.AddHostedService<MigrationBackgroundService>();
 
 builder.Services.AddHttpClient("Auth",
     client =>

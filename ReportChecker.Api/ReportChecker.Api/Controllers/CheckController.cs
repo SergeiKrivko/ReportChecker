@@ -55,6 +55,8 @@ public class CheckController(
         if (report.OwnerId != userId)
             return Unauthorized();
         var check = await checkRepository.GetLatestCheckOfReportAsync(reportId);
+        if (check == null)
+            return NotFound();
         var chapters = await checkService.GetChaptersAsync(report, check);
         return Ok(chapters);
     }
