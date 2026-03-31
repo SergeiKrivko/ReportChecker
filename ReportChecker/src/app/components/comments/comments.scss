@@ -36,8 +36,12 @@
         color: var(--tui-text-positive);
       }
 
-      .open {
+      .closed {
         color: var(--tui-text-negative);
+      }
+
+      .open {
+        color: var(--tui-text-primary);
       }
     }
   }
