@@ -31,4 +31,8 @@
       <ProjectReference Include="..\SourceProviders\ReportChecker.SourceProviders.GitHub\ReportChecker.SourceProviders.GitHub.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="BackgroundServices\" />
+    </ItemGroup>
+
 </Project>

@@ -8,7 +8,6 @@ using Microsoft.IdentityModel.Tokens;
 using Octokit.Webhooks;
 using Octokit.Webhooks.AspNetCore;
 using ReportChecker.Abstractions;
-using ReportChecker.Api.BackgroundServices;
 using ReportChecker.Application.Services;
 using ReportChecker.DataAccess;
 using ReportChecker.DataAccess.Repositories;
@@ -62,9 +61,6 @@ builder.Services.AddScoped<ISourceProvider, GitHubSourceProvider>();
 builder.Services.AddSingleton<IFormatProvider, LatexFormatProvider>();
 builder.Services.AddSingleton<IFormatProvider, PdfFormatProvider>();
 builder.Services.AddSingleton<IFormatProvider, DocxFormatProvider>();
-
-builder.Services.AddScoped<MigrationService>();
-builder.Services.AddHostedService<MigrationBackgroundService>();
 
 builder.Services.AddHttpClient("Auth",
     client =>
