@@ -1,4 +1,12 @@
 <div class="container">
-  <app-file-uploader [formControl]="control" />
-  <app-source-tester provider="File" [source]="source$ | async" [name]="reportName$ | async" />
+  <form [formGroup]="control" class="form">
+    <app-file-uploader formControlName="file"/>
+    @if (isZip$ | async) {
+      <label tuiLabel>Файл:</label>
+      <tui-textfield>
+        <input tuiTextfield formControlName="entryFilePath">
+      </tui-textfield>
+    }
+  </form>
+  <app-source-tester provider="File" [source]="source$ | async" [name]="reportName$ | async"/>
 </div>

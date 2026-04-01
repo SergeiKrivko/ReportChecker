@@ -27,10 +27,8 @@ public class GitHubSourceProvider(
     private async Task<IFileArchive> OpenAsync(GitHubReportSource reportSource, GitHubCheckSource checkSource)
     {
         var client = await githubService.CreateRepositoryClient(reportSource.RepositoryId);
-        var contents =
-            await client.Repository.Content.GetAllContentsByRef(reportSource.RepositoryId, reportSource.Path,
-                checkSource.CommitHash);
-        return new GitHubArchive(contents, reportSource.Path);
+        return new GitHubArchive(client, reportSource.RepositoryId, checkSource.CommitHash,
+            reportSource.Path);
     }
 
     public async Task<IFileArchive> OpenAsync(ReportSourceUnion source)
@@ -39,10 +37,8 @@ public class GitHubSourceProvider(
             throw new Exception("GitHub source not set");
         var client = await githubService.CreateRepositoryClient(source.GitHub.RepositoryId);
         var branch = await client.Repository.Branch.Get(source.GitHub.RepositoryId, source.GitHub.Branch);
-        var contents =
-            await client.Repository.Content.GetAllContentsByRef(source.GitHub.RepositoryId, source.GitHub.Path,
-                branch.Commit.Sha);
-        return new GitHubArchive(contents, source.GitHub.Path);
+        return new GitHubArchive(client, source.GitHub.RepositoryId, branch.Commit.Sha,
+            source.GitHub.Path);
     }
 
     public async Task<SourceSchema> GetFirstSourceAsync(Guid reportId)

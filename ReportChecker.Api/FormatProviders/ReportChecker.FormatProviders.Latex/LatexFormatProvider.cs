@@ -14,21 +14,31 @@ public class LatexFormatProvider(IConfiguration configuration) : IFormatProvider
 
     public async Task<IEnumerable<Chapter>> GetChaptersAsync(IFileArchive archive)
     {
-        return await ParseFileAsync("report.tex", archive).ToListAsync();
+        try
+        {
+            return await ParseFileAsync(null, archive).ToListAsync();
+        }
+        catch (FileNotFoundException)
+        {
+            return await ParseFileAsync($"{archive.EntryFilePath}/report.tex", archive).ToListAsync();
+        }
     }
 
     private const string IncludePrefix = "\\include{";
     private const string IncludeSuffix = "}";
 
-    private async IAsyncEnumerable<Chapter> ParseFileAsync(string fileName, IFileArchive archive)
+    private async IAsyncEnumerable<Chapter> ParseFileAsync(string? fileName, IFileArchive archive)
     {
         string text;
-        await using (var entryStream = await archive.OpenAsync(fileName) ?? throw new FileNotFoundException())
+        await using (var entryStream = fileName == null
+                         ? await archive.OpenAsync() ?? throw new FileNotFoundException("Entry file not found")
+                         : await archive.OpenAsync(fileName) ??
+                           throw new FileNotFoundException($"File '{fileName}' not found"))
         {
             text = await new StreamReader(entryStream).ReadToEndAsync();
         }
 
-        var path = new List<string> { fileName };
+        var path = new List<string> { fileName ?? "<root>" };
         var builder = new StringBuilder();
         foreach (var line in text.Split('\n'))
         {
@@ -65,14 +75,18 @@ public class LatexFormatProvider(IConfiguration configuration) : IFormatProvider
             {
                 var includeFileName = line.Substring(IncludePrefix.Length,
                     line.Length - IncludePrefix.Length - IncludeSuffix.Length);
-                await foreach (var chapter in ParseFileAsync(includeFileName + ".tex", archive))
+                await foreach (var chapter in ParseFileAsync($"{Path.GetDirectoryName(fileName)}/{includeFileName}.tex",
+                                   archive))
                     yield return chapter;
             }
     }
 
     public async Task<bool> TestSourceAsync(IFileArchive archive)
     {
-        await using var entry = await archive.OpenAsync("report.tex");
+        var entryPath = archive.EntryFilePath;
+        if (entryPath == null || !entryPath.EndsWith(".tex"))
+            return false;
+        await using var entry = await archive.OpenAsync();
         return entry != null;
     }
 
