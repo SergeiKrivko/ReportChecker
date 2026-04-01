@@ -154,15 +154,13 @@ export class IssuesService {
   }
 
   markRead() {
-    let issueId: string | undefined;
     return combineLatest([
       this.reportsService.selectedReport$,
       this.selectedIssue$,
     ]).pipe(
       switchMap(([report, issue]) => {
-        if (!report || !issue || issue.unreadCount == 0 || issue.id == issueId)
+        if (!report || !issue || issue.unreadCount == 0)
           return NEVER;
-        issueId = issue.id;
         return this.apiClient.read(report.id, issue.id, MarkReadSchema.fromJS({isRead: true})).pipe(
           switchMap(() => this.reloadIssue(report.id, issue.id)),
         );
