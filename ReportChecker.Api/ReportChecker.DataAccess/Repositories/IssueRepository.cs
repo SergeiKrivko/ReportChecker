@@ -13,7 +13,7 @@ public class IssueRepository(ReportCheckerDbContext dbContext) : IIssueRepositor
             .Where(e => e.CheckId == checkId)
             .Include(e => e.Comments)
             .ToListAsync();
-        return result.Select(FromEntity);
+        return result.Select(e => FromEntity(e));
     }
 
     public async Task<IEnumerable<Issue>> GetAllIssuesOfReportAsync(Guid reportId)
@@ -23,7 +23,17 @@ public class IssueRepository(ReportCheckerDbContext dbContext) : IIssueRepositor
             .Where(e => e.Check.ReportId == reportId)
             .Include(e => e.Comments)
             .ToListAsync();
-        return result.Select(FromEntity);
+        return result.Select(e => FromEntity(e));
+    }
+
+    public async Task<IEnumerable<Issue>> GetAllIssuesOfReportAsync(Guid reportId, Guid userId)
+    {
+        var result = await dbContext.Issues
+            .Include(e => e.Check)
+            .Where(e => e.Check.ReportId == reportId)
+            .Include(e => e.Comments).ThenInclude(e => e.Reads)
+            .ToListAsync();
+        return result.Select(e => FromEntity(e, userId));
     }
 
     public async Task<Issue?> GetIssueByIdAsync(Guid issueId)
@@ -33,6 +43,15 @@ public class IssueRepository(ReportCheckerDbContext dbContext) : IIssueRepositor
             .Include(e => e.Comments)
             .FirstOrDefaultAsync();
         return result is null ? null : FromEntity(result);
+    }
+
+    public async Task<Issue?> GetIssueByIdAsync(Guid issueId, Guid userId)
+    {
+        var result = await dbContext.Issues
+            .Where(e => e.IssueId == issueId)
+            .Include(e => e.Comments).ThenInclude(e => e.Reads)
+            .FirstOrDefaultAsync();
+        return result is null ? null : FromEntity(result, userId);
     }
 
     public async Task<Guid> CreateIssueAsync(Guid checkId, string chapter, string title, int? priority)
@@ -51,7 +70,7 @@ public class IssueRepository(ReportCheckerDbContext dbContext) : IIssueRepositor
         return id;
     }
 
-    private static Issue FromEntity(IssueEntity entity)
+    private static Issue FromEntity(IssueEntity entity, Guid? userId = null)
     {
         return new Issue
         {
@@ -64,7 +83,8 @@ public class IssueRepository(ReportCheckerDbContext dbContext) : IIssueRepositor
                 .OrderByDescending(e => e.CreatedAt)
                 .FirstOrDefault()
                 ?.Status ?? IssueStatus.Open,
-            Comments = entity.Comments.Where(e => e.DeletedAt == null).Select(CommentRepository.FromEntity).ToArray(),
+            Comments = entity.Comments.Where(e => e.DeletedAt == null).Select(x => CommentRepository.FromEntity(x, userId))
+                .ToArray(),
             Chapter = entity.Chapter,
         };
     }

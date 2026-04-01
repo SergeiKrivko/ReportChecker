@@ -121,7 +121,7 @@ public class AiService(
     public async Task ProcessInstructionApplyAsync(Guid taskId, Guid reportId, Guid checkId, List<Chapter> chapters,
         string instruction)
     {
-        var issues = (await issueRepository.GetAllIssuesOfCheckAsync(checkId)).ToList();
+        var issues = (await issueRepository.GetAllIssuesOfReportAsync(reportId)).ToList();
         await instructionTaskRepository.SetStatusAsync(taskId, ProgressStatus.InProgress);
         try
         {
@@ -151,7 +151,7 @@ public class AiService(
     public async Task ProcessInstructionSearchAsync(Guid taskId, Guid reportId, Guid checkId, List<Chapter> chapters,
         string instruction)
     {
-        var issues = (await issueRepository.GetAllIssuesOfCheckAsync(checkId)).ToList();
+        var issues = (await issueRepository.GetAllIssuesOfReportAsync(reportId)).ToList();
         await instructionTaskRepository.SetStatusAsync(taskId, ProgressStatus.InProgress);
         try
         {

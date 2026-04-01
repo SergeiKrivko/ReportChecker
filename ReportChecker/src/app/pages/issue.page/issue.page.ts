@@ -63,6 +63,10 @@ export class IssuePage implements OnInit, OnDestroy {
       takeUntilDestroyed(this.destroyRef),
     ).subscribe();
 
+    this.issueService.markRead().pipe(
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe();
+
     this.pathService.add(combineLatest([
       this.reportsService.selectedReport$,
       this.issueService.selectedIssue$,

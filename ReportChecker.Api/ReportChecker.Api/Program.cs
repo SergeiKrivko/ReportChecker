@@ -34,6 +34,7 @@ builder.Services.AddScoped<IIssueRepository, IssueRepository>();
 builder.Services.AddScoped<IReportRepository, ReportRepository>();
 builder.Services.AddScoped<IInstructionRepository, InstructionRepository>();
 builder.Services.AddScoped<IInstructionTaskRepository, InstructionTaskRepository>();
+builder.Services.AddScoped<ICommentReadRepository, CommentReadRepository>();
 builder.Services.AddScoped<IReportSourceRepository<FileReportSource>, FileReportSourceRepository>();
 builder.Services.AddScoped<ICheckSourceRepository<FileCheckSource>, FileCheckSourceRepository>();
 builder.Services.AddScoped<IReportSourceRepository<GitHubReportSource>, GitHubReportSourceRepository>();

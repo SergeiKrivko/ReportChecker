@@ -16,6 +16,9 @@
       <tui-icon icon="@tui.messages-square"/>
     </div>
   }
+  @if (issue().unreadCount > 0) {
+    <tui-badge-notification size="s" tuiAppearance="primary"></tui-badge-notification>
+  }
   @if (issue().status == 'Open') {
     <button tuiButton iconStart="@tui.check" appearance="positive" [loading]="loading | async"
             (click)="addComment('Fixed')" size="s"></button>

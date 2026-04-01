@@ -7,4 +7,5 @@ export interface IssueEntity {
   status: string;
   chapter: string | null;
   comments: CommentEntity[];
+  unreadCount: number;
 }

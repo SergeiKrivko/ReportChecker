@@ -12,7 +12,16 @@ public class CommentRepository(ReportCheckerDbContext dbContext) : ICommentRepos
         var result = await dbContext.Comments
             .Where(e => e.IssueId == issueId && e.DeletedAt == null)
             .ToListAsync();
-        return result.Select(FromEntity);
+        return result.Select(e => FromEntity(e));
+    }
+
+    public async Task<IReadOnlyList<Comment>> GetAllCommentsOfIssueAsync(Guid issueId, Guid userId)
+    {
+        var result = await dbContext.Comments
+            .Where(e => e.IssueId == issueId && e.DeletedAt == null)
+            .Include(e => e.Reads)
+            .ToListAsync();
+        return result.Select(e => FromEntity(e, userId)).ToList();
     }
 
     public async Task<Comment?> GetCommentByIdAsync(Guid commentId)
@@ -21,6 +30,15 @@ public class CommentRepository(ReportCheckerDbContext dbContext) : ICommentRepos
             .Where(e => e.CommentId == commentId && e.DeletedAt == null)
             .FirstOrDefaultAsync();
         return result is null ? null : FromEntity(result);
+    }
+
+    public async Task<Comment?> GetCommentByIdAsync(Guid commentId, Guid userId)
+    {
+        var result = await dbContext.Comments
+            .Where(e => e.CommentId == commentId && e.DeletedAt == null)
+            .Include(e => e.Reads)
+            .FirstOrDefaultAsync();
+        return result is null ? null : FromEntity(result, userId);
     }
 
     public async Task<Guid> CreateCommentAsync(Guid issueId, Guid userId, string? content, IssueStatus? status,
@@ -79,7 +97,7 @@ public class CommentRepository(ReportCheckerDbContext dbContext) : ICommentRepos
             .CountAsync();
     }
 
-    internal static Comment FromEntity(CommentEntity entity)
+    internal static Comment FromEntity(CommentEntity entity, Guid? userId = null)
     {
         return new Comment
         {
@@ -89,6 +107,7 @@ public class CommentRepository(ReportCheckerDbContext dbContext) : ICommentRepos
             Content = entity.Content,
             Status = entity.Status,
             ProgressStatus = entity.ProgressStatus,
+            IsRead = userId == null ? null : entity.Reads.FirstOrDefault(e => e.UserId == userId) != null,
             CreatedAt = entity.CreatedAt,
             ModifiedAt = entity.ModifiedAt,
             DeletedAt = entity.DeletedAt,

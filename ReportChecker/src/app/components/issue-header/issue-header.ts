@@ -1,8 +1,8 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, input} from '@angular/core';
 import {IssueAppearancePipe} from '../../pipes/issue-appearance-pipe';
 import {IssueIconPipe} from '../../pipes/issue-icon-pipe';
-import {TuiBadge, TuiButtonLoading} from '@taiga-ui/kit';
-import {TuiButton, TuiIcon} from '@taiga-ui/core';
+import {TuiBadge, TuiBadgeNotification, TuiButtonLoading} from '@taiga-ui/kit';
+import {TuiAppearance, TuiButton, TuiIcon} from '@taiga-ui/core';
 import {IssuesService} from '../../services/issues.service';
 import {IssueEntity} from '../../entities/issue-entity';
 import {Subject, tap} from 'rxjs';
@@ -17,7 +17,9 @@ import {AsyncPipe} from '@angular/common';
     TuiButton,
     TuiIcon,
     TuiButtonLoading,
-    AsyncPipe
+    AsyncPipe,
+    TuiBadgeNotification,
+    TuiAppearance
   ],
   templateUrl: './issue-header.html',
   styleUrl: './issue-header.scss',

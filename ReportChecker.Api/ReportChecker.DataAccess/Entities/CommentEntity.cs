@@ -16,4 +16,5 @@ public class CommentEntity
     public DateTime? DeletedAt { get; init; }
 
     public IssueEntity Issue { get; init; } = null!;
+    public ICollection<CommentReadEntity> Reads { get; init; } = [];
 }

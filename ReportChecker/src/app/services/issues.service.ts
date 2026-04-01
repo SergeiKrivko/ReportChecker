@@ -1,5 +1,5 @@
 import {inject, Injectable} from '@angular/core';
-import {ApiClient, Comment, CreateCommentSchema, Issue} from './api-client';
+import {ApiClient, Comment, CreateCommentSchema, Issue, MarkReadSchema} from './api-client';
 import {IssueEntity} from '../entities/issue-entity';
 import {CommentEntity} from '../entities/comment-entity';
 import moment from 'moment';
@@ -60,6 +60,7 @@ export class IssuesService {
     switchMap(report => {
       if (!report) return NEVER;
 
+      let loaded = false;
       let currentInterval = 16000; // базовый интервал
 
       return timer(0, currentInterval).pipe(
@@ -76,9 +77,13 @@ export class IssuesService {
             );
           }
           // Иначе просто загружаем issues по базовому интервалу
-          return this.loadIssues(report.id).pipe(
-            map(a => a.map(issueToEntity))
-          );
+          if (!loaded) {
+            loaded = true;
+            return this.loadIssues(report.id).pipe(
+              map(a => a.map(issueToEntity))
+            );
+          }
+          return NEVER;
         })
       );
     })
@@ -103,11 +108,17 @@ export class IssuesService {
       this.issues$
     ]).pipe(
       first(),
-      map(([issue, issues]) => {
+      map(([iss, issues]) => {
+        const issue = issueToEntity(iss);
         issues = issues.filter(i => i.id !== issueId);
-        issues.push(issueToEntity(issue));
+        issues.push(issue);
         patchState(this.store$$, {issues});
-        return issueToEntity(issue);
+
+        if (issue.id == this.store$$.selectedIssue()?.id) {
+          patchState(this.store$$, {selectedIssue: issue})
+        }
+
+        return issue;
       }),
     );
   }
@@ -141,6 +152,22 @@ export class IssuesService {
   deselectIssue() {
     patchState(this.store$$, {selectedIssue: null});
   }
+
+  markRead() {
+    return combineLatest([
+      this.reportsService.selectedReport$,
+      this.selectedIssue$,
+    ]).pipe(
+      switchMap(([report, issue]) => {
+        if (!report || !issue || issue.unreadCount == 0)
+          return NEVER;
+        return this.apiClient.read(report.id, issue.id, MarkReadSchema.fromJS({isRead: true})).pipe(
+          switchMap(() => this.reloadIssue(report.id, issue.id)),
+        );
+      }),
+      first(),
+    );
+  }
 }
 
 const issueToEntity = (issue: Issue): IssueEntity => ({
@@ -150,6 +177,7 @@ const issueToEntity = (issue: Issue): IssueEntity => ({
   priority: issue.priority ?? 10,
   comments: issue.comments?.map(commentToEntity) ?? [],
   chapter: issue.chapter ?? null,
+  unreadCount: issue.comments?.filter(e => e.isRead === false).length ?? 0,
 });
 
 
@@ -159,6 +187,7 @@ const commentToEntity = (comment: Comment): CommentEntity => ({
   content: comment.content ?? null,
   status: comment.status ?? null,
   progressStatus: comment.progressStatus ?? null,
+  isRead: comment.isRead ?? null,
   createdAt: comment.createdAt ?? moment(),
   updatedAt: comment.modifiedAt ?? null,
 });
