@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using Microsoft.Extensions.Configuration;
 using ReportChecker.Abstractions;
 using ReportChecker.Models;
@@ -38,7 +38,7 @@ public class LatexFormatProvider(IConfiguration configuration) : IFormatProvider
             text = await new StreamReader(entryStream).ReadToEndAsync();
         }
 
-        var path = new List<string> { fileName ?? "<root>" };
+        var path = new List<string> { fileName.TrimStart('/') ?? "<root>" };
         var builder = new StringBuilder();
         foreach (var line in text.Split('\n'))
         {
