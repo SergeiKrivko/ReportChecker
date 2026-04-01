@@ -137,9 +137,9 @@ public class AiService(
                     await commentRepository.CreateCommentAsync(comment.IssueId, Guid.Empty, comment.Content,
                         comment.Status is null ? null : Enum.Parse<IssueStatus>(comment.Status));
                 }
-
-                await instructionTaskRepository.SetStatusAsync(taskId, ProgressStatus.Completed);
             }
+
+            await instructionTaskRepository.SetStatusAsync(taskId, ProgressStatus.Completed);
         }
         catch (Exception e)
         {
@@ -163,9 +163,9 @@ public class AiService(
                     Chapters = chapterGroup.Select(c => c.ToAgent(issues)).ToArray()
                 });
                 await ProcessIssuesAsync(checkId, newIssues ?? []);
-
-                await instructionTaskRepository.SetStatusAsync(taskId, ProgressStatus.Completed);
             }
+
+            await instructionTaskRepository.SetStatusAsync(taskId, ProgressStatus.Completed);
         }
         catch (Exception e)
         {
@@ -206,7 +206,7 @@ public class AiService(
         }
         catch (Exception e)
         {
-            logger.LogError("Ошибка ри обработке комментария '{commantId}':\n{error}", commentId, e.ToString());
+            logger.LogError("Ошибка при обработке комментария '{commentId}':\n{error}", commentId, e.ToString());
             if (instruction.Apply || instruction.Search)
                 await commentRepository.SetProgressStatusAsync(commentId, ProgressStatus.Failed);
             throw;

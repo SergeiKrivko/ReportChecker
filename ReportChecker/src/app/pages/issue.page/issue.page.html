@@ -3,7 +3,7 @@
     <div class="header-container">
       <div class="side-container">
         <a tuiIconButton routerLink="../.." iconStart="@tui.chevron-left" appearance="flat"></a>
-          <h2 class="issue-title">{{ issue.title }}</h2>
+          <h2 class="issue-title" [innerHTML]="issue.title"></h2>
       </div>
       <div class="side-container">
         @if (issue.status == 'Open') {
