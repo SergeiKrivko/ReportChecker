@@ -38,7 +38,7 @@ public class LatexFormatProvider(IConfiguration configuration) : IFormatProvider
             text = await new StreamReader(entryStream).ReadToEndAsync();
         }
 
-        var path = new List<string> { fileName.TrimStart('/') ?? "<root>" };
+        var path = new List<string> { fileName?.TrimStart('/') ?? "<root>" };
         var builder = new StringBuilder();
         foreach (var line in text.Split('\n'))
         {
@@ -75,7 +75,8 @@ public class LatexFormatProvider(IConfiguration configuration) : IFormatProvider
             {
                 var includeFileName = line.Substring(IncludePrefix.Length,
                     line.Length - IncludePrefix.Length - IncludeSuffix.Length);
-                await foreach (var chapter in ParseFileAsync($"{Path.GetDirectoryName(fileName)}/{includeFileName}.tex",
+                await foreach (var chapter in ParseFileAsync(
+                                   $"{Path.GetDirectoryName(fileName)}/{includeFileName}.tex".TrimStart('/'),
                                    archive))
                     yield return chapter;
             }
