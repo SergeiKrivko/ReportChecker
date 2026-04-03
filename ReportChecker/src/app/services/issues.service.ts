@@ -110,9 +110,9 @@ export class IssuesService {
       first(),
       map(([iss, issues]) => {
         const issue = issueToEntity(iss);
-        issues = issues.filter(i => i.id !== issueId);
-        issues.push(issue);
-        patchState(this.store$$, {issues});
+        const index = issues.findIndex(i => i.id == issueId);
+        issues[index] = issue;
+        patchState(this.store$$, {issues: issues});
 
         if (issue.id == this.store$$.selectedIssue()?.id) {
           patchState(this.store$$, {selectedIssue: issue})
