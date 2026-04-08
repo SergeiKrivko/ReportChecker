@@ -52,6 +52,7 @@ public class PatchRepository(ReportCheckerDbContext dbContext) : IPatchRepositor
             Index = i,
             Number = e.Number,
             Content = e.Content,
+            PreviousContent = e.PreviousContent,
             Type = e.Type,
             CreatedAt = now,
         });
