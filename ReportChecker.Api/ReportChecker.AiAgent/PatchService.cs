@@ -109,9 +109,12 @@ public class PatchService(
             var report = await reportRepository.GetReportByIdAsync(check.ReportId);
             if (report is null)
                 throw new Exception($"Report {check.ReportId} not found");
+            var latestCheck = await checkRepository.GetLatestCheckOfReportAsync(check.ReportId);
+            if (latestCheck is null)
+                throw new Exception($"Latest check of report {check.ReportId} not found");
 
             var sourceProvider = providerService.GetSourceProvider(report.SourceProvider);
-            var source = await sourceProvider.OpenAsync(report.Id, check.Id);
+            var source = await sourceProvider.OpenAsync(report.Id, latestCheck.Id);
             var formatProvider = providerService.GetFormatProvider(report.Format);
             await formatProvider.ApplyPatchAsync(source, issue.Chapter, patch.Lines, ct);
 
