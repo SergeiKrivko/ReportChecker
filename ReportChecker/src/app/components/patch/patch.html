@@ -1,16 +1,28 @@
 <div class="container">
-  <div tuiCardLarge class="lines-card" tuiAppearance="outline-grayscale">
-    <tui-scrollbar>
-      <div class="lines-container">
-        @for (line of lines(); track line) {
-          <div class="line-container" [tuiAppearance]="appearanceByLineType(line.type)">
-            <span class="line-number">{{ line.number }}</span>
-            <code class="line-content">{{ line.content }}</code>
-          </div>
-        }
-      </div>
-    </tui-scrollbar>
-  </div>
+  @if (lines().length > 0) {
+    <div tuiCardLarge class="lines-card" tuiAppearance="outline-grayscale">
+      <tui-scrollbar>
+        <div class="lines-container">
+          @for (line of lines(); track $index) {
+            <div class="line-container" [tuiAppearance]="appearanceByLineType(line.type)">
+              <span class="line-number">{{ line.number }}</span>
+              @switch (line.type) {
+                @case ("Add") {
+                  <code class="line-content">{{ line.content }}</code>
+                }
+                @case ("Delete") {
+                  <code class="line-content">{{ line.previousContent }}</code>
+                }
+                @case ("Modify") {
+                  <code class="line-content" [innerHTML]="line | diffHtml"></code>
+                }
+              }
+            </div>
+          }
+        </div>
+      </tui-scrollbar>
+    </div>
+  }
   <div class="status-container">
     @switch (patch().status) {
       @case (PatchStatusEntity.InProgress) {
@@ -18,7 +30,8 @@
         <div>Исправление ошибки...</div>
       }
       @case (PatchStatusEntity.Failed) {
-        <tui-notification appearance="negative" iconStart="@tui.circle-alert">Не удалось исправить ошибку
+        <tui-notification appearance="negative" iconStart="@tui.circle-alert" size="m">
+          Не удалось исправить ошибку
         </tui-notification>
       }
       @case (PatchStatusEntity.Completed) {
@@ -34,8 +47,13 @@
         <div>Сохранение изменений...</div>
       }
       @case (PatchStatusEntity.Applied) {
-        <tui-notification appearance="positive" iconStart="@tui.check">
+        <tui-notification appearance="positive" size="m">
           Изменения внесены
+        </tui-notification>
+      }
+      @case (PatchStatusEntity.Rejected) {
+        <tui-notification appearance="warning" size="m">
+          Внесение изменений отменено
         </tui-notification>
       }
     }

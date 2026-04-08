@@ -2,8 +2,8 @@ import {Component, computed, inject, input, Signal} from '@angular/core';
 import {PatchEntity, PatchLineEntity, PatchStatusEntity} from '../../entities/patch-entity';
 import {TuiAppearance, TuiAppearanceOptions, TuiButton, TuiLoader, TuiNotification, TuiScrollbar} from '@taiga-ui/core';
 import {TuiCardLarge} from '@taiga-ui/layout';
-import {ApiClient} from '../../services/api-client';
-import {PatchService} from '../../services/patch.service';
+import {IssuesService} from '../../services/issues.service';
+import {DiffHtmlPipe} from '../../pipes/diff-html-pipe';
 
 @Component({
   selector: 'app-patch',
@@ -13,13 +13,14 @@ import {PatchService} from '../../services/patch.service';
     TuiButton,
     TuiCardLarge,
     TuiAppearance,
-    TuiScrollbar
+    TuiScrollbar,
+    DiffHtmlPipe
   ],
   templateUrl: './patch.html',
   styleUrl: './patch.scss',
 })
 export class Patch {
-  private readonly patchService = inject(PatchService);
+  private readonly issuesService = inject(IssuesService);
 
   readonly patch = input.required<PatchEntity>();
 
@@ -36,17 +37,17 @@ export class Patch {
       case 'Delete':
         return 'negative';
       case 'Modify':
-        return 'primary';
+        return 'neutral';
     }
     return 'neutral';
   }
 
   protected acceptPatch() {
-    this.patchService.setPatchStatus(this.patch().commentId, PatchStatusEntity.Accepted).subscribe();
+    this.issuesService.setPatchStatus(this.patch().commentId, PatchStatusEntity.Accepted).subscribe();
   }
 
   protected rejectPatch() {
-    this.patchService.setPatchStatus(this.patch().commentId, PatchStatusEntity.Rejected).subscribe();
+    this.issuesService.setPatchStatus(this.patch().commentId, PatchStatusEntity.Rejected).subscribe();
   }
 
   protected readonly PatchStatusEntity = PatchStatusEntity;

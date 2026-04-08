@@ -8,6 +8,7 @@ export interface PatchEntity {
 export interface PatchLineEntity {
   number: number;
   content?: string;
+  previousContent?: string;
   type: string;
 }
 

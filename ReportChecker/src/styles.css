@@ -4,3 +4,11 @@
     padding: 1rem 5rem;
   }
 }
+
+.diff-del {
+  background-color: var(--tui-status-negative-pale-hover);
+}
+
+.diff-ins {
+  background-color: var(--tui-status-positive-pale-hover);
+}

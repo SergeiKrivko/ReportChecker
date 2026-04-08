@@ -1,5 +1,14 @@
 import {inject, Injectable} from '@angular/core';
-import {ApiClient, Comment, CreateCommentSchema, IPatch, IPatchLine, PatchStatus, Issue, MarkReadSchema} from './api-client';
+import {
+  ApiClient,
+  Comment,
+  CreateCommentSchema,
+  IPatch,
+  IPatchLine,
+  PatchStatus,
+  Issue,
+  MarkReadSchema, UpdatePatchSchema
+} from './api-client';
 import {IssueEntity} from '../entities/issue-entity';
 import {CommentEntity} from '../entities/comment-entity';
 import moment from 'moment';
@@ -12,7 +21,6 @@ import {
   map,
   NEVER,
   Observable,
-  of,
   switchMap,
   take,
   takeWhile,
@@ -96,7 +104,7 @@ export class IssuesService {
       switchMap(report => {
         if (report)
           return this.apiClient.commentsPOST(report.id, issueId, CreateCommentSchema.fromJS({content, status})).pipe(
-            switchMap(commentId => this.pollComment(report.id, issueId, commentId)),
+            switchMap(() => this.pollComments(report.id, issueId)),
           );
         return NEVER;
       }),
@@ -124,19 +132,12 @@ export class IssuesService {
     );
   }
 
-  private pollComment(reportId: string, issueId: string, commentId: string): Observable<boolean> {
-    return this.reloadIssue(reportId, issueId).pipe(
-      switchMap(() => interval(2000)),
-      switchMap(() => this.apiClient.commentsGET(reportId, issueId, commentId)),
-      switchMap(comment => {
-        if (comment?.progressStatus == "InProgress")
-          return NEVER;
-        if (comment?.progressStatus == "Completed") {
-          return this.reloadIssue(reportId, issueId).pipe(map(() => true));
-        }
-        return of(false);
-      }),
-      first(),
+  private pollComments(reportId: string, issueId: string): Observable<any> {
+    return interval(1000).pipe(
+      switchMap(() => this.reloadIssue(reportId, issueId)),
+      takeWhile(issue => issue.comments.some(e => e.progressStatus === 'InProgress'
+        || e.patch?.status === PatchStatusEntity.InProgress
+        || e.patch?.status === PatchStatusEntity.Accepted))
     );
   }
 
@@ -166,6 +167,23 @@ export class IssuesService {
           switchMap(() => this.reloadIssue(report.id, issue.id)),
         );
       }),
+    );
+  }
+
+  setPatchStatus(commentId: string, status: string): Observable<void> {
+    return combineLatest([
+      this.reportsService.selectedReport$,
+      this.selectedIssue$,
+    ]).pipe(
+      first(),
+      switchMap(([report, issue]) => {
+        if (!report || !issue)
+          return NEVER;
+        return this.apiClient.patch(report.id, issue.id, commentId, UpdatePatchSchema.fromJS({status})).pipe(
+          switchMap(() => this.pollComments(report.id, issue.id)),
+        )
+      }),
+      switchMap(() => NEVER)
     );
   }
 }
@@ -203,6 +221,7 @@ const patchToEntity = (dto: IPatch): PatchEntity => ({
 const patchLineToEntity = (dto: IPatchLine): PatchLineEntity => ({
   number: dto.number,
   content: dto.content,
+  previousContent: dto.previousContent,
   type: dto.type ?? "Unknown",
 });
 

@@ -2918,6 +2918,7 @@ export interface IPatch {
 export class PatchLine implements IPatchLine {
     number!: number;
     content?: string | undefined;
+    previousContent?: string | undefined;
     type?: PatchLineType;
 
     constructor(data?: IPatchLine) {
@@ -2933,6 +2934,7 @@ export class PatchLine implements IPatchLine {
         if (_data) {
             this.number = _data["number"];
             this.content = _data["content"];
+            this.previousContent = _data["previousContent"];
             this.type = _data["type"];
         }
     }
@@ -2948,6 +2950,7 @@ export class PatchLine implements IPatchLine {
         data = typeof data === 'object' ? data : {};
         data["number"] = this.number;
         data["content"] = this.content;
+        data["previousContent"] = this.previousContent;
         data["type"] = this.type;
         return data;
     }
@@ -2956,6 +2959,7 @@ export class PatchLine implements IPatchLine {
 export interface IPatchLine {
     number: number;
     content?: string | undefined;
+    previousContent?: string | undefined;
     type?: PatchLineType;
 }
 
