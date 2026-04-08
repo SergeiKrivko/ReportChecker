@@ -15,6 +15,7 @@ public class PatchLineConfiguration : IEntityTypeConfiguration<PatchLineEntity>
         builder.Property(e => e.Index).IsRequired();
         builder.Property(e => e.Number).IsRequired();
         builder.Property(e => e.Content);
+        builder.Property(e => e.PreviousContent);
         builder.Property(e => e.Type).IsRequired();
         builder.Property(e => e.CreatedAt).IsRequired();
     }

@@ -52,12 +52,13 @@ public class PatchService(
             var issue = await issueRepository.GetIssueByIdAsync(comment.IssueId);
             if (issue is null)
                 throw new Exception($"Issue {comment.IssueId} not found");
+            var oldLines = chapter.Content.ToAgentLines();
             var lines = await aiAgentClient.Patch(new IAiAgentClient.PatchRequest
             {
-                Text = chapter.Content.ToAgentLines(),
+                Text = oldLines,
                 Issue = issue.ToAgent(),
             }) ?? [];
-            await patchRepository.AddPatchLinesAsync(patchId, lines.Select(e => e.ToDomain()), ct);
+            await patchRepository.AddPatchLinesAsync(patchId, lines.Select(e => e.ToDomain(oldLines)), ct);
             await patchRepository.UpdatePatchStatusAsync(patchId, PatchStatus.Completed, ct);
         }
         catch (Exception)

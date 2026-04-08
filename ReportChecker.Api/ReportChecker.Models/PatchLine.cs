@@ -4,6 +4,7 @@ public class PatchLine
 {
     public required int Number { get; init; }
     public string? Content { get; init; }
+    public string? PreviousContent { get; init; }
     public PatchLineType Type { get; init; }
 }
 

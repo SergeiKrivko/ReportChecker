@@ -10,6 +10,7 @@ public class PatchLineEntity
     public required int Number { get; init; }
     public required int Index { get; init; }
     [MaxLength(2048)] public string? Content { get; init; }
+    [MaxLength(2048)] public string? PreviousContent { get; init; }
     public PatchLineType Type { get; init; }
     public required DateTime CreatedAt { get; init; }
 

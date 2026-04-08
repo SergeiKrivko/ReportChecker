@@ -25,6 +25,7 @@ public static class PatchConverter
         {
             Number = entity.Number,
             Content = entity.Content,
+            PreviousContent = entity.PreviousContent,
             Type = entity.Type
         };
     }

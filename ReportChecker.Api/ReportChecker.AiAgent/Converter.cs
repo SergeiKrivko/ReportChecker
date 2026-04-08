@@ -56,13 +56,19 @@ internal static class Converter
             }).ToArray();
     }
 
-    public static PatchLine ToDomain(this IAiAgentClient.PatchLineCreate line)
+    public static PatchLine ToDomain(this IAiAgentClient.PatchLineCreate line,
+        IReadOnlyList<IAiAgentClient.PatchLineRead>? previousLines = null)
     {
+        var type = Enum.Parse<PatchLineType>(line.Type);
+        var previousContent = type == PatchLineType.Add
+            ? null
+            : previousLines?.FirstOrDefault(e => e.Number == line.Number)?.Content;
         return new PatchLine
         {
             Number = line.Number,
             Content = line.Content,
-            Type = Enum.Parse<PatchLineType>(line.Type),
+            PreviousContent = previousContent,
+            Type = type,
         };
     }
 }
