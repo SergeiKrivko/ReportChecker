@@ -87,9 +87,15 @@ public class GitHubSourceProvider(
 
         var allSuites =
             await client.Check.Suite.GetAllForReference(reportSource.Data.RepositoryId, checkSource.Data.CommitHash);
-        _ = allSuites.CheckSuites.FirstOrDefault(e => e.App.Id == GitHubAppId) ??
-            await client.Check.Suite.Create(reportSource.Data.RepositoryId,
-                new NewCheckSuite(checkSource.Data.CommitHash));
+        if (allSuites.CheckSuites.All(e => e.App.Id != GitHubAppId))
+            try
+            {
+                await client.Check.Suite.Create(reportSource.Data.RepositoryId,
+                    new NewCheckSuite(checkSource.Data.CommitHash));
+            }
+            catch (ApiValidationException)
+            {
+            }
 
         var checkName = $"ReportChecker - {report.Name}";
         var allChecks =
