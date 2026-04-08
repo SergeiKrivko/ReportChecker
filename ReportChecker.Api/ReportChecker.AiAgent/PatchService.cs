@@ -69,7 +69,7 @@ public class PatchService(
 
     public async Task SetPatchStatus(Guid patchId, PatchStatus status, CancellationToken ct = default)
     {
-        await patchRepository.UpdatePatchStatusAsync(patchId, PatchStatus.Failed, ct);
+        await patchRepository.UpdatePatchStatusAsync(patchId, status, ct);
         if (status == PatchStatus.Accepted)
         {
             _ApplyPatchAsync(patchId);
