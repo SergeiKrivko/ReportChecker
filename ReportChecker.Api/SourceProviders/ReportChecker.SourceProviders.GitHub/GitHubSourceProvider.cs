@@ -28,7 +28,7 @@ public class GitHubSourceProvider(
     {
         var client = await githubService.CreateRepositoryClient(reportSource.RepositoryId);
         return new GitHubArchive(client, reportSource.RepositoryId, checkSource.CommitHash,
-            reportSource.Path);
+            reportSource.Branch, reportSource.Path);
     }
 
     public async Task<IFileArchive> OpenAsync(ReportSourceUnion source)
@@ -38,7 +38,7 @@ public class GitHubSourceProvider(
         var client = await githubService.CreateRepositoryClient(source.GitHub.RepositoryId);
         var branch = await client.Repository.Branch.Get(source.GitHub.RepositoryId, source.GitHub.Branch);
         return new GitHubArchive(client, source.GitHub.RepositoryId, branch.Commit.Sha,
-            source.GitHub.Path);
+            branch.Name, source.GitHub.Path);
     }
 
     public async Task<SourceSchema> GetFirstSourceAsync(Guid reportId)

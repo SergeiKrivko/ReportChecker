@@ -6,12 +6,12 @@ public class SingleFileArchive(Stream stream, string? name) : IFileArchive
 {
     public string? Name => name;
 
-    public Task<Stream?> OpenAsync(string n)
+    public Task<Stream?> ReadAsync(string n)
     {
-        return n == name ? OpenAsync() : Task.FromResult<Stream?>(null);
+        return n == name ? ReadAsync() : Task.FromResult<Stream?>(null);
     }
 
-    public Task<Stream?> OpenAsync()
+    public Task<Stream?> ReadAsync()
     {
         return Task.FromResult<Stream?>(stream);
     }

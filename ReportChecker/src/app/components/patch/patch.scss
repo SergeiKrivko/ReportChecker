@@ -1,0 +1,42 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  .lines-card {
+    padding: 1rem;
+    width: 100%;
+
+    .lines-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+
+      .line-container {
+        display: flex;
+        flex-direction: row;
+        gap: 1rem;
+        padding: 0 0.5rem;
+
+        .line-number {
+          width: 2rem;
+          margin: 0;
+        }
+
+        .line-content {
+          flex-grow: 1;
+          margin: 0;
+          text-wrap: wrap;
+        }
+      }
+    }
+  }
+
+  .status-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+  }
+
+}

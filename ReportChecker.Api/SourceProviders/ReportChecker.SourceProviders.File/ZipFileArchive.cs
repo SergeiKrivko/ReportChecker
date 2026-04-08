@@ -8,7 +8,7 @@ public class ZipFileArchive(ZipArchive archive, string zipName, string? entryFil
     public string? Name => zipName;
     public string? EntryFilePath => entryFile;
 
-    public async Task<Stream?> OpenAsync(string name)
+    public async Task<Stream?> ReadAsync(string name)
     {
         name = name.TrimStart('/');
         var entry = archive.GetEntry(name);
@@ -17,5 +17,5 @@ public class ZipFileArchive(ZipArchive archive, string zipName, string? entryFil
         return await entry.OpenAsync();
     }
 
-    public async Task<Stream?> OpenAsync() => entryFile == null ? null : await OpenAsync(entryFile);
+    public async Task<Stream?> ReadAsync() => entryFile == null ? null : await ReadAsync(entryFile);
 }

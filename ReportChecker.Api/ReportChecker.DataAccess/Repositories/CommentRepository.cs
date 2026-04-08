@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ReportChecker.Abstractions;
+using ReportChecker.DataAccess.Converters;
 using ReportChecker.DataAccess.Entities;
 using ReportChecker.Models;
 
@@ -11,6 +12,7 @@ public class CommentRepository(ReportCheckerDbContext dbContext) : ICommentRepos
     {
         var result = await dbContext.Comments
             .Where(e => e.IssueId == issueId && e.DeletedAt == null)
+            .Include(e => e.Patch).ThenInclude(e => e.Lines)
             .ToListAsync();
         return result.Select(e => FromEntity(e));
     }
@@ -20,6 +22,7 @@ public class CommentRepository(ReportCheckerDbContext dbContext) : ICommentRepos
         var result = await dbContext.Comments
             .Where(e => e.IssueId == issueId && e.DeletedAt == null)
             .Include(e => e.Reads)
+            .Include(e => e.Patch).ThenInclude(e => e.Lines)
             .ToListAsync();
         return result.Select(e => FromEntity(e, userId)).ToList();
     }
@@ -28,6 +31,7 @@ public class CommentRepository(ReportCheckerDbContext dbContext) : ICommentRepos
     {
         var result = await dbContext.Comments
             .Where(e => e.CommentId == commentId && e.DeletedAt == null)
+            .Include(e => e.Patch).ThenInclude(e => e.Lines)
             .FirstOrDefaultAsync();
         return result is null ? null : FromEntity(result);
     }
@@ -37,6 +41,7 @@ public class CommentRepository(ReportCheckerDbContext dbContext) : ICommentRepos
         var result = await dbContext.Comments
             .Where(e => e.CommentId == commentId && e.DeletedAt == null)
             .Include(e => e.Reads)
+            .Include(e => e.Patch).ThenInclude(e => e.Lines)
             .FirstOrDefaultAsync();
         return result is null ? null : FromEntity(result, userId);
     }
@@ -108,6 +113,7 @@ public class CommentRepository(ReportCheckerDbContext dbContext) : ICommentRepos
             Status = entity.Status,
             ProgressStatus = entity.ProgressStatus,
             IsRead = userId == null ? null : entity.Reads.FirstOrDefault(e => e.UserId == userId) != null,
+            Patch = entity.Patch?.ToDomain(),
             CreatedAt = entity.CreatedAt,
             ModifiedAt = entity.ModifiedAt,
             DeletedAt = entity.DeletedAt,

@@ -4,6 +4,8 @@ public interface IFileArchive
 {
     public string? Name { get; }
     public string? EntryFilePath => null;
-    public Task<Stream?> OpenAsync(string name);
-    public Task<Stream?> OpenAsync();
+    public Task<Stream?> ReadAsync(string name);
+    public Task<Stream?> ReadAsync();
+    public Task WriteAsync(string name, Stream content, CancellationToken ct) => throw new NotSupportedException();
+    public Task WriteAsync(Stream content, CancellationToken ct) => throw new NotSupportedException();
 }

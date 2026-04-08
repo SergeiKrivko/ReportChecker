@@ -17,7 +17,7 @@ public class PdfFormatProvider(IConfiguration configuration) : IFormatProvider
 
     public async Task<IEnumerable<Chapter>> GetChaptersAsync(IFileArchive archive)
     {
-        await using var sourceStream = await archive.OpenAsync() ?? throw new FileNotFoundException();
+        await using var sourceStream = await archive.ReadAsync() ?? throw new FileNotFoundException();
         using var document = PdfDocument.Open(sourceStream);
         if (document.TryGetBookmarks(out var bookmarks))
         {

@@ -12,6 +12,7 @@ public class IssueRepository(ReportCheckerDbContext dbContext) : IIssueRepositor
         var result = await dbContext.Issues
             .Where(e => e.CheckId == checkId)
             .Include(e => e.Comments)
+            .ThenInclude(e => e.Patch).ThenInclude(e => e.Lines)
             .ToListAsync();
         return result.Select(e => FromEntity(e));
     }
@@ -22,6 +23,7 @@ public class IssueRepository(ReportCheckerDbContext dbContext) : IIssueRepositor
             .Include(e => e.Check)
             .Where(e => e.Check.ReportId == reportId)
             .Include(e => e.Comments)
+            .ThenInclude(e => e.Patch).ThenInclude(e => e.Lines)
             .ToListAsync();
         return result.Select(e => FromEntity(e));
     }
@@ -32,6 +34,8 @@ public class IssueRepository(ReportCheckerDbContext dbContext) : IIssueRepositor
             .Include(e => e.Check)
             .Where(e => e.Check.ReportId == reportId)
             .Include(e => e.Comments).ThenInclude(e => e.Reads)
+            .Include(e => e.Comments)
+            .ThenInclude(e => e.Patch).ThenInclude(e => e.Lines)
             .ToListAsync();
         return result.Select(e => FromEntity(e, userId));
     }
@@ -41,6 +45,7 @@ public class IssueRepository(ReportCheckerDbContext dbContext) : IIssueRepositor
         var result = await dbContext.Issues
             .Where(e => e.IssueId == issueId)
             .Include(e => e.Comments)
+            .ThenInclude(e => e.Patch).ThenInclude(e => e.Lines)
             .FirstOrDefaultAsync();
         return result is null ? null : FromEntity(result);
     }
@@ -50,6 +55,8 @@ public class IssueRepository(ReportCheckerDbContext dbContext) : IIssueRepositor
         var result = await dbContext.Issues
             .Where(e => e.IssueId == issueId)
             .Include(e => e.Comments).ThenInclude(e => e.Reads)
+            .Include(e => e.Comments)
+            .ThenInclude(e => e.Patch).ThenInclude(e => e.Lines)
             .FirstOrDefaultAsync();
         return result is null ? null : FromEntity(result, userId);
     }

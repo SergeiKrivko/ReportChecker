@@ -8,6 +8,7 @@ import {IssuesService} from '../../services/issues.service';
 import {Subject, tap} from 'rxjs';
 import {OrderByCreatedAtPipe} from '../../pipes/order-by-created-at-pipe';
 import {IsBotPipe} from '../../pipes/is-bot-pipe';
+import {Patch} from '../patch/patch';
 
 @Component({
   selector: 'app-comments',
@@ -24,6 +25,7 @@ import {IsBotPipe} from '../../pipes/is-bot-pipe';
     TuiButtonLoading,
     OrderByCreatedAtPipe,
     IsBotPipe,
+    Patch,
   ],
   templateUrl: './comments.html',
   styleUrl: './comments.scss',

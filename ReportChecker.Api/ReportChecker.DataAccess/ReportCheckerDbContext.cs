@@ -12,6 +12,8 @@ public class ReportCheckerDbContext : DbContext
     public DbSet<InstructionEntity> Instructions { get; init; }
     public DbSet<InstructionTaskEntity> InstructionTasks { get; init; }
     public DbSet<CommentReadEntity> CommentReads { get; init; }
+    public DbSet<PatchEntity> Patches { get; init; }
+    public DbSet<PatchLineEntity> PatchLines { get; init; }
 
     public DbSet<FileReportSourceEntity> FileReportSources { get; init; }
     public DbSet<FileCheckSourceEntity> FileCheckSources { get; init; }

@@ -20,7 +20,7 @@ public class DocxFormatProvider(IConfiguration configuration) : IFormatProvider
         var currentText = new StringBuilder();
         var path = new List<string> { "" };
 
-        await using var stream = await archive.OpenAsync();
+        await using var stream = await archive.ReadAsync();
         using var document = WordprocessingDocument.Open(stream ?? throw new Exception(), false);
         var headingStyles = GuessHeadingStyles(document);
         foreach (var paragraph in document.MainDocumentPart?.Document?.Body?.Elements<Paragraph>() ?? [])

@@ -10,7 +10,7 @@ public class GithubService(IUserRepository userRepository, IConfiguration config
 {
     private readonly GitHubClient _client = new(new ProductHeaderValue(configuration["GitHub.AppName"]))
     {
-        Credentials = new Credentials(GenerateJwt(), AuthenticationType.Bearer)
+        Credentials = new Credentials(GenerateJwt(), AuthenticationType.Bearer),
     };
 
     private async Task<GitHubClient> CreateUserClient(Guid userId)
@@ -48,7 +48,7 @@ public class GithubService(IUserRepository userRepository, IConfiguration config
             new GitHubJwtFactoryOptions
             {
                 AppIntegrationId = 2793377,
-                ExpirationSeconds = 600
+                ExpirationSeconds = 590
             }
         );
 

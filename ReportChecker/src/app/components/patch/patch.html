@@ -1,0 +1,43 @@
+<div class="container">
+  <div tuiCardLarge class="lines-card" tuiAppearance="outline-grayscale">
+    <tui-scrollbar>
+      <div class="lines-container">
+        @for (line of lines(); track line) {
+          <div class="line-container" [tuiAppearance]="appearanceByLineType(line.type)">
+            <span class="line-number">{{ line.number }}</span>
+            <code class="line-content">{{ line.content }}</code>
+          </div>
+        }
+      </div>
+    </tui-scrollbar>
+  </div>
+  <div class="status-container">
+    @switch (patch().status) {
+      @case (PatchStatusEntity.InProgress) {
+        <tui-loader/>
+        <div>Исправление ошибки...</div>
+      }
+      @case (PatchStatusEntity.Failed) {
+        <tui-notification appearance="negative" iconStart="@tui.circle-alert">Не удалось исправить ошибку
+        </tui-notification>
+      }
+      @case (PatchStatusEntity.Completed) {
+        <button tuiButton appearance="positive" iconStart="@tui.check" size="m" (click)="acceptPatch()">
+          Применить
+        </button>
+        <button tuiButton appearance="negative" iconStart="@tui.x" size="m" (click)="rejectPatch()">
+          Отказаться
+        </button>
+      }
+      @case (PatchStatusEntity.Accepted) {
+        <tui-loader/>
+        <div>Сохранение изменений...</div>
+      }
+      @case (PatchStatusEntity.Applied) {
+        <tui-notification appearance="positive" iconStart="@tui.check">
+          Изменения внесены
+        </tui-notification>
+      }
+    }
+  </div>
+</div>

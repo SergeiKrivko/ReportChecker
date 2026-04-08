@@ -656,6 +656,69 @@ export class ApiClient extends ApiClientBase {
     }
 
     /**
+     * @param body (optional)
+     * @return OK
+     */
+    patch(reportId: string, issueId: string, commentId: string, body: UpdatePatchSchema | undefined): Observable<void> {
+        let url_ = this.baseUrl + "/api/v1/reports/{reportId}/issues/{issueId}/comments/{commentId}/patch";
+        if (reportId === undefined || reportId === null)
+            throw new Error("The parameter 'reportId' must be defined.");
+        url_ = url_.replace("{reportId}", encodeURIComponent("" + reportId));
+        if (issueId === undefined || issueId === null)
+            throw new Error("The parameter 'issueId' must be defined.");
+        url_ = url_.replace("{issueId}", encodeURIComponent("" + issueId));
+        if (commentId === undefined || commentId === null)
+            throw new Error("The parameter 'commentId' must be defined.");
+        url_ = url_.replace("{commentId}", encodeURIComponent("" + commentId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("put", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.processPatch(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processPatch(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<void>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<void>;
+        }));
+    }
+
+    protected processPatch(response: HttpResponseBase): Observable<void> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return _observableOf(null as any);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
      * @param file (optional)
      * @return OK
      */
@@ -2064,6 +2127,7 @@ export class Comment implements IComment {
     status?: IssueStatus;
     progressStatus?: ProgressStatus;
     isRead?: boolean | undefined;
+    patch?: Patch;
     createdAt?: moment.Moment;
     modifiedAt?: moment.Moment | undefined;
     deletedAt?: moment.Moment | undefined;
@@ -2086,6 +2150,7 @@ export class Comment implements IComment {
             this.status = _data["status"];
             this.progressStatus = _data["progressStatus"];
             this.isRead = _data["isRead"];
+            this.patch = _data["patch"] ? Patch.fromJS(_data["patch"]) : <any>undefined;
             this.createdAt = _data["createdAt"] ? moment(_data["createdAt"].toString()) : <any>undefined;
             this.modifiedAt = _data["modifiedAt"] ? moment(_data["modifiedAt"].toString()) : <any>undefined;
             this.deletedAt = _data["deletedAt"] ? moment(_data["deletedAt"].toString()) : <any>undefined;
@@ -2108,6 +2173,7 @@ export class Comment implements IComment {
         data["status"] = this.status;
         data["progressStatus"] = this.progressStatus;
         data["isRead"] = this.isRead;
+        data["patch"] = this.patch ? this.patch.toJSON() : <any>undefined;
         data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
         data["modifiedAt"] = this.modifiedAt ? this.modifiedAt.toISOString() : <any>undefined;
         data["deletedAt"] = this.deletedAt ? this.deletedAt.toISOString() : <any>undefined;
@@ -2123,6 +2189,7 @@ export interface IComment {
     status?: IssueStatus;
     progressStatus?: ProgressStatus;
     isRead?: boolean | undefined;
+    patch?: Patch;
     createdAt?: moment.Moment;
     modifiedAt?: moment.Moment | undefined;
     deletedAt?: moment.Moment | undefined;
@@ -2788,6 +2855,126 @@ export interface IMarkReadSchema {
     isRead?: boolean;
 }
 
+export class Patch implements IPatch {
+    id!: string;
+    commentId!: string;
+    status!: PatchStatus;
+    lines?: PatchLine[] | undefined;
+    createdAt!: moment.Moment;
+
+    constructor(data?: IPatch) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.commentId = _data["commentId"];
+            this.status = _data["status"];
+            if (Array.isArray(_data["lines"])) {
+                this.lines = [] as any;
+                for (let item of _data["lines"])
+                    this.lines!.push(PatchLine.fromJS(item));
+            }
+            this.createdAt = _data["createdAt"] ? moment(_data["createdAt"].toString()) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): Patch {
+        data = typeof data === 'object' ? data : {};
+        let result = new Patch();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["commentId"] = this.commentId;
+        data["status"] = this.status;
+        if (Array.isArray(this.lines)) {
+            data["lines"] = [];
+            for (let item of this.lines)
+                data["lines"].push(item.toJSON());
+        }
+        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
+        return data;
+    }
+}
+
+export interface IPatch {
+    id: string;
+    commentId: string;
+    status: PatchStatus;
+    lines?: PatchLine[] | undefined;
+    createdAt: moment.Moment;
+}
+
+export class PatchLine implements IPatchLine {
+    number!: number;
+    content?: string | undefined;
+    type?: PatchLineType;
+
+    constructor(data?: IPatchLine) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.number = _data["number"];
+            this.content = _data["content"];
+            this.type = _data["type"];
+        }
+    }
+
+    static fromJS(data: any): PatchLine {
+        data = typeof data === 'object' ? data : {};
+        let result = new PatchLine();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["number"] = this.number;
+        data["content"] = this.content;
+        data["type"] = this.type;
+        return data;
+    }
+}
+
+export interface IPatchLine {
+    number: number;
+    content?: string | undefined;
+    type?: PatchLineType;
+}
+
+export enum PatchLineType {
+    Add = "Add",
+    Delete = "Delete",
+    Modify = "Modify",
+}
+
+export enum PatchStatus {
+    Pending = "Pending",
+    InProgress = "InProgress",
+    Completed = "Completed",
+    Failed = "Failed",
+    Accepted = "Accepted",
+    Rejected = "Rejected",
+    Applied = "Applied",
+}
+
 export enum ProgressStatus {
     Queued = "Queued",
     InProgress = "InProgress",
@@ -3142,6 +3329,42 @@ export class UpdateCommentSchema implements IUpdateCommentSchema {
 
 export interface IUpdateCommentSchema {
     content: string | undefined;
+}
+
+export class UpdatePatchSchema implements IUpdatePatchSchema {
+    status!: PatchStatus;
+
+    constructor(data?: IUpdatePatchSchema) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.status = _data["status"];
+        }
+    }
+
+    static fromJS(data: any): UpdatePatchSchema {
+        data = typeof data === 'object' ? data : {};
+        let result = new UpdatePatchSchema();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["status"] = this.status;
+        return data;
+    }
+}
+
+export interface IUpdatePatchSchema {
+    status: PatchStatus;
 }
 
 export class UpdateReportSchema implements IUpdateReportSchema {

@@ -13,6 +13,7 @@ public class AiService(
     IInstructionTaskRepository instructionTaskRepository,
     IDifferenceService differenceService,
     IChapterGroupService chapterGroupService,
+    IPatchService patchService,
     ILogger<AiService> logger) : IAiService
 {
     public async Task FindIssuesAsync(Guid reportId, Guid checkId, ICollection<Chapter> chapters,
@@ -110,6 +111,8 @@ public class AiService(
             await commentRepository.SetProgressStatusAsync(lastCommentId, ProgressStatus.Completed);
             if (resp?.Instruction != null)
                 await ProcessInstructionAsync(report.Id, id, issue, resp.Instruction, chapters);
+            if (resp?.Patch ?? false)
+                await patchService.CreatePatchAsync(id, chapters.First(e => e.Name == issue.Chapter));
         }
         catch (Exception)
         {

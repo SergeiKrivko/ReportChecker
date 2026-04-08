@@ -2,7 +2,7 @@
 
 namespace AiAgent;
 
-public static class Converter
+internal static class Converter
 {
     public static IAiAgentClient.Chapter ToAgent(this Chapter chapter, ICollection<Issue> issues)
     {
@@ -43,6 +43,26 @@ public static class Converter
             Content = comment.Content,
             Role = comment.UserId == Guid.Empty ? "assistant" : "user",
             Status = comment.Status.ToString(),
+        };
+    }
+
+    public static IAiAgentClient.PatchLineRead[] ToAgentLines(this string content)
+    {
+        return content.Split('\n')
+            .Select((e, i) => new IAiAgentClient.PatchLineRead
+            {
+                Content = e,
+                Number = i + 1,
+            }).ToArray();
+    }
+
+    public static PatchLine ToDomain(this IAiAgentClient.PatchLineCreate line)
+    {
+        return new PatchLine
+        {
+            Number = line.Number,
+            Content = line.Content,
+            Type = Enum.Parse<PatchLineType>(line.Type),
         };
     }
 }

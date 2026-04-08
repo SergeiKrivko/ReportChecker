@@ -29,6 +29,9 @@
               }
             }
           </div>
+          @if (comment.patch) {
+            <app-patch [patch]="comment.patch"/>
+          }
         </div>
       </div>
     }

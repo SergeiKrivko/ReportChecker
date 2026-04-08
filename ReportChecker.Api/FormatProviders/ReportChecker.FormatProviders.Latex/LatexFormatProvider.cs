@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using ReportChecker.Abstractions;
 using ReportChecker.Models;
@@ -31,8 +32,8 @@ public class LatexFormatProvider(IConfiguration configuration) : IFormatProvider
     {
         string text;
         await using (var entryStream = fileName == null
-                         ? await archive.OpenAsync() ?? throw new FileNotFoundException("Entry file not found")
-                         : await archive.OpenAsync(fileName) ??
+                         ? await archive.ReadAsync() ?? throw new FileNotFoundException("Entry file not found")
+                         : await archive.ReadAsync(fileName) ??
                            throw new FileNotFoundException($"File '{fileName}' not found"))
         {
             text = await new StreamReader(entryStream).ReadToEndAsync();
@@ -87,7 +88,7 @@ public class LatexFormatProvider(IConfiguration configuration) : IFormatProvider
         var entryPath = archive.EntryFilePath;
         if (entryPath == null || !entryPath.EndsWith(".tex"))
             return false;
-        await using var entry = await archive.OpenAsync();
+        await using var entry = await archive.ReadAsync();
         return entry != null;
     }
 
@@ -120,5 +121,106 @@ public class LatexFormatProvider(IConfiguration configuration) : IFormatProvider
 
         title = line;
         return int.MaxValue;
+    }
+
+    public async Task ApplyPatchAsync(IFileArchive archive, string chapter, IEnumerable<PatchLine> lines,
+        CancellationToken ct = default)
+    {
+        var l = lines.ToList();
+        try
+        {
+            await ApplyPatchAsync(null, archive, chapter, l, ct);
+        }
+        catch (FileNotFoundException)
+        {
+            await ApplyPatchAsync($"{archive.EntryFilePath}/report.tex", archive, chapter, l, ct);
+        }
+    }
+
+    private async Task<bool> ApplyPatchAsync(string? fileName, IFileArchive archive, string chapter,
+        IReadOnlyList<PatchLine> lines, CancellationToken ct)
+    {
+        string text;
+        await using (var entryStream = fileName == null
+                         ? await archive.ReadAsync() ?? throw new FileNotFoundException("Entry file not found")
+                         : await archive.ReadAsync(fileName) ??
+                           throw new FileNotFoundException($"File '{fileName}' not found"))
+        {
+            text = await new StreamReader(entryStream).ReadToEndAsync(ct);
+        }
+
+        var patchApplied = false;
+        var path = new List<string> { fileName?.TrimStart('/') ?? "<root>" };
+        var isPatchChapter = chapter == string.Join(ChapterSeparator, path.Where(e => !string.IsNullOrWhiteSpace(e)));
+        var lineNumber = 0;
+        var builder = new StringBuilder();
+        foreach (var line in text.Split('\n'))
+        {
+            if (isPatchChapter)
+            {
+                lineNumber++;
+                var currentLines = lines.Where(e => e.Number == lineNumber).ToList();
+                if (currentLines.All(e => e.Type == PatchLineType.Add))
+                    builder.AppendLine(line);
+                else if (currentLines.Any(e => e.Type == PatchLineType.Modify))
+                {
+                    var modifyLine = currentLines.Single(e => e.Type == PatchLineType.Modify);
+                    builder.AppendLine(modifyLine.Content);
+                }
+
+                foreach (var addLine in currentLines.Where(e => e.Type == PatchLineType.Add))
+                {
+                    builder.AppendLine(addLine.Content);
+                }
+
+                patchApplied = true;
+            }
+            else
+            {
+                builder.AppendLine(line);
+            }
+
+            var level = LineLevel(line, out var title);
+            if (level <= 3)
+            {
+                while (level < path.Count)
+                    path.RemoveAt(path.Count - 1);
+                while (level > path.Count)
+                    path.Add("");
+                path.Add(title);
+                isPatchChapter =
+                    chapter == string.Join(ChapterSeparator, path.Where(e => !string.IsNullOrWhiteSpace(e)));
+            }
+        }
+
+        if (patchApplied)
+        {
+            var stream = new MemoryStream();
+            await using (var writer = new StreamWriter(stream))
+            {
+                text = builder.ToString();
+                var span = text.EndsWith("\r\n") ? text.AsSpan(0, text.Length - 2) : text.AsSpan(0, text.Length - 1);
+                await writer.WriteAsync(span.ToString());
+            }
+
+            stream = new MemoryStream(stream.ToArray());
+            if (fileName == null)
+                await archive.WriteAsync(stream, ct);
+            else
+                await archive.WriteAsync(fileName, stream, ct);
+            return true;
+        }
+
+        foreach (var line in text.Split('\n').Select(e => e.Trim()))
+            if (line.StartsWith(IncludePrefix) && line.EndsWith(IncludeSuffix))
+            {
+                var includeFileName = line.Substring(IncludePrefix.Length,
+                    line.Length - IncludePrefix.Length - IncludeSuffix.Length);
+                if (await ApplyPatchAsync($"{Path.GetDirectoryName(fileName)}/{includeFileName}.tex".TrimStart('/'),
+                        archive, chapter, lines, ct))
+                    return true;
+            }
+
+        return false;
     }
 }

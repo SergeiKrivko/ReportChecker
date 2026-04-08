@@ -16,6 +16,7 @@ public class CommentsController(
     ICheckService checkService,
     ICommentRepository commentRepository,
     ICommentReadRepository commentReadRepository,
+    IPatchService patchService,
     ILimitsService limitsService) : ControllerBase
 {
     [HttpGet]
@@ -147,6 +148,35 @@ public class CommentsController(
             return BadRequest("Not implemented");
         }
 
+        return Ok();
+    }
+
+    [HttpPut("{commentId:guid}/patch")]
+    [Authorize]
+    public async Task<ActionResult> UpdatePatchStatus(Guid reportId, Guid issueId, Guid commentId,
+        [FromBody] UpdatePatchSchema schema, CancellationToken ct = default)
+    {
+        var userId = User.UserId;
+
+        var report = await reportRepository.GetReportByIdAsync(reportId);
+        if (report == null)
+            return NotFound();
+        if (report.OwnerId != userId)
+            return Unauthorized();
+
+        var issue = await issueRepository.GetIssueByIdAsync(issueId);
+        if (issue == null)
+            return NotFound();
+
+        var comment = await commentRepository.GetCommentByIdAsync(commentId);
+        if (comment == null)
+            return NotFound();
+        if (comment.IssueId != issueId)
+            return Unauthorized();
+        if (comment.Patch == null)
+            return NotFound();
+
+        await patchService.SetPatchStatus(comment.Patch.Id, schema.Status, ct);
         return Ok();
     }
 }

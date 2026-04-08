@@ -1,5 +1,5 @@
 import {inject, Injectable} from '@angular/core';
-import {ApiClient, Comment, CreateCommentSchema, Issue, MarkReadSchema} from './api-client';
+import {ApiClient, Comment, CreateCommentSchema, IPatch, IPatchLine, PatchStatus, Issue, MarkReadSchema} from './api-client';
 import {IssueEntity} from '../entities/issue-entity';
 import {CommentEntity} from '../entities/comment-entity';
 import moment from 'moment';
@@ -20,6 +20,7 @@ import {
   timer
 } from 'rxjs';
 import {ReportsService} from './reports.service';
+import {PatchEntity, PatchLineEntity, PatchStatusEntity} from '../entities/patch-entity';
 
 interface IssuesStore {
   issues: IssueEntity[];
@@ -187,6 +188,30 @@ const commentToEntity = (comment: Comment): CommentEntity => ({
   status: comment.status ?? null,
   progressStatus: comment.progressStatus ?? null,
   isRead: comment.isRead ?? null,
+  patch: comment.patch ? patchToEntity(comment.patch) : undefined,
   createdAt: comment.createdAt ?? moment(),
   updatedAt: comment.modifiedAt ?? null,
 });
+
+const patchToEntity = (dto: IPatch): PatchEntity => ({
+  id: dto.id,
+  commentId: dto.commentId,
+  status: statusMap[dto.status],
+  lines: dto.lines?.map(patchLineToEntity) ?? [],
+});
+
+const patchLineToEntity = (dto: IPatchLine): PatchLineEntity => ({
+  number: dto.number,
+  content: dto.content,
+  type: dto.type ?? "Unknown",
+});
+
+const statusMap: Record<PatchStatus, PatchStatusEntity> = {
+  [PatchStatus.Pending]: PatchStatusEntity.Pending,
+  [PatchStatus.InProgress]: PatchStatusEntity.InProgress,
+  [PatchStatus.Completed]: PatchStatusEntity.Completed,
+  [PatchStatus.Accepted]: PatchStatusEntity.Accepted,
+  [PatchStatus.Rejected]: PatchStatusEntity.Rejected,
+  [PatchStatus.Applied]: PatchStatusEntity.Applied,
+  [PatchStatus.Failed]: PatchStatusEntity.Failed,
+}
