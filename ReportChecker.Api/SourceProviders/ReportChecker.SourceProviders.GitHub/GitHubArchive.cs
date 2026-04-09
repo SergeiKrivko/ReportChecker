@@ -2,6 +2,7 @@
 using System.Text;
 using Octokit;
 using ReportChecker.Abstractions;
+using ReportChecker.Models.Sources;
 
 namespace ReportChecker.SourceProviders.GitHub;
 
@@ -38,17 +39,21 @@ public class GitHubArchive(GitHubClient client, long repositoryId, string commit
         return await _httpClient.GetStreamAsync(contents[0].DownloadUrl);
     }
 
-    public async Task WriteAsync(string name, Stream content, CancellationToken ct)
+    public async Task<CheckSourceUnion?> WriteAsync(string name, Stream content, CancellationToken ct)
     {
         name = $"{_basePath}/{name.TrimStart('/')}".TrimStart('/');
         await _WriteAsync(name, content, ct);
+
+        return null;
     }
 
-    public async Task WriteAsync(Stream content, CancellationToken ct)
+    public async Task<CheckSourceUnion?> WriteAsync(Stream content, CancellationToken ct)
     {
         if (rootName == null)
             throw new Exception("No root file");
         await _WriteAsync(rootName, content, ct);
+
+        return null;
     }
 
     private async Task<string> GetShaAsync(string name, CancellationToken ct)

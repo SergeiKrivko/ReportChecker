@@ -1,1 +1,4 @@
-<app-file-uploader class="uploader" [formControl]="control" />
+<div class="container">
+  <app-file-uploader class="uploader" [formControl]="control"/>
+  <button tuiIconButton iconStart="@tui.download" appearance="outline" (click)="downloadFile()"></button>
+</div>

@@ -38,8 +38,9 @@ public class FileSourceProvider(
                 checkSource.Data.FileName);
         if (checkSource.Data.FileName?.EndsWith(".zip") ?? false)
         {
-            return new ZipFileArchive(new ZipArchive(stream, ZipArchiveMode.Read), checkSource.Data.FileName,
-                reportSource.EntryFilePath);
+            return new ZipFileArchive(checkSourceRepository, fileRepository, checkSource.Id,
+                new ZipArchive(stream, ZipArchiveMode.Read),
+                checkSource.Data.FileName, reportSource.EntryFilePath);
         }
 
         return new SingleFileArchive(stream, checkSource.Data.FileName);

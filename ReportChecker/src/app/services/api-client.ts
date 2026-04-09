@@ -722,7 +722,7 @@ export class ApiClient extends ApiClientBase {
      * @param file (optional)
      * @return OK
      */
-    files(file: FileParameter | undefined): Observable<UploadFileResponseSchema> {
+    filesPOST(file: FileParameter | undefined): Observable<UploadFileResponseSchema> {
         let url_ = this.baseUrl + "/api/v1/files";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -744,11 +744,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("post", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processFiles(response_);
+            return this.processFilesPOST(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processFiles(response_ as any);
+                    return this.processFilesPOST(response_ as any);
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<UploadFileResponseSchema>;
                 }
@@ -757,7 +757,7 @@ export class ApiClient extends ApiClientBase {
         }));
     }
 
-    protected processFiles(response: HttpResponseBase): Observable<UploadFileResponseSchema> {
+    protected processFilesPOST(response: HttpResponseBase): Observable<UploadFileResponseSchema> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -769,6 +769,64 @@ export class ApiClient extends ApiClientBase {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
             result200 = UploadFileResponseSchema.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param report (optional)
+     * @return OK
+     */
+    filesGET(report: string | undefined): Observable<DownloadUrlResponse> {
+        let url_ = this.baseUrl + "/api/v1/files?";
+        if (report === null)
+            throw new Error("The parameter 'report' cannot be null.");
+        else if (report !== undefined)
+            url_ += "report=" + encodeURIComponent("" + report) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("get", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.processFilesGET(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processFilesGET(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<DownloadUrlResponse>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<DownloadUrlResponse>;
+        }));
+    }
+
+    protected processFilesGET(response: HttpResponseBase): Observable<DownloadUrlResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = DownloadUrlResponse.fromJS(resultData200);
             return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
@@ -2368,6 +2426,42 @@ export interface ICreateReportSchema {
     format: string | undefined;
     sourceProvider: string | undefined;
     source: ReportSourceUnion;
+}
+
+export class DownloadUrlResponse implements IDownloadUrlResponse {
+    url!: string | undefined;
+
+    constructor(data?: IDownloadUrlResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.url = _data["url"];
+        }
+    }
+
+    static fromJS(data: any): DownloadUrlResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new DownloadUrlResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["url"] = this.url;
+        return data;
+    }
+}
+
+export interface IDownloadUrlResponse {
+    url: string | undefined;
 }
 
 export class FileCheckSource implements IFileCheckSource {

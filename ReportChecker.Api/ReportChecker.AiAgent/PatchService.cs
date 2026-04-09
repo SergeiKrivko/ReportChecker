@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using ReportChecker.Abstractions;
 using ReportChecker.Models;
+using ReportChecker.Models.Sources;
 
 namespace AiAgent;
 
@@ -83,7 +84,8 @@ public class PatchService(
         {
             await using var scope = serviceProvider.CreateAsyncScope();
             var service = scope.ServiceProvider.GetRequiredService<IPatchService>();
-            await service.ApplyPatchAsync(patchId, CancellationToken.None);
+            var checkService = scope.ServiceProvider.GetRequiredService<ICheckService>();
+            await service.ApplyPatchAsync(patchId, checkService, CancellationToken.None);
         }
         catch (Exception e)
         {
@@ -91,7 +93,7 @@ public class PatchService(
         }
     }
 
-    public async Task ApplyPatchAsync(Guid patchId, CancellationToken ct = default)
+    public async Task ApplyPatchAsync(Guid patchId, ICheckService checkService, CancellationToken ct = default)
     {
         try
         {
@@ -117,7 +119,10 @@ public class PatchService(
             var sourceProvider = providerService.GetSourceProvider(report.SourceProvider);
             var source = await sourceProvider.OpenAsync(report.Id, latestCheck.Id);
             var formatProvider = providerService.GetFormatProvider(report.Format);
-            await formatProvider.ApplyPatchAsync(source, issue.Chapter, patch.Lines, ct);
+            var newSource = await formatProvider.ApplyPatchAsync(source, issue.Chapter, patch.Lines, ct);
+
+            if (newSource != null)
+                await checkService.CreateCheckAsync(report.Id, report.OwnerId, newSource);
 
             await patchRepository.UpdatePatchStatusAsync(patchId, PatchStatus.Applied, ct);
         }

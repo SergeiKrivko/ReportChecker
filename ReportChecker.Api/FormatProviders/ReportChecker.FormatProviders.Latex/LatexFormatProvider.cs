@@ -2,6 +2,7 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using ReportChecker.Abstractions;
 using ReportChecker.Models;
+using ReportChecker.Models.Sources;
 using IFormatProvider = ReportChecker.Abstractions.IFormatProvider;
 
 namespace ReportChecker.FormatProviders.Latex;
@@ -122,21 +123,25 @@ public class LatexFormatProvider(IConfiguration configuration) : IFormatProvider
         return int.MaxValue;
     }
 
-    public async Task ApplyPatchAsync(IFileArchive archive, string chapter, IEnumerable<PatchLine> lines,
+    public async Task<CheckSourceUnion?> ApplyPatchAsync(IFileArchive archive, string chapter,
+        IEnumerable<PatchLine> lines,
         CancellationToken ct = default)
     {
         var l = lines.ToList();
         try
         {
-            await ApplyPatchAsync(null, archive, chapter, l, ct);
+            var (_, source) = await ApplyPatchAsync(null, archive, chapter, l, ct);
+            return source;
         }
         catch (FileNotFoundException)
         {
-            await ApplyPatchAsync($"{archive.EntryFilePath}/report.tex", archive, chapter, l, ct);
+            var (_, source) = await ApplyPatchAsync($"{archive.EntryFilePath}/report.tex", archive, chapter, l, ct);
+            return source;
         }
     }
 
-    private async Task<bool> ApplyPatchAsync(string? fileName, IFileArchive archive, string chapter,
+    private async Task<(bool, CheckSourceUnion?)> ApplyPatchAsync(string? fileName, IFileArchive archive,
+        string chapter,
         IReadOnlyList<PatchLine> lines, CancellationToken ct)
     {
         string text;
@@ -217,11 +222,10 @@ public class LatexFormatProvider(IConfiguration configuration) : IFormatProvider
             }
 
             stream = new MemoryStream(stream.ToArray());
-            if (fileName == null)
-                await archive.WriteAsync(stream, ct);
-            else
-                await archive.WriteAsync(fileName, stream, ct);
-            return true;
+            return (true,
+                fileName == null
+                    ? await archive.WriteAsync(stream, ct)
+                    : await archive.WriteAsync(fileName, stream, ct));
         }
 
         foreach (var line in text.Split('\n').Select(e => e.Trim()))
@@ -229,11 +233,13 @@ public class LatexFormatProvider(IConfiguration configuration) : IFormatProvider
             {
                 var includeFileName = line.Substring(IncludePrefix.Length,
                     line.Length - IncludePrefix.Length - IncludeSuffix.Length);
-                if (await ApplyPatchAsync($"{Path.GetDirectoryName(fileName)}/{includeFileName}.tex".TrimStart('/'),
-                        archive, chapter, lines, ct))
-                    return true;
+                var (flag, source) = await ApplyPatchAsync(
+                    $"{Path.GetDirectoryName(fileName)}/{includeFileName}.tex".TrimStart('/'),
+                    archive, chapter, lines, ct);
+                if (flag)
+                    return (flag, source);
             }
 
-        return false;
+        return (false, null);
     }
 }

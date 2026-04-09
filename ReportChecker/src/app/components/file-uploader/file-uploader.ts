@@ -55,7 +55,7 @@ export class FileUploader implements ControlValueAccessor {
 
     this.loadingFiles$.next(file);
 
-    return this.apiClient.files({fileName: file.name, data: file}).pipe(
+    return this.apiClient.filesPOST({fileName: file.name, data: file}).pipe(
       catchError(() => {
         this.failedFiles$.next(file);
         return of(null);
