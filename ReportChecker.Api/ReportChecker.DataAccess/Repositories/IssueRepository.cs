@@ -90,7 +90,10 @@ public class IssueRepository(ReportCheckerDbContext dbContext) : IIssueRepositor
                 .OrderByDescending(e => e.CreatedAt)
                 .FirstOrDefault()
                 ?.Status ?? IssueStatus.Open,
-            Comments = entity.Comments.Where(e => e.DeletedAt == null).Select(x => CommentRepository.FromEntity(x, userId))
+            Comments = entity.Comments
+                .Where(e => e.DeletedAt == null)
+                .OrderBy(e => e.CreatedAt)
+                .Select(x => CommentRepository.FromEntity(x, userId))
                 .ToArray(),
             Chapter = entity.Chapter,
         };

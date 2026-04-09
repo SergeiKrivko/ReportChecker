@@ -30,7 +30,9 @@ internal static class Converter
         {
             Id = issue.Id,
             Title = issue.Title,
-            Comments = issue.Comments.Select(e => e.ToAgent()).ToArray(),
+            Comments = issue.Comments
+                .Select(e => e.ToAgent())
+                .ToArray(),
             Priority = issue.Priority,
         };
     }
