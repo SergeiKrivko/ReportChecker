@@ -104,15 +104,15 @@ public class CheckService(
         }
     }
 
-    public async Task WriteCommentAsync(Guid checkId, Guid issueId)
+    public async Task WriteCommentAsync(Guid reportId, Guid issueId)
     {
-        var check = await checkRepository.GetCheckByIdAsync(checkId);
-        if (check == null)
-            throw new ArgumentException($"Check with id {checkId} does not exist");
-
-        var report = await reportRepository.GetReportByIdAsync(check.ReportId);
+        var report = await reportRepository.GetReportByIdAsync(reportId);
         if (report == null)
-            throw new ArgumentException($"Report with id {check.ReportId} does not exist");
+            throw new ArgumentException($"Report with id {reportId} does not exist");
+
+        var check = await checkRepository.GetLatestCheckOfReportAsync(reportId);
+        if (check == null)
+            throw new ArgumentException($"Latest check of report {reportId} not found");
 
         var sourceProvider = providerService.GetSourceProvider(report.SourceProvider);
         var sourceStream = await sourceProvider.OpenAsync(report.Id, check.Id);

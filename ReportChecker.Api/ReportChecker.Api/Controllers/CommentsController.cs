@@ -86,14 +86,10 @@ public class CommentsController(
         if (issue == null)
             return NotFound();
 
-        var check = await checkRepository.GetCheckByIdAsync(issue.CheckId);
-        if (issue.CheckId != check?.Id)
-            return NotFound();
-
         var id = await commentRepository.CreateCommentAsync(issueId, userId, schema.Content, schema.Status);
 
         if (await limitsService.CheckCommentsLimitAsync(userId, User.Subscriptions) && schema.Status == null)
-            await checkService.WriteCommentAsync(check.Id, issueId);
+            await checkService.WriteCommentAsync(report.Id, issueId);
         return Ok(id);
     }
 
