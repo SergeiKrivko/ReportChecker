@@ -1,5 +1,4 @@
 using System.Text;
-using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using ReportChecker.Abstractions;
 using ReportChecker.Models;
@@ -43,8 +42,6 @@ public class LatexFormatProvider(IConfiguration configuration) : IFormatProvider
         var builder = new StringBuilder();
         foreach (var line in text.Split('\n'))
         {
-            builder.Append(line);
-            builder.Append('\n');
             var level = LineLevel(line, out var title);
             if (level <= 3)
             {
@@ -62,6 +59,8 @@ public class LatexFormatProvider(IConfiguration configuration) : IFormatProvider
                     path.Add("");
                 path.Add(title);
             }
+
+            builder.AppendLine(line);
         }
 
         if (builder.Length > 0)
@@ -149,13 +148,35 @@ public class LatexFormatProvider(IConfiguration configuration) : IFormatProvider
             text = await new StreamReader(entryStream).ReadToEndAsync(ct);
         }
 
+        var lst = new List<string>();
+        using (var reader = new StringReader(text))
+        {
+            string? line;
+            while ((line = await reader.ReadLineAsync(ct)) != null)
+            {
+                lst.Add(line);
+            }
+        }
+
         var patchApplied = false;
         var path = new List<string> { fileName?.TrimStart('/') ?? "<root>" };
         var isPatchChapter = chapter == string.Join(ChapterSeparator, path.Where(e => !string.IsNullOrWhiteSpace(e)));
         var lineNumber = 0;
         var builder = new StringBuilder();
-        foreach (var line in text.Split('\n'))
+        foreach (var line in lst)
         {
+            var level = LineLevel(line, out var title);
+            if (level <= 3)
+            {
+                while (level < path.Count)
+                    path.RemoveAt(path.Count - 1);
+                while (level > path.Count)
+                    path.Add("");
+                path.Add(title);
+                isPatchChapter =
+                    chapter == string.Join(ChapterSeparator, path.Where(e => !string.IsNullOrWhiteSpace(e)));
+            }
+
             if (isPatchChapter)
             {
                 lineNumber++;
@@ -179,18 +200,6 @@ public class LatexFormatProvider(IConfiguration configuration) : IFormatProvider
             {
                 builder.AppendLine(line);
             }
-
-            var level = LineLevel(line, out var title);
-            if (level <= 3)
-            {
-                while (level < path.Count)
-                    path.RemoveAt(path.Count - 1);
-                while (level > path.Count)
-                    path.Add("");
-                path.Add(title);
-                isPatchChapter =
-                    chapter == string.Join(ChapterSeparator, path.Where(e => !string.IsNullOrWhiteSpace(e)));
-            }
         }
 
         if (patchApplied)
@@ -198,8 +207,12 @@ public class LatexFormatProvider(IConfiguration configuration) : IFormatProvider
             var stream = new MemoryStream();
             await using (var writer = new StreamWriter(stream))
             {
-                text = builder.ToString();
-                var span = text.EndsWith("\r\n") ? text.AsSpan(0, text.Length - 2) : text.AsSpan(0, text.Length - 1);
+                var newText = builder.ToString();
+                var span = text.EndsWith('\n')
+                    ? newText.AsSpan()
+                    : newText.EndsWith("\r\n")
+                        ? newText.AsSpan(0, newText.Length - 2)
+                        : newText.AsSpan(0, newText.Length - 1);
                 await writer.WriteAsync(span.ToString());
             }
 
