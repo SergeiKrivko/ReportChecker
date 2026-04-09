@@ -61,6 +61,9 @@ schemas:
 
     - name: role
       type: string
+      
+    - name: patch
+      type: PatchRead?
 
   IssueCreate:
     - name: chapter
@@ -168,3 +171,10 @@ schemas:
       
     - name: issue
       type: IssueRead
+      
+  PatchRead:
+    - name: status
+      type: string
+      
+    - name: lines
+      type: PatchLineCreate[]

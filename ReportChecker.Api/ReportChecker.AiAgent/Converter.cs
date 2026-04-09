@@ -43,6 +43,7 @@ internal static class Converter
             Content = comment.Content,
             Role = comment.UserId == Guid.Empty ? "assistant" : "user",
             Status = comment.Status.ToString(),
+            Patch = comment.Patch?.ToAgent(),
         };
     }
 
@@ -69,6 +70,20 @@ internal static class Converter
             Content = line.Content,
             PreviousContent = previousContent,
             Type = type,
+        };
+    }
+
+    public static IAiAgentClient.PatchRead ToAgent(this Patch patch)
+    {
+        return new IAiAgentClient.PatchRead
+        {
+            Lines = patch.Lines.Select(e => new IAiAgentClient.PatchLineCreate
+            {
+                Number = e.Number,
+                Content = e.Content ?? "",
+                Type = e.Type.ToString(),
+            }).ToArray(),
+            Status = patch.Status.ToString()
         };
     }
 }
