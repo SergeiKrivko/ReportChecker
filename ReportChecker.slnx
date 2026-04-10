@@ -4,6 +4,7 @@
     <Project Path="Api/Application/Application.csproj" />
     <Project Path="Api/DataAccess/DataAccess.csproj" />
     <Project Path="Api/Models/Models.csproj" />
+    <File Path="Api/.dockerignore" />
     <File Path="Api/Dockerfile" />
     <Project Path="Api/Abstractions/Abstractions.csproj" />
     <Project Path="Api/Api/Api.csproj" />
@@ -18,5 +19,8 @@
     <Project Path="Api/FormatProviders/FormatProviders.Docx/FormatProviders.Docx.csproj" />
     <Project Path="Api/FormatProviders/FormatProviders.Latex/FormatProviders.Latex.csproj" />
     <Project Path="Api/FormatProviders/FormatProviders.Pdf/FormatProviders.Pdf.csproj" />
+  </Folder>
+  <Folder Name="/Workflows/">
+    <File Path=".github/workflows/main.yml" />
   </Folder>
 </Solution>
