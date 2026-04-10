@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <RootNamespace>Api</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalux.Auth.ApiClient" Version="1.1.1"/>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.5"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.5">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.5"/>
+        <PackageReference Include="Octokit.Webhooks.AspNetCore" Version="3.2.1"/>
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2"/>
+    </ItemGroup>
+    
+    <ItemGroup>
+        <ProjectReference Include="..\FormatProviders\FormatProviders.Docx\FormatProviders.Docx.csproj" />
+        <ProjectReference Include="..\FormatProviders\FormatProviders.Pdf\FormatProviders.Pdf.csproj" />
+        <ProjectReference Include="..\FormatProviders\FormatProviders.Latex\FormatProviders.Latex.csproj" />
+        <ProjectReference Include="..\Abstractions\Abstractions.csproj"/>
+        <ProjectReference Include="..\AiAgent\AiAgent.csproj"/>
+        <ProjectReference Include="..\Application\Application.csproj"/>
+        <ProjectReference Include="..\DataAccess\DataAccess.csproj"/>
+        <ProjectReference Include="..\S3\S3.csproj"/>
+        <ProjectReference Include="..\SourceProviders\FormatProviders.File\FormatProviders.File.csproj" />
+        <ProjectReference Include="..\SourceProviders\FormatProviders.GitHub\FormatProviders.GitHub.csproj" />
+        <ProjectReference Include="..\SourceProviders\FormatProviders.Local\FormatProviders.Local.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="BackgroundServices\"/>
+    </ItemGroup>
+
+</Project>
