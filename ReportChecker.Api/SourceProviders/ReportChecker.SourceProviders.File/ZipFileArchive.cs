@@ -1,5 +1,6 @@
 ﻿using System.IO.Compression;
 using ReportChecker.Abstractions;
+using ReportChecker.Models;
 using ReportChecker.Models.Sources;
 
 namespace ReportChecker.SourceProviders.File;
@@ -12,6 +13,7 @@ public class ZipFileArchive(
     string zipName,
     string? entryFile = null) : IFileArchive
 {
+    public WriteMode WriteMode => WriteMode.Internal;
     public string Name => zipName;
     public string? EntryFilePath => entryFile;
 

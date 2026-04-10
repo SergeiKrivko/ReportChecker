@@ -17,6 +17,8 @@ public class ReportCheckerDbContext : DbContext
 
     public DbSet<FileReportSourceEntity> FileReportSources { get; init; }
     public DbSet<FileCheckSourceEntity> FileCheckSources { get; init; }
+    public DbSet<LocalReportSourceEntity> LocalReportSources { get; init; }
+    public DbSet<LocalCheckSourceEntity> LocalCheckSources { get; init; }
     public DbSet<GitHubReportSourceEntity> GitHubReportSources { get; init; }
     public DbSet<GitHubCheckSourceEntity> GitHubCheckSources { get; init; }
 

@@ -1,11 +1,12 @@
 ﻿using ReportChecker.Abstractions;
 using ReportChecker.Models;
 
-namespace ReportChecker.SourceProviders.File;
+namespace ReportChecker.SourceProviders.Local;
 
-public class SingleFileArchive(Stream stream, string? name) : IFileArchive
+internal class SingleFileArchive(Stream stream, string? name) : IFileArchive
 {
-    public WriteMode WriteMode => WriteMode.Internal;
+    public WriteMode WriteMode => WriteMode.External;
+
     public string? Name => name;
 
     public Task<Stream?> ReadAsync(string n)

@@ -2,6 +2,7 @@
 using System.Text;
 using Octokit;
 using ReportChecker.Abstractions;
+using ReportChecker.Models;
 using ReportChecker.Models.Sources;
 
 namespace ReportChecker.SourceProviders.GitHub;
@@ -9,6 +10,7 @@ namespace ReportChecker.SourceProviders.GitHub;
 public class GitHubArchive(GitHubClient client, long repositoryId, string commitRef, string branch, string? rootName)
     : IFileArchive
 {
+    public WriteMode WriteMode => WriteMode.External;
     public string? Name => rootName;
 
     public string? EntryFilePath => rootName;

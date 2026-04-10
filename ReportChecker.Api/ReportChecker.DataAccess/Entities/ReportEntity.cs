@@ -19,4 +19,5 @@ public class ReportEntity
 
     public virtual GitHubReportSourceEntity? GitHubSource { get; init; }
     public virtual FileReportSourceEntity? FileSource { get; init; }
+    public virtual LocalReportSourceEntity? LocalSource { get; init; }
 }

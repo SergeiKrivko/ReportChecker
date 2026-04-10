@@ -18,6 +18,7 @@ using ReportChecker.Models.Sources;
 using ReportChecker.S3;
 using ReportChecker.SourceProviders.File;
 using ReportChecker.SourceProviders.GitHub;
+using ReportChecker.SourceProviders.Local;
 using IFormatProvider = ReportChecker.Abstractions.IFormatProvider;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -61,6 +62,7 @@ builder.Services.AddScoped<IUserRepository, AvaluxAuthUserRepository>();
 
 builder.Services.AddScoped<ISourceProvider, FileSourceProvider>();
 builder.Services.AddScoped<ISourceProvider, GitHubSourceProvider>();
+builder.Services.AddScoped<ISourceProvider, LocalSourceProvider>();
 builder.Services.AddSingleton<IFormatProvider, LatexFormatProvider>();
 builder.Services.AddSingleton<IFormatProvider, PdfFormatProvider>();
 builder.Services.AddSingleton<IFormatProvider, DocxFormatProvider>();

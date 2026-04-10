@@ -1,13 +1,20 @@
-﻿using ReportChecker.Models.Sources;
+﻿using ReportChecker.Models;
+using ReportChecker.Models.Sources;
 
 namespace ReportChecker.Abstractions;
 
 public interface IFileArchive
 {
+    public WriteMode WriteMode => WriteMode.NotSupported;
+
     public string? Name { get; }
     public string? EntryFilePath => null;
     public Task<Stream?> ReadAsync(string name);
     public Task<Stream?> ReadAsync();
-    public Task<CheckSourceUnion?> WriteAsync(string name, Stream content, CancellationToken ct) => throw new NotSupportedException();
-    public Task<CheckSourceUnion?> WriteAsync(Stream content, CancellationToken ct) => throw new NotSupportedException();
+
+    public Task<CheckSourceUnion?> WriteAsync(string name, Stream content, CancellationToken ct) =>
+        throw new NotSupportedException();
+
+    public Task<CheckSourceUnion?> WriteAsync(Stream content, CancellationToken ct) =>
+        throw new NotSupportedException();
 }

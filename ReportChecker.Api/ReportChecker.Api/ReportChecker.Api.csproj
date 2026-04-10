@@ -29,6 +29,7 @@
       <ProjectReference Include="..\ReportChecker.S3\ReportChecker.S3.csproj" />
       <ProjectReference Include="..\SourceProviders\ReportChecker.SourceProviders.File\ReportChecker.SourceProviders.File.csproj" />
       <ProjectReference Include="..\SourceProviders\ReportChecker.SourceProviders.GitHub\ReportChecker.SourceProviders.GitHub.csproj" />
+      <ProjectReference Include="..\SourceProviders\ReportChecker.SourceProviders.Local\ReportChecker.SourceProviders.Local.csproj" />
     </ItemGroup>
 
     <ItemGroup>
