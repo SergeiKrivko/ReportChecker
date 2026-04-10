@@ -21,9 +21,9 @@
     </ItemGroup>
     
     <ItemGroup>
-        <ProjectReference Include="..\FormatProviders\FormatProviders.Docx\FormatProviders.Docx.csproj" />
-        <ProjectReference Include="..\FormatProviders\FormatProviders.Pdf\FormatProviders.Pdf.csproj" />
-        <ProjectReference Include="..\FormatProviders\FormatProviders.Latex\FormatProviders.Latex.csproj" />
+        <ProjectReference Include="..\FormatProviders\SourceProviders.Docx\SourceProviders.Docx.csproj" />
+        <ProjectReference Include="..\FormatProviders\SourceProviders.Pdf\SourceProviders.Pdf.csproj" />
+        <ProjectReference Include="..\FormatProviders\SourceProviders.Latex\SourceProviders.Latex.csproj" />
         <ProjectReference Include="..\Abstractions\Abstractions.csproj"/>
         <ProjectReference Include="..\AiAgent\AiAgent.csproj"/>
         <ProjectReference Include="..\Application\Application.csproj"/>

@@ -16,9 +16,9 @@
     <Project Path="Api/SourceProviders/FormatProviders.Local/FormatProviders.Local.csproj" />
   </Folder>
   <Folder Name="/Api/SourceProviders/">
-    <Project Path="Api/FormatProviders/FormatProviders.Docx/FormatProviders.Docx.csproj" />
-    <Project Path="Api/FormatProviders/FormatProviders.Latex/FormatProviders.Latex.csproj" />
-    <Project Path="Api/FormatProviders/FormatProviders.Pdf/FormatProviders.Pdf.csproj" />
+    <Project Path="Api/FormatProviders/SourceProviders.Docx/SourceProviders.Docx.csproj" />
+    <Project Path="Api/FormatProviders/SourceProviders.Latex/SourceProviders.Latex.csproj" />
+    <Project Path="Api/FormatProviders/SourceProviders.Pdf/SourceProviders.Pdf.csproj" />
   </Folder>
   <Folder Name="/Workflows/">
     <File Path=".github/workflows/main.yml" />
