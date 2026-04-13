@@ -6,8 +6,8 @@ namespace ReportChecker.SourceProviders.Local;
 
 public class LocalSourceProvider(
     IFileRepository fileRepository,
-    IReportSourceRepository<FileReportSource> reportSourceRepository,
-    ICheckSourceRepository<FileCheckSource> checkSourceRepository) : ISourceProvider
+    IReportSourceRepository<LocalReportSource> reportSourceRepository,
+    ICheckSourceRepository<LocalCheckSource> checkSourceRepository) : ISourceProvider
 {
     public string Key => "Local";
 
@@ -22,15 +22,15 @@ public class LocalSourceProvider(
 
     public async Task<IFileArchive> OpenAsync(ReportSourceUnion reportSource)
     {
-        if (reportSource.File == null)
+        if (reportSource.Local == null)
             throw new Exception("File source not set");
-        var checkSource = await checkSourceRepository.GetByIdAsync(reportSource.File.InitialFileId);
+        var checkSource = await checkSourceRepository.GetByIdAsync(reportSource.Local.InitialFileId);
         if (checkSource == null)
             throw new Exception("Referenced check source not found");
-        return await OpenAsync(reportSource.File, checkSource);
+        return await OpenAsync(reportSource.Local, checkSource);
     }
 
-    private async Task<IFileArchive> OpenAsync(FileReportSource reportSource, CheckSource<FileCheckSource> checkSource)
+    private async Task<IFileArchive> OpenAsync(LocalReportSource reportSource, CheckSource<LocalCheckSource> checkSource)
     {
         var stream = checkSource.Data.FileName == null
             ? await fileRepository.DownloadFileAsync(FileRepositoryBucket.Sources, checkSource.Id)
@@ -54,21 +54,21 @@ public class LocalSourceProvider(
         if (source == null)
             throw new Exception("Referenced check source not found");
 
-        return new SourceSchema(new CheckSourceUnion { File = source.Data, Id = source.Id }, source.Data.FileName);
+        return new SourceSchema(new CheckSourceUnion { Local = source.Data, Id = source.Id }, source.Data.FileName);
     }
 
     public async Task<Guid> SaveAsync(Guid? checkId, CheckSourceUnion source)
     {
-        if (source.File == null)
+        if (source.Local == null)
             throw new Exception("File source not set");
-        return await checkSourceRepository.CreateAsync(checkId, source.File);
+        return await checkSourceRepository.CreateAsync(checkId, source.Local);
     }
 
     public async Task<Guid> SaveAsync(Guid id, Guid? checkId, CheckSourceUnion source)
     {
-        if (source.File == null)
+        if (source.Local == null)
             throw new Exception("File source not set");
-        return await checkSourceRepository.CreateAsync(id, checkId, source.File);
+        return await checkSourceRepository.CreateAsync(id, checkId, source.Local);
     }
 
     public async Task<bool> AttachCheckAsync(Guid id, Guid checkId)
@@ -78,8 +78,8 @@ public class LocalSourceProvider(
 
     public async Task<Guid> SaveAsync(Guid reportId, ReportSourceUnion source)
     {
-        if (source.File == null)
+        if (source.Local == null)
             throw new Exception("File source not set");
-        return await reportSourceRepository.CreateAsync(reportId, source.File);
+        return await reportSourceRepository.CreateAsync(reportId, source.Local);
     }
 }
