@@ -10,15 +10,15 @@
     <Project Path="Api/Api/Api.csproj" />
     <Project Path="Api/S3/S3.csproj" />
   </Folder>
-  <Folder Name="/Api/FormatProviders/">
-    <Project Path="Api/SourceProviders/FormatProviders.File/FormatProviders.File.csproj" />
-    <Project Path="Api/SourceProviders/FormatProviders.GitHub/FormatProviders.GitHub.csproj" />
-    <Project Path="Api/SourceProviders/FormatProviders.Local/FormatProviders.Local.csproj" />
-  </Folder>
   <Folder Name="/Api/SourceProviders/">
-    <Project Path="Api/FormatProviders/SourceProviders.Docx/SourceProviders.Docx.csproj" />
-    <Project Path="Api/FormatProviders/SourceProviders.Latex/SourceProviders.Latex.csproj" />
-    <Project Path="Api/FormatProviders/SourceProviders.Pdf/SourceProviders.Pdf.csproj" />
+    <Project Path="Api/SourceProviders/SourceProviders.File/SourceProviders.File.csproj" />
+    <Project Path="Api/SourceProviders/SourceProviders.GitHub/SourceProviders.GitHub.csproj" />
+    <Project Path="Api/SourceProviders/SourceProviders.Local/SourceProviders.Local.csproj" />
+  </Folder>
+  <Folder Name="/Api/FormatProviders/">
+    <Project Path="Api/FormatProviders/FormatProviders.Docx/FormatProviders.Docx.csproj" />
+    <Project Path="Api/FormatProviders/FormatProviders.Latex/FormatProviders.Latex.csproj" />
+    <Project Path="Api/FormatProviders/FormatProviders.Pdf/FormatProviders.Pdf.csproj" />
   </Folder>
   <Folder Name="/Cli/">
     <Project Path="Cli/Abstractions/Abstractions.csproj" />

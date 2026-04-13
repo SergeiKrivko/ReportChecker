@@ -5,7 +5,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-        <RootNamespace>Api</RootNamespace>
+        <RootNamespace>ReportChecker.Api</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -21,17 +21,17 @@
     </ItemGroup>
     
     <ItemGroup>
-        <ProjectReference Include="..\FormatProviders\SourceProviders.Docx\SourceProviders.Docx.csproj" />
-        <ProjectReference Include="..\FormatProviders\SourceProviders.Pdf\SourceProviders.Pdf.csproj" />
-        <ProjectReference Include="..\FormatProviders\SourceProviders.Latex\SourceProviders.Latex.csproj" />
+        <ProjectReference Include="..\FormatProviders\FormatProviders.Docx\FormatProviders.Docx.csproj" />
+        <ProjectReference Include="..\FormatProviders\FormatProviders.Pdf\FormatProviders.Pdf.csproj" />
+        <ProjectReference Include="..\FormatProviders\FormatProviders.Latex\FormatProviders.Latex.csproj" />
         <ProjectReference Include="..\Abstractions\Abstractions.csproj"/>
         <ProjectReference Include="..\AiAgent\AiAgent.csproj"/>
         <ProjectReference Include="..\Application\Application.csproj"/>
         <ProjectReference Include="..\DataAccess\DataAccess.csproj"/>
         <ProjectReference Include="..\S3\S3.csproj"/>
-        <ProjectReference Include="..\SourceProviders\FormatProviders.File\FormatProviders.File.csproj" />
-        <ProjectReference Include="..\SourceProviders\FormatProviders.GitHub\FormatProviders.GitHub.csproj" />
-        <ProjectReference Include="..\SourceProviders\FormatProviders.Local\FormatProviders.Local.csproj" />
+        <ProjectReference Include="..\SourceProviders\SourceProviders.File\SourceProviders.File.csproj" />
+        <ProjectReference Include="..\SourceProviders\SourceProviders.GitHub\SourceProviders.GitHub.csproj" />
+        <ProjectReference Include="..\SourceProviders\SourceProviders.Local\SourceProviders.Local.csproj" />
     </ItemGroup>
 
     <ItemGroup>
