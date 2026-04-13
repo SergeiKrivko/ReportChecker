@@ -9,7 +9,7 @@ public class LocalSourceProvider(
     IReportSourceRepository<FileReportSource> reportSourceRepository,
     ICheckSourceRepository<FileCheckSource> checkSourceRepository) : ISourceProvider
 {
-    public string Key => "File";
+    public string Key => "Local";
 
     public async Task<IFileArchive> OpenAsync(Guid reportId, Guid checkId)
     {
