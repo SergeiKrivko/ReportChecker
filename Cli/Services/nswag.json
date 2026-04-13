@@ -1,0 +1,22 @@
+﻿{
+  "runtime": "Net80",
+  "defaultVariables": null,
+  "documentGenerator": {
+    "fromDocument": {
+      "url": "http://localhost:5000/swagger/v1/swagger.json",
+      "output": null
+    }
+  },
+  "codeGenerators": {
+    "openApiToCSharpClient": {
+      "namespace": "ReportChecker.Cli.Services",
+      "className": "ApiClient",
+      "output": "ApiClient.cs",
+      "httpClientType": "System.Net.Http.HttpClient",
+      "useBaseUrl": false,
+      "generateClientInterfaces": true,
+      "generateDtoTypes": true,
+      "jsonLibrary": "SystemTextJson"
+    }
+  }
+}
