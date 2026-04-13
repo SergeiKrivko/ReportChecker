@@ -33,15 +33,15 @@ public class CheckService(
         else
             await sourceProvider.SaveAsync(checkId, source);
 
-        RunCheck(report, check);
+        var context = await GetContextAsync(report, check);
+        _RunCheck(context);
         return checkId;
     }
 
-    private async void RunCheck(Report report, Check check)
+    private async void _RunCheck(CheckContext context)
     {
         try
         {
-            var context = await GetContextAsync(report, check);
             var scope = serviceProvider.CreateScope();
             await scope.ServiceProvider.GetRequiredService<ICheckService>().RunCheck(context);
         }
