@@ -2,7 +2,7 @@ name: Build and deploy API
 on:
   push:
     paths:
-      - ReportChecker.Api/**
+      - Api/**
       - .github/workflows/main.yml
 
 env:
