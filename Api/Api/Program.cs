@@ -41,6 +41,8 @@ builder.Services.AddScoped<IReportSourceRepository<FileReportSource>, FileReport
 builder.Services.AddScoped<ICheckSourceRepository<FileCheckSource>, FileCheckSourceRepository>();
 builder.Services.AddScoped<IReportSourceRepository<GitHubReportSource>, GitHubReportSourceRepository>();
 builder.Services.AddScoped<ICheckSourceRepository<GitHubCheckSource>, GitHubCheckSourceRepository>();
+builder.Services.AddScoped<IReportSourceRepository<LocalReportSource>, LocalReportSourceRepository>();
+builder.Services.AddScoped<ICheckSourceRepository<LocalCheckSource>, LocalCheckSourceRepository>();
 builder.Services.AddSingleton<IFileRepository, S3Repository>();
 
 builder.Services.AddScoped<IReportService, ReportService>();
