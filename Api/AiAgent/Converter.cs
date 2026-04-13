@@ -33,16 +33,16 @@ internal static class Converter
             switch (line.Type)
             {
                 case ChapterLineType.Added:
-                    builder.AppendLine($"{line.Number:3D} + {line.Content}");
+                    builder.AppendLine($"{line.Number:D3} + {line.Content}");
                     break;
                 case ChapterLineType.Deleted:
                     builder.AppendLine($"    - {line.Content}");
                     break;
                 case ChapterLineType.Modified:
-                    builder.AppendLine($"{line.Number:3D} * {line.Content}");
+                    builder.AppendLine($"{line.Number:D3} * {line.Content}");
                     break;
                 case ChapterLineType.Unchanged:
-                    builder.AppendLine($"{line.Number:3D}   {line.Content}");
+                    builder.AppendLine($"{line.Number:D3}   {line.Content}");
                     break;
             }
         }
@@ -120,6 +120,6 @@ internal static class Converter
     {
         content = content.Replace("\r\n", "\n").Replace('\r', '\n');
         var lines = content.Split('\n');
-        return string.Join('\n', lines.Select((e, i) => $"{i + 1:3D} {e}"));
+        return string.Join('\n', lines.Select((e, i) => $"{i + 1:D3} {e}"));
     }
 }
