@@ -47,7 +47,6 @@ internal static class Converter
             }
         }
 
-        Console.WriteLine(builder.ToString());
         return builder.ToString();
     }
 
