@@ -35,30 +35,25 @@ public class DifferenceService : IDifferenceService
         };
     }
 
-    private string GetDifference(string oldText, string newText)
+    private List<ChapterLine> GetDifference(string oldText, string newText)
     {
         var diff = _diffBuilder.BuildDiffModel(oldText, newText);
+        List<ChapterLine> lines = [];
+        var index = 0;
 
-        var result = new StringBuilder();
         foreach (var line in diff.Lines)
         {
-            switch (line.Type)
+            if (line.Type != ChangeType.Deleted)
+                index++;
+            lines.Add(new ChapterLine(line.Text, line.Type switch
             {
-                case ChangeType.Inserted:
-                    result.AppendLine($"+ {line.Text}");
-                    break;
-                case ChangeType.Deleted:
-                    result.AppendLine($"- {line.Text}");
-                    break;
-                case ChangeType.Modified:
-                    result.AppendLine($"* {line.Text}");
-                    break;
-                default:
-                    result.AppendLine($"  {line.Text}");
-                    break;
-            }
+                ChangeType.Inserted => ChapterLineType.Added,
+                ChangeType.Deleted => ChapterLineType.Deleted,
+                ChangeType.Modified => ChapterLineType.Modified,
+                _ => ChapterLineType.Unchanged,
+            }, index));
         }
 
-        return result.ToString();
+        return lines;
     }
 }

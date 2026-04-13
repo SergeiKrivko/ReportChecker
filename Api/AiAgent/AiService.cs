@@ -103,7 +103,7 @@ public class AiService(
             var resp = await aiAgentClient.WriteComment(new IAiAgentClient.WriteCommentRequest
             {
                 Issue = issue.ToAgent(),
-                Text = chapter.Content,
+                Text = chapter.Content.AddLineNumbers(),
                 Instructions = instructions,
             });
             var id = await commentRepository.CreateCommentAsync(issue.Id, Guid.Empty, resp?.Comment.Content,

@@ -38,9 +38,10 @@ public class ChapterGroupService(IConfiguration configuration) : IChapterGroupSe
         var length = 0;
         foreach (var chapter in chapters)
         {
-            if (chapter.Difference.Length < MinChapterSize)
+            var currentLength = chapter.Difference.Select(e => e.Content.Length).Sum();
+            if (currentLength < MinChapterSize)
                 continue;
-            if (length + chapter.Difference.Length > MaxRequestSize && lst.Count > 0)
+            if (length + currentLength > MaxRequestSize && lst.Count > 0)
             {
                 yield return lst.ToArray();
                 lst.Clear();
@@ -48,7 +49,7 @@ public class ChapterGroupService(IConfiguration configuration) : IChapterGroupSe
             }
 
             lst.Add(chapter);
-            length += chapter.Difference.Length;
+            length += currentLength;
         }
 
         if (lst.Count > 0)

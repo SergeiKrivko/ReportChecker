@@ -1,4 +1,5 @@
-﻿using ReportChecker.Models;
+﻿using System.Text;
+using ReportChecker.Models;
 
 namespace AiAgent;
 
@@ -19,9 +20,35 @@ internal static class Converter
         return new IAiAgentClient.Chapter
         {
             Name = chapter.Name,
-            Text = chapter.Difference.AddLineNumbers(),
+            Text = chapter.Difference.ToAgent(),
             Issues = issues.Where(e => e.Chapter == chapter.Name).Select(e => e.ToAgent()).ToArray(),
         };
+    }
+
+    private static string ToAgent(this IEnumerable<ChapterLine> lines)
+    {
+        var builder = new StringBuilder();
+        foreach (var line in lines)
+        {
+            switch (line.Type)
+            {
+                case ChapterLineType.Added:
+                    builder.AppendLine($"{line.Number:3D} + {line.Content}");
+                    break;
+                case ChapterLineType.Deleted:
+                    builder.AppendLine($"    - {line.Content}");
+                    break;
+                case ChapterLineType.Modified:
+                    builder.AppendLine($"{line.Number:3D} * {line.Content}");
+                    break;
+                case ChapterLineType.Unchanged:
+                    builder.AppendLine($"{line.Number:3D}   {line.Content}");
+                    break;
+            }
+        }
+
+        Console.WriteLine(builder.ToString());
+        return builder.ToString();
     }
 
     public static IAiAgentClient.IssueRead ToAgent(this Issue issue)
@@ -89,7 +116,7 @@ internal static class Converter
         };
     }
 
-    private static string AddLineNumbers(this string content)
+    public static string AddLineNumbers(this string content)
     {
         content = content.Replace("\r\n", "\n").Replace('\r', '\n');
         var lines = content.Split('\n');
