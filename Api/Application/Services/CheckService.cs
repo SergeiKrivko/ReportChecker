@@ -21,6 +21,11 @@ public class CheckService(
         var report = await reportRepository.GetReportByIdAsync(reportId);
         if (report == null)
             throw new ArgumentException($"Report with id {reportId} does not exist");
+
+        var check = await checkRepository.GetCheckByIdAsync(checkId);
+        if (check == null)
+            throw new Exception("Created check not found");
+
         var sourceProvider = providerService.GetSourceProvider(report.SourceProvider);
 
         if (source.Id.HasValue)
@@ -28,24 +33,17 @@ public class CheckService(
         else
             await sourceProvider.SaveAsync(checkId, source);
 
-        var scope = serviceProvider.CreateScope();
-        scope.ServiceProvider.GetRequiredService<ICheckService>().RunCheck(checkId);
+        RunCheck(report, check);
         return checkId;
     }
 
-    public async void RunCheck(Guid checkId)
+    private async void RunCheck(Report report, Check check)
     {
         try
         {
-            var check = await checkRepository.GetCheckByIdAsync(checkId);
-            if (check == null)
-                throw new ArgumentException($"Check with id {checkId} does not exist");
-            var report = await reportRepository.GetReportByIdAsync(check.ReportId);
-            if (report == null)
-                throw new ArgumentException($"Report with id {check.ReportId} does not exist");
-            var sourceProvider = providerService.GetSourceProvider(report.SourceProvider);
-            var sourceStream = await sourceProvider.OpenAsync(report.Id, check.Id);
-            await RunCheck(report, check, sourceStream);
+            var context = await GetContextAsync(report, check);
+            var scope = serviceProvider.CreateScope();
+            await scope.ServiceProvider.GetRequiredService<ICheckService>().RunCheck(context);
         }
         catch (Exception e)
         {
@@ -53,53 +51,22 @@ public class CheckService(
         }
     }
 
-    public async void RunCheck(Guid checkId, IFileArchive source)
+    public async Task RunCheck(CheckContext context)
     {
-        try
-        {
-            var check = await checkRepository.GetCheckByIdAsync(checkId);
-            if (check == null)
-                throw new ArgumentException($"Check with id {checkId} does not exist");
-            var report = await reportRepository.GetReportByIdAsync(check.ReportId);
-            if (report == null)
-                throw new ArgumentException($"Report with id {check.ReportId} does not exist");
-            await RunCheck(report, check, source);
-        }
-        catch (Exception e)
-        {
-            logger.LogError("Error during check processing: {e}", e);
-        }
-    }
-
-    private async Task RunCheck(Report report, Check check, IFileArchive source)
-    {
-        var sourceProvider = providerService.GetSourceProvider(report.SourceProvider);
-        await checkRepository.SetCheckStatusAsync(check.Id, ProgressStatus.InProgress);
-        await sourceProvider.WriteCheckStatusAsync(report, check, false);
+        var sourceProvider = providerService.GetSourceProvider(context.Report.SourceProvider);
+        await checkRepository.SetCheckStatusAsync(context.Check.Id, ProgressStatus.InProgress);
+        await sourceProvider.WriteCheckStatusAsync(context.Report, context.Check, false);
 
         try
         {
-            var formatProvider = providerService.GetFormatProvider(report.Format);
-            var chapters = await formatProvider.GetChaptersAsync(source);
-            var issues = await issueRepository.GetAllIssuesOfReportAsync(report.Id);
-
-            List<Chapter> previousChapters = [];
-            var previousCheck = await checkRepository.GetPreviousCheckAsync(check);
-            if (previousCheck != null)
-            {
-                var previousSource =
-                    await sourceProvider.OpenAsync(report.Id, previousCheck.Id);
-                previousChapters = (await formatProvider.GetChaptersAsync(previousSource)).ToList();
-            }
-
-            await aiService.FindIssuesAsync(report.Id, check.Id, chapters.ToList(), previousChapters, issues.ToList());
-            await checkRepository.SetCheckStatusAsync(check.Id, ProgressStatus.Completed);
-            await sourceProvider.WriteCheckStatusAsync(report, check, true);
+            await aiService.FindIssuesAsync(context);
+            await checkRepository.SetCheckStatusAsync(context.Check.Id, ProgressStatus.Completed);
+            await sourceProvider.WriteCheckStatusAsync(context.Report, context.Check, true);
         }
         catch (Exception)
         {
-            await checkRepository.SetCheckStatusAsync(check.Id, ProgressStatus.Failed);
-            await sourceProvider.WriteCheckStatusAsync(report, check, true);
+            await checkRepository.SetCheckStatusAsync(context.Check.Id, ProgressStatus.Failed);
+            await sourceProvider.WriteCheckStatusAsync(context.Report, context.Check, true);
             throw;
         }
     }
@@ -114,20 +81,20 @@ public class CheckService(
         if (check == null)
             throw new ArgumentException($"Latest check of report {reportId} not found");
 
-        var sourceProvider = providerService.GetSourceProvider(report.SourceProvider);
-        var sourceStream = await sourceProvider.OpenAsync(report.Id, check.Id);
+        var context = await GetContextAsync(report, check);
+        var issue = await issueRepository.GetIssueByIdAsync(issueId);
+        if (issue == null)
+            throw new ArgumentException($"Issue {issueId} not found");
 
-        var formatProvider = providerService.GetFormatProvider(report.Format);
-        var chapters = await formatProvider.GetChaptersAsync(sourceStream);
-        RunComment(report, issueId, chapters.ToList());
+        RunComment(context, issue);
     }
 
-    private async void RunComment(Report report, Guid issueId, List<Chapter> chapters)
+    private async void RunComment(CheckContext context, Issue issue)
     {
         try
         {
             var service = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<IAiService>();
-            await service.WriteComment(report, issueId, chapters);
+            await service.WriteComment(context, issue);
         }
         catch (Exception e)
         {
@@ -143,5 +110,32 @@ public class CheckService(
         var formatProvider = providerService.GetFormatProvider(report.Format);
         var chapters = await formatProvider.GetChaptersAsync(sourceStream);
         return chapters;
+    }
+
+    private async Task<CheckContext> GetContextAsync(Report report, Check check)
+    {
+        var sourceProvider = providerService.GetSourceProvider(report.SourceProvider);
+        var formatProvider = providerService.GetFormatProvider(report.Format);
+
+        var source = await sourceProvider.OpenAsync(report.Id, check.Id);
+        var chapters = await formatProvider.GetChaptersAsync(source);
+        var issues = await issueRepository.GetAllIssuesOfReportAsync(report.Id);
+
+        List<Chapter> previousChapters = [];
+        var previousCheck = await checkRepository.GetPreviousCheckAsync(check);
+        if (previousCheck != null)
+        {
+            var previousSource = await sourceProvider.OpenAsync(report.Id, previousCheck.Id);
+            previousChapters = (await formatProvider.GetChaptersAsync(previousSource)).ToList();
+        }
+
+        return new CheckContext
+        {
+            Report = report,
+            Check = check,
+            OldChapters = previousChapters,
+            NewChapters = chapters.ToList(),
+            Issues = issues.ToList(),
+        };
     }
 }

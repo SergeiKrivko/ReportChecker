@@ -8,23 +8,20 @@ public class AiService(
     IAiAgentClient aiAgentClient,
     IIssueRepository issueRepository,
     ICommentRepository commentRepository,
-    ICheckRepository checkRepository,
     IInstructionRepository instructionRepository,
+    IPatchRepository patchRepository,
     IInstructionTaskRepository instructionTaskRepository,
     IDifferenceService differenceService,
     IChapterGroupService chapterGroupService,
-    IPatchService patchService,
     ILogger<AiService> logger) : IAiService
 {
-    public async Task FindIssuesAsync(Guid reportId, Guid checkId, ICollection<Chapter> chapters,
-        ICollection<Chapter> existingChapters,
-        ICollection<Issue> existingIssues)
+    public async Task FindIssuesAsync(CheckContext context)
     {
         var changedChapters = differenceService
-            .GetDifference(chapters, existingChapters)
+            .GetDifference(context.NewChapters, context.OldChapters)
             .Where(e => e.NewContent != e.OldContent)
             .ToList();
-        var instructions = (await instructionRepository.GetInstructionsAsync(reportId))
+        var instructions = (await instructionRepository.GetInstructionsAsync(context.Report.Id))
             .Select(e => e.Content)
             .ToArray();
 
@@ -37,7 +34,7 @@ public class AiService(
             var comments = await aiAgentClient.CheckIssues(new IAiAgentClient.IssuesRequest
             {
                 Chapters = chapterGroup
-                    .Select(e => e.ToAgent(existingIssues.Where(x => x.Status == IssueStatus.Open).ToList()))
+                    .Select(e => e.ToAgent(context.Issues.Where(x => x.Status == IssueStatus.Open).ToList()))
                     .ToArray(),
                 Instructions = instructions,
             });
@@ -55,15 +52,15 @@ public class AiService(
 
             var issues = await aiAgentClient.FindIssues(new IAiAgentClient.IssuesRequest
             {
-                Chapters = chapterGroup.Select(e => e.ToAgent(existingIssues)).ToArray(),
+                Chapters = chapterGroup.Select(e => e.ToAgent(context.Issues)).ToArray(),
                 Instructions = instructions,
             });
-            await ProcessIssuesAsync(checkId, issues ?? []);
+            await ProcessIssuesAsync(context.Check.Id, issues ?? [], context.NewChapters);
         }
 
-        foreach (var chapter in existingChapters.Where(e => !chapters.Select(x => x.Name).Contains(e.Name)))
+        foreach (var chapter in context.OldChapters.Where(e => context.NewChapters.All(x => x.Name != e.Name)))
         {
-            foreach (var issue in existingIssues.Where(e => e.Chapter == chapter.Name))
+            foreach (var issue in context.Issues.Where(e => e.Chapter == chapter.Name))
             {
                 await commentRepository.CreateCommentAsync(issue.Id, Guid.Empty, $"Глава '{chapter.Name}' удалена",
                     IssueStatus.Closed);
@@ -71,48 +68,58 @@ public class AiService(
         }
     }
 
-    private async Task ProcessIssuesAsync(Guid checkId, IEnumerable<IAiAgentClient.IssueCreate> issues)
+    private async Task ProcessIssuesAsync(Guid checkId, IEnumerable<IAiAgentClient.IssueCreate> issues,
+        IReadOnlyCollection<Chapter> chapters)
     {
         foreach (var issue in issues)
         {
+            var chapter = chapters.First(e => e.Name == issue.Chapter);
             var issueId =
                 await issueRepository.CreateIssueAsync(checkId, issue.Chapter, issue.Title, issue.Priority);
             if (logger.IsEnabled(LogLevel.Debug))
                 logger.LogDebug("Adding issue '{title}'", issue.Title);
-            await commentRepository.CreateCommentAsync(issueId, Guid.Empty, issue.Comment, IssueStatus.Open);
+            var commentId =
+                await commentRepository.CreateCommentAsync(issueId, Guid.Empty, issue.Comment, IssueStatus.Open);
+            if (issue.Patch != null)
+            {
+                var oldLines = chapter.Content.ToAgentLines();
+                await patchRepository.CreatePatchAsync(commentId, issue.Patch.Select(e => e.ToDomain(oldLines)),
+                    PatchStatus.Completed);
+            }
         }
     }
 
-    public async Task WriteComment(Report report, Guid issueId, List<Chapter> chapters)
+    public async Task WriteComment(CheckContext context, Issue issue)
     {
-        var issue = await issueRepository.GetIssueByIdAsync(issueId);
-        if (issue is null)
-            return;
-
-        var instructions = (await instructionRepository.GetInstructionsAsync(report.Id))
+        var instructions = (await instructionRepository.GetInstructionsAsync(context.Report.Id))
             .Select(e => e.Content)
             .ToArray();
 
         var lastCommentId = issue.Comments.Last().Id;
         try
         {
+            var chapter = context.NewChapters.First(e => e.Name == issue.Chapter);
             await commentRepository.SetProgressStatusAsync(lastCommentId, ProgressStatus.InProgress);
             var resp = await aiAgentClient.WriteComment(new IAiAgentClient.WriteCommentRequest
             {
                 Issue = issue.ToAgent(),
-                Text = chapters.First(e => e.Name == issue.Chapter).Content,
+                Text = chapter.Content,
                 Instructions = instructions,
             });
-            var id = await commentRepository.CreateCommentAsync(issueId, Guid.Empty, resp?.Comment.Content,
+            var id = await commentRepository.CreateCommentAsync(issue.Id, Guid.Empty, resp?.Comment.Content,
                 resp?.Comment.Status is null ? null : Enum.Parse<IssueStatus>(resp.Comment.Status),
                 (resp?.Instruction?.Apply ?? false) || (resp?.Instruction?.Search ?? false)
                     ? ProgressStatus.InProgress
                     : null);
             await commentRepository.SetProgressStatusAsync(lastCommentId, ProgressStatus.Completed);
             if (resp?.Instruction != null)
-                await ProcessInstructionAsync(report.Id, id, issue, resp.Instruction, chapters);
-            if (resp?.Patch ?? false)
-                await patchService.CreatePatchAsync(id, chapters.First(e => e.Name == issue.Chapter));
+                await ProcessInstructionAsync(context, resp.Instruction, id);
+            if (resp?.Patch != null)
+            {
+                var oldLines = chapter.Content.ToAgentLines();
+                await patchRepository.CreatePatchAsync(id, resp.Patch.Select(e => e.ToDomain(oldLines)),
+                    PatchStatus.Completed);
+            }
         }
         catch (Exception)
         {
@@ -121,19 +128,17 @@ public class AiService(
         }
     }
 
-    public async Task ProcessInstructionApplyAsync(Guid taskId, Guid reportId, Guid checkId, List<Chapter> chapters,
-        string instruction)
+    public async Task ProcessInstructionApplyAsync(Guid taskId, CheckContext context, string instruction)
     {
-        var issues = (await issueRepository.GetAllIssuesOfReportAsync(reportId)).ToList();
         await instructionTaskRepository.SetStatusAsync(taskId, ProgressStatus.InProgress);
         try
         {
-            foreach (var chapterGroup in chapterGroupService.GroupChapters(chapters))
+            foreach (var chapterGroup in chapterGroupService.GroupChapters(context.NewChapters))
             {
                 var comments = await aiAgentClient.ApplyInstruction(new IAiAgentClient.InstructionRequest
                 {
                     Instruction = instruction,
-                    Chapters = chapterGroup.Select(c => c.ToAgent(issues)).ToArray()
+                    Chapters = chapterGroup.Select(c => c.ToAgent(context.Issues)).ToArray()
                 });
                 foreach (var comment in comments ?? [])
                 {
@@ -151,21 +156,19 @@ public class AiService(
         }
     }
 
-    public async Task ProcessInstructionSearchAsync(Guid taskId, Guid reportId, Guid checkId, List<Chapter> chapters,
-        string instruction)
+    public async Task ProcessInstructionSearchAsync(Guid taskId, CheckContext context, string instruction)
     {
-        var issues = (await issueRepository.GetAllIssuesOfReportAsync(reportId)).ToList();
         await instructionTaskRepository.SetStatusAsync(taskId, ProgressStatus.InProgress);
         try
         {
-            foreach (var chapterGroup in chapterGroupService.GroupChapters(chapters))
+            foreach (var chapterGroup in chapterGroupService.GroupChapters(context.NewChapters))
             {
                 var newIssues = await aiAgentClient.SearchInstruction(new IAiAgentClient.InstructionRequest
                 {
                     Instruction = instruction,
-                    Chapters = chapterGroup.Select(c => c.ToAgent(issues)).ToArray()
+                    Chapters = chapterGroup.Select(c => c.ToAgent(context.Issues)).ToArray()
                 });
-                await ProcessIssuesAsync(checkId, newIssues ?? []);
+                await ProcessIssuesAsync(context.Check.Id, newIssues ?? [], context.NewChapters);
             }
 
             await instructionTaskRepository.SetStatusAsync(taskId, ProgressStatus.Completed);
@@ -177,34 +180,28 @@ public class AiService(
         }
     }
 
-    private async Task ProcessInstructionAsync(Guid reportId, Guid commentId, Issue issue,
-        IAiAgentClient.InstructionCreate instruction,
-        List<Chapter> chapters)
+    private async Task ProcessInstructionAsync(CheckContext context, IAiAgentClient.InstructionCreate instruction,
+        Guid commentId)
     {
         try
         {
             if (instruction.Save)
             {
-                var check = await checkRepository.GetCheckByIdAsync(issue.CheckId);
-                if (check == null)
-                    throw new Exception("Report not found");
-                await instructionRepository.CreateInstructionAsync(check.ReportId, instruction.InstructionText);
+                await instructionRepository.CreateInstructionAsync(context.Report.Id, instruction.InstructionText);
             }
 
             if (instruction.Apply)
             {
-                var taskId = await instructionTaskRepository.CreateAsync(reportId, instruction.InstructionText,
+                var taskId = await instructionTaskRepository.CreateAsync(context.Report.Id, instruction.InstructionText,
                     InstructionTaskMode.Apply);
-                await ProcessInstructionApplyAsync(taskId, reportId, issue.CheckId, chapters,
-                    instruction.InstructionText);
+                await ProcessInstructionApplyAsync(taskId, context, instruction.InstructionText);
             }
 
             if (instruction.Search)
             {
-                var taskId = await instructionTaskRepository.CreateAsync(reportId, instruction.InstructionText,
+                var taskId = await instructionTaskRepository.CreateAsync(context.Report.Id, instruction.InstructionText,
                     InstructionTaskMode.Search);
-                await ProcessInstructionSearchAsync(taskId, reportId, issue.CheckId, chapters,
-                    instruction.InstructionText);
+                await ProcessInstructionSearchAsync(taskId, context, instruction.InstructionText);
             }
         }
         catch (Exception e)

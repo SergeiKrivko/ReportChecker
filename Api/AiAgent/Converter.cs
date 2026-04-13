@@ -4,22 +4,22 @@ namespace AiAgent;
 
 internal static class Converter
 {
-    public static IAiAgentClient.Chapter ToAgent(this Chapter chapter, ICollection<Issue> issues)
+    public static IAiAgentClient.Chapter ToAgent(this Chapter chapter, IReadOnlyCollection<Issue> issues)
     {
         return new IAiAgentClient.Chapter
         {
             Name = chapter.Name,
-            Text = chapter.Content,
+            Text = chapter.Content.AddLineNumbers(),
             Issues = issues.Where(e => e.Chapter == chapter.Name).Select(e => e.ToAgent()).ToArray(),
         };
     }
 
-    public static IAiAgentClient.Chapter ToAgent(this ChapterDifference chapter, ICollection<Issue> issues)
+    public static IAiAgentClient.Chapter ToAgent(this ChapterDifference chapter, IReadOnlyCollection<Issue> issues)
     {
         return new IAiAgentClient.Chapter
         {
             Name = chapter.Name,
-            Text = chapter.Difference,
+            Text = chapter.Difference.AddLineNumbers(),
             Issues = issues.Where(e => e.Chapter == chapter.Name).Select(e => e.ToAgent()).ToArray(),
         };
     }
@@ -49,18 +49,18 @@ internal static class Converter
         };
     }
 
-    public static IAiAgentClient.PatchLineRead[] ToAgentLines(this string content)
+    public static IAiAgentClient.PatchLine[] ToAgentLines(this string content)
     {
         return content.Split('\n')
-            .Select((e, i) => new IAiAgentClient.PatchLineRead
+            .Select((e, i) => new IAiAgentClient.PatchLine
             {
                 Content = e,
                 Number = i + 1,
             }).ToArray();
     }
 
-    public static PatchLine ToDomain(this IAiAgentClient.PatchLineCreate line,
-        IReadOnlyList<IAiAgentClient.PatchLineRead>? previousLines = null)
+    public static PatchLine ToDomain(this IAiAgentClient.PatchLine line,
+        IReadOnlyList<IAiAgentClient.PatchLine>? previousLines = null)
     {
         var type = Enum.Parse<PatchLineType>(line.Type);
         var previousContent = type == PatchLineType.Add
@@ -79,7 +79,7 @@ internal static class Converter
     {
         return new IAiAgentClient.PatchRead
         {
-            Lines = patch.Lines.Select(e => new IAiAgentClient.PatchLineCreate
+            Lines = patch.Lines.Select(e => new IAiAgentClient.PatchLine
             {
                 Number = e.Number,
                 Content = e.Content ?? "",
@@ -87,5 +87,12 @@ internal static class Converter
             }).ToArray(),
             Status = patch.Status.ToString()
         };
+    }
+
+    private static string AddLineNumbers(this string content)
+    {
+        content = content.Replace("\r\n", "\n").Replace('\r', '\n');
+        var lines = content.Split('\n');
+        return string.Join('\n', lines.Select((e, i) => $"{i + 1:3D} {e}"));
     }
 }

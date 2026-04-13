@@ -32,6 +32,34 @@ public class PatchRepository(ReportCheckerDbContext dbContext) : IPatchRepositor
         return id;
     }
 
+    public async Task<Guid> CreatePatchAsync(Guid commentId, IEnumerable<PatchLine> lines, PatchStatus status,
+        CancellationToken ct = default)
+    {
+        var now = DateTime.UtcNow;
+        var id = Guid.NewGuid();
+        var entity = new PatchEntity
+        {
+            Id = id,
+            CommentId = commentId,
+            Status = status,
+            CreatedAt = now
+        };
+        await dbContext.Patches.AddAsync(entity, ct);
+        await dbContext.AddRangeAsync(lines.Select((e, i) => new PatchLineEntity
+        {
+            Id = Guid.NewGuid(),
+            PatchId = id,
+            Index = i,
+            Number = e.Number,
+            Content = e.Content,
+            PreviousContent = e.PreviousContent,
+            Type = e.Type,
+            CreatedAt = now,
+        }), ct);
+        await dbContext.SaveChangesAsync(ct);
+        return id;
+    }
+
     public async Task<bool> UpdatePatchStatusAsync(Guid patchId, PatchStatus status, CancellationToken ct = default)
     {
         var count = await dbContext.Patches

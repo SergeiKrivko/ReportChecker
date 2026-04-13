@@ -8,7 +8,5 @@ public interface ICheckService
     public Task<Guid> CreateCheckAsync(Guid reportId, Guid userId, CheckSourceUnion source, string? name = null);
     public Task WriteCommentAsync(Guid reportId, Guid issueId);
     public Task<IEnumerable<Chapter>> GetChaptersAsync(Report report, Check check);
-
-    public void RunCheck(Guid checkId, IFileArchive source);
-    public void RunCheck(Guid checkId);
+    public Task RunCheck(CheckContext context);
 }

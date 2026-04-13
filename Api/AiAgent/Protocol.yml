@@ -25,11 +25,6 @@ endpoints:
     input: InstructionRequest
     output: IssueCreate[]
     mode: json
-    
-  Patch:
-    input: PatchRequest
-    output: PatchLineCreate[]
-    mode: json
 
 schemas:
   IssueRead:
@@ -80,6 +75,9 @@ schemas:
     - name: comment
       type: string
       description: Расширенное описание ошибки
+      
+    - name: patch
+      type: PatchLine[]?
 
   CommentCreate:
     - name: issueId
@@ -139,7 +137,7 @@ schemas:
       type: InstructionCreate?
       
     - name: patch
-      type: bool
+      type: PatchLine[]?
   
   InstructionRequest:
     - name: instruction
@@ -148,14 +146,7 @@ schemas:
     - name: chapters
       type: Chapter[]
       
-  PatchLineRead:
-    - name: number
-      type: int
-      
-    - name: content
-      type: string
-      
-  PatchLineCreate:
+  PatchLine:
     - name: number
       type: int
       
@@ -165,16 +156,9 @@ schemas:
     - name: type
       type: string
       
-  PatchRequest:
-    - name: text
-      type: PatchLineRead[]
-      
-    - name: issue
-      type: IssueRead
-      
   PatchRead:
     - name: status
       type: string
       
     - name: lines
-      type: PatchLineCreate[]
+      type: PatchLine[]

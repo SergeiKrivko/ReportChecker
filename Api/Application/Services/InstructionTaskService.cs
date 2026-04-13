@@ -11,6 +11,7 @@ public class InstructionTaskService(
     IServiceProvider serviceProvider,
     IReportRepository reportRepository,
     ICheckRepository checkRepository,
+    IIssueRepository issueRepository,
     IProviderService providerService,
     ILogger<InstructionTaskService> logger) : IInstructionTaskService
 {
@@ -47,12 +48,19 @@ public class InstructionTaskService(
 
         var formatProvider = providerService.GetFormatProvider(report.Format);
         var chapters = await formatProvider.GetChaptersAsync(sourceStream);
+        var issues = await issueRepository.GetAllIssuesOfReportAsync(reportId);
 
-        RunInstructionTask(id, report, check, chapters.ToList(), instruction, mode);
+        RunInstructionTask(id, new CheckContext
+        {
+            Report = report,
+            Check = check,
+            NewChapters = chapters.ToList(),
+            Issues = issues.ToList(),
+        }, instruction, mode);
         return id;
     }
 
-    private async void RunInstructionTask(Guid taskId, Report report, Check check, List<Chapter> chapters, string instruction,
+    private async void RunInstructionTask(Guid taskId, CheckContext context, string instruction,
         InstructionTaskMode mode)
     {
         try
@@ -61,10 +69,10 @@ public class InstructionTaskService(
             switch (mode)
             {
                 case InstructionTaskMode.Apply:
-                    await service.ProcessInstructionApplyAsync(taskId, report.Id, check.Id, chapters, instruction);
+                    await service.ProcessInstructionApplyAsync(taskId, context, instruction);
                     break;
                 case InstructionTaskMode.Search:
-                    await service.ProcessInstructionSearchAsync(taskId, report.Id, check.Id, chapters, instruction);
+                    await service.ProcessInstructionSearchAsync(taskId, context, instruction);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(mode), mode, null);
