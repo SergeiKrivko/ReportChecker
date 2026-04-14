@@ -128,21 +128,21 @@ namespace ReportChecker.Cli.Services
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<UploadFileResponseSchema> FilesPOSTAsync(FileParameter file);
+        System.Threading.Tasks.Task<UploadFileResponseSchema> FilesPOSTAsync(FileBucketDto? bucket, FileParameter file);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<UploadFileResponseSchema> FilesPOSTAsync(FileParameter file, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<UploadFileResponseSchema> FilesPOSTAsync(FileBucketDto? bucket, FileParameter file, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<DownloadUrlResponse> FilesGETAsync(System.Guid? report);
+        System.Threading.Tasks.Task<DownloadUrlResponse> FilesGETAsync(System.Guid? report, FileBucketDto? bucket);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<DownloadUrlResponse> FilesGETAsync(System.Guid? report, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<DownloadUrlResponse> FilesGETAsync(System.Guid? report, FileBucketDto? bucket, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
@@ -1327,15 +1327,15 @@ namespace ReportChecker.Cli.Services
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<UploadFileResponseSchema> FilesPOSTAsync(FileParameter file)
+        public virtual System.Threading.Tasks.Task<UploadFileResponseSchema> FilesPOSTAsync(FileBucketDto? bucket, FileParameter file)
         {
-            return FilesPOSTAsync(file, System.Threading.CancellationToken.None);
+            return FilesPOSTAsync(bucket, file, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<UploadFileResponseSchema> FilesPOSTAsync(FileParameter file, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<UploadFileResponseSchema> FilesPOSTAsync(FileBucketDto? bucket, FileParameter file, System.Threading.CancellationToken cancellationToken)
         {
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -1365,6 +1365,12 @@ namespace ReportChecker.Cli.Services
                 
                     // Operation Path: "api/v1/files"
                     urlBuilder_.Append("api/v1/files");
+                    urlBuilder_.Append('?');
+                    if (bucket != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("bucket")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(bucket, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    urlBuilder_.Length--;
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -1420,15 +1426,15 @@ namespace ReportChecker.Cli.Services
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<DownloadUrlResponse> FilesGETAsync(System.Guid? report)
+        public virtual System.Threading.Tasks.Task<DownloadUrlResponse> FilesGETAsync(System.Guid? report, FileBucketDto? bucket)
         {
-            return FilesGETAsync(report, System.Threading.CancellationToken.None);
+            return FilesGETAsync(report, bucket, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<DownloadUrlResponse> FilesGETAsync(System.Guid? report, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<DownloadUrlResponse> FilesGETAsync(System.Guid? report, FileBucketDto? bucket, System.Threading.CancellationToken cancellationToken)
         {
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -1447,6 +1453,10 @@ namespace ReportChecker.Cli.Services
                     if (report != null)
                     {
                         urlBuilder_.Append(System.Uri.EscapeDataString("report")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(report, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
+                    }
+                    if (bucket != null)
+                    {
+                        urlBuilder_.Append(System.Uri.EscapeDataString("bucket")).Append('=').Append(System.Uri.EscapeDataString(ConvertToString(bucket, System.Globalization.CultureInfo.InvariantCulture))).Append('&');
                     }
                     urlBuilder_.Length--;
 
@@ -3423,6 +3433,18 @@ namespace ReportChecker.Cli.Services
 
         [System.Text.Json.Serialization.JsonPropertyName("url")]
         public string Url { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.3.0.0 (NJsonSchema v11.2.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum FileBucketDto
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Default")]
+        Default = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Local")]
+        Local = 1,
 
     }
 

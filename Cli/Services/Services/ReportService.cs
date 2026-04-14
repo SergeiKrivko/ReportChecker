@@ -29,7 +29,7 @@ public class ReportService(
             .ToAsyncEnumerable()
             .FirstAsync(async (e, _) => await e.TestSourceAsync(path));
         var sourcePack = await provider.PackSourcesAsync(path);
-        var file = await apiClient.FilesPOSTAsync(new FileParameter(sourcePack.Stream, sourcePack.FileName));
+        var file = await apiClient.FilesPOSTAsync(FileBucketDto.Local, new FileParameter(sourcePack.Stream, sourcePack.FileName));
         var reportId = await apiClient.ReportsPOSTAsync(new CreateReportSchema
         {
             Format = provider.Key,

@@ -13,19 +13,37 @@ public class FilesController(
     IFileRepository fileRepository,
     IReportRepository reportRepository,
     ICheckRepository checkRepository,
-    ICheckSourceRepository<FileCheckSource> checkSourceRepository) : ControllerBase
+    ICheckSourceRepository<FileCheckSource> checkSourceRepository,
+    ICheckSourceRepository<LocalCheckSource> localCheckSourceRepository) : ControllerBase
 {
     [HttpPost]
     [Authorize]
     public async Task<ActionResult<UploadFileResponseSchema>> UploadFile(IFormFile file,
         [FromQuery] FileBucketDto bucket = FileBucketDto.Default)
     {
-        var id = await checkSourceRepository.CreateAsync(null, new FileCheckSource
+        Guid id;
+        switch (bucket)
         {
-            FileName = file.FileName,
-            CreatedAt = DateTime.UtcNow,
-            DeletedAt = null,
-        });
+            case FileBucketDto.Default:
+                id = await checkSourceRepository.CreateAsync(null, new FileCheckSource
+                {
+                    FileName = file.FileName,
+                    CreatedAt = DateTime.UtcNow,
+                    DeletedAt = null,
+                });
+                break;
+            case FileBucketDto.Local:
+                id = await localCheckSourceRepository.CreateAsync(null, new LocalCheckSource
+                {
+                    FileName = file.FileName,
+                    CreatedAt = DateTime.UtcNow,
+                    DeletedAt = null,
+                });
+                break;
+            default:
+                return BadRequest("Unknown bucket");
+        }
+
         if (!TryGetS3Buket(bucket, out var s3Bucket))
             return BadRequest("Unknown bucket");
         await fileRepository.UploadFileAsync(s3Bucket, id, file.FileName,
