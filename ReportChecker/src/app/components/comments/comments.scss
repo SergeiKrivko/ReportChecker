@@ -62,11 +62,24 @@
     }
 
     .group {
+      position: relative;
+      width: 100%;
       background-color: var(--tui-background-base);
       opacity: 95;
 
       .input-field {
         flex-grow: 100;
+
+        textarea {
+          padding-right: 4rem;
+        }
+      }
+
+      .button {
+        position: absolute;
+        right: 0.5rem;
+        bottom: 0.5rem;
+        border-radius: 50%;
       }
     }
   }

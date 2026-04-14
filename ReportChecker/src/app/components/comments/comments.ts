@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, input} from '@angular/core';
-import {TuiAvatar, TuiButtonLoading, TuiTooltip} from '@taiga-ui/kit';
-import {TuiButton, TuiGroup, TuiIcon, TuiTextfield} from '@taiga-ui/core';
+import {TuiAvatar, TuiButtonLoading, TuiTextarea} from '@taiga-ui/kit';
+import {TuiButton, TuiIcon, TuiTextfield} from '@taiga-ui/core';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {AsyncPipe} from '@angular/common';
 import {IssueEntity} from '../../entities/issue-entity';
@@ -14,11 +14,8 @@ import {Patch} from '../patch/patch';
   selector: 'app-comments',
   imports: [
     TuiAvatar,
-    TuiGroup,
-    TuiGroup,
     TuiTextfield,
     TuiIcon,
-    TuiTooltip,
     TuiButton,
     ReactiveFormsModule,
     AsyncPipe,
@@ -26,6 +23,7 @@ import {Patch} from '../patch/patch';
     OrderByCreatedAtPipe,
     IsBotPipe,
     Patch,
+    TuiTextarea,
   ],
   templateUrl: './comments.html',
   styleUrl: './comments.scss',
@@ -50,5 +48,14 @@ export class Comments {
       tap(() => this.loading.next(false)),
       tap(() => this.detectorRef.detectChanges()),
     ).subscribe();
+  }
+
+  onKeydown(event: KeyboardEvent): void {
+    // Отправка по Enter (без Shift)
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault(); // предотвращаем перенос строки
+      this.addComment();
+    }
+    // При Shift+Enter - ничего не делаем, строка переносится автоматически
   }
 }
