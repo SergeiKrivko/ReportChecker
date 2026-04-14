@@ -1,0 +1,51 @@
+﻿name: Build and publish CLI
+on:
+  push:
+    paths:
+      - Cli/Cli/Cli.csproj
+      - .github/workflows/cli.yml
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .Net
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0
+
+      - name: Get version from csproj
+        id: get_version
+        run: |
+          VERSION=$(grep -oP '<Version>\K[^<]+' Cli/Cli/Cli.csproj)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Restore .Net packages
+        run: |
+          cd Cli/Cli
+          dotnet restore
+          dotnet tool install --global Avalux.Releases.Tools
+      
+      - name: Build for win-x64
+        run: dotnet publish Cli/Cli --runtime win-x64 -o dist/win-x64
+
+      - name: Upload release for win-x64
+        run: dotnet avalux-releases -d dist/win-x64 -a ReportCheckerCli -v ${{ steps.get_version.outputs.version }} -b main -u https://releases.nachert.art -p win-x64 -t ${{ secrets.RELEASES_API_TOKEN }}
+
+      - name: Build for linux-x64
+        run: dotnet publish Cli/Cli --runtime linux-x64 -o dist/linux-x64
+
+      - name: Upload release for linux-x64
+        run: dotnet avalux-releases -d dist/linux-x64 -a ReportCheckerCli -v ${{ steps.get_version.outputs.version }} -b main -u https://releases.nachert.art -p linux-x64 -t ${{ secrets.RELEASES_API_TOKEN }}
+
+      - name: Build for osx-x64
+        run: dotnet publish Cli/Cli --runtime osx-x64 -o dist/osx-x64
+
+      - name: Upload release for osx-x64
+        run: dotnet avalux-releases -d dist/osx-x64 -a ReportCheckerCli -v ${{ steps.get_version.outputs.version }} -b main -u https://releases.nachert.art -p osx-x64 -t ${{ secrets.RELEASES_API_TOKEN }}
+
