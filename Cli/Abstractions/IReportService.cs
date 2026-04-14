@@ -9,4 +9,5 @@ public interface IReportService
     public Task<Check> GetCheckAsync(Guid reportId);
     public Task<IFormatProvider> GetFormatProviderAsync(string path);
     public Task<IReadOnlyList<Patch>> GetPatchesAsync(Guid reportId);
+    public Task SetPatchStatusAsync(Guid reportId, Guid issueId, Guid commentId, PatchStatus status);
 }

@@ -9,6 +9,7 @@ using ReportChecker.Cli.Services;
 using Spectre.Console;
 using IFormatProvider = ReportChecker.Cli.Abstractions.IFormatProvider;
 using PatchLineType = ReportChecker.Cli.Models.PatchLineType;
+using PatchStatus = ReportChecker.Cli.Models.PatchStatus;
 using ProgressStatus = ReportChecker.Cli.Models.ProgressStatus;
 
 Console.CancelKeyPress += (_, eventArgs) =>
@@ -24,7 +25,7 @@ var services = new ServiceCollection();
 
 var configuration = new ConfigurationBuilder();
 services.AddSingleton<IConfiguration>(configuration.Build());
-services.AddLogging(builder => builder.AddConsole());
+// services.AddLogging(builder => builder.AddConsole());
 
 services.AddServices();
 services.AddSingleton<ISettingsSection>(_ =>
@@ -74,12 +75,13 @@ try
         var updateTime = await formatProvider.GetUpdateTimeAsync(path);
         if (updateTime > latestCheck.CreatedAt)
         {
-            AnsiConsole.MarkupLine($"Обнаружено изменение файлов [yellow]{updateTime:hh:mm:ss}[/]");
+            AnsiConsole.MarkupLine($"Обнаружено изменение файлов [yellow]{updateTime.ToLocalTime():HH:mm:ss}[/]");
             latestCheck = await reportService.GetCheckAsync(report.Id);
             if (latestCheck.Status != ProgressStatus.InProgress)
             {
                 AnsiConsole.MarkupLine("Загрузка новой версии");
                 await reportService.UploadVersionAsync(report.Id, path);
+                latestCheck = await reportService.GetCheckAsync(report.Id);
             }
         }
 
@@ -89,7 +91,17 @@ try
             AnsiConsole.MarkupLine($"Внесение исправлений ([blue]{patches.Count}[/])");
             foreach (var patch in patches)
             {
-                await formatProvider.ApplyPatchAsync(path, patch.Chapter, patch.Lines);
+                try
+                {
+                    await formatProvider.ApplyPatchAsync(path, patch.Chapter, patch.Lines);
+                    await reportService.SetPatchStatusAsync(report.Id, patch.IssueId, patch.CommentId, PatchStatus.Applied);
+                }
+                catch (Exception e)
+                {
+                    await reportService.SetPatchStatusAsync(report.Id, patch.IssueId, patch.CommentId, PatchStatus.Failed);
+                    logger.LogError(e, "Critical error");
+                    AnsiConsole.MarkupLine($"[red]Не удалось внести исправления: {e.Message}[/]");
+                }
                 var added = patch.Lines.Count(e => e.Type != PatchLineType.Delete);
                 var deleted = patch.Lines.Count(e => e.Type != PatchLineType.Add);
                 AnsiConsole.MarkupLine($"Внесено исправление: [bold green]+{added}[/] [bold red]-{deleted}[/]");

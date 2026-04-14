@@ -7,7 +7,7 @@ public static class PatchLineConverter
         return new Models.PatchLine
         {
             Number = dto.Number,
-            Type = dto.Type.ToDomain(),
+            Type = dto.Type?.ToDomain() ?? Models.PatchLineType.Modify,
             Content = dto.Content,
             PreviousContent = dto.PreviousContent,
         };

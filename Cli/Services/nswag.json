@@ -16,7 +16,11 @@
       "useBaseUrl": false,
       "generateClientInterfaces": true,
       "generateDtoTypes": true,
-      "jsonLibrary": "SystemTextJson"
+      "jsonLibrary": "SystemTextJson",
+
+      "generateNullableReferenceTypes": true,
+      "useNativeNullableReferenceTypes": true,
+      "generateOptionalPropertiesAsNullable": true
     }
   }
 }

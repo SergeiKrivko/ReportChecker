@@ -2,14 +2,16 @@
 
 public static class PatchConverter
 {
-    public static Models.Patch ToDomain(this Patch dto, string chapter)
+    public static Models.Patch ToDomain(this Patch dto, Guid issueId, Guid commentId, string chapter)
     {
         return new Models.Patch
         {
             Id = dto.Id,
+            IssueId = issueId,
+            CommentId = commentId,
             Status = dto.Status.ToDomain(),
             Chapter = chapter,
-            Lines = dto.Lines.Select(e => e.ToDomain()).ToList()
+            Lines = dto.Lines?.Select(e => e.ToDomain()).ToList() ?? [],
         };
     }
 

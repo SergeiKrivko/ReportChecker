@@ -93,10 +93,31 @@ public class ReportService(
     {
         var issues = await apiClient.IssuesAllAsync(reportId);
         return issues
-            .SelectMany(e => e.Comments
-                .Where(c => c.Patch?.Status == PatchStatus.Accepted)
-                .Select(c => c.Patch.ToDomain(e.Chapter)))
+            .SelectMany(e => e.Comments?
+                                 .Where(c => c.Patch?.Status == PatchStatus.Accepted)
+                                 .Select(c => c.Patch?.ToDomain(e.Id, c.Id ?? throw new Exception("Null ID"),
+                                     e.Chapter ?? "<root>")) ??
+                             [])
+            .OfType<Models.Patch>()
             .ToList();
+    }
+
+    public async Task SetPatchStatusAsync(Guid reportId, Guid issueId, Guid commentId, Models.PatchStatus status)
+    {
+        await apiClient.PatchAsync(reportId, issueId, commentId, new UpdatePatchSchema
+        {
+            Status = status switch
+            {
+                Models.PatchStatus.Pending => PatchStatus.Pending,
+                Models.PatchStatus.InProgress => PatchStatus.InProgress,
+                Models.PatchStatus.Completed => PatchStatus.Completed,
+                Models.PatchStatus.Failed => PatchStatus.Failed,
+                Models.PatchStatus.Accepted => PatchStatus.Accepted,
+                Models.PatchStatus.Rejected => PatchStatus.Rejected,
+                Models.PatchStatus.Applied => PatchStatus.Applied,
+                _ => throw new ArgumentException("Unknow patch status")
+            }
+        });
     }
 
     private async Task<Guid> GetClientIdAsync()

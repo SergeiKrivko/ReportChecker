@@ -4,6 +4,8 @@
 // </auto-generated>
 //----------------------
 
+#nullable enable
+
 #pragma warning disable 108 // Disable "CS0108 '{derivedDto}.ToJson()' hides inherited member '{dtoBase}.ToJson()'. Use the new keyword if hiding was intended."
 #pragma warning disable 114 // Disable "CS0114 '{derivedDto}.RaisePropertyChanged(String)' hides inherited member 'dtoBase.RaisePropertyChanged(String)'. To make the current member override that implementation, add the override keyword. Otherwise add the new keyword."
 #pragma warning disable 472 // Disable "CS0472 The result of the expression is always 'false' since a value of type 'Int32' is never equal to 'null' of type 'Int32?'
@@ -38,12 +40,12 @@ namespace ReportChecker.Cli.Services
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Guid> ChecksAsync(System.Guid reportId, CreateCheckSchema body);
+        System.Threading.Tasks.Task<System.Guid> ChecksAsync(System.Guid reportId, CreateCheckSchema? body);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Guid> ChecksAsync(System.Guid reportId, CreateCheckSchema body, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<System.Guid> ChecksAsync(System.Guid reportId, CreateCheckSchema? body, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
@@ -74,12 +76,12 @@ namespace ReportChecker.Cli.Services
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Guid> CommentsPOSTAsync(System.Guid reportId, System.Guid issueId, CreateCommentSchema body);
+        System.Threading.Tasks.Task<System.Guid> CommentsPOSTAsync(System.Guid reportId, System.Guid issueId, CreateCommentSchema? body);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Guid> CommentsPOSTAsync(System.Guid reportId, System.Guid issueId, CreateCommentSchema body, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<System.Guid> CommentsPOSTAsync(System.Guid reportId, System.Guid issueId, CreateCommentSchema? body, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
@@ -92,12 +94,12 @@ namespace ReportChecker.Cli.Services
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Guid> CommentsPUTAsync(System.Guid reportId, System.Guid issueId, System.Guid commentId, UpdateCommentSchema body);
+        System.Threading.Tasks.Task<System.Guid> CommentsPUTAsync(System.Guid reportId, System.Guid issueId, System.Guid commentId, UpdateCommentSchema? body);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Guid> CommentsPUTAsync(System.Guid reportId, System.Guid issueId, System.Guid commentId, UpdateCommentSchema body, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<System.Guid> CommentsPUTAsync(System.Guid reportId, System.Guid issueId, System.Guid commentId, UpdateCommentSchema? body, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
@@ -110,21 +112,21 @@ namespace ReportChecker.Cli.Services
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task ReadAsync(System.Guid reportId, System.Guid issueId, MarkReadSchema body);
+        System.Threading.Tasks.Task ReadAsync(System.Guid reportId, System.Guid issueId, MarkReadSchema? body);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task ReadAsync(System.Guid reportId, System.Guid issueId, MarkReadSchema body, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task ReadAsync(System.Guid reportId, System.Guid issueId, MarkReadSchema? body, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task PatchAsync(System.Guid reportId, System.Guid issueId, System.Guid commentId, UpdatePatchSchema body);
+        System.Threading.Tasks.Task PatchAsync(System.Guid reportId, System.Guid issueId, System.Guid commentId, UpdatePatchSchema? body);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task PatchAsync(System.Guid reportId, System.Guid issueId, System.Guid commentId, UpdatePatchSchema body, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task PatchAsync(System.Guid reportId, System.Guid issueId, System.Guid commentId, UpdatePatchSchema? body, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
@@ -164,12 +166,12 @@ namespace ReportChecker.Cli.Services
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<RepositoryFile>> FilesAllAsync(long? repositoryId, string branch);
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<RepositoryFile>> FilesAllAsync(long? repositoryId, string? branch);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<RepositoryFile>> FilesAllAsync(long? repositoryId, string branch, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<RepositoryFile>> FilesAllAsync(long? repositoryId, string? branch, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
@@ -200,21 +202,21 @@ namespace ReportChecker.Cli.Services
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Guid> InstructionsPOSTAsync(System.Guid reportId, string body);
+        System.Threading.Tasks.Task<System.Guid> InstructionsPOSTAsync(System.Guid reportId, string? body);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Guid> InstructionsPOSTAsync(System.Guid reportId, string body, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<System.Guid> InstructionsPOSTAsync(System.Guid reportId, string? body, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task InstructionsPUTAsync(System.Guid reportId, System.Guid instructionId, string body);
+        System.Threading.Tasks.Task InstructionsPUTAsync(System.Guid reportId, System.Guid instructionId, string? body);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task InstructionsPUTAsync(System.Guid reportId, System.Guid instructionId, string body, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task InstructionsPUTAsync(System.Guid reportId, System.Guid instructionId, string? body, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
@@ -236,12 +238,12 @@ namespace ReportChecker.Cli.Services
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Guid> TasksAsync(System.Guid reportId, CreateInstructionTaskSchema body);
+        System.Threading.Tasks.Task<System.Guid> TasksAsync(System.Guid reportId, CreateInstructionTaskSchema? body);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Guid> TasksAsync(System.Guid reportId, CreateInstructionTaskSchema body, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<System.Guid> TasksAsync(System.Guid reportId, CreateInstructionTaskSchema? body, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
@@ -272,12 +274,12 @@ namespace ReportChecker.Cli.Services
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Guid> ReportsPOSTAsync(CreateReportSchema body);
+        System.Threading.Tasks.Task<System.Guid> ReportsPOSTAsync(CreateReportSchema? body);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Guid> ReportsPOSTAsync(CreateReportSchema body, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<System.Guid> ReportsPOSTAsync(CreateReportSchema? body, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
@@ -299,21 +301,21 @@ namespace ReportChecker.Cli.Services
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task ReportsPUTAsync(System.Guid reportId, UpdateReportSchema body);
+        System.Threading.Tasks.Task ReportsPUTAsync(System.Guid reportId, UpdateReportSchema? body);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task ReportsPUTAsync(System.Guid reportId, UpdateReportSchema body, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task ReportsPUTAsync(System.Guid reportId, UpdateReportSchema? body, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<SourceInfo> TestSourceAsync(TestSourceRequestSchema body);
+        System.Threading.Tasks.Task<SourceInfo> TestSourceAsync(TestSourceRequestSchema? body);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<SourceInfo> TestSourceAsync(TestSourceRequestSchema body, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<SourceInfo> TestSourceAsync(TestSourceRequestSchema? body, System.Threading.CancellationToken cancellationToken);
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
@@ -443,7 +445,7 @@ namespace ReportChecker.Cli.Services
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Guid> ChecksAsync(System.Guid reportId, CreateCheckSchema body)
+        public virtual System.Threading.Tasks.Task<System.Guid> ChecksAsync(System.Guid reportId, CreateCheckSchema? body)
         {
             return ChecksAsync(reportId, body, System.Threading.CancellationToken.None);
         }
@@ -451,7 +453,7 @@ namespace ReportChecker.Cli.Services
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Guid> ChecksAsync(System.Guid reportId, CreateCheckSchema body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Guid> ChecksAsync(System.Guid reportId, CreateCheckSchema? body, System.Threading.CancellationToken cancellationToken)
         {
             if (reportId == null)
                 throw new System.ArgumentNullException("reportId");
@@ -784,7 +786,7 @@ namespace ReportChecker.Cli.Services
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Guid> CommentsPOSTAsync(System.Guid reportId, System.Guid issueId, CreateCommentSchema body)
+        public virtual System.Threading.Tasks.Task<System.Guid> CommentsPOSTAsync(System.Guid reportId, System.Guid issueId, CreateCommentSchema? body)
         {
             return CommentsPOSTAsync(reportId, issueId, body, System.Threading.CancellationToken.None);
         }
@@ -792,7 +794,7 @@ namespace ReportChecker.Cli.Services
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Guid> CommentsPOSTAsync(System.Guid reportId, System.Guid issueId, CreateCommentSchema body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Guid> CommentsPOSTAsync(System.Guid reportId, System.Guid issueId, CreateCommentSchema? body, System.Threading.CancellationToken cancellationToken)
         {
             if (reportId == null)
                 throw new System.ArgumentNullException("reportId");
@@ -968,7 +970,7 @@ namespace ReportChecker.Cli.Services
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Guid> CommentsPUTAsync(System.Guid reportId, System.Guid issueId, System.Guid commentId, UpdateCommentSchema body)
+        public virtual System.Threading.Tasks.Task<System.Guid> CommentsPUTAsync(System.Guid reportId, System.Guid issueId, System.Guid commentId, UpdateCommentSchema? body)
         {
             return CommentsPUTAsync(reportId, issueId, commentId, body, System.Threading.CancellationToken.None);
         }
@@ -976,7 +978,7 @@ namespace ReportChecker.Cli.Services
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Guid> CommentsPUTAsync(System.Guid reportId, System.Guid issueId, System.Guid commentId, UpdateCommentSchema body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Guid> CommentsPUTAsync(System.Guid reportId, System.Guid issueId, System.Guid commentId, UpdateCommentSchema? body, System.Threading.CancellationToken cancellationToken)
         {
             if (reportId == null)
                 throw new System.ArgumentNullException("reportId");
@@ -1150,7 +1152,7 @@ namespace ReportChecker.Cli.Services
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task ReadAsync(System.Guid reportId, System.Guid issueId, MarkReadSchema body)
+        public virtual System.Threading.Tasks.Task ReadAsync(System.Guid reportId, System.Guid issueId, MarkReadSchema? body)
         {
             return ReadAsync(reportId, issueId, body, System.Threading.CancellationToken.None);
         }
@@ -1158,7 +1160,7 @@ namespace ReportChecker.Cli.Services
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task ReadAsync(System.Guid reportId, System.Guid issueId, MarkReadSchema body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task ReadAsync(System.Guid reportId, System.Guid issueId, MarkReadSchema? body, System.Threading.CancellationToken cancellationToken)
         {
             if (reportId == null)
                 throw new System.ArgumentNullException("reportId");
@@ -1236,7 +1238,7 @@ namespace ReportChecker.Cli.Services
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task PatchAsync(System.Guid reportId, System.Guid issueId, System.Guid commentId, UpdatePatchSchema body)
+        public virtual System.Threading.Tasks.Task PatchAsync(System.Guid reportId, System.Guid issueId, System.Guid commentId, UpdatePatchSchema? body)
         {
             return PatchAsync(reportId, issueId, commentId, body, System.Threading.CancellationToken.None);
         }
@@ -1244,7 +1246,7 @@ namespace ReportChecker.Cli.Services
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task PatchAsync(System.Guid reportId, System.Guid issueId, System.Guid commentId, UpdatePatchSchema body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task PatchAsync(System.Guid reportId, System.Guid issueId, System.Guid commentId, UpdatePatchSchema? body, System.Threading.CancellationToken cancellationToken)
         {
             if (reportId == null)
                 throw new System.ArgumentNullException("reportId");
@@ -1676,7 +1678,7 @@ namespace ReportChecker.Cli.Services
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<RepositoryFile>> FilesAllAsync(long? repositoryId, string branch)
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<RepositoryFile>> FilesAllAsync(long? repositoryId, string? branch)
         {
             return FilesAllAsync(repositoryId, branch, System.Threading.CancellationToken.None);
         }
@@ -1684,7 +1686,7 @@ namespace ReportChecker.Cli.Services
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<RepositoryFile>> FilesAllAsync(long? repositoryId, string branch, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<RepositoryFile>> FilesAllAsync(long? repositoryId, string? branch, System.Threading.CancellationToken cancellationToken)
         {
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -2007,7 +2009,7 @@ namespace ReportChecker.Cli.Services
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Guid> InstructionsPOSTAsync(System.Guid reportId, string body)
+        public virtual System.Threading.Tasks.Task<System.Guid> InstructionsPOSTAsync(System.Guid reportId, string? body)
         {
             return InstructionsPOSTAsync(reportId, body, System.Threading.CancellationToken.None);
         }
@@ -2015,7 +2017,7 @@ namespace ReportChecker.Cli.Services
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Guid> InstructionsPOSTAsync(System.Guid reportId, string body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Guid> InstructionsPOSTAsync(System.Guid reportId, string? body, System.Threading.CancellationToken cancellationToken)
         {
             if (reportId == null)
                 throw new System.ArgumentNullException("reportId");
@@ -2094,7 +2096,7 @@ namespace ReportChecker.Cli.Services
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task InstructionsPUTAsync(System.Guid reportId, System.Guid instructionId, string body)
+        public virtual System.Threading.Tasks.Task InstructionsPUTAsync(System.Guid reportId, System.Guid instructionId, string? body)
         {
             return InstructionsPUTAsync(reportId, instructionId, body, System.Threading.CancellationToken.None);
         }
@@ -2102,7 +2104,7 @@ namespace ReportChecker.Cli.Services
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task InstructionsPUTAsync(System.Guid reportId, System.Guid instructionId, string body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task InstructionsPUTAsync(System.Guid reportId, System.Guid instructionId, string? body, System.Threading.CancellationToken cancellationToken)
         {
             if (reportId == null)
                 throw new System.ArgumentNullException("reportId");
@@ -2343,7 +2345,7 @@ namespace ReportChecker.Cli.Services
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Guid> TasksAsync(System.Guid reportId, CreateInstructionTaskSchema body)
+        public virtual System.Threading.Tasks.Task<System.Guid> TasksAsync(System.Guid reportId, CreateInstructionTaskSchema? body)
         {
             return TasksAsync(reportId, body, System.Threading.CancellationToken.None);
         }
@@ -2351,7 +2353,7 @@ namespace ReportChecker.Cli.Services
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Guid> TasksAsync(System.Guid reportId, CreateInstructionTaskSchema body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Guid> TasksAsync(System.Guid reportId, CreateInstructionTaskSchema? body, System.Threading.CancellationToken cancellationToken)
         {
             if (reportId == null)
                 throw new System.ArgumentNullException("reportId");
@@ -2678,7 +2680,7 @@ namespace ReportChecker.Cli.Services
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Guid> ReportsPOSTAsync(CreateReportSchema body)
+        public virtual System.Threading.Tasks.Task<System.Guid> ReportsPOSTAsync(CreateReportSchema? body)
         {
             return ReportsPOSTAsync(body, System.Threading.CancellationToken.None);
         }
@@ -2686,7 +2688,7 @@ namespace ReportChecker.Cli.Services
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Guid> ReportsPOSTAsync(CreateReportSchema body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Guid> ReportsPOSTAsync(CreateReportSchema? body, System.Threading.CancellationToken cancellationToken)
         {
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -2918,7 +2920,7 @@ namespace ReportChecker.Cli.Services
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task ReportsPUTAsync(System.Guid reportId, UpdateReportSchema body)
+        public virtual System.Threading.Tasks.Task ReportsPUTAsync(System.Guid reportId, UpdateReportSchema? body)
         {
             return ReportsPUTAsync(reportId, body, System.Threading.CancellationToken.None);
         }
@@ -2926,7 +2928,7 @@ namespace ReportChecker.Cli.Services
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task ReportsPUTAsync(System.Guid reportId, UpdateReportSchema body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task ReportsPUTAsync(System.Guid reportId, UpdateReportSchema? body, System.Threading.CancellationToken cancellationToken)
         {
             if (reportId == null)
                 throw new System.ArgumentNullException("reportId");
@@ -2998,7 +3000,7 @@ namespace ReportChecker.Cli.Services
 
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<SourceInfo> TestSourceAsync(TestSourceRequestSchema body)
+        public virtual System.Threading.Tasks.Task<SourceInfo> TestSourceAsync(TestSourceRequestSchema? body)
         {
             return TestSourceAsync(body, System.Threading.CancellationToken.None);
         }
@@ -3006,7 +3008,7 @@ namespace ReportChecker.Cli.Services
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>OK</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<SourceInfo> TestSourceAsync(TestSourceRequestSchema body, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<SourceInfo> TestSourceAsync(TestSourceRequestSchema? body, System.Threading.CancellationToken cancellationToken)
         {
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -3175,7 +3177,7 @@ namespace ReportChecker.Cli.Services
         {
             if (response == null || response.Content == null)
             {
-                return new ObjectResponseResult<T>(default(T), string.Empty);
+                return new ObjectResponseResult<T>(default(T)!, string.Empty);
             }
 
             if (ReadResponseAsString)
@@ -3184,7 +3186,7 @@ namespace ReportChecker.Cli.Services
                 try
                 {
                     var typedBody = System.Text.Json.JsonSerializer.Deserialize<T>(responseText, JsonSerializerSettings);
-                    return new ObjectResponseResult<T>(typedBody, responseText);
+                    return new ObjectResponseResult<T>(typedBody!, responseText);
                 }
                 catch (System.Text.Json.JsonException exception)
                 {
@@ -3199,7 +3201,7 @@ namespace ReportChecker.Cli.Services
                     using (var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
                     {
                         var typedBody = await System.Text.Json.JsonSerializer.DeserializeAsync<T>(responseStream, JsonSerializerSettings, cancellationToken).ConfigureAwait(false);
-                        return new ObjectResponseResult<T>(typedBody, string.Empty);
+                        return new ObjectResponseResult<T>(typedBody!, string.Empty);
                     }
                 }
                 catch (System.Text.Json.JsonException exception)
@@ -3210,7 +3212,7 @@ namespace ReportChecker.Cli.Services
             }
         }
 
-        private string ConvertToString(object value, System.Globalization.CultureInfo cultureInfo)
+        private string ConvertToString(object? value, System.Globalization.CultureInfo cultureInfo)
         {
             if (value == null)
             {
@@ -3270,13 +3272,13 @@ namespace ReportChecker.Cli.Services
     {
 
         [System.Text.Json.Serialization.JsonPropertyName("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("content")]
-        public string Content { get; set; }
+        public string? Content { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("children")]
-        public System.Collections.Generic.ICollection<Chapter> Children { get; set; }
+        public System.Collections.Generic.ICollection<Chapter>? Children { get; set; } = default!;
 
     }
 
@@ -3286,25 +3288,25 @@ namespace ReportChecker.Cli.Services
 
         [System.Text.Json.Serialization.JsonPropertyName("id")]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public System.Guid Id { get; set; }
+        public System.Guid Id { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("reportId")]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public System.Guid ReportId { get; set; }
+        public System.Guid ReportId { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("userId")]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public System.Guid UserId { get; set; }
+        public System.Guid UserId { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("createdAt")]
-        public System.DateTimeOffset CreatedAt { get; set; }
+        public System.DateTimeOffset? CreatedAt { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("status")]
         [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
-        public ProgressStatus Status { get; set; }
+        public ProgressStatus? Status { get; set; } = default!;
 
     }
 
@@ -3313,16 +3315,16 @@ namespace ReportChecker.Cli.Services
     {
 
         [System.Text.Json.Serialization.JsonPropertyName("id")]
-        public System.Guid? Id { get; set; }
+        public System.Guid? Id { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("gitHub")]
-        public GitHubCheckSource GitHub { get; set; }
+        public GitHubCheckSource? GitHub { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("file")]
-        public FileCheckSource File { get; set; }
+        public FileCheckSource? File { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("local")]
-        public LocalCheckSource Local { get; set; }
+        public LocalCheckSource? Local { get; set; } = default!;
 
     }
 
@@ -3331,39 +3333,39 @@ namespace ReportChecker.Cli.Services
     {
 
         [System.Text.Json.Serialization.JsonPropertyName("id")]
-        public System.Guid Id { get; set; }
+        public System.Guid? Id { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("issueId")]
-        public System.Guid IssueId { get; set; }
+        public System.Guid? IssueId { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("userId")]
-        public System.Guid UserId { get; set; }
+        public System.Guid? UserId { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("content")]
-        public string Content { get; set; }
+        public string? Content { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("status")]
         [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
-        public IssueStatus Status { get; set; }
+        public IssueStatus? Status { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("progressStatus")]
         [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
-        public ProgressStatus? ProgressStatus { get; set; }
+        public ProgressStatus? ProgressStatus { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("isRead")]
-        public bool? IsRead { get; set; }
+        public bool? IsRead { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("patch")]
-        public Patch Patch { get; set; }
+        public Patch? Patch { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("createdAt")]
-        public System.DateTimeOffset CreatedAt { get; set; }
+        public System.DateTimeOffset? CreatedAt { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("modifiedAt")]
-        public System.DateTimeOffset? ModifiedAt { get; set; }
+        public System.DateTimeOffset? ModifiedAt { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("deletedAt")]
-        public System.DateTimeOffset? DeletedAt { get; set; }
+        public System.DateTimeOffset? DeletedAt { get; set; } = default!;
 
     }
 
@@ -3372,10 +3374,10 @@ namespace ReportChecker.Cli.Services
     {
 
         [System.Text.Json.Serialization.JsonPropertyName("source")]
-        public CheckSourceUnion Source { get; set; }
+        public CheckSourceUnion? Source { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; } = default!;
 
     }
 
@@ -3384,11 +3386,11 @@ namespace ReportChecker.Cli.Services
     {
 
         [System.Text.Json.Serialization.JsonPropertyName("content")]
-        public string Content { get; set; }
+        public string? Content { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("status")]
         [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
-        public IssueStatus Status { get; set; }
+        public IssueStatus? Status { get; set; } = default!;
 
     }
 
@@ -3397,14 +3399,14 @@ namespace ReportChecker.Cli.Services
     {
 
         [System.Text.Json.Serialization.JsonPropertyName("instructionId")]
-        public System.Guid? InstructionId { get; set; }
+        public System.Guid? InstructionId { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("instruction")]
-        public string Instruction { get; set; }
+        public string? Instruction { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("mode")]
         [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
-        public InstructionTaskMode Mode { get; set; }
+        public InstructionTaskMode? Mode { get; set; } = default!;
 
     }
 
@@ -3413,13 +3415,13 @@ namespace ReportChecker.Cli.Services
     {
 
         [System.Text.Json.Serialization.JsonPropertyName("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("format")]
-        public string Format { get; set; }
+        public string? Format { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("sourceProvider")]
-        public string SourceProvider { get; set; }
+        public string? SourceProvider { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("source")]
         [System.ComponentModel.DataAnnotations.Required]
@@ -3432,7 +3434,7 @@ namespace ReportChecker.Cli.Services
     {
 
         [System.Text.Json.Serialization.JsonPropertyName("url")]
-        public string Url { get; set; }
+        public string? Url { get; set; } = default!;
 
     }
 
@@ -3453,13 +3455,13 @@ namespace ReportChecker.Cli.Services
     {
 
         [System.Text.Json.Serialization.JsonPropertyName("fileName")]
-        public string FileName { get; set; }
+        public string? FileName { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("createdAt")]
-        public System.DateTimeOffset CreatedAt { get; set; }
+        public System.DateTimeOffset? CreatedAt { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("deletedAt")]
-        public System.DateTimeOffset? DeletedAt { get; set; }
+        public System.DateTimeOffset? DeletedAt { get; set; } = default!;
 
     }
 
@@ -3469,10 +3471,10 @@ namespace ReportChecker.Cli.Services
 
         [System.Text.Json.Serialization.JsonPropertyName("initialFileId")]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public System.Guid InitialFileId { get; set; }
+        public System.Guid InitialFileId { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("entryFilePath")]
-        public string EntryFilePath { get; set; }
+        public string? EntryFilePath { get; set; } = default!;
 
     }
 
@@ -3481,7 +3483,7 @@ namespace ReportChecker.Cli.Services
     {
 
         [System.Text.Json.Serialization.JsonPropertyName("commitHash")]
-        public string CommitHash { get; set; }
+        public string? CommitHash { get; set; } = default!;
 
     }
 
@@ -3490,13 +3492,13 @@ namespace ReportChecker.Cli.Services
     {
 
         [System.Text.Json.Serialization.JsonPropertyName("repositoryId")]
-        public long RepositoryId { get; set; }
+        public long RepositoryId { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("branch")]
-        public string Branch { get; set; }
+        public string? Branch { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("path")]
-        public string Path { get; set; }
+        public string? Path { get; set; } = default!;
 
     }
 
@@ -3505,19 +3507,19 @@ namespace ReportChecker.Cli.Services
     {
 
         [System.Text.Json.Serialization.JsonPropertyName("id")]
-        public System.Guid Id { get; set; }
+        public System.Guid? Id { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("reportId")]
-        public System.Guid ReportId { get; set; }
+        public System.Guid? ReportId { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("content")]
-        public string Content { get; set; }
+        public string? Content { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("createdAt")]
-        public System.DateTimeOffset CreatedAt { get; set; }
+        public System.DateTimeOffset? CreatedAt { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("deletedAt")]
-        public System.DateTimeOffset? DeletedAt { get; set; }
+        public System.DateTimeOffset? DeletedAt { get; set; } = default!;
 
     }
 
@@ -3527,22 +3529,22 @@ namespace ReportChecker.Cli.Services
 
         [System.Text.Json.Serialization.JsonPropertyName("id")]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public System.Guid Id { get; set; }
+        public System.Guid Id { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("reportId")]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public System.Guid ReportId { get; set; }
+        public System.Guid ReportId { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("status")]
         [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
-        public ProgressStatus Status { get; set; }
+        public ProgressStatus? Status { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("mode")]
         [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
-        public InstructionTaskMode Mode { get; set; }
+        public InstructionTaskMode? Mode { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("instruction")]
-        public string Instruction { get; set; }
+        public string? Instruction { get; set; } = default!;
 
     }
 
@@ -3563,10 +3565,10 @@ namespace ReportChecker.Cli.Services
     {
 
         [System.Text.Json.Serialization.JsonPropertyName("current")]
-        public int Current { get; set; }
+        public int Current { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("maximum")]
-        public int Maximum { get; set; }
+        public int Maximum { get; set; } = default!;
 
     }
 
@@ -3576,27 +3578,27 @@ namespace ReportChecker.Cli.Services
 
         [System.Text.Json.Serialization.JsonPropertyName("id")]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public System.Guid Id { get; set; }
+        public System.Guid Id { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("checkId")]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public System.Guid CheckId { get; set; }
+        public System.Guid CheckId { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("title")]
-        public string Title { get; set; }
+        public string? Title { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("status")]
         [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
-        public IssueStatus Status { get; set; }
+        public IssueStatus? Status { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("priority")]
-        public int Priority { get; set; }
+        public int? Priority { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("chapter")]
-        public string Chapter { get; set; }
+        public string? Chapter { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("comments")]
-        public System.Collections.Generic.ICollection<Comment> Comments { get; set; }
+        public System.Collections.Generic.ICollection<Comment>? Comments { get; set; } = default!;
 
     }
 
@@ -3641,13 +3643,13 @@ namespace ReportChecker.Cli.Services
     {
 
         [System.Text.Json.Serialization.JsonPropertyName("fileName")]
-        public string FileName { get; set; }
+        public string? FileName { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("createdAt")]
-        public System.DateTimeOffset CreatedAt { get; set; }
+        public System.DateTimeOffset? CreatedAt { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("deletedAt")]
-        public System.DateTimeOffset? DeletedAt { get; set; }
+        public System.DateTimeOffset? DeletedAt { get; set; } = default!;
 
     }
 
@@ -3657,16 +3659,16 @@ namespace ReportChecker.Cli.Services
 
         [System.Text.Json.Serialization.JsonPropertyName("initialFileId")]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public System.Guid InitialFileId { get; set; }
+        public System.Guid InitialFileId { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("entryFilePath")]
-        public string EntryFilePath { get; set; }
+        public string? EntryFilePath { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("clientId")]
-        public System.Guid ClientId { get; set; }
+        public System.Guid? ClientId { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("clientMachineName")]
-        public string ClientMachineName { get; set; }
+        public string? ClientMachineName { get; set; } = default!;
 
     }
 
@@ -3675,10 +3677,10 @@ namespace ReportChecker.Cli.Services
     {
 
         [System.Text.Json.Serialization.JsonPropertyName("commentIds")]
-        public System.Collections.Generic.ICollection<System.Guid> CommentIds { get; set; }
+        public System.Collections.Generic.ICollection<System.Guid>? CommentIds { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("isRead")]
-        public bool IsRead { get; set; }
+        public bool? IsRead { get; set; } = default!;
 
     }
 
@@ -3688,23 +3690,23 @@ namespace ReportChecker.Cli.Services
 
         [System.Text.Json.Serialization.JsonPropertyName("id")]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public System.Guid Id { get; set; }
+        public System.Guid Id { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("commentId")]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public System.Guid CommentId { get; set; }
+        public System.Guid CommentId { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("status")]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
-        public PatchStatus Status { get; set; }
+        public PatchStatus Status { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("lines")]
-        public System.Collections.Generic.ICollection<PatchLine> Lines { get; set; }
+        public System.Collections.Generic.ICollection<PatchLine>? Lines { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("createdAt")]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public System.DateTimeOffset CreatedAt { get; set; }
+        public System.DateTimeOffset CreatedAt { get; set; } = default!;
 
     }
 
@@ -3713,17 +3715,17 @@ namespace ReportChecker.Cli.Services
     {
 
         [System.Text.Json.Serialization.JsonPropertyName("number")]
-        public int Number { get; set; }
+        public int Number { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("content")]
-        public string Content { get; set; }
+        public string? Content { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("previousContent")]
-        public string PreviousContent { get; set; }
+        public string? PreviousContent { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("type")]
         [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
-        public PatchLineType Type { get; set; }
+        public PatchLineType? Type { get; set; } = default!;
 
     }
 
@@ -3793,26 +3795,26 @@ namespace ReportChecker.Cli.Services
 
         [System.Text.Json.Serialization.JsonPropertyName("id")]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public System.Guid Id { get; set; }
+        public System.Guid Id { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("ownerId")]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public System.Guid OwnerId { get; set; }
+        public System.Guid OwnerId { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("sourceProvider")]
-        public string SourceProvider { get; set; }
+        public string? SourceProvider { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("format")]
-        public string Format { get; set; }
+        public string? Format { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("createdAt")]
-        public System.DateTimeOffset CreatedAt { get; set; }
+        public System.DateTimeOffset? CreatedAt { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("deletedAt")]
-        public System.DateTimeOffset? DeletedAt { get; set; }
+        public System.DateTimeOffset? DeletedAt { get; set; } = default!;
 
     }
 
@@ -3821,13 +3823,13 @@ namespace ReportChecker.Cli.Services
     {
 
         [System.Text.Json.Serialization.JsonPropertyName("gitHub")]
-        public GitHubReportSource GitHub { get; set; }
+        public GitHubReportSource? GitHub { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("file")]
-        public FileReportSource File { get; set; }
+        public FileReportSource? File { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("local")]
-        public LocalReportSource Local { get; set; }
+        public LocalReportSource? Local { get; set; } = default!;
 
     }
 
@@ -3836,10 +3838,10 @@ namespace ReportChecker.Cli.Services
     {
 
         [System.Text.Json.Serialization.JsonPropertyName("id")]
-        public long Id { get; set; }
+        public long Id { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; } = default!;
 
     }
 
@@ -3848,10 +3850,10 @@ namespace ReportChecker.Cli.Services
     {
 
         [System.Text.Json.Serialization.JsonPropertyName("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("path")]
-        public string Path { get; set; }
+        public string? Path { get; set; } = default!;
 
     }
 
@@ -3860,13 +3862,13 @@ namespace ReportChecker.Cli.Services
     {
 
         [System.Text.Json.Serialization.JsonPropertyName("id")]
-        public long Id { get; set; }
+        public long Id { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("url")]
-        public string Url { get; set; }
+        public string? Url { get; set; } = default!;
 
     }
 
@@ -3877,10 +3879,10 @@ namespace ReportChecker.Cli.Services
         [System.Text.Json.Serialization.JsonPropertyName("status")]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
-        public SourceStatus Status { get; set; }
+        public SourceStatus Status { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("format")]
-        public string Format { get; set; }
+        public string? Format { get; set; } = default!;
 
     }
 
@@ -3904,7 +3906,7 @@ namespace ReportChecker.Cli.Services
     {
 
         [System.Text.Json.Serialization.JsonPropertyName("provider")]
-        public string Provider { get; set; }
+        public string? Provider { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("source")]
         [System.ComponentModel.DataAnnotations.Required]
@@ -3917,7 +3919,7 @@ namespace ReportChecker.Cli.Services
     {
 
         [System.Text.Json.Serialization.JsonPropertyName("content")]
-        public string Content { get; set; }
+        public string? Content { get; set; } = default!;
 
     }
 
@@ -3928,7 +3930,7 @@ namespace ReportChecker.Cli.Services
         [System.Text.Json.Serialization.JsonPropertyName("status")]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
-        public PatchStatus Status { get; set; }
+        public PatchStatus Status { get; set; } = default!;
 
     }
 
@@ -3937,7 +3939,7 @@ namespace ReportChecker.Cli.Services
     {
 
         [System.Text.Json.Serialization.JsonPropertyName("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; } = default!;
 
     }
 
@@ -3947,10 +3949,10 @@ namespace ReportChecker.Cli.Services
 
         [System.Text.Json.Serialization.JsonPropertyName("id")]
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public System.Guid Id { get; set; }
+        public System.Guid Id { get; set; } = default!;
 
         [System.Text.Json.Serialization.JsonPropertyName("fileName")]
-        public string FileName { get; set; }
+        public string? FileName { get; set; } = default!;
 
     }
 
@@ -3962,12 +3964,12 @@ namespace ReportChecker.Cli.Services
         {
         }
 
-        public FileParameter(System.IO.Stream data, string fileName)
+        public FileParameter(System.IO.Stream data, string? fileName)
             : this (data, fileName, null)
         {
         }
 
-        public FileParameter(System.IO.Stream data, string fileName, string contentType)
+        public FileParameter(System.IO.Stream data, string? fileName, string? contentType)
         {
             Data = data;
             FileName = fileName;
@@ -3976,9 +3978,9 @@ namespace ReportChecker.Cli.Services
 
         public System.IO.Stream Data { get; private set; }
 
-        public string FileName { get; private set; }
+        public string? FileName { get; private set; }
 
-        public string ContentType { get; private set; }
+        public string? ContentType { get; private set; }
     }
 
 
@@ -3988,11 +3990,11 @@ namespace ReportChecker.Cli.Services
     {
         public int StatusCode { get; private set; }
 
-        public string Response { get; private set; }
+        public string? Response { get; private set; }
 
         public System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> Headers { get; private set; }
 
-        public ApiException(string message, int statusCode, string response, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, System.Exception innerException)
+        public ApiException(string message, int statusCode, string? response, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, System.Exception? innerException)
             : base(message + "\n\nStatus: " + statusCode + "\nResponse: \n" + ((response == null) ? "(null)" : response.Substring(0, response.Length >= 512 ? 512 : response.Length)), innerException)
         {
             StatusCode = statusCode;
@@ -4011,7 +4013,7 @@ namespace ReportChecker.Cli.Services
     {
         public TResult Result { get; private set; }
 
-        public ApiException(string message, int statusCode, string response, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, TResult result, System.Exception innerException)
+        public ApiException(string message, int statusCode, string? response, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IEnumerable<string>> headers, TResult result, System.Exception? innerException)
             : base(message, statusCode, response, headers, innerException)
         {
             Result = result;

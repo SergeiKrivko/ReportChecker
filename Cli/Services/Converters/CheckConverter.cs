@@ -20,7 +20,7 @@ public static class CheckConverter
         {
             Id = dto.Id,
             ReportId = dto.ReportId,
-            Status = dto.Status.ToDomain(),
+            Status = dto.Status?.ToDomain() ?? Models.ProgressStatus.Pending,
             CreatedAt = dto.CreatedAt,
         };
     }
