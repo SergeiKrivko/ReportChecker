@@ -33,8 +33,8 @@ public class LocalSourceProvider(
     private async Task<IFileArchive> OpenAsync(LocalReportSource reportSource, CheckSource<LocalCheckSource> checkSource)
     {
         var stream = checkSource.Data.FileName == null
-            ? await fileRepository.DownloadFileAsync(FileRepositoryBucket.Sources, checkSource.Id)
-            : await fileRepository.DownloadFileAsync(FileRepositoryBucket.Sources, checkSource.Id,
+            ? await fileRepository.DownloadFileAsync(FileRepositoryBucket.LocalSources, checkSource.Id)
+            : await fileRepository.DownloadFileAsync(FileRepositoryBucket.LocalSources, checkSource.Id,
                 checkSource.Data.FileName);
         if (checkSource.Data.FileName?.EndsWith(".zip") ?? false)
         {

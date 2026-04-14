@@ -17,7 +17,8 @@ public class FilesController(
 {
     [HttpPost]
     [Authorize]
-    public async Task<ActionResult<UploadFileResponseSchema>> UploadFile(IFormFile file)
+    public async Task<ActionResult<UploadFileResponseSchema>> UploadFile(IFormFile file,
+        [FromQuery] FileBucketDto bucket = FileBucketDto.Default)
     {
         var id = await checkSourceRepository.CreateAsync(null, new FileCheckSource
         {
@@ -25,7 +26,9 @@ public class FilesController(
             CreatedAt = DateTime.UtcNow,
             DeletedAt = null,
         });
-        await fileRepository.UploadFileAsync(FileRepositoryBucket.Sources, id, file.FileName,
+        if (!TryGetS3Buket(bucket, out var s3Bucket))
+            return BadRequest("Unknown bucket");
+        await fileRepository.UploadFileAsync(s3Bucket, id, file.FileName,
             file.OpenReadStream());
         return Ok(new UploadFileResponseSchema
         {
@@ -36,7 +39,8 @@ public class FilesController(
 
     [HttpGet]
     [Authorize]
-    public async Task<ActionResult<DownloadUrlResponse>> DownloadFile([FromQuery(Name = "report")] Guid reportId)
+    public async Task<ActionResult<DownloadUrlResponse>> DownloadFile([FromQuery(Name = "report")] Guid reportId,
+        [FromQuery] FileBucketDto bucket = FileBucketDto.Default)
     {
         var report = await reportRepository.GetReportByIdAsync(reportId);
         if (User.UserId != report?.OwnerId)
@@ -47,14 +51,32 @@ public class FilesController(
         var source = await checkSourceRepository.GetByCheckIdAsync(check.Id);
         if (source == null)
             return NotFound();
+        if (!TryGetS3Buket(bucket, out var s3Bucket))
+            return BadRequest("Unknown bucket");
         var fileUrl = source.Data.FileName == null
-            ? await fileRepository.GetDownloadUrlAsync(FileRepositoryBucket.Sources, source.Id,
+            ? await fileRepository.GetDownloadUrlAsync(s3Bucket, source.Id,
                 TimeSpan.FromHours(1))
-            : await fileRepository.GetDownloadUrlAsync(FileRepositoryBucket.Sources, source.Id, source.Data.FileName,
+            : await fileRepository.GetDownloadUrlAsync(s3Bucket, source.Id, source.Data.FileName,
                 TimeSpan.FromHours(1));
         return Ok(new DownloadUrlResponse
         {
             Url = fileUrl,
         });
+    }
+
+    private static bool TryGetS3Buket(FileBucketDto dto, out FileRepositoryBucket s3Bucket)
+    {
+        switch (dto)
+        {
+            case FileBucketDto.Default:
+                s3Bucket = FileRepositoryBucket.Sources;
+                return true;
+            case FileBucketDto.Local:
+                s3Bucket = FileRepositoryBucket.LocalSources;
+                return true;
+            default:
+                s3Bucket = FileRepositoryBucket.Sources;
+                return false;
+        }
     }
 }

@@ -17,5 +17,6 @@ public interface IFileRepository
 
 public enum FileRepositoryBucket
 {
-    Sources
+    Sources,
+    LocalSources,
 }

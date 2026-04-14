@@ -1,13 +1,11 @@
 ﻿using System.Runtime.Versioning;
 using Avalux.Auth.UserClient;
-using AvaluxUI.Utils;
-using Microsoft.Extensions.Configuration;
 using ReportChecker.Cli.Abstractions;
 using ReportChecker.Cli.Models;
 
-namespace ReportChecker.Cli.Services;
+namespace ReportChecker.Cli.Services.Services;
 
-internal class AuthService(IAuthClient authClient, ISettingsSection settings, IConfiguration configuration) : IAuthService
+internal class AuthService(IAuthClient authClient) : IAuthService
 {
     private const string CallbackUrl = "http://localhost:14872";
 
@@ -26,7 +24,14 @@ internal class AuthService(IAuthClient authClient, ISettingsSection settings, IC
 
     public async Task<bool> IsAuthenticatedAsync(CancellationToken ct = default)
     {
-        await authClient.RefreshTokenAsync(ct: ct);
+        try
+        {
+            await authClient.RefreshTokenAsync(ct: ct);
+        }
+        catch (Exception)
+        {
+            return false;
+        }
         return authClient.IsAuthenticated;
     }
 
@@ -36,5 +41,22 @@ internal class AuthService(IAuthClient authClient, ISettingsSection settings, IC
     public async Task AuthenticateAsync(AuthProvider provider, CancellationToken ct = default)
     {
         await authClient.AuthorizeInstalledAsync(provider.Key, CallbackUrl, ct);
+    }
+
+    public async Task<User> GetUserAsync(CancellationToken ct = default)
+    {
+        var res = await authClient.GetUserInfoAsync(ct);
+        return new User
+        {
+            Id = res.Id,
+            Accounts = res.Accounts.Select(e => new AccountInfo
+            {
+                Id = e.Id,
+                Login = e.Login,
+                Name = e.Name,
+                Provider = e.Provider,
+                AvatarUrl = e.AvatarUrl,
+            }).ToList(),
+        };
     }
 }

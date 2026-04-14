@@ -26,6 +26,9 @@
     <Project Path="Cli/Models/Models.csproj" />
     <Project Path="Cli/Services/Services.csproj" />
   </Folder>
+  <Folder Name="/Cli/FormatProviders/">
+    <Project Path="Cli/FormatProviders/Cli.FormatProviders.Latex/Cli.FormatProviders.Latex.csproj" />
+  </Folder>
   <Folder Name="/Workflows/">
     <File Path=".github/workflows/main.yml" />
   </Folder>

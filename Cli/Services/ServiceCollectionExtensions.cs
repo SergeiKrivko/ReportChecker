@@ -1,6 +1,8 @@
 ﻿using Avalux.Auth.UserClient;
 using AvaluxUI.Utils;
 using Microsoft.Extensions.DependencyInjection;
+using ReportChecker.Cli.Abstractions;
+using ReportChecker.Cli.Services.Services;
 
 namespace ReportChecker.Cli.Services;
 
@@ -22,7 +24,18 @@ public static class ServiceCollectionExtensions
                     new CredentialsStore(settings));
             });
 
-            services.AddScoped<IAuthClient, AuthClient>();
+            services.AddTransient<ApiHttpMessageHandler>();
+            services.AddHttpClient("ReportCheckerApi")
+                .AddHttpMessageHandler<ApiHttpMessageHandler>()
+                .ConfigureHttpClient(client => { client.BaseAddress = new Uri("https://reportchecker.nachert.art"); });
+            services.AddScoped<IApiClient, ApiClient>(provider =>
+            {
+                var clientFactory = provider.GetRequiredService<IHttpClientFactory>();
+                return new ApiClient(clientFactory.CreateClient("ReportCheckerApi"));
+            });
+
+            services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IReportService, ReportService>();
 
             return services;
         }

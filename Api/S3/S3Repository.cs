@@ -2,20 +2,21 @@
 using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using ReportChecker.Abstractions;
 
 namespace ReportChecker.S3;
 
-public class S3Repository(ILogger<S3Repository> logger) : IFileRepository
+public class S3Repository(ILogger<S3Repository> logger, IConfiguration configuration) : IFileRepository
 {
     private readonly AmazonS3Client _s3Client = new(
-        new BasicAWSCredentials(Environment.GetEnvironmentVariable("S3_ACCESS_KEY"),
-            Environment.GetEnvironmentVariable("S3_SECRET_KEY")),
+        new BasicAWSCredentials(configuration["S3.AccessKey"],
+            configuration["S3.SecretKey"]),
         new AmazonS3Config
         {
-            ServiceURL = Environment.GetEnvironmentVariable("S3_SERVICE_URL"),
-            AuthenticationRegion = Environment.GetEnvironmentVariable("S3_AUTHORIZATION_REGION"),
+            ServiceURL = configuration["S3.ServiceUrl"],
+            AuthenticationRegion = configuration["S3.AuthorizationRegion"],
             ForcePathStyle = true,
             Timeout = TimeSpan.FromSeconds(2),
             RetryMode = RequestRetryMode.Standard,
@@ -24,12 +25,12 @@ public class S3Repository(ILogger<S3Repository> logger) : IFileRepository
         });
 
     private readonly AmazonS3Client _retryS3Client = new(
-        new BasicAWSCredentials(Environment.GetEnvironmentVariable("S3_ACCESS_KEY"),
-            Environment.GetEnvironmentVariable("S3_SECRET_KEY")),
+        new BasicAWSCredentials(configuration["S3.AccessKey"],
+            configuration["S3.SecretKey"]),
         new AmazonS3Config
         {
-            ServiceURL = Environment.GetEnvironmentVariable("S3_SERVICE_URL"),
-            AuthenticationRegion = Environment.GetEnvironmentVariable("S3_AUTHORIZATION_REGION"),
+            ServiceURL = configuration["S3.ServiceUrl"],
+            AuthenticationRegion = configuration["S3.AuthorizationRegion"],
             ForcePathStyle = true,
             Timeout = TimeSpan.FromSeconds(15),
             RetryMode = RequestRetryMode.Standard,
@@ -198,13 +199,15 @@ public class S3Repository(ILogger<S3Repository> logger) : IFileRepository
         return count;
     }
 
-    private static string SourcesBucket { get; } = Environment.GetEnvironmentVariable("S3_SOURCES_BUCKET") ?? "sources";
+    private string SourcesBucket { get; } = configuration["S3.Bucket.Sources"] ?? "sources";
+    private string LocalSourcesBucket { get; } = configuration["S3.Bucket.LocalSources"] ?? "local";
 
-    private static string GetBucket(FileRepositoryBucket bucket)
+    private string GetBucket(FileRepositoryBucket bucket)
     {
         return bucket switch
         {
             FileRepositoryBucket.Sources => SourcesBucket,
+            FileRepositoryBucket.LocalSources => LocalSourcesBucket,
             _ => throw new ArgumentOutOfRangeException(nameof(bucket), bucket, null)
         };
     }
