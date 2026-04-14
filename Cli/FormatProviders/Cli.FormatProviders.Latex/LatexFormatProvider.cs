@@ -24,7 +24,7 @@ public class LatexFormatProvider : IFormatProvider
             foreach (var file in Directory.EnumerateFiles(rootPath, "*.tex", SearchOption.AllDirectories))
             {
                 var entryPath = Path.GetRelativePath(rootPath, file);
-                await zip.CreateEntryFromFileAsync(path, entryPath, CompressionLevel.Optimal);
+                await zip.CreateEntryFromFileAsync(file, entryPath, CompressionLevel.Optimal);
             }
         }
 
@@ -35,9 +35,9 @@ public class LatexFormatProvider : IFormatProvider
 
     public Task<DateTime> GetUpdateTimeAsync(string path)
     {
-        var directoryInfo = new DirectoryInfo(path);
-        var time = directoryInfo.EnumerateFiles("*.tex", SearchOption.AllDirectories)
-            .Select(e => e.LastWriteTimeUtc)
+        path = Path.GetDirectoryName(path) ?? throw new Exception("Wrong path");
+        var time = Directory.EnumerateFiles(path, "*.tex", SearchOption.AllDirectories)
+            .Select(File.GetLastWriteTimeUtc)
             .Max();
         return Task.FromResult(time);
     }

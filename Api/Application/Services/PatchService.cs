@@ -65,6 +65,11 @@ public class PatchService(
 
             var sourceProvider = providerService.GetSourceProvider(report.SourceProvider);
             var source = await sourceProvider.OpenAsync(report.Id, latestCheck.Id);
+            if (source.WriteMode == WriteMode.External)
+                return;
+            if (source.WriteMode == WriteMode.NotSupported)
+                throw new NotSupportedException("This source provider don't support write");
+
             var formatProvider = providerService.GetFormatProvider(report.Format);
             var newSource = await formatProvider.ApplyPatchAsync(source, issue.Chapter, patch.Lines, ct);
 

@@ -29,7 +29,8 @@ public class ReportService(
             .ToAsyncEnumerable()
             .FirstAsync(async (e, _) => await e.TestSourceAsync(path));
         var sourcePack = await provider.PackSourcesAsync(path);
-        var file = await apiClient.FilesPOSTAsync(FileBucketDto.Local, new FileParameter(sourcePack.Stream, sourcePack.FileName));
+        var file = await apiClient.FilesPOSTAsync(FileBucketDto.Local,
+            new FileParameter(sourcePack.Stream, sourcePack.FileName));
         var reportId = await apiClient.ReportsPOSTAsync(new CreateReportSchema
         {
             Format = provider.Key,
@@ -54,6 +55,48 @@ public class ReportService(
             Id = reportId,
             Name = Path.GetFileName(path),
         };
+    }
+
+    public async Task UploadVersionAsync(Guid reportId, string path)
+    {
+        path = Path.GetFullPath(path);
+        var provider = await formatProviders
+            .ToAsyncEnumerable()
+            .FirstAsync(async (e, _) => await e.TestSourceAsync(path));
+        var sourcePack = await provider.PackSourcesAsync(path);
+        var file = await apiClient.FilesPOSTAsync(FileBucketDto.Local,
+            new FileParameter(sourcePack.Stream, sourcePack.FileName));
+        await apiClient.ChecksAsync(reportId, new CreateCheckSchema
+        {
+            Name = $"Version {DateTime.Now:yyyy-MM-dd HH:mm:ss}",
+            Source = new CheckSourceUnion
+            {
+                Id = file.Id,
+            }
+        });
+    }
+
+    public async Task<Models.Check> GetCheckAsync(Guid reportId)
+    {
+        var check = await apiClient.LatestAsync(reportId);
+        return check.ToDomain();
+    }
+
+    public async Task<IFormatProvider> GetFormatProviderAsync(string path)
+    {
+        return await formatProviders
+            .ToAsyncEnumerable()
+            .FirstAsync(async (e, _) => await e.TestSourceAsync(path));
+    }
+
+    public async Task<IReadOnlyList<Models.Patch>> GetPatchesAsync(Guid reportId)
+    {
+        var issues = await apiClient.IssuesAllAsync(reportId);
+        return issues
+            .SelectMany(e => e.Comments
+                .Where(c => c.Patch?.Status == PatchStatus.Accepted)
+                .Select(c => c.Patch.ToDomain(e.Chapter)))
+            .ToList();
     }
 
     private async Task<Guid> GetClientIdAsync()

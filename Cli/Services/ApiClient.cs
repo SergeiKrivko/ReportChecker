@@ -3348,7 +3348,7 @@ namespace ReportChecker.Cli.Services
 
         [System.Text.Json.Serialization.JsonPropertyName("progressStatus")]
         [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
-        public ProgressStatus ProgressStatus { get; set; }
+        public ProgressStatus? ProgressStatus { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("isRead")]
         public bool? IsRead { get; set; }
