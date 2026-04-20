@@ -30,6 +30,7 @@
     <Project Path="Cli/FormatProviders/Cli.FormatProviders.Latex/Cli.FormatProviders.Latex.csproj" />
   </Folder>
   <Folder Name="/Workflows/">
+    <File Path=".github/workflows/cli.yml" />
     <File Path=".github/workflows/main.yml" />
   </Folder>
 </Solution>

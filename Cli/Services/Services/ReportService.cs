@@ -1,4 +1,5 @@
-﻿using AvaluxUI.Utils;
+﻿using System.Net;
+using AvaluxUI.Utils;
 using ReportChecker.Cli.Abstractions;
 using ReportChecker.Cli.Services.Converters;
 using IFormatProvider = ReportChecker.Cli.Abstractions.IFormatProvider;
@@ -13,16 +14,24 @@ public class ReportService(
     private const string SettingsReportsKey = "reports";
     private const string SettingsClientIdKey = "clientId";
 
-    public async Task<Models.Report> UploadAsync(string path)
+    public async Task<Models.Report> UploadAsync(string path, bool force)
     {
         path = Path.GetFullPath(path);
         var reports = await globalSettings.Get<ReportRecord[]>(SettingsReportsKey, []);
         var clientId = await GetClientIdAsync();
         var existing = reports.FirstOrDefault(e => e.Path == path);
-        if (existing != null)
+        if (existing != null && !force)
         {
-            var report = await apiClient.ReportsGETAsync(existing.ReportId);
-            return report.ToDomain();
+            try
+            {
+                var report = await apiClient.ReportsGETAsync(existing.ReportId);
+                return report.ToDomain();
+            }
+            catch (ApiException e)
+            {
+                if (e.StatusCode != 404)
+                   throw;
+            }
         }
 
         var provider = await formatProviders

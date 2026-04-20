@@ -59,4 +59,9 @@ internal class AuthService(IAuthClient authClient) : IAuthService
             }).ToList(),
         };
     }
+
+    public async Task LogOutAsync(CancellationToken ct = default)
+    {
+        await authClient.RevokeTokenAsync(ct);
+    }
 }

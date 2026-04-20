@@ -19,7 +19,7 @@ public class LatexFormatProvider : IFormatProvider
     {
         var memoryStream = new MemoryStream();
         var rootPath =
-            Path.GetFullPath(Path.GetDirectoryName(path) ?? throw new InvalidOperationException("Invalid path"));
+            Path.GetFullPath(Path.GetDirectoryName(path) ?? ".");
         using (var zip = await ZipArchive.CreateAsync(memoryStream, ZipArchiveMode.Create, true, Encoding.UTF8))
         {
             foreach (var file in Directory.EnumerateFiles(rootPath, "*.tex", SearchOption.AllDirectories))
@@ -36,7 +36,7 @@ public class LatexFormatProvider : IFormatProvider
 
     public Task<DateTime> GetUpdateTimeAsync(string path)
     {
-        path = Path.GetDirectoryName(path) ?? throw new Exception("Wrong path");
+        path = Path.GetDirectoryName(path) ?? ".";
         var time = Directory.EnumerateFiles(path, "*.tex", SearchOption.AllDirectories)
             .Select(File.GetLastWriteTimeUtc)
             .Max();
@@ -87,7 +87,7 @@ public class LatexFormatProvider : IFormatProvider
         CancellationToken ct = default)
     {
         var fileName = Path.GetFileName(filePath);
-        var directoryName = Path.GetDirectoryName(filePath);
+        var directoryName = Path.GetDirectoryName(filePath) ?? ".";
         lines = lines.ToList();
         var text = await File.ReadAllTextAsync(filePath, ct);
 

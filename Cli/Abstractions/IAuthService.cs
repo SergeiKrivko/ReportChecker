@@ -14,4 +14,5 @@ public interface IAuthService
     public Task AuthenticateAsync(AuthProvider provider, CancellationToken ct = default);
 
     public Task<User> GetUserAsync(CancellationToken ct = default);
+    public Task LogOutAsync(CancellationToken ct = default);
 }

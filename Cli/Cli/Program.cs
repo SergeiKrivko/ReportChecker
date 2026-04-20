@@ -1,8 +1,10 @@
 ﻿using AvaluxUI.Utils;
 using Cli.FormatProviders.Latex;
+using CommandLine;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using ReportChecker.Cli;
 using ReportChecker.Cli.Abstractions;
 using ReportChecker.Cli.Models;
 using ReportChecker.Cli.Services;
@@ -17,9 +19,6 @@ Console.CancelKeyPress += (_, eventArgs) =>
     eventArgs.Cancel = true;
     Environment.Exit(0);
 };
-
-if (!OperatingSystem.IsWindows() && !OperatingSystem.IsMacOS() && !OperatingSystem.IsLinux())
-    throw new NotSupportedException("Unsupported OS.");
 
 var services = new ServiceCollection();
 
@@ -38,9 +37,17 @@ var serviceProvider = services.BuildServiceProvider();
 var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
 try
 {
+    if (!OperatingSystem.IsWindows() && !OperatingSystem.IsMacOS() && !OperatingSystem.IsLinux())
+        throw new NotSupportedException("Unsupported OS.");
+
+    var argsParser = new Parser();
+    var arguments = argsParser.ParseArguments<Arguments>(args).Value;
+
     var scope = serviceProvider.CreateScope();
 
     var authService = scope.ServiceProvider.GetRequiredService<IAuthService>();
+    if (await authService.IsAuthenticatedAsync() && arguments.LogOut)
+        await authService.LogOutAsync();
     if (!await authService.IsAuthenticatedAsync())
     {
         var authProvider = AnsiConsole.Prompt(new SelectionPrompt<AuthProvider>()
@@ -52,7 +59,9 @@ try
     var user = await authService.GetUserAsync();
     AnsiConsole.MarkupLine($"Здравствуйте, [bold green]{user.Accounts.First().Name}[/]!");
 
-    var path = args[0];
+    var path = arguments.Path;
+    if (path == null)
+        return 0;
 
     if (!Path.Exists(path))
     {
@@ -60,7 +69,7 @@ try
     }
 
     var reportService = scope.ServiceProvider.GetRequiredService<IReportService>();
-    var report = await reportService.UploadAsync(path);
+    var report = await reportService.UploadAsync(path, force: arguments.NewReport);
 
     AnsiConsole.MarkupLine($"Ваш отчет загружен в ReportChecker: " +
                            $"[blue]https://report-checker.vercel.app/reports/{report.Id}[/]");
@@ -94,14 +103,17 @@ try
                 try
                 {
                     await formatProvider.ApplyPatchAsync(path, patch.Chapter, patch.Lines);
-                    await reportService.SetPatchStatusAsync(report.Id, patch.IssueId, patch.CommentId, PatchStatus.Applied);
+                    await reportService.SetPatchStatusAsync(report.Id, patch.IssueId, patch.CommentId,
+                        PatchStatus.Applied);
                 }
                 catch (Exception e)
                 {
-                    await reportService.SetPatchStatusAsync(report.Id, patch.IssueId, patch.CommentId, PatchStatus.Failed);
+                    await reportService.SetPatchStatusAsync(report.Id, patch.IssueId, patch.CommentId,
+                        PatchStatus.Failed);
                     logger.LogError(e, "Critical error");
                     AnsiConsole.MarkupLine($"[red]Не удалось внести исправления: {e.Message}[/]");
                 }
+
                 var added = patch.Lines.Count(e => e.Type != PatchLineType.Delete);
                 var deleted = patch.Lines.Count(e => e.Type != PatchLineType.Add);
                 AnsiConsole.MarkupLine($"Внесено исправление: [bold green]+{added}[/] [bold red]-{deleted}[/]");
