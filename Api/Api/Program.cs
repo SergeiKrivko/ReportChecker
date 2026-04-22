@@ -37,6 +37,8 @@ builder.Services.AddScoped<IInstructionRepository, InstructionRepository>();
 builder.Services.AddScoped<IInstructionTaskRepository, InstructionTaskRepository>();
 builder.Services.AddScoped<ICommentReadRepository, CommentReadRepository>();
 builder.Services.AddScoped<IPatchRepository, PatchRepository>();
+builder.Services.AddScoped<ILlmModelRepository, LlmModelRepository>();
+builder.Services.AddScoped<ILlmUsageRepository, LlmUsageRepository>();
 builder.Services.AddScoped<IReportSourceRepository<FileReportSource>, FileReportSourceRepository>();
 builder.Services.AddScoped<ICheckSourceRepository<FileCheckSource>, FileCheckSourceRepository>();
 builder.Services.AddScoped<IReportSourceRepository<GitHubReportSource>, GitHubReportSourceRepository>();
@@ -47,7 +49,7 @@ builder.Services.AddSingleton<IFileRepository, S3Repository>();
 
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<ICheckService, CheckService>();
-builder.Services.AddScoped<IAiAgentClient, AiAgent.AiAgent>();
+builder.Services.AddScoped<IAiAgentFactory, AiAgentFactory>();
 builder.Services.AddScoped<IAiService, AiService>();
 builder.Services.AddScoped<IPatchService, PatchService>();
 builder.Services.AddScoped<IProviderService, ProviderService>();

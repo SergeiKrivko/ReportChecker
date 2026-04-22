@@ -5,7 +5,7 @@ import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {FileEntity} from '../../entities/file-entity';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {first, NEVER, switchMap, tap, timer} from 'rxjs';
-import {ApiClient} from '../../services/api-client';
+import {ApiClient, FileBucketDto} from '../../services/api-client';
 import {TuiButton} from '@taiga-ui/core';
 
 @Component({
@@ -48,7 +48,7 @@ export class FileSpVersion implements OnInit {
       switchMap(report => {
         if (!report)
           return NEVER;
-        return this.apiClient.filesGET(report.id);
+        return this.apiClient.filesGET(report.id, FileBucketDto.Default);
       }),
       tap(resp => {
         if (resp?.url)

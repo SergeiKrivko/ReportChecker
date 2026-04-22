@@ -6,6 +6,7 @@ public class ReportEntity
 {
     public required Guid ReportId { get; init; }
     public required Guid OwnerId { get; init; }
+    public Guid? LlmModelId { get; init; }
     [MaxLength(100)] public string? Name { get; init; }
     [MaxLength(20)] public required string SourceProvider { get; init; }
     [MaxLength(20)] public required string Format { get; init; }
@@ -16,6 +17,8 @@ public class ReportEntity
     public virtual ICollection<CheckEntity> Checks { get; init; } = [];
     public virtual ICollection<InstructionEntity> Instructions { get; init; } = [];
     public virtual ICollection<InstructionTaskEntity> InstructionTasks { get; init; } = [];
+    public virtual LlmModelEntity? LlmModel { get; init; }
+    public virtual ICollection<LlmUsageEntity> Usages { get; init; } = [];
 
     public virtual GitHubReportSourceEntity? GitHubSource { get; init; }
     public virtual FileReportSourceEntity? FileSource { get; init; }

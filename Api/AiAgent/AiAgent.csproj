@@ -12,8 +12,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Avalux.OpenAi.Client" Version="1.0.1"/>
-        <PackageReference Include="Avalux.OpenAi.Client.Tools" Version="1.1.7"/>
+        <PackageReference Include="Avalux.OpenAi.Client" Version="2.0.1" />
+        <PackageReference Include="Avalux.OpenAi.Client.Tools" Version="2.0.1">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
         <PackageReference Include="DiffPlex" Version="1.9.0" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.5" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.5" />
@@ -21,7 +24,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Abstractions\Abstractions.csproj" />
-      <ProjectReference Include="..\ReportChecker.Models\ReportChecker.Models.csproj" />
+      <ProjectReference Include="..\Models\Models.csproj" />
     </ItemGroup>
 
 </Project>

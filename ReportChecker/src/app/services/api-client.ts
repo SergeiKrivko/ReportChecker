@@ -719,11 +719,16 @@ export class ApiClient extends ApiClientBase {
     }
 
     /**
+     * @param bucket (optional)
      * @param file (optional)
      * @return OK
      */
-    filesPOST(file: FileParameter | undefined): Observable<UploadFileResponseSchema> {
-        let url_ = this.baseUrl + "/api/v1/files";
+    filesPOST(bucket: FileBucketDto | undefined, file: FileParameter | undefined): Observable<UploadFileResponseSchema> {
+        let url_ = this.baseUrl + "/api/v1/files?";
+        if (bucket === null)
+            throw new Error("The parameter 'bucket' cannot be null.");
+        else if (bucket !== undefined)
+            url_ += "bucket=" + encodeURIComponent("" + bucket) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         const content_ = new FormData();
@@ -781,14 +786,19 @@ export class ApiClient extends ApiClientBase {
 
     /**
      * @param report (optional)
+     * @param bucket (optional)
      * @return OK
      */
-    filesGET(report: string | undefined): Observable<DownloadUrlResponse> {
+    filesGET(report: string | undefined, bucket: FileBucketDto | undefined): Observable<DownloadUrlResponse> {
         let url_ = this.baseUrl + "/api/v1/files?";
         if (report === null)
             throw new Error("The parameter 'report' cannot be null.");
         else if (report !== undefined)
             url_ += "report=" + encodeURIComponent("" + report) + "&";
+        if (bucket === null)
+            throw new Error("The parameter 'bucket' cannot be null.");
+        else if (bucket !== undefined)
+            url_ += "bucket=" + encodeURIComponent("" + bucket) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
@@ -1632,6 +1642,233 @@ export class ApiClient extends ApiClientBase {
     /**
      * @return OK
      */
+    modelsAll(): Observable<LlmModel[]> {
+        let url_ = this.baseUrl + "/api/v1/models";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("get", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.processModelsAll(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processModelsAll(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<LlmModel[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<LlmModel[]>;
+        }));
+    }
+
+    protected processModelsAll(response: HttpResponseBase): Observable<LlmModel[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(LlmModel.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional)
+     * @return OK
+     */
+    modelsPOST(body: CreateLlmModelSchema | undefined): Observable<string> {
+        let url_ = this.baseUrl + "/api/v1/models";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("post", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.processModelsPOST(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processModelsPOST(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<string>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<string>;
+        }));
+    }
+
+    protected processModelsPOST(response: HttpResponseBase): Observable<string> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    modelsGET(modelId: string): Observable<LlmModel> {
+        let url_ = this.baseUrl + "/api/v1/models/{modelId}";
+        if (modelId === undefined || modelId === null)
+            throw new Error("The parameter 'modelId' must be defined.");
+        url_ = url_.replace("{modelId}", encodeURIComponent("" + modelId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("get", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.processModelsGET(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processModelsGET(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<LlmModel>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<LlmModel>;
+        }));
+    }
+
+    protected processModelsGET(response: HttpResponseBase): Observable<LlmModel> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = LlmModel.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    modelsDELETE(modelId: string): Observable<void> {
+        let url_ = this.baseUrl + "/api/v1/models/{modelId}";
+        if (modelId === undefined || modelId === null)
+            throw new Error("The parameter 'modelId' must be defined.");
+        url_ = url_.replace("{modelId}", encodeURIComponent("" + modelId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("delete", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.processModelsDELETE(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processModelsDELETE(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<void>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<void>;
+        }));
+    }
+
+    protected processModelsDELETE(response: HttpResponseBase): Observable<void> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return _observableOf(null as any);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
     reportsAll(): Observable<Report[]> {
         let url_ = this.baseUrl + "/api/v1/reports";
         url_ = url_.replace(/[?&]$/, "");
@@ -2137,6 +2374,7 @@ export class CheckSourceUnion implements ICheckSourceUnion {
     id?: string | undefined;
     gitHub?: GitHubCheckSource;
     file?: FileCheckSource;
+    local?: LocalCheckSource;
 
     constructor(data?: ICheckSourceUnion) {
         if (data) {
@@ -2152,6 +2390,7 @@ export class CheckSourceUnion implements ICheckSourceUnion {
             this.id = _data["id"];
             this.gitHub = _data["gitHub"] ? GitHubCheckSource.fromJS(_data["gitHub"]) : <any>undefined;
             this.file = _data["file"] ? FileCheckSource.fromJS(_data["file"]) : <any>undefined;
+            this.local = _data["local"] ? LocalCheckSource.fromJS(_data["local"]) : <any>undefined;
         }
     }
 
@@ -2167,6 +2406,7 @@ export class CheckSourceUnion implements ICheckSourceUnion {
         data["id"] = this.id;
         data["gitHub"] = this.gitHub ? this.gitHub.toJSON() : <any>undefined;
         data["file"] = this.file ? this.file.toJSON() : <any>undefined;
+        data["local"] = this.local ? this.local.toJSON() : <any>undefined;
         return data;
     }
 }
@@ -2175,6 +2415,7 @@ export interface ICheckSourceUnion {
     id?: string | undefined;
     gitHub?: GitHubCheckSource;
     file?: FileCheckSource;
+    local?: LocalCheckSource;
 }
 
 export class Comment implements IComment {
@@ -2377,11 +2618,52 @@ export interface ICreateInstructionTaskSchema {
     mode?: InstructionTaskMode;
 }
 
+export class CreateLlmModelSchema implements ICreateLlmModelSchema {
+    displayName!: string | undefined;
+    modelKey!: string | undefined;
+
+    constructor(data?: ICreateLlmModelSchema) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.displayName = _data["displayName"];
+            this.modelKey = _data["modelKey"];
+        }
+    }
+
+    static fromJS(data: any): CreateLlmModelSchema {
+        data = typeof data === 'object' ? data : {};
+        let result = new CreateLlmModelSchema();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["displayName"] = this.displayName;
+        data["modelKey"] = this.modelKey;
+        return data;
+    }
+}
+
+export interface ICreateLlmModelSchema {
+    displayName: string | undefined;
+    modelKey: string | undefined;
+}
+
 export class CreateReportSchema implements ICreateReportSchema {
     name!: string | undefined;
     format!: string | undefined;
     sourceProvider!: string | undefined;
     source!: ReportSourceUnion;
+    llmModelId?: string | undefined;
 
     constructor(data?: ICreateReportSchema) {
         if (data) {
@@ -2401,6 +2683,7 @@ export class CreateReportSchema implements ICreateReportSchema {
             this.format = _data["format"];
             this.sourceProvider = _data["sourceProvider"];
             this.source = _data["source"] ? ReportSourceUnion.fromJS(_data["source"]) : new ReportSourceUnion();
+            this.llmModelId = _data["llmModelId"];
         }
     }
 
@@ -2417,6 +2700,7 @@ export class CreateReportSchema implements ICreateReportSchema {
         data["format"] = this.format;
         data["sourceProvider"] = this.sourceProvider;
         data["source"] = this.source ? this.source.toJSON() : <any>undefined;
+        data["llmModelId"] = this.llmModelId;
         return data;
     }
 }
@@ -2426,6 +2710,7 @@ export interface ICreateReportSchema {
     format: string | undefined;
     sourceProvider: string | undefined;
     source: ReportSourceUnion;
+    llmModelId?: string | undefined;
 }
 
 export class DownloadUrlResponse implements IDownloadUrlResponse {
@@ -2462,6 +2747,11 @@ export class DownloadUrlResponse implements IDownloadUrlResponse {
 
 export interface IDownloadUrlResponse {
     url: string | undefined;
+}
+
+export enum FileBucketDto {
+    Default = "Default",
+    Local = "Local",
 }
 
 export class FileCheckSource implements IFileCheckSource {
@@ -2901,6 +3191,154 @@ export interface ILimits {
     comments: Int32Limit;
 }
 
+export class LlmModel implements ILlmModel {
+    id!: string;
+    displayName!: string | undefined;
+    modelKey!: string | undefined;
+    isDefault?: boolean;
+    createdAt!: moment.Moment;
+    deletedAt?: moment.Moment | undefined;
+
+    constructor(data?: ILlmModel) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.displayName = _data["displayName"];
+            this.modelKey = _data["modelKey"];
+            this.isDefault = _data["isDefault"];
+            this.createdAt = _data["createdAt"] ? moment(_data["createdAt"].toString()) : <any>undefined;
+            this.deletedAt = _data["deletedAt"] ? moment(_data["deletedAt"].toString()) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): LlmModel {
+        data = typeof data === 'object' ? data : {};
+        let result = new LlmModel();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["displayName"] = this.displayName;
+        data["modelKey"] = this.modelKey;
+        data["isDefault"] = this.isDefault;
+        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
+        data["deletedAt"] = this.deletedAt ? this.deletedAt.toISOString() : <any>undefined;
+        return data;
+    }
+}
+
+export interface ILlmModel {
+    id: string;
+    displayName: string | undefined;
+    modelKey: string | undefined;
+    isDefault?: boolean;
+    createdAt: moment.Moment;
+    deletedAt?: moment.Moment | undefined;
+}
+
+export class LocalCheckSource implements ILocalCheckSource {
+    fileName?: string | undefined;
+    createdAt?: moment.Moment;
+    deletedAt?: moment.Moment | undefined;
+
+    constructor(data?: ILocalCheckSource) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.fileName = _data["fileName"];
+            this.createdAt = _data["createdAt"] ? moment(_data["createdAt"].toString()) : <any>undefined;
+            this.deletedAt = _data["deletedAt"] ? moment(_data["deletedAt"].toString()) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): LocalCheckSource {
+        data = typeof data === 'object' ? data : {};
+        let result = new LocalCheckSource();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["fileName"] = this.fileName;
+        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
+        data["deletedAt"] = this.deletedAt ? this.deletedAt.toISOString() : <any>undefined;
+        return data;
+    }
+}
+
+export interface ILocalCheckSource {
+    fileName?: string | undefined;
+    createdAt?: moment.Moment;
+    deletedAt?: moment.Moment | undefined;
+}
+
+export class LocalReportSource implements ILocalReportSource {
+    initialFileId!: string;
+    entryFilePath?: string | undefined;
+    clientId?: string;
+    clientMachineName?: string | undefined;
+
+    constructor(data?: ILocalReportSource) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.initialFileId = _data["initialFileId"];
+            this.entryFilePath = _data["entryFilePath"];
+            this.clientId = _data["clientId"];
+            this.clientMachineName = _data["clientMachineName"];
+        }
+    }
+
+    static fromJS(data: any): LocalReportSource {
+        data = typeof data === 'object' ? data : {};
+        let result = new LocalReportSource();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["initialFileId"] = this.initialFileId;
+        data["entryFilePath"] = this.entryFilePath;
+        data["clientId"] = this.clientId;
+        data["clientMachineName"] = this.clientMachineName;
+        return data;
+    }
+}
+
+export interface ILocalReportSource {
+    initialFileId: string;
+    entryFilePath?: string | undefined;
+    clientId?: string;
+    clientMachineName?: string | undefined;
+}
+
 export class MarkReadSchema implements IMarkReadSchema {
     commentIds?: string[] | undefined;
     isRead?: boolean;
@@ -3086,6 +3524,7 @@ export class Report implements IReport {
     name?: string | undefined;
     sourceProvider!: string | undefined;
     format!: string | undefined;
+    llmModelId?: string | undefined;
     createdAt?: moment.Moment;
     deletedAt?: moment.Moment | undefined;
 
@@ -3105,6 +3544,7 @@ export class Report implements IReport {
             this.name = _data["name"];
             this.sourceProvider = _data["sourceProvider"];
             this.format = _data["format"];
+            this.llmModelId = _data["llmModelId"];
             this.createdAt = _data["createdAt"] ? moment(_data["createdAt"].toString()) : <any>undefined;
             this.deletedAt = _data["deletedAt"] ? moment(_data["deletedAt"].toString()) : <any>undefined;
         }
@@ -3124,6 +3564,7 @@ export class Report implements IReport {
         data["name"] = this.name;
         data["sourceProvider"] = this.sourceProvider;
         data["format"] = this.format;
+        data["llmModelId"] = this.llmModelId;
         data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
         data["deletedAt"] = this.deletedAt ? this.deletedAt.toISOString() : <any>undefined;
         return data;
@@ -3136,6 +3577,7 @@ export interface IReport {
     name?: string | undefined;
     sourceProvider: string | undefined;
     format: string | undefined;
+    llmModelId?: string | undefined;
     createdAt?: moment.Moment;
     deletedAt?: moment.Moment | undefined;
 }
@@ -3143,6 +3585,7 @@ export interface IReport {
 export class ReportSourceUnion implements IReportSourceUnion {
     gitHub?: GitHubReportSource;
     file?: FileReportSource;
+    local?: LocalReportSource;
 
     constructor(data?: IReportSourceUnion) {
         if (data) {
@@ -3157,6 +3600,7 @@ export class ReportSourceUnion implements IReportSourceUnion {
         if (_data) {
             this.gitHub = _data["gitHub"] ? GitHubReportSource.fromJS(_data["gitHub"]) : <any>undefined;
             this.file = _data["file"] ? FileReportSource.fromJS(_data["file"]) : <any>undefined;
+            this.local = _data["local"] ? LocalReportSource.fromJS(_data["local"]) : <any>undefined;
         }
     }
 
@@ -3171,6 +3615,7 @@ export class ReportSourceUnion implements IReportSourceUnion {
         data = typeof data === 'object' ? data : {};
         data["gitHub"] = this.gitHub ? this.gitHub.toJSON() : <any>undefined;
         data["file"] = this.file ? this.file.toJSON() : <any>undefined;
+        data["local"] = this.local ? this.local.toJSON() : <any>undefined;
         return data;
     }
 }
@@ -3178,6 +3623,7 @@ export class ReportSourceUnion implements IReportSourceUnion {
 export interface IReportSourceUnion {
     gitHub?: GitHubReportSource;
     file?: FileReportSource;
+    local?: LocalReportSource;
 }
 
 export class Repository implements IRepository {
@@ -3467,6 +3913,7 @@ export interface IUpdatePatchSchema {
 
 export class UpdateReportSchema implements IUpdateReportSchema {
     name!: string | undefined;
+    llmModelId?: string | undefined;
 
     constructor(data?: IUpdateReportSchema) {
         if (data) {
@@ -3480,6 +3927,7 @@ export class UpdateReportSchema implements IUpdateReportSchema {
     init(_data?: any) {
         if (_data) {
             this.name = _data["name"];
+            this.llmModelId = _data["llmModelId"];
         }
     }
 
@@ -3493,12 +3941,14 @@ export class UpdateReportSchema implements IUpdateReportSchema {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["name"] = this.name;
+        data["llmModelId"] = this.llmModelId;
         return data;
     }
 }
 
 export interface IUpdateReportSchema {
     name: string | undefined;
+    llmModelId?: string | undefined;
 }
 
 export class UploadFileResponseSchema implements IUploadFileResponseSchema {

@@ -3,4 +3,5 @@
 public class UpdateReportSchema
 {
     public required string Name { get; init; }
+    public Guid? LlmModelId { get; init; }
 }

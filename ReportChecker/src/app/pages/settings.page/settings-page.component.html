@@ -1,9 +1,16 @@
-<div class="container page-padding">
+<form class="container page-padding" [formGroup]="control">
   <div class="section-header">
     <h3>Название</h3>
   </div>
   <tui-textfield>
-    <input tuiTextfield [formControl]="reportNameControl">
+    <input tuiTextfield formControlName="name">
+  </tui-textfield>
+
+  <label tuiLabel>Модель:</label>
+  <tui-textfield [stringify]="stringifyModel">
+    <input placeholder="По умолчанию" tuiSelect formControlName="llmModel"/>
+    @let models = models$ | async;
+    <tui-data-list-wrapper *tuiTextfieldDropdown new [items]="models"/>
   </tui-textfield>
 
   <div class="section-header">
@@ -20,4 +27,4 @@
   <button tuiButton appearance="outline-destructive" iconStart="@tui.trash" (click)="deleteReport()">Удалить отчет
   </button>
 
-</div>
+</form>

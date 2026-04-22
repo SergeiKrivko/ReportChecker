@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, Component, forwardRef, inject} from '@angular/core';
-import {ApiClient} from '../../services/api-client';
+import {ApiClient, FileBucketDto} from '../../services/api-client';
 import {ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TuiFileLike, TuiFiles} from '@taiga-ui/kit';
 import {catchError, finalize, map, Observable, of, Subject, switchMap} from 'rxjs';
@@ -55,7 +55,7 @@ export class FileUploader implements ControlValueAccessor {
 
     this.loadingFiles$.next(file);
 
-    return this.apiClient.filesPOST({fileName: file.name, data: file}).pipe(
+    return this.apiClient.filesPOST(FileBucketDto.Default, {fileName: file.name, data: file}).pipe(
       catchError(() => {
         this.failedFiles$.next(file);
         return of(null);

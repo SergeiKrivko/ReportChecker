@@ -3,4 +3,5 @@ export interface ReportEntity {
   name: string;
   sourceProvider: string;
   format: string;
+  llmModelId?: string;
 }

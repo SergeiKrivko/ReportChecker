@@ -8,4 +8,5 @@ public class CreateReportSchema
     public required string Format { get; init; }
     public required string SourceProvider { get; init; }
     public required ReportSourceUnion Source { get; init; }
+    public Guid? LlmModelId { get; init; }
 }

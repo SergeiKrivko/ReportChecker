@@ -2,8 +2,8 @@ import {inject, Injectable} from '@angular/core';
 import {
   ApiClient,
   CreateCheckSchema,
-  CreateReportSchema, FileReportSource, GitHubReportSource,
-  IFileCheckSource, IFileReportSource, IGitHubCheckSource, IGitHubReportSource,
+  CreateReportSchema,
+  IFileCheckSource, IFileReportSource, IGitHubCheckSource, IGitHubReportSource, LlmModel,
   Report,
   SourceInfo,
   TestSourceRequestSchema, UpdateReportSchema
@@ -13,11 +13,13 @@ import {ReportEntity} from '../entities/report-entity';
 import {patchState, signalState} from '@ngrx/signals';
 import {toObservable} from '@angular/core/rxjs-interop';
 import {SourceInfoEntity} from '../entities/source-info-entity';
+import {LlmModelEntity} from '../entities/llm-model-entity';
 
 interface ReportsStore {
   reports: ReportEntity[];
   selectedReport: ReportEntity | null;
   loaded: boolean;
+  models: LlmModelEntity[];
 }
 
 @Injectable({
@@ -30,11 +32,13 @@ export class ReportsService {
     reports: [],
     selectedReport: null,
     loaded: false,
+    models: [],
   });
 
   readonly reports$ = toObservable(this.store$$.reports);
   readonly selectedReport$ = toObservable(this.store$$.selectedReport);
   readonly loaded$ = toObservable(this.store$$.loaded);
+  readonly models$ = toObservable(this.store$$.models);
 
   loadReports() {
     patchState(this.store$$, {
@@ -48,6 +52,13 @@ export class ReportsService {
           loaded: true,
         });
       })
+    );
+  }
+
+  loadModels() {
+    return this.apiClient.modelsAll().pipe(
+      map(e => e.map(llmModelToEntity)),
+      tap(models => patchState(this.store$$, {models}))
     );
   }
 
@@ -76,13 +87,14 @@ export class ReportsService {
     );
   }
 
-  renameReport(newName: string): Observable<any> {
+  updateReport(newName: string, llmModelId?: string): Observable<any> {
     return this.selectedReport$.pipe(
       first(),
       switchMap(report => {
         if (report)
           return this.apiClient.reportsPUT(report.id, UpdateReportSchema.fromJS({
             name: newName,
+            llmModelId
           }));
         return NEVER;
       }),
@@ -129,10 +141,16 @@ const reportToEntity = (report: Report): ReportEntity => ({
   name: report.name ?? "",
   sourceProvider: report.sourceProvider ?? "File",
   format: report.format ?? "Latex",
+  llmModelId: report.llmModelId,
 });
 
 const sourceInfoToEntity = (info: SourceInfo): SourceInfoEntity => ({
   status: info.status,
   format: info.format,
+});
+
+const llmModelToEntity = (info: LlmModel): LlmModelEntity => ({
+  id: info.id,
+  displayName: info.displayName,
 });
 

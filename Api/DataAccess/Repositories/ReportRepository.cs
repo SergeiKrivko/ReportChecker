@@ -7,7 +7,8 @@ namespace ReportChecker.DataAccess.Repositories;
 
 public class ReportRepository(ReportCheckerDbContext dbContext) : IReportRepository
 {
-    public async Task<Guid> CreateReportAsync(Guid ownerId, string name, string format, string sourceProvider)
+    public async Task<Guid> CreateReportAsync(Guid ownerId, string name, string format, string sourceProvider,
+        Guid? llmModelId)
     {
         var id = Guid.NewGuid();
         var entity = new ReportEntity
@@ -17,6 +18,7 @@ public class ReportRepository(ReportCheckerDbContext dbContext) : IReportReposit
             Name = name,
             SourceProvider = sourceProvider,
             Format = format,
+            LlmModelId = llmModelId,
             CreatedAt = DateTime.UtcNow,
             DeletedAt = null,
         };
@@ -34,11 +36,13 @@ public class ReportRepository(ReportCheckerDbContext dbContext) : IReportReposit
         return result > 0;
     }
 
-    public async Task<bool> RenameReportAsync(Guid reportId, string newName)
+    public async Task<bool> RenameReportAsync(Guid reportId, string newName, Guid? llmModelId)
     {
         var result = await dbContext.Reports
             .Where(e => e.ReportId == reportId && e.DeletedAt == null)
-            .ExecuteUpdateAsync(e => e.SetProperty(x => x.Name, newName));
+            .ExecuteUpdateAsync(e => e
+                .SetProperty(x => x.Name, newName)
+                .SetProperty(x => x.LlmModelId, llmModelId));
         await dbContext.SaveChangesAsync();
         return result > 0;
     }
@@ -83,6 +87,7 @@ public class ReportRepository(ReportCheckerDbContext dbContext) : IReportReposit
             Name = entity.Name,
             SourceProvider = entity.SourceProvider,
             Format = entity.Format,
+            LlmModelId = entity.LlmModelId,
             CreatedAt = entity.CreatedAt,
             DeletedAt = entity.DeletedAt,
         };

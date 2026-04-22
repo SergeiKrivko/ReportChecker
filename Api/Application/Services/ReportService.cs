@@ -12,9 +12,9 @@ public class ReportService(
     IEnumerable<IFormatProvider> formatProviders) : IReportService
 {
     public async Task<Guid> CreateReportAsync(Guid ownerId, string name, string format, string sourceProviderKey,
-        ReportSourceUnion source)
+        ReportSourceUnion source, Guid? llmModelId)
     {
-        var reportId = await reportRepository.CreateReportAsync(ownerId, name, format, sourceProviderKey);
+        var reportId = await reportRepository.CreateReportAsync(ownerId, name, format, sourceProviderKey, llmModelId);
         var provider = providerService.GetSourceProvider(sourceProviderKey);
         await provider.SaveAsync(reportId, source);
 

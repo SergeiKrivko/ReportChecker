@@ -4,13 +4,14 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {AsyncPipe} from '@angular/common';
 import {TuiButton, TuiTextfield} from '@taiga-ui/core';
 import {InstructionInput} from '../../components/instruction-input/instruction-input';
-import {TUI_CONFIRM, TuiConfirmData} from '@taiga-ui/kit';
-import {debounceTime, from, map, NEVER, switchMap, tap} from 'rxjs';
+import {TUI_CONFIRM, TuiConfirmData, TuiDataListWrapperComponent, TuiSelectDirective} from '@taiga-ui/kit';
+import {combineLatest, debounceTime, from, map, NEVER, switchMap, tap} from 'rxjs';
 import {Router} from '@angular/router';
 import {TuiResponsiveDialogService} from '@taiga-ui/addon-mobile';
 import {ReportsService} from '../../services/reports.service';
-import {FormControl, ReactiveFormsModule} from '@angular/forms';
+import {FormControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {PathService} from '../../services/path.service';
+import {LlmModelEntity} from '../../entities/llm-model-entity';
 
 @Component({
   selector: 'app-instructions.page',
@@ -19,7 +20,9 @@ import {PathService} from '../../services/path.service';
     TuiButton,
     InstructionInput,
     TuiTextfield,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    TuiDataListWrapperComponent,
+    TuiSelectDirective
   ],
   templateUrl: './settings-page.component.html',
   styleUrl: './settings-page.component.scss',
@@ -34,19 +37,29 @@ export class SettingsPage implements OnInit, OnDestroy {
   private readonly pathService = inject(PathService);
 
   protected readonly instructions$ = this.instructionService.instructions$;
+  protected readonly models$ = this.reportsService.models$;
 
-  protected readonly reportNameControl = new FormControl<string>("");
+  protected readonly control = new FormGroup({
+    name: new FormControl<string>(""),
+    llmModel: new FormControl<LlmModelEntity | null>(null),
+  });
 
   ngOnInit() {
-    this.reportsService.selectedReport$.pipe(
-      tap(report => this.reportNameControl.setValue(report?.name ?? "")),
+    combineLatest([this.reportsService.selectedReport$, this.reportsService.models$]).pipe(
+      tap(([report, models]) => this.control.setValue({
+        name: report?.name ?? "",
+        llmModel: models.find(e => e.id == report?.llmModelId) ?? null,
+      })),
       takeUntilDestroyed(this.destroyRef),
     ).subscribe();
-    this.reportNameControl.valueChanges.pipe(
+    this.reportsService.loadModels().pipe(
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe();
+    this.control.valueChanges.pipe(
       debounceTime(1000),
-      switchMap(newName => {
-        if (newName)
-          return this.reportsService.renameReport(newName);
+      switchMap(value => {
+        if (value.name)
+          return this.reportsService.updateReport(value.name, value.llmModel?.id);
         return NEVER;
       }),
       takeUntilDestroyed(this.destroyRef),
@@ -96,5 +109,11 @@ export class SettingsPage implements OnInit, OnDestroy {
       }),
       switchMap(() => from(this.router.navigate(['/']))),
     ).subscribe();
+  }
+
+  protected stringifyModel(model?: LlmModelEntity) {
+    if (!model)
+      return "По умолчанию"
+    return model.displayName ?? "???";
   }
 }
