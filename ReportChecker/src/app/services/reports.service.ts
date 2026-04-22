@@ -62,12 +62,13 @@ export class ReportsService {
     );
   }
 
-  createReport(name: string, source: IGitHubReportSource | IFileReportSource, sourceProvider: string, format: string): Observable<string> {
+  createReport(name: string, source: IGitHubReportSource | IFileReportSource, sourceProvider: string, format: string, llmModelId?: string): Observable<string> {
     return this.apiClient.reportsPOST(CreateReportSchema.fromJS({
       name: name,
       source: sourceProvider == 'GitHub' ? {gitHub: source} : {file: source},
       sourceProvider: sourceProvider,
       format: format,
+      llmModelId
     }));
   }
 

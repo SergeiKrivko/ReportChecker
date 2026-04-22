@@ -1,4 +1,4 @@
-<div class="container">
+<form class="container" [formGroup]="control">
   @switch (sourceInfo?.status) {
     @case ('NotFound') {
       <tui-notification size="l" appearance="negative">
@@ -16,7 +16,13 @@
       </tui-notification>
     }
   }
+  <label tuiLabel>Модель:</label>
+  <tui-textfield [stringify]="stringifyModel">
+    <input placeholder="По умолчанию" tuiSelect formControlName="llmModel"/>
+    @let models = models$ | async;
+    <tui-data-list-wrapper *tuiTextfieldDropdown new [items]="models"/>
+  </tui-textfield>
   <button tuiButton iconStart="@tui.check" (click)="createReport()" [disabled]="sourceInfo?.status !== 'Success'">
     Создать отчет
   </button>
-</div>
+</form>
