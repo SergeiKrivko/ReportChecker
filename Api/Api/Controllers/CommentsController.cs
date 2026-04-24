@@ -16,8 +16,7 @@ public class CommentsController(
     ICheckService checkService,
     ICommentRepository commentRepository,
     ICommentReadRepository commentReadRepository,
-    IPatchService patchService,
-    ILimitsService limitsService) : ControllerBase
+    IPatchService patchService) : ControllerBase
 {
     [HttpGet]
     [Authorize]
@@ -88,8 +87,6 @@ public class CommentsController(
 
         var id = await commentRepository.CreateCommentAsync(issueId, userId, schema.Content, schema.Status);
 
-        if (await limitsService.CheckCommentsLimitAsync(userId, User.Subscriptions) && schema.Status == null)
-            await checkService.WriteCommentAsync(report.Id, issueId);
         return Ok(id);
     }
 

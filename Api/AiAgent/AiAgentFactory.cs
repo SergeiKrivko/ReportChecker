@@ -10,6 +10,7 @@ namespace AiAgent;
 public class AiAgentFactory(
     ILlmModelRepository llmModelRepository,
     ILlmUsageRepository llmUsageRepository,
+    ISubscriptionService subscriptionService,
     IConfiguration configuration,
     ILogger<AiAgent> logger) : IAiAgentFactory
 {
@@ -23,7 +24,11 @@ public class AiAgentFactory(
                 logger.LogWarning("Model '{id}' not found. Use default model instead", report.LlmModelId.Value);
         }
 
-        if (model == null)
+        if (!await subscriptionService.CheckTokensLimitAsync(report.OwnerId))
+            throw new Exception("Tokens limit reached");
+
+        var subscription = await subscriptionService.GetActiveSubscription(report.OwnerId);
+        if (subscription == null || model == null)
             model = await llmModelRepository.GetDefaultModelAsync();
 
         var client = new OpenAiClient<string>(new OpenAiClientOptions

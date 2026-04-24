@@ -58,7 +58,6 @@ builder.Services.AddScoped<IPatchService, PatchService>();
 builder.Services.AddScoped<IProviderService, ProviderService>();
 builder.Services.AddScoped<GithubService>();
 builder.Services.AddScoped<WebhookEventProcessor, GithubWebhookProcessor>();
-builder.Services.AddScoped<ILimitsService, LimitsService>();
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddScoped<IDifferenceService, DifferenceService>();
 builder.Services.AddScoped<IChapterGroupService, ChapterGroupService>();
