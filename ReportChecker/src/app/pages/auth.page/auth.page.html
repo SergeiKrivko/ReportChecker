@@ -20,7 +20,7 @@
     <div class="limits-container" tuiCardLarge>
       @if (current) {
         <h3>Лимиты</h3>
-        <app-subscription-limit name="Токены" [limit]="current.tokensLimit"/>
+        <app-subscription-limit name="Токены" [limit]="current.tokensLimit" [percentages]="true"/>
         <app-subscription-limit name="Отчеты" [limit]="current.reportsLimit"/>
       }
     </div>

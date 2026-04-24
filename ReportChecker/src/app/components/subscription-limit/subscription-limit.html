@@ -4,10 +4,14 @@
       <label tuiLabel>{{ name() }}</label>
     }
     <tui-chip [appearance]="(appearance$ | async) ?? ''">
-      @if (limit().maximum < 2147483647) {
-        {{ limit().current }} / {{ limit().maximum }}
+      @if (percentages()) {
+        {{(limit().current / limit().maximum * 100).toFixed(1)}}%
       } @else {
-        Нет лимита
+        @if (limit().maximum < 2147483647) {
+          {{ limit().current }} / {{ limit().maximum }}
+        } @else {
+          Нет лимита
+        }
       }
     </tui-chip>
   </div>
