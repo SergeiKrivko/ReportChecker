@@ -53,10 +53,6 @@ public class UserSubscriptionRepository(ReportCheckerDbContext dbContext) : IUse
         DateTime startsAt,
         DateTime endsAt, CancellationToken ct = default)
     {
-        await dbContext.UserSubscriptions
-            .Where(e => e.UserId == userId && e.ConfirmedAt == null)
-            .ExecuteUpdateAsync(p => p.SetProperty(e => e.DeletedAt, DateTime.UtcNow), ct);
-
         var id = Guid.NewGuid();
         var entity = new UserSubscriptionEntity
         {
@@ -111,16 +107,24 @@ public class UserSubscriptionRepository(ReportCheckerDbContext dbContext) : IUse
             .Where(e => e.Id == subscriptionId || e.LinkedSubscriptionId == subscriptionId)
             .ToListAsync(ct);
         var subscriptionIds = subscriptions.Select(e => e.Id).ToList();
+
         var parentSubscriptionIds = subscriptions.Select(e => e.ParentSubscriptionId)
             .Where(e => e != null)
             .Select(e => e!.Value)
             .ToList();
+
         await dbContext.UserSubscriptions
             .Where(e => parentSubscriptionIds.Contains(e.Id))
             .ExecuteUpdateAsync(p => p.SetProperty(e => e.DeletedAt, now), ct);
+
         var count = await dbContext.UserSubscriptions
             .Where(e => subscriptionIds.Contains(e.Id))
             .ExecuteUpdateAsync(p => p.SetProperty(e => e.ConfirmedAt, now), ct);
+
+        await dbContext.UserSubscriptions
+            .Where(e => e.UserId == subscriptions[0].UserId && e.ConfirmedAt == null && e.DeletedAt != null)
+            .ExecuteUpdateAsync(p => p.SetProperty(e => e.DeletedAt, DateTime.UtcNow), ct);
+
         await dbContext.SaveChangesAsync(ct);
         return count > 0;
     }

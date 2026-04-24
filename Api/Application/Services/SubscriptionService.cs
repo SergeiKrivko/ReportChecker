@@ -125,7 +125,10 @@ public class SubscriptionService(
             };
         }
 
-        if (defaultPricePerMonth <= activeSubscription.DefaultPricePerMonth)
+        var activePlan = await subscriptionPlanRepository.GetPlanByIdAsync(activeSubscription.PlanId, ct);
+        if (activePlan == null)
+            return ErrorResult("Active plan not found");
+        if (plan.TokensLimit <= activePlan.TokensLimit)
         {
             if ((activeSubscription.EndsAt - now).TotalDays >= DaysPerMonth ||
                 futureSubscriptions.Any())
@@ -139,9 +142,6 @@ public class SubscriptionService(
             };
         }
 
-        if (futureSubscriptions.Any(e => e.DefaultPricePerMonth > offer.Price))
-            return ErrorResult("Апгрейд невозможен. В будущем есть более дорогие подписки.");
-
         var newSubscriptionMonths = offer.Months - 1;
         var limit = await GetTokensLimitAsync(userId, ct);
         var tokensDiscount = (1 - (decimal)limit.Current / limit.Maximum) * activeSubscription.DefaultPricePerMonth;
@@ -154,6 +154,11 @@ public class SubscriptionService(
         foreach (var futureSubscription in
                  new List<UserSubscription> { activeSubscription }.Concat(futureSubscriptions))
         {
+            var futurePlan = await subscriptionPlanRepository.GetPlanByIdAsync(futureSubscription.PlanId, ct);
+            if (futurePlan == null)
+                return ErrorResult("Future plan not found");
+            if (futurePlan.TokensLimit > plan.TokensLimit)
+                return ErrorResult("Апгрейд невозможен. В будущем есть более дорогие подписки.");
             var monthsRemaining = futureSubscription.StartsAt > now
                 ? (int)((futureSubscription.EndsAt - futureSubscription.StartsAt).TotalDays / DaysPerMonth)
                 : (int)((futureSubscription.EndsAt - now).TotalDays / DaysPerMonth);
