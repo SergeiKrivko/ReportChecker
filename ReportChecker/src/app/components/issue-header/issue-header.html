@@ -7,7 +7,7 @@
               size="xl" tuiBadge/>
   }
   <div class="info-container">
-    <div class="issue-title" [innerHtml]="issue().title"></div>
+    <div class="issue-title no-margin" [innerHtml]="issue().title"></div>
     <div class="issue-chapter">{{ getChapter() }}</div>
   </div>
   @if (commentsCount() > 1) {

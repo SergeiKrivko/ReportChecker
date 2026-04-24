@@ -12,3 +12,9 @@
 .diff-ins {
   background-color: var(--tui-status-positive-pale-hover);
 }
+
+.no-margin {
+  * {
+    margin: 0;
+  }
+}
