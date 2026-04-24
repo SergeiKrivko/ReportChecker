@@ -1,0 +1,38 @@
+<div class="root-container">
+  <div class="page-padding">
+    <a tuiButton iconStart="@tui.chevron-left" routerLink="/auth" appearance="flat">Назад</a>
+  </div>
+  <tui-scrollbar>
+    <div class="container page-padding">
+      @for (plan of plans$ | async; track plan.id) {
+        <div tuiCardLarge class="plan-card">
+          <h2>{{ plan.name }}</h2>
+          @if (plan.description) {
+            <p>{{ plan.description }}</p>
+          }
+          <ul tuiList>
+            <li>До <b>{{ plan.reportsLimit }}</b> отчетов</li>
+            <li><b>{{ plan.tokensLimit / 1000000 }}M</b> токенов для проверок и комментариев</li>
+            @if (plan.id != '00000000-0000-0000-0000-000000000000') {
+              <li>Множество моделей на выбор</li>
+            }
+          </ul>
+          @if (plan.offers.length) {
+            @for (offer of plan.offers; track offer.id) {
+              <div class="offer-container">
+                <div class="h-container">
+                  <h3>{{ offer.months }} месяцев</h3>
+                  <b>{{ offer.price }} ₽</b>
+                </div>
+                <a tuiButton size="m" iconStart="@tui.dollar-sign" routerLink="new" [queryParams]="{'offer': offer.id}">Оформить</a>
+              </div>
+            }
+          } @else {
+            <a tuiButton size="m" routerLink="/reports/new">Начать</a>
+          }
+        </div>
+      }
+    </div>
+  </tui-scrollbar>
+
+</div>

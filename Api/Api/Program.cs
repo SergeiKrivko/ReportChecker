@@ -39,6 +39,9 @@ builder.Services.AddScoped<ICommentReadRepository, CommentReadRepository>();
 builder.Services.AddScoped<IPatchRepository, PatchRepository>();
 builder.Services.AddScoped<ILlmModelRepository, LlmModelRepository>();
 builder.Services.AddScoped<ILlmUsageRepository, LlmUsageRepository>();
+builder.Services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
+builder.Services.AddScoped<ISubscriptionOfferRepository, SubscriptionOfferRepository>();
+builder.Services.AddScoped<IUserSubscriptionRepository, UserSubscriptionRepository>();
 builder.Services.AddScoped<IReportSourceRepository<FileReportSource>, FileReportSourceRepository>();
 builder.Services.AddScoped<ICheckSourceRepository<FileCheckSource>, FileCheckSourceRepository>();
 builder.Services.AddScoped<IReportSourceRepository<GitHubReportSource>, GitHubReportSourceRepository>();
@@ -56,6 +59,7 @@ builder.Services.AddScoped<IProviderService, ProviderService>();
 builder.Services.AddScoped<GithubService>();
 builder.Services.AddScoped<WebhookEventProcessor, GithubWebhookProcessor>();
 builder.Services.AddScoped<ILimitsService, LimitsService>();
+builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddScoped<IDifferenceService, DifferenceService>();
 builder.Services.AddScoped<IChapterGroupService, ChapterGroupService>();
 builder.Services.AddScoped<IInstructionTaskService, InstructionTaskService>();
@@ -103,6 +107,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.RefreshInterval = TimeSpan.FromMinutes(30);
         options.RefreshOnIssuerKeyNotFound = true;
     });
+var adminIds = builder.Configuration["Security.AdminIds"]?.Split(';').ToList() ?? [];
+builder.Services.AddAuthorizationBuilder()
+    .AddDefaultPolicy("User", e => e.RequireClaim("UserId"))
+    .AddPolicy("Admin", e => e.RequireClaim("UserId", adminIds));
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

@@ -1,0 +1,33 @@
+<div class="container page-padding">
+  <a tuiButton iconStart="@tui.chevron-left" routerLink="/auth" appearance="flat">Назад</a>
+  @let subscription = subscription$ | async;
+  @let offer = offerId$ | async | subscriptionOfferById | async;
+  @let plan = offer?.planId | subscriptionPlanById | async;
+  <div class="info-container">
+    @if (!subscription) {
+      <tui-loader></tui-loader>
+    } @else if (subscription?.errorText) {
+      <tui-notification appearance="negative">{{ subscription?.errorText }}</tui-notification>
+    } @else {
+      <label tuiLabel>Название:</label>
+      <b>{{ plan?.name }}</b>
+      <label tuiLabel>ID:</label>
+      <tui-copy>{{ subscription?.subscription?.id }}</tui-copy>
+      <label tuiLabel>Период:</label>
+      <b>{{ subscription?.subscription?.startsAt | asDay }} - {{ subscription?.subscription?.endsAt | asDay }}</b>
+      <label tuiLabel>Базовая стоимость:</label>
+      <b>{{ offer?.price }}₽</b>
+      @if (subscription?.unusedTokensDiscount) {
+        <label tuiLabel>Скидка за неиспользованные токены:</label>
+        <b>{{ subscription?.unusedTokensDiscount }}₽</b>
+      }
+      @if (subscription?.monthsDiscount) {
+        <label tuiLabel>Скидка за оплаченные месяцы:</label>
+        <b>{{ subscription?.monthsDiscount }}₽</b>
+      }
+      <label tuiLabel>Итоговая стоимость:</label>
+      <b>{{ subscription?.subscription?.price }}₽</b>
+    }
+  </div>
+  <tui-notification appearance="negative">На данный момент оплата не реализована.</tui-notification>
+</div>

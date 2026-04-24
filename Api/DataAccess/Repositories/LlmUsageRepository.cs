@@ -24,6 +24,16 @@ public class LlmUsageRepository(ReportCheckerDbContext dbContext) : ILlmUsageRep
         return entities.Select(e => e.ToDomain()).ToList();
     }
 
+    public async Task<int> GetTotalUsageAsync(Guid userId, DateTime startsAt, CancellationToken ct = default)
+    {
+        var total = await dbContext.LlmUsages
+            .Where(e => e.FinishedAt > startsAt)
+            .Include(e => e.Report)
+            .Where(e => e.Report.OwnerId == userId)
+            .SumAsync(e => e.TotalTokens, ct);
+        return total;
+    }
+
     public async Task<Guid> CreateUsageAsync(LlmUsage usage, CancellationToken ct = default)
     {
         var id = Guid.NewGuid();

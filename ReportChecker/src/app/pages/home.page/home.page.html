@@ -1,11 +1,11 @@
 <div class="container page-padding">
   <div class="buttons-container">
     @let limits = limits$ | async;
-    <button tuiButton routerLink="new" iconStart="@tui.plus" [disabled]="limits?.reports | limitReached">
+    <button tuiButton routerLink="new" iconStart="@tui.plus" [disabled]="limits?.reportsLimit | limitReached">
       Добавить
     </button>
     @if (limits) {
-      <app-subscription-limit [limit]="limits.reports"/>
+      <app-subscription-limit [limit]="limits.reportsLimit"/>
     }
   </div>
   <div class="reports-container">

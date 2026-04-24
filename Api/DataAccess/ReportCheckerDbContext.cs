@@ -16,6 +16,9 @@ public class ReportCheckerDbContext : DbContext
     public DbSet<PatchLineEntity> PatchLines { get; init; }
     public DbSet<LlmModelEntity> LlmModels { get; init; }
     public DbSet<LlmUsageEntity> LlmUsages { get; init; }
+    public DbSet<SubscriptionPlanEntity> SubscriptionPlans { get; init; }
+    public DbSet<SubscriptionOfferEntity> SubscriptionOffers { get; init; }
+    public DbSet<UserSubscriptionEntity> UserSubscriptions { get; init; }
 
     public DbSet<FileReportSourceEntity> FileReportSources { get; init; }
     public DbSet<FileCheckSourceEntity> FileCheckSources { get; init; }

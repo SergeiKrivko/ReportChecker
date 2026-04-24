@@ -9,6 +9,8 @@ import {IssuePage} from './pages/issue.page/issue.page';
 import {RootPage} from './pages/root.page/root.page';
 import {NewReportPage} from './pages/new-report.page/new-report.page';
 import {LandingPage} from './pages/landing-page/landing-page';
+import {SubscriptionPlansPage} from './pages/subscription-plans.page/subscription-plans.page';
+import {NewSubscriptionPage} from './pages/new-subscription.page/new-subscription.page';
 
 export const routes: Routes = [
   {path: '', pathMatch: "full", component: LandingPage},
@@ -27,4 +29,6 @@ export const routes: Routes = [
   },
   {path: "auth", pathMatch: "full", component: AuthPage},
   {path: "auth/callback", pathMatch: "full", component: AuthRedirectPage},
+  {path: "subscriptions", pathMatch: "full", component: SubscriptionPlansPage},
+  {path: "subscriptions/new", pathMatch: "full", component: NewSubscriptionPage},
 ];

@@ -1,15 +1,29 @@
 <div class="container page-padding">
   <div class="subscriptions-container">
     <a tuiButton iconStart="@tui.chevron-left" appearance="flat" routerLink="..">Назад</a>
-    @let limits = limits$ | async;
-    @if (limits) {
-      <div class="limits-container" tuiCardLarge>
-        <h3>Лимиты</h3>
-        <app-subscription-limit name="Отчеты" [limit]="limits.reports"/>
-        <app-subscription-limit name="Проверки" [limit]="limits.checks"/>
-        <app-subscription-limit name="Комментарии" [limit]="limits.comments"/>
+    @let current = currentSubscription$ | async;
+    <div class="limits-container" tuiCardLarge>
+      <h3>Текущая подписка</h3>
+      <div class="h-container">
+        @if (current?.active) {
+          @let plan = current?.active?.planId | subscriptionPlanById | async;
+          <tui-badge appearance="primary" size="xl">{{ plan?.name ?? "????" }}</tui-badge>
+          <label tuiLabel>Истекает через {{ currentEndsAt$ | async | dateFromNow }}</label>
+        } @else {
+          <h4>Free</h4>
+        }
       </div>
-    }
+      <a appearance="accent" tuiButton iconStart="circle-dollar-sign"
+         routerLink="/subscriptions">{{ current?.active ? 'Продлить / Улучшить' : 'Улучшить' }}
+      </a>
+    </div>
+    <div class="limits-container" tuiCardLarge>
+      @if (current) {
+        <h3>Лимиты</h3>
+        <app-subscription-limit name="Токены" [limit]="current.tokensLimit"/>
+        <app-subscription-limit name="Отчеты" [limit]="current.reportsLimit"/>
+      }
+    </div>
   </div>
   <div class="providers-container">
     @for (authProvider of authProviders$ | async; track authProvider.key) {

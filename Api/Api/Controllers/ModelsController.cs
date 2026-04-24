@@ -30,7 +30,7 @@ public class ModelsController(ILlmModelRepository llmModelRepository) : Controll
     }
 
     [HttpPost]
-    [AllowAnonymous]
+    [Authorize(Policy = "Admin")]
     public async Task<ActionResult<Guid>> CreateModelAsync(CreateLlmModelSchema schema, CancellationToken ct = default)
     {
         var id = await llmModelRepository.CreateModelAsync(schema.DisplayName, schema.ModelKey, ct);
@@ -38,7 +38,7 @@ public class ModelsController(ILlmModelRepository llmModelRepository) : Controll
     }
 
     [HttpDelete("{modelId:guid}")]
-    [AllowAnonymous]
+    [Authorize(Policy = "Admin")]
     public async Task<ActionResult> DeleteModelByIdAsync(Guid modelId,
         CancellationToken ct = default)
     {

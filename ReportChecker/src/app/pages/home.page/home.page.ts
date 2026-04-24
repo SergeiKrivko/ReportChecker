@@ -31,5 +31,5 @@ export class HomePage {
 
   protected readonly reports$ = this.reportService.reports$;
 
-  readonly limits$ = this.subscriptionService.limits$;
+  readonly limits$ = this.subscriptionService.current$;
 }

@@ -1,13 +1,15 @@
 import {inject, Injectable} from '@angular/core';
-import {LimitsEntity} from '../entities/limits-entity';
-import {ApiClient, Limits} from './api-client';
+import {CurrentSubscriptionEntity} from '../entities/current-subscription-entity';
+import {ApiClient, CreateUserSubscriptionSchema, SubscriptionPlan, UserSubscriptionsSchema} from './api-client';
 import {patchState, signalState} from '@ngrx/signals';
 import {toObservable} from '@angular/core/rxjs-interop';
-import {Observable, of, switchMap, tap} from 'rxjs';
+import {combineLatest, map, Observable, of, switchMap, tap} from 'rxjs';
 import {AuthService} from '../auth/auth.service';
+import {SubscriptionPlanEntity} from '../entities/subscription-plan-entity';
 
 interface SubscriptionsStore {
-  limits: LimitsEntity | null;
+  current: CurrentSubscriptionEntity | null;
+  plans: SubscriptionPlanEntity[];
 }
 
 @Injectable({
@@ -18,23 +20,56 @@ export class SubscriptionsService {
   private readonly authService = inject(AuthService);
 
   private readonly store$$ = signalState<SubscriptionsStore>({
-    limits: null,
+    current: null,
+    plans: [],
   });
 
-  readonly limits$: Observable<LimitsEntity | null> = toObservable(this.store$$.limits);
+  readonly current$: Observable<CurrentSubscriptionEntity | null> = toObservable(this.store$$.current);
+  readonly plans$: Observable<SubscriptionPlanEntity[]> = toObservable(this.store$$.plans);
 
   readonly loadLimits$ = toObservable(this.authService.isAuthenticated).pipe(
     switchMap(authorized => {
       if (!authorized)
         return of(null);
-      return this.apiClient.limits();
+      return this.apiClient.current();
     }),
-    tap(limits => patchState(this.store$$, {limits: limitsToEntity(limits)}))
+    tap(limits => patchState(this.store$$, {current: currentSubscriptionToEntity(limits)}))
   );
+
+  readonly loadPlans$ = this.apiClient.plansAll().pipe(
+    map(plans => plans.map(planToEntity)),
+    tap(plans => patchState(this.store$$, {plans})),
+  );
+
+  createSubscription(offerId: string) {
+    console.log('createSubscription', offerId);
+    return this.apiClient.subscriptions(CreateUserSubscriptionSchema.fromJS({
+      offerId
+    }));
+  }
 }
 
-const limitsToEntity = (limits: Limits | null): LimitsEntity | null => {
-  if (!limits)
+const currentSubscriptionToEntity = (dto: UserSubscriptionsSchema | null): CurrentSubscriptionEntity | null => {
+  if (!dto)
     return null;
-  return limits;
+  return {
+    active: dto.active,
+    future: dto.future ?? [],
+    tokensLimit: dto.tokensLimit,
+    reportsLimit: dto.reportsLimit,
+  };
 }
+
+const planToEntity = (dto: SubscriptionPlan): SubscriptionPlanEntity => ({
+  id: dto.id,
+  name: dto.name,
+  description: dto.description,
+  tokensLimit: dto.tokensLimit ?? 0,
+  reportsLimit: dto.reportsLimit ?? 0,
+  offers: dto.offers?.map(offerDto => ({
+    id: offerDto.id,
+    planId: offerDto.planId,
+    price: offerDto.price,
+    months: offerDto.months,
+  })) ?? [],
+});

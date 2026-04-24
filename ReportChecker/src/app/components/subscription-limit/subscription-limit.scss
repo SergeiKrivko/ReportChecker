@@ -1,9 +1,27 @@
 .container {
   display: flex;
-  flex-direction: row;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 0.5rem;
 
-  label {
-    width: 10rem;
+  .top-container {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+
+    label {
+      flex-grow: 1;
+    }
+  }
+
+  .progress-bar.positive {
+    color: var(--tui-status-positive);
+  }
+
+  .progress-bar.negative {
+    color: var(--tui-status-negative);
+  }
+
+  .progress-bar.warning {
+    color: var(--tui-status-warning);
   }
 }

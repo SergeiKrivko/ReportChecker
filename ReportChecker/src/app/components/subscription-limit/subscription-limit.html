@@ -1,12 +1,23 @@
 <div class="container">
-  @if (name()) {
-    <label tuiLabel>{{name()}}</label>
-  }
-  <tui-chip [appearance]="(appearance$ | async) ?? ''">
-    @if (limit().maximum < 2147483647) {
-      {{limit().current}} / {{limit().maximum}}
-    } @else {
-      Нет лимита
+  <div class="top-container">
+    @if (name()) {
+      <label tuiLabel>{{ name() }}</label>
     }
-  </tui-chip>
+    <tui-chip [appearance]="(appearance$ | async) ?? ''">
+      @if (limit().maximum < 2147483647) {
+        {{ limit().current }} / {{ limit().maximum }}
+      } @else {
+        Нет лимита
+      }
+    </tui-chip>
+  </div>
+  @if (name()) {
+    <progress
+      class="progress-bar"
+      [class]="(appearance$ | async) ?? ''"
+      [max]="limit().maximum"
+      tuiProgressBar
+      [value]="limit().current"
+    ></progress>
+  }
 </div>

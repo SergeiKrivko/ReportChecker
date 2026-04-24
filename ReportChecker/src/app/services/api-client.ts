@@ -2211,8 +2211,11 @@ export class ApiClient extends ApiClientBase {
     /**
      * @return OK
      */
-    limits(): Observable<Limits> {
-        let url_ = this.baseUrl + "/api/v1/subscriptions/limits";
+    offersAll(planId: string): Observable<SubscriptionOffer[]> {
+        let url_ = this.baseUrl + "/api/v1/subscriptions/plans/{planId}/offers";
+        if (planId === undefined || planId === null)
+            throw new Error("The parameter 'planId' must be defined.");
+        url_ = url_.replace("{planId}", encodeURIComponent("" + planId));
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
@@ -2226,20 +2229,20 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("get", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processLimits(response_);
+            return this.processOffersAll(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processLimits(response_ as any);
+                    return this.processOffersAll(response_ as any);
                 } catch (e) {
-                    return _observableThrow(e) as any as Observable<Limits>;
+                    return _observableThrow(e) as any as Observable<SubscriptionOffer[]>;
                 }
             } else
-                return _observableThrow(response_) as any as Observable<Limits>;
+                return _observableThrow(response_) as any as Observable<SubscriptionOffer[]>;
         }));
     }
 
-    protected processLimits(response: HttpResponseBase): Observable<Limits> {
+    protected processOffersAll(response: HttpResponseBase): Observable<SubscriptionOffer[]> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -2250,8 +2253,710 @@ export class ApiClient extends ApiClientBase {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = Limits.fromJS(resultData200);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(SubscriptionOffer.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
             return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional)
+     * @return OK
+     */
+    offersPOST(planId: string, body: CreateSubscriptionOfferSchema | undefined): Observable<string> {
+        let url_ = this.baseUrl + "/api/v1/subscriptions/plans/{planId}/offers";
+        if (planId === undefined || planId === null)
+            throw new Error("The parameter 'planId' must be defined.");
+        url_ = url_.replace("{planId}", encodeURIComponent("" + planId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("post", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.processOffersPOST(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processOffersPOST(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<string>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<string>;
+        }));
+    }
+
+    protected processOffersPOST(response: HttpResponseBase): Observable<string> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    offersGET(planId: string, offerId: string): Observable<SubscriptionOffer> {
+        let url_ = this.baseUrl + "/api/v1/subscriptions/plans/{planId}/offers/{offerId}";
+        if (planId === undefined || planId === null)
+            throw new Error("The parameter 'planId' must be defined.");
+        url_ = url_.replace("{planId}", encodeURIComponent("" + planId));
+        if (offerId === undefined || offerId === null)
+            throw new Error("The parameter 'offerId' must be defined.");
+        url_ = url_.replace("{offerId}", encodeURIComponent("" + offerId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("get", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.processOffersGET(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processOffersGET(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<SubscriptionOffer>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<SubscriptionOffer>;
+        }));
+    }
+
+    protected processOffersGET(response: HttpResponseBase): Observable<SubscriptionOffer> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = SubscriptionOffer.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional)
+     * @return OK
+     */
+    offersPUT(planId: string, offerId: string, body: CreateSubscriptionOfferSchema | undefined): Observable<void> {
+        let url_ = this.baseUrl + "/api/v1/subscriptions/plans/{planId}/offers/{offerId}";
+        if (planId === undefined || planId === null)
+            throw new Error("The parameter 'planId' must be defined.");
+        url_ = url_.replace("{planId}", encodeURIComponent("" + planId));
+        if (offerId === undefined || offerId === null)
+            throw new Error("The parameter 'offerId' must be defined.");
+        url_ = url_.replace("{offerId}", encodeURIComponent("" + offerId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("put", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.processOffersPUT(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processOffersPUT(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<void>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<void>;
+        }));
+    }
+
+    protected processOffersPUT(response: HttpResponseBase): Observable<void> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return _observableOf(null as any);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    offersDELETE(planId: string, offerId: string): Observable<void> {
+        let url_ = this.baseUrl + "/api/v1/subscriptions/plans/{planId}/offers/{offerId}";
+        if (planId === undefined || planId === null)
+            throw new Error("The parameter 'planId' must be defined.");
+        url_ = url_.replace("{planId}", encodeURIComponent("" + planId));
+        if (offerId === undefined || offerId === null)
+            throw new Error("The parameter 'offerId' must be defined.");
+        url_ = url_.replace("{offerId}", encodeURIComponent("" + offerId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("delete", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.processOffersDELETE(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processOffersDELETE(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<void>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<void>;
+        }));
+    }
+
+    protected processOffersDELETE(response: HttpResponseBase): Observable<void> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return _observableOf(null as any);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    plansAll(): Observable<SubscriptionPlan[]> {
+        let url_ = this.baseUrl + "/api/v1/subscriptions/plans";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("get", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.processPlansAll(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processPlansAll(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<SubscriptionPlan[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<SubscriptionPlan[]>;
+        }));
+    }
+
+    protected processPlansAll(response: HttpResponseBase): Observable<SubscriptionPlan[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(SubscriptionPlan.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional)
+     * @return OK
+     */
+    plansPOST(body: CreateSubscriptionPlanSchema | undefined): Observable<string> {
+        let url_ = this.baseUrl + "/api/v1/subscriptions/plans";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("post", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.processPlansPOST(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processPlansPOST(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<string>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<string>;
+        }));
+    }
+
+    protected processPlansPOST(response: HttpResponseBase): Observable<string> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result200 = resultData200 !== undefined ? resultData200 : <any>null;
+
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    plansAll2(planId: string): Observable<SubscriptionPlan[]> {
+        let url_ = this.baseUrl + "/api/v1/subscriptions/plans/{planId}";
+        if (planId === undefined || planId === null)
+            throw new Error("The parameter 'planId' must be defined.");
+        url_ = url_.replace("{planId}", encodeURIComponent("" + planId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("get", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.processPlansAll2(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processPlansAll2(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<SubscriptionPlan[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<SubscriptionPlan[]>;
+        }));
+    }
+
+    protected processPlansAll2(response: HttpResponseBase): Observable<SubscriptionPlan[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(SubscriptionPlan.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional)
+     * @return OK
+     */
+    plansPUT(planId: string, body: CreateSubscriptionPlanSchema | undefined): Observable<void> {
+        let url_ = this.baseUrl + "/api/v1/subscriptions/plans/{planId}";
+        if (planId === undefined || planId === null)
+            throw new Error("The parameter 'planId' must be defined.");
+        url_ = url_.replace("{planId}", encodeURIComponent("" + planId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("put", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.processPlansPUT(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processPlansPUT(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<void>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<void>;
+        }));
+    }
+
+    protected processPlansPUT(response: HttpResponseBase): Observable<void> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return _observableOf(null as any);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    plansDELETE(planId: string): Observable<void> {
+        let url_ = this.baseUrl + "/api/v1/subscriptions/plans/{planId}";
+        if (planId === undefined || planId === null)
+            throw new Error("The parameter 'planId' must be defined.");
+        url_ = url_.replace("{planId}", encodeURIComponent("" + planId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("delete", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.processPlansDELETE(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processPlansDELETE(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<void>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<void>;
+        }));
+    }
+
+    protected processPlansDELETE(response: HttpResponseBase): Observable<void> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return _observableOf(null as any);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    current(): Observable<UserSubscriptionsSchema> {
+        let url_ = this.baseUrl + "/api/v1/subscriptions/current";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("get", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.processCurrent(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processCurrent(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<UserSubscriptionsSchema>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<UserSubscriptionsSchema>;
+        }));
+    }
+
+    protected processCurrent(response: HttpResponseBase): Observable<UserSubscriptionsSchema> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = UserSubscriptionsSchema.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional)
+     * @return OK
+     */
+    subscriptions(body: CreateUserSubscriptionSchema | undefined): Observable<CreatedSubscription> {
+        let url_ = this.baseUrl + "/api/v1/subscriptions";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("post", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.processSubscriptions(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processSubscriptions(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<CreatedSubscription>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<CreatedSubscription>;
+        }));
+    }
+
+    protected processSubscriptions(response: HttpResponseBase): Observable<CreatedSubscription> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = CreatedSubscription.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional)
+     * @return OK
+     */
+    confirm(subscriptionId: string, body: ConfirmSubscriptionSchema | undefined): Observable<void> {
+        let url_ = this.baseUrl + "/api/v1/subscriptions/{subscriptionId}/confirm";
+        if (subscriptionId === undefined || subscriptionId === null)
+            throw new Error("The parameter 'subscriptionId' must be defined.");
+        url_ = url_.replace("{subscriptionId}", encodeURIComponent("" + subscriptionId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("post", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.processConfirm(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processConfirm(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<void>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<void>;
+        }));
+    }
+
+    protected processConfirm(response: HttpResponseBase): Observable<void> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return _observableOf(null as any);
             }));
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
@@ -2494,6 +3199,46 @@ export interface IComment {
     deletedAt?: moment.Moment | undefined;
 }
 
+export class ConfirmSubscriptionSchema implements IConfirmSubscriptionSchema {
+    price?: number | undefined;
+    userId?: string | undefined;
+
+    constructor(data?: IConfirmSubscriptionSchema) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.price = _data["price"];
+            this.userId = _data["userId"];
+        }
+    }
+
+    static fromJS(data: any): ConfirmSubscriptionSchema {
+        data = typeof data === 'object' ? data : {};
+        let result = new ConfirmSubscriptionSchema();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["price"] = this.price;
+        data["userId"] = this.userId;
+        return data;
+    }
+}
+
+export interface IConfirmSubscriptionSchema {
+    price?: number | undefined;
+    userId?: string | undefined;
+}
+
 export class CreateCheckSchema implements ICreateCheckSchema {
     source?: CheckSourceUnion;
     name?: string | undefined;
@@ -2711,6 +3456,194 @@ export interface ICreateReportSchema {
     sourceProvider: string | undefined;
     source: ReportSourceUnion;
     llmModelId?: string | undefined;
+}
+
+export class CreateSubscriptionOfferSchema implements ICreateSubscriptionOfferSchema {
+    price!: number;
+    months!: number;
+
+    constructor(data?: ICreateSubscriptionOfferSchema) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.price = _data["price"];
+            this.months = _data["months"];
+        }
+    }
+
+    static fromJS(data: any): CreateSubscriptionOfferSchema {
+        data = typeof data === 'object' ? data : {};
+        let result = new CreateSubscriptionOfferSchema();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["price"] = this.price;
+        data["months"] = this.months;
+        return data;
+    }
+}
+
+export interface ICreateSubscriptionOfferSchema {
+    price: number;
+    months: number;
+}
+
+export class CreateSubscriptionPlanSchema implements ICreateSubscriptionPlanSchema {
+    name!: string | undefined;
+    description?: string | undefined;
+    tokensLimit!: number;
+    reportsLimit!: number;
+    isHidden?: boolean;
+
+    constructor(data?: ICreateSubscriptionPlanSchema) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["name"];
+            this.description = _data["description"];
+            this.tokensLimit = _data["tokensLimit"];
+            this.reportsLimit = _data["reportsLimit"];
+            this.isHidden = _data["isHidden"];
+        }
+    }
+
+    static fromJS(data: any): CreateSubscriptionPlanSchema {
+        data = typeof data === 'object' ? data : {};
+        let result = new CreateSubscriptionPlanSchema();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name;
+        data["description"] = this.description;
+        data["tokensLimit"] = this.tokensLimit;
+        data["reportsLimit"] = this.reportsLimit;
+        data["isHidden"] = this.isHidden;
+        return data;
+    }
+}
+
+export interface ICreateSubscriptionPlanSchema {
+    name: string | undefined;
+    description?: string | undefined;
+    tokensLimit: number;
+    reportsLimit: number;
+    isHidden?: boolean;
+}
+
+export class CreateUserSubscriptionSchema implements ICreateUserSubscriptionSchema {
+    offerId!: string;
+
+    constructor(data?: ICreateUserSubscriptionSchema) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.offerId = _data["offerId"];
+        }
+    }
+
+    static fromJS(data: any): CreateUserSubscriptionSchema {
+        data = typeof data === 'object' ? data : {};
+        let result = new CreateUserSubscriptionSchema();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["offerId"] = this.offerId;
+        return data;
+    }
+}
+
+export interface ICreateUserSubscriptionSchema {
+    offerId: string;
+}
+
+export class CreatedSubscription implements ICreatedSubscription {
+    subscription?: UserSubscription;
+    unusedTokensDiscount?: number;
+    monthsDiscount?: number;
+    nextSubscriptions?: UserSubscription[] | undefined;
+    errorText?: string | undefined;
+
+    constructor(data?: ICreatedSubscription) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.subscription = _data["subscription"] ? UserSubscription.fromJS(_data["subscription"]) : <any>undefined;
+            this.unusedTokensDiscount = _data["unusedTokensDiscount"];
+            this.monthsDiscount = _data["monthsDiscount"];
+            if (Array.isArray(_data["nextSubscriptions"])) {
+                this.nextSubscriptions = [] as any;
+                for (let item of _data["nextSubscriptions"])
+                    this.nextSubscriptions!.push(UserSubscription.fromJS(item));
+            }
+            this.errorText = _data["errorText"];
+        }
+    }
+
+    static fromJS(data: any): CreatedSubscription {
+        data = typeof data === 'object' ? data : {};
+        let result = new CreatedSubscription();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["subscription"] = this.subscription ? this.subscription.toJSON() : <any>undefined;
+        data["unusedTokensDiscount"] = this.unusedTokensDiscount;
+        data["monthsDiscount"] = this.monthsDiscount;
+        if (Array.isArray(this.nextSubscriptions)) {
+            data["nextSubscriptions"] = [];
+            for (let item of this.nextSubscriptions)
+                data["nextSubscriptions"].push(item.toJSON());
+        }
+        data["errorText"] = this.errorText;
+        return data;
+    }
+}
+
+export interface ICreatedSubscription {
+    subscription?: UserSubscription;
+    unusedTokensDiscount?: number;
+    monthsDiscount?: number;
+    nextSubscriptions?: UserSubscription[] | undefined;
+    errorText?: string | undefined;
 }
 
 export class DownloadUrlResponse implements IDownloadUrlResponse {
@@ -3140,55 +4073,6 @@ export enum IssueStatus {
     InProgress = "InProgress",
     Closed = "Closed",
     Fixed = "Fixed",
-}
-
-export class Limits implements ILimits {
-    reports!: Int32Limit;
-    checks!: Int32Limit;
-    comments!: Int32Limit;
-
-    constructor(data?: ILimits) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-        if (!data) {
-            this.reports = new Int32Limit();
-            this.checks = new Int32Limit();
-            this.comments = new Int32Limit();
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.reports = _data["reports"] ? Int32Limit.fromJS(_data["reports"]) : new Int32Limit();
-            this.checks = _data["checks"] ? Int32Limit.fromJS(_data["checks"]) : new Int32Limit();
-            this.comments = _data["comments"] ? Int32Limit.fromJS(_data["comments"]) : new Int32Limit();
-        }
-    }
-
-    static fromJS(data: any): Limits {
-        data = typeof data === 'object' ? data : {};
-        let result = new Limits();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["reports"] = this.reports ? this.reports.toJSON() : <any>undefined;
-        data["checks"] = this.checks ? this.checks.toJSON() : <any>undefined;
-        data["comments"] = this.comments ? this.comments.toJSON() : <any>undefined;
-        return data;
-    }
-}
-
-export interface ILimits {
-    reports: Int32Limit;
-    checks: Int32Limit;
-    comments: Int32Limit;
 }
 
 export class LlmModel implements ILlmModel {
@@ -3796,6 +4680,138 @@ export enum SourceStatus {
     Success = "Success",
 }
 
+export class SubscriptionOffer implements ISubscriptionOffer {
+    id!: string;
+    planId!: string;
+    months!: number;
+    price!: number;
+    createdAt!: moment.Moment;
+    deletedAt?: moment.Moment | undefined;
+
+    constructor(data?: ISubscriptionOffer) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.planId = _data["planId"];
+            this.months = _data["months"];
+            this.price = _data["price"];
+            this.createdAt = _data["createdAt"] ? moment(_data["createdAt"].toString()) : <any>undefined;
+            this.deletedAt = _data["deletedAt"] ? moment(_data["deletedAt"].toString()) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): SubscriptionOffer {
+        data = typeof data === 'object' ? data : {};
+        let result = new SubscriptionOffer();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["planId"] = this.planId;
+        data["months"] = this.months;
+        data["price"] = this.price;
+        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
+        data["deletedAt"] = this.deletedAt ? this.deletedAt.toISOString() : <any>undefined;
+        return data;
+    }
+}
+
+export interface ISubscriptionOffer {
+    id: string;
+    planId: string;
+    months: number;
+    price: number;
+    createdAt: moment.Moment;
+    deletedAt?: moment.Moment | undefined;
+}
+
+export class SubscriptionPlan implements ISubscriptionPlan {
+    id!: string;
+    name!: string | undefined;
+    description?: string | undefined;
+    tokensLimit?: number;
+    reportsLimit?: number;
+    isHidden?: boolean;
+    offers?: SubscriptionOffer[] | undefined;
+    createdAt!: moment.Moment;
+    deletedAt?: moment.Moment | undefined;
+
+    constructor(data?: ISubscriptionPlan) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.name = _data["name"];
+            this.description = _data["description"];
+            this.tokensLimit = _data["tokensLimit"];
+            this.reportsLimit = _data["reportsLimit"];
+            this.isHidden = _data["isHidden"];
+            if (Array.isArray(_data["offers"])) {
+                this.offers = [] as any;
+                for (let item of _data["offers"])
+                    this.offers!.push(SubscriptionOffer.fromJS(item));
+            }
+            this.createdAt = _data["createdAt"] ? moment(_data["createdAt"].toString()) : <any>undefined;
+            this.deletedAt = _data["deletedAt"] ? moment(_data["deletedAt"].toString()) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): SubscriptionPlan {
+        data = typeof data === 'object' ? data : {};
+        let result = new SubscriptionPlan();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["name"] = this.name;
+        data["description"] = this.description;
+        data["tokensLimit"] = this.tokensLimit;
+        data["reportsLimit"] = this.reportsLimit;
+        data["isHidden"] = this.isHidden;
+        if (Array.isArray(this.offers)) {
+            data["offers"] = [];
+            for (let item of this.offers)
+                data["offers"].push(item.toJSON());
+        }
+        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
+        data["deletedAt"] = this.deletedAt ? this.deletedAt.toISOString() : <any>undefined;
+        return data;
+    }
+}
+
+export interface ISubscriptionPlan {
+    id: string;
+    name: string | undefined;
+    description?: string | undefined;
+    tokensLimit?: number;
+    reportsLimit?: number;
+    isHidden?: boolean;
+    offers?: SubscriptionOffer[] | undefined;
+    createdAt: moment.Moment;
+    deletedAt?: moment.Moment | undefined;
+}
+
 export class TestSourceRequestSchema implements ITestSourceRequestSchema {
     provider!: string | undefined;
     source!: ReportSourceUnion;
@@ -3989,6 +5005,146 @@ export class UploadFileResponseSchema implements IUploadFileResponseSchema {
 export interface IUploadFileResponseSchema {
     id: string;
     fileName: string | undefined;
+}
+
+export class UserSubscription implements IUserSubscription {
+    id!: string;
+    planId!: string;
+    userId!: string;
+    linkedSubscriptionId?: string | undefined;
+    parentSubscriptionId?: string | undefined;
+    defaultPricePerMonth!: number;
+    price!: number;
+    createdAt!: moment.Moment;
+    confirmedAt?: moment.Moment | undefined;
+    deletedAt?: moment.Moment | undefined;
+    startsAt!: moment.Moment;
+    endsAt!: moment.Moment;
+
+    constructor(data?: IUserSubscription) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.planId = _data["planId"];
+            this.userId = _data["userId"];
+            this.linkedSubscriptionId = _data["linkedSubscriptionId"];
+            this.parentSubscriptionId = _data["parentSubscriptionId"];
+            this.defaultPricePerMonth = _data["defaultPricePerMonth"];
+            this.price = _data["price"];
+            this.createdAt = _data["createdAt"] ? moment(_data["createdAt"].toString()) : <any>undefined;
+            this.confirmedAt = _data["confirmedAt"] ? moment(_data["confirmedAt"].toString()) : <any>undefined;
+            this.deletedAt = _data["deletedAt"] ? moment(_data["deletedAt"].toString()) : <any>undefined;
+            this.startsAt = _data["startsAt"] ? moment(_data["startsAt"].toString()) : <any>undefined;
+            this.endsAt = _data["endsAt"] ? moment(_data["endsAt"].toString()) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): UserSubscription {
+        data = typeof data === 'object' ? data : {};
+        let result = new UserSubscription();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["planId"] = this.planId;
+        data["userId"] = this.userId;
+        data["linkedSubscriptionId"] = this.linkedSubscriptionId;
+        data["parentSubscriptionId"] = this.parentSubscriptionId;
+        data["defaultPricePerMonth"] = this.defaultPricePerMonth;
+        data["price"] = this.price;
+        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
+        data["confirmedAt"] = this.confirmedAt ? this.confirmedAt.toISOString() : <any>undefined;
+        data["deletedAt"] = this.deletedAt ? this.deletedAt.toISOString() : <any>undefined;
+        data["startsAt"] = this.startsAt ? this.startsAt.toISOString() : <any>undefined;
+        data["endsAt"] = this.endsAt ? this.endsAt.toISOString() : <any>undefined;
+        return data;
+    }
+}
+
+export interface IUserSubscription {
+    id: string;
+    planId: string;
+    userId: string;
+    linkedSubscriptionId?: string | undefined;
+    parentSubscriptionId?: string | undefined;
+    defaultPricePerMonth: number;
+    price: number;
+    createdAt: moment.Moment;
+    confirmedAt?: moment.Moment | undefined;
+    deletedAt?: moment.Moment | undefined;
+    startsAt: moment.Moment;
+    endsAt: moment.Moment;
+}
+
+export class UserSubscriptionsSchema implements IUserSubscriptionsSchema {
+    active?: UserSubscription;
+    future?: UserSubscription[] | undefined;
+    tokensLimit!: Int32Limit;
+    reportsLimit!: Int32Limit;
+
+    constructor(data?: IUserSubscriptionsSchema) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.tokensLimit = new Int32Limit();
+            this.reportsLimit = new Int32Limit();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.active = _data["active"] ? UserSubscription.fromJS(_data["active"]) : <any>undefined;
+            if (Array.isArray(_data["future"])) {
+                this.future = [] as any;
+                for (let item of _data["future"])
+                    this.future!.push(UserSubscription.fromJS(item));
+            }
+            this.tokensLimit = _data["tokensLimit"] ? Int32Limit.fromJS(_data["tokensLimit"]) : new Int32Limit();
+            this.reportsLimit = _data["reportsLimit"] ? Int32Limit.fromJS(_data["reportsLimit"]) : new Int32Limit();
+        }
+    }
+
+    static fromJS(data: any): UserSubscriptionsSchema {
+        data = typeof data === 'object' ? data : {};
+        let result = new UserSubscriptionsSchema();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["active"] = this.active ? this.active.toJSON() : <any>undefined;
+        if (Array.isArray(this.future)) {
+            data["future"] = [];
+            for (let item of this.future)
+                data["future"].push(item.toJSON());
+        }
+        data["tokensLimit"] = this.tokensLimit ? this.tokensLimit.toJSON() : <any>undefined;
+        data["reportsLimit"] = this.reportsLimit ? this.reportsLimit.toJSON() : <any>undefined;
+        return data;
+    }
+}
+
+export interface IUserSubscriptionsSchema {
+    active?: UserSubscription;
+    future?: UserSubscription[] | undefined;
+    tokensLimit: Int32Limit;
+    reportsLimit: Int32Limit;
 }
 
 export interface FileParameter {

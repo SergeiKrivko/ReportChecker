@@ -1,15 +1,19 @@
-import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
+import {ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit} from '@angular/core';
 import {AuthService} from '../../auth/auth.service';
 import {AsyncPipe} from '@angular/common';
 import {TuiCard} from '@taiga-ui/layout';
 import {TuiButton} from '@taiga-ui/core';
 import {AccountInfoEntity} from '../../entities/user-info-entity';
 import {map, Observable, switchMap} from 'rxjs';
-import {TuiAvatar, TuiInputRange} from '@taiga-ui/kit';
+import {TuiAvatar, TuiBadge, TuiInputRange} from '@taiga-ui/kit';
 import {SubscriptionsService} from '../../services/subscriptions.service';
 import {SubscriptionLimit} from '../../components/subscription-limit/subscription-limit';
 import {ActivatedRoute, RouterLink} from '@angular/router';
 import {AuthClient} from '../../auth/auth.client';
+import {SubscriptionPlanByIdPipe} from '../../pipes/subscription-plan-by-id-pipe';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {DateFromNowPipe} from '../../pipes/date-from-now-pipe';
+import {Moment} from 'moment';
 
 interface AuthProvider {
   key: string;
@@ -26,18 +30,22 @@ interface AuthProvider {
     TuiAvatar,
     TuiInputRange,
     SubscriptionLimit,
-    RouterLink
+    RouterLink,
+    SubscriptionPlanByIdPipe,
+    TuiBadge,
+    DateFromNowPipe
   ],
   templateUrl: './auth.page.html',
   styleUrl: './auth.page.scss',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AuthPage {
+export class AuthPage implements OnInit {
   private readonly subscriptionsService = inject(SubscriptionsService);
   private readonly authService = inject(AuthService);
   private readonly authClient = inject(AuthClient);
   private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
 
   private readonly authProviders$$: AuthProvider[] = [
     {key: "password", name: "Логин и пароль"},
@@ -48,7 +56,26 @@ export class AuthPage {
     {key: "microsoft", name: "Microsoft"},
   ];
 
-  protected readonly limits$ = this.subscriptionsService.limits$;
+  protected readonly currentSubscription$ = this.subscriptionsService.current$;
+  protected readonly currentEndsAt$: Observable<Moment | undefined> = this.currentSubscription$.pipe(
+    map(current => {
+      if (!current?.active)
+        return undefined;
+      let endsAt = current?.active?.endsAt;
+      for (const futureSubscription of current.future) {
+        if (futureSubscription.planId != current.active.planId)
+          break;
+        endsAt = futureSubscription.endsAt;
+      }
+      return endsAt;
+    })
+  );
+
+  ngOnInit() {
+    this.subscriptionsService.loadPlans$.pipe(
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe()
+  }
 
   protected authProviders$: Observable<AuthProvider[]> = this.authClient.userInfo$.pipe(
     map(userInfo => this.authProviders$$.map(provider => {

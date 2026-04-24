@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import {LimitEntity} from '../entities/limits-entity';
+import {LimitEntity} from '../entities/current-subscription-entity';
 
 @Pipe({
   name: 'limitReached',

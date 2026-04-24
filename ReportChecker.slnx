@@ -20,6 +20,9 @@
     <Project Path="Api/FormatProviders/FormatProviders.Latex/FormatProviders.Latex.csproj" />
     <Project Path="Api/FormatProviders/FormatProviders.Pdf/FormatProviders.Pdf.csproj" />
   </Folder>
+  <Folder Name="/Api/Tests/">
+    <Project Path="Api/Application.Tests/Application.Tests.csproj" />
+  </Folder>
   <Folder Name="/Cli/">
     <Project Path="Cli/Abstractions/Abstractions.csproj" />
     <Project Path="Cli/Cli/Cli.csproj" />
