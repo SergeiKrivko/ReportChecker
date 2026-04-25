@@ -11,29 +11,31 @@
           @if (comment.content) {
             <div [innerHtml]="comment.content"></div>
           }
-          <div class="status-container">
-            @switch (comment.status) {
-              @case ('Fixed') {
-                <tui-icon icon="@tui.check" class="fixed"/>
-                <i>Ошибка отмечена как исправленная</i>
-              }
-              @case ('Closed') {
-                <tui-icon icon="@tui.x" class="closed"/>
-                <i>Ошибка закрыта</i>
-              }
-              @case ('Open') {
-                @if ($index > 0) {
-                  <tui-icon icon="@tui.book-open" class="open"/>
-                  <i>Ошибка переоткрыта</i>
+          @if (comment.status && $index > 0) {
+            <div class="status-container">
+              @switch (comment.status) {
+                @case ('Fixed') {
+                  <tui-icon icon="@tui.check" class="fixed"/>
+                  <i>Ошибка отмечена как исправленная</i>
+                }
+                @case ('Closed') {
+                  <tui-icon icon="@tui.x" class="closed"/>
+                  <i>Ошибка закрыта</i>
+                }
+                @case ('Open') {
+                  @if ($index > 0) {
+                    <tui-icon icon="@tui.book-open" class="open"/>
+                    <i>Ошибка переоткрыта</i>
+                  }
                 }
               }
-            }
-          </div>
-          @if (comment.patch) {
-            <app-patch [patch]="comment.patch"/>
+            </div>
           }
         </div>
       </div>
+      @if (comment.patch) {
+        <app-patch [patch]="comment.patch"/>
+      }
     }
   </div>
 </div>
