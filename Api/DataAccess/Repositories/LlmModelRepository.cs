@@ -35,7 +35,8 @@ public class LlmModelRepository(ReportCheckerDbContext dbContext, IConfiguration
         return entity.ToDomain(DefaultModelId);
     }
 
-    public async Task<Guid> CreateModelAsync(string displayName, string modelKey, CancellationToken ct = default)
+    public async Task<Guid> CreateModelAsync(string displayName, string modelKey,
+        double inputCoefficient, double outputCoefficient, CancellationToken ct = default)
     {
         var id = Guid.NewGuid();
         var entity = new LlmModelEntity
@@ -43,12 +44,28 @@ public class LlmModelRepository(ReportCheckerDbContext dbContext, IConfiguration
             Id = id,
             DisplayName = displayName,
             ModelKey = modelKey,
+            InputCoefficient = inputCoefficient,
+            OutputCoefficient = outputCoefficient,
             CreatedAt = DateTime.UtcNow,
             DeletedAt = null,
         };
         await dbContext.LlmModels.AddAsync(entity, ct);
         await dbContext.SaveChangesAsync(ct);
         return id;
+    }
+
+    public async Task<bool> UpdateModelAsync(Guid modelId, string displayName, string modelKey, double inputCoefficient,
+        double outputCoefficient, CancellationToken ct = default)
+    {
+        var count = await dbContext.LlmModels
+            .Where(e => e.Id == modelId)
+            .ExecuteUpdateAsync(p => p
+                    .SetProperty(e => e.DisplayName, displayName)
+                    .SetProperty(e => e.ModelKey, modelKey)
+                    .SetProperty(e => e.InputCoefficient, inputCoefficient)
+                    .SetProperty(e => e.OutputCoefficient, outputCoefficient)
+                , ct);
+        return count > 0;
     }
 
     public async Task<bool> DeleteModelAsync(Guid id, CancellationToken ct = default)

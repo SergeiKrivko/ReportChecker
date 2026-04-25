@@ -12,6 +12,8 @@ public static class LlmModelConverter
             Id = entity.Id,
             DisplayName = entity.DisplayName,
             ModelKey = entity.ModelKey,
+            InputCoefficient = entity.InputCoefficient,
+            OutputCoefficient = entity.OutputCoefficient,
             CreatedAt = entity.CreatedAt,
             DeletedAt = entity.DeletedAt,
             IsDefault = entity.Id == defaultModelId,

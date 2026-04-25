@@ -33,8 +33,21 @@ public class ModelsController(ILlmModelRepository llmModelRepository) : Controll
     [Authorize(Policy = "Admin")]
     public async Task<ActionResult<Guid>> CreateModelAsync(CreateLlmModelSchema schema, CancellationToken ct = default)
     {
-        var id = await llmModelRepository.CreateModelAsync(schema.DisplayName, schema.ModelKey, ct);
+        var id = await llmModelRepository.CreateModelAsync(schema.DisplayName, schema.ModelKey,
+            schema.InputCoefficient, schema.OutputCoefficient, ct);
         return Ok(id);
+    }
+
+    [HttpPut("{modelId:guid}")]
+    [Authorize(Policy = "Admin")]
+    public async Task<ActionResult> UpdateModelAsync(Guid modelId, CreateLlmModelSchema schema,
+        CancellationToken ct = default)
+    {
+        var res = await llmModelRepository.UpdateModelAsync(modelId, schema.DisplayName, schema.ModelKey,
+            schema.InputCoefficient, schema.OutputCoefficient, ct);
+        if (!res)
+            return NotFound();
+        return Ok();
     }
 
     [HttpDelete("{modelId:guid}")]

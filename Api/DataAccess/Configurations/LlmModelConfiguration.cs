@@ -13,6 +13,8 @@ public class LlmModelConfiguration : IEntityTypeConfiguration<LlmModelEntity>
         builder.Property(e => e.Id).IsRequired();
         builder.Property(e => e.DisplayName).IsRequired();
         builder.Property(e => e.ModelKey).IsRequired();
+        builder.Property(e => e.InputCoefficient).IsRequired();
+        builder.Property(e => e.OutputCoefficient).IsRequired();
         builder.Property(e => e.CreatedAt).IsRequired();
         builder.Property(e => e.DeletedAt);
 

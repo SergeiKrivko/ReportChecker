@@ -11,10 +11,10 @@ public class AiAgent : AiAgentClientBase<string>
     private readonly OpenAiClient<string> _client;
     private readonly ILlmUsageRepository _llmUsageRepository;
     private readonly LlmUsageType _type;
-    private readonly Guid _modelId;
+    private readonly LlmModel _model;
     private readonly Guid _reportId;
 
-    internal AiAgent(OpenAiClient<string> client, LlmUsageType type, Guid modelId, Guid reportId,
+    internal AiAgent(OpenAiClient<string> client, LlmUsageType type, LlmModel model, Guid reportId,
         ILlmUsageRepository llmUsageRepository, ILogger<AiAgent> logger) :
         base(client)
     {
@@ -23,7 +23,7 @@ public class AiAgent : AiAgentClientBase<string>
         _llmUsageRepository = llmUsageRepository;
 
         _type = type;
-        _modelId = modelId;
+        _model = model;
         _reportId = reportId;
     }
 
@@ -35,12 +35,12 @@ public class AiAgent : AiAgentClientBase<string>
         await _llmUsageRepository.CreateUsageAsync(new LlmUsage
         {
             ReportId = _reportId,
-            ModelId = _modelId,
+            ModelId = _model.Id,
             FinishedAt = DateTime.UtcNow,
             Type = _type,
 
-            InputTokens = _client.Usage.InputTokens,
-            OutputTokens = _client.Usage.OutputTokens,
+            InputTokens = (int)(_client.Usage.InputTokens * _model.InputCoefficient),
+            OutputTokens = (int)(_client.Usage.OutputTokens * _model.OutputCoefficient),
             TotalTokens = _client.Usage.TotalTokens,
             TotalRequests = _client.Usage.TotalRequests,
         });

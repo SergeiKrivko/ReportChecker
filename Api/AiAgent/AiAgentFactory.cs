@@ -38,6 +38,6 @@ public class AiAgentFactory(
             Model = model.ModelKey,
         });
 
-        return new AiAgent(client, type, model.Id, report.Id, llmUsageRepository, logger);
+        return new AiAgent(client, type, model, report.Id, llmUsageRepository, logger);
     }
 }
