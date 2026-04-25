@@ -19,6 +19,6 @@
   }
 }
 
-html {
-  background-color: var(--tui-background-base);
+html, body {
+  background-color: #222222;
 }
