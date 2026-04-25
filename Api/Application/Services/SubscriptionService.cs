@@ -144,7 +144,8 @@ public class SubscriptionService(
 
         var newSubscriptionMonths = offer.Months - 1;
         var limit = await GetTokensLimitAsync(userId, ct);
-        var tokensDiscount = (1 - (decimal)limit.Current / limit.Maximum) * activeSubscription.DefaultPricePerMonth;
+        var tokensDiscount =
+            decimal.Round((1 - (decimal)limit.Current / limit.Maximum) * activeSubscription.DefaultPricePerMonth, 2);
         var endsAt = now.AddDays(offer.Months * DaysPerMonth);
         decimal monthsDiscount = 0;
         var nextSubscriptions = new List<UserSubscription>();
@@ -187,6 +188,7 @@ public class SubscriptionService(
                 }
             }
         }
+
         if (newSubscriptionMonths > 0)
             subscription = await userSubscriptionRepository.CreateSubscriptionAsync(plan.Id, userId,
                 defaultPricePerMonth, offer.Price - tokensDiscount - monthsDiscount, now, endsAt, ct);

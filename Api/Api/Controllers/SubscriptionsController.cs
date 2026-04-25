@@ -57,4 +57,14 @@ public class SubscriptionsController(
         await subscriptionService.ConfirmSubscriptionAsync(subscriptionId, ct);
         return Ok();
     }
+
+    [HttpGet("{subscriptionId:guid}")]
+    [Authorize(Policy = "Admin")]
+    public async Task<ActionResult<UserSubscription>> GetSubscriptionById(Guid subscriptionId, CancellationToken ct)
+    {
+        var subscription = await userSubscriptionRepository.GetSubscriptionByIdAsync(subscriptionId, ct);
+        if (subscription == null)
+            return NotFound();
+        return Ok(subscription);
+    }
 }
