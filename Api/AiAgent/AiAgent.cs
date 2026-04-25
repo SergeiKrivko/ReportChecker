@@ -39,9 +39,10 @@ public class AiAgent : AiAgentClientBase<string>
             FinishedAt = DateTime.UtcNow,
             Type = _type,
 
-            InputTokens = (int)(_client.Usage.InputTokens * _model.InputCoefficient),
-            OutputTokens = (int)(_client.Usage.OutputTokens * _model.OutputCoefficient),
-            TotalTokens = _client.Usage.TotalTokens,
+            InputTokens = _client.Usage.InputTokens,
+            OutputTokens = _client.Usage.OutputTokens,
+            TotalTokens = (int)(_client.Usage.InputTokens * _model.InputCoefficient +
+                                _client.Usage.OutputTokens * _model.OutputCoefficient),
             TotalRequests = _client.Usage.TotalRequests,
         });
     }

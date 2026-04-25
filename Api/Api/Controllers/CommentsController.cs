@@ -86,7 +86,8 @@ public class CommentsController(
             return NotFound();
 
         var id = await commentRepository.CreateCommentAsync(issueId, userId, schema.Content, schema.Status);
-        await checkService.WriteCommentAsync(report.Id, issueId);
+        if (!string.IsNullOrWhiteSpace(schema.Content))
+            await checkService.WriteCommentAsync(report.Id, issueId);
 
         return Ok(id);
     }
