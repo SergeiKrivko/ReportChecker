@@ -1815,6 +1815,63 @@ export class ApiClient extends ApiClientBase {
     }
 
     /**
+     * @param body (optional)
+     * @return OK
+     */
+    modelsPUT(modelId: string, body: CreateLlmModelSchema | undefined): Observable<void> {
+        let url_ = this.baseUrl + "/api/v1/models/{modelId}";
+        if (modelId === undefined || modelId === null)
+            throw new Error("The parameter 'modelId' must be defined.");
+        url_ = url_.replace("{modelId}", encodeURIComponent("" + modelId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("put", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.processModelsPUT(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processModelsPUT(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<void>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<void>;
+        }));
+    }
+
+    protected processModelsPUT(response: HttpResponseBase): Observable<void> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return _observableOf(null as any);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
      * @return OK
      */
     modelsDELETE(modelId: string): Observable<void> {
@@ -3366,6 +3423,8 @@ export interface ICreateInstructionTaskSchema {
 export class CreateLlmModelSchema implements ICreateLlmModelSchema {
     displayName!: string | undefined;
     modelKey!: string | undefined;
+    inputCoefficient?: number;
+    outputCoefficient?: number;
 
     constructor(data?: ICreateLlmModelSchema) {
         if (data) {
@@ -3380,6 +3439,8 @@ export class CreateLlmModelSchema implements ICreateLlmModelSchema {
         if (_data) {
             this.displayName = _data["displayName"];
             this.modelKey = _data["modelKey"];
+            this.inputCoefficient = _data["inputCoefficient"];
+            this.outputCoefficient = _data["outputCoefficient"];
         }
     }
 
@@ -3394,6 +3455,8 @@ export class CreateLlmModelSchema implements ICreateLlmModelSchema {
         data = typeof data === 'object' ? data : {};
         data["displayName"] = this.displayName;
         data["modelKey"] = this.modelKey;
+        data["inputCoefficient"] = this.inputCoefficient;
+        data["outputCoefficient"] = this.outputCoefficient;
         return data;
     }
 }
@@ -3401,6 +3464,8 @@ export class CreateLlmModelSchema implements ICreateLlmModelSchema {
 export interface ICreateLlmModelSchema {
     displayName: string | undefined;
     modelKey: string | undefined;
+    inputCoefficient?: number;
+    outputCoefficient?: number;
 }
 
 export class CreateReportSchema implements ICreateReportSchema {
@@ -4079,6 +4144,8 @@ export class LlmModel implements ILlmModel {
     id!: string;
     displayName!: string | undefined;
     modelKey!: string | undefined;
+    inputCoefficient?: number;
+    outputCoefficient?: number;
     isDefault?: boolean;
     createdAt!: moment.Moment;
     deletedAt?: moment.Moment | undefined;
@@ -4097,6 +4164,8 @@ export class LlmModel implements ILlmModel {
             this.id = _data["id"];
             this.displayName = _data["displayName"];
             this.modelKey = _data["modelKey"];
+            this.inputCoefficient = _data["inputCoefficient"];
+            this.outputCoefficient = _data["outputCoefficient"];
             this.isDefault = _data["isDefault"];
             this.createdAt = _data["createdAt"] ? moment(_data["createdAt"].toString()) : <any>undefined;
             this.deletedAt = _data["deletedAt"] ? moment(_data["deletedAt"].toString()) : <any>undefined;
@@ -4115,6 +4184,8 @@ export class LlmModel implements ILlmModel {
         data["id"] = this.id;
         data["displayName"] = this.displayName;
         data["modelKey"] = this.modelKey;
+        data["inputCoefficient"] = this.inputCoefficient;
+        data["outputCoefficient"] = this.outputCoefficient;
         data["isDefault"] = this.isDefault;
         data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
         data["deletedAt"] = this.deletedAt ? this.deletedAt.toISOString() : <any>undefined;
@@ -4126,6 +4197,8 @@ export interface ILlmModel {
     id: string;
     displayName: string | undefined;
     modelKey: string | undefined;
+    inputCoefficient?: number;
+    outputCoefficient?: number;
     isDefault?: boolean;
     createdAt: moment.Moment;
     deletedAt?: moment.Moment | undefined;

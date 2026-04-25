@@ -1,0 +1,21 @@
+<form tuiCardLarge tuiAppearance="outline-grayscale" class="container" [formGroup]="control">
+  <label tuiLabel>Название:</label>
+  <tui-textfield>
+    <input tuiTextfield formControlName="displayName">
+  </tui-textfield>
+
+  <label tuiLabel>ID модели:</label>
+  <tui-textfield>
+    <input tuiTextfield formControlName="modelKey">
+  </tui-textfield>
+
+  <label tuiLabel>Коэффициент токенов запроса:</label>
+  <tui-textfield>
+    <input tuiInputNumber formControlName="inputCoefficient">
+  </tui-textfield>
+
+  <label tuiLabel>Коэффициент токенов ответа:</label>
+  <tui-textfield>
+    <input tuiInputNumber formControlName="outputCoefficient">
+  </tui-textfield>
+</form>

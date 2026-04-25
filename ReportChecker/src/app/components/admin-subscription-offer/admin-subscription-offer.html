@@ -1,0 +1,11 @@
+<form class="container" [formGroup]="control">
+  <label tuiLabel>Время действия (мес):</label>
+  <tui-textfield>
+    <input tuiInputNumber formControlName="months">
+  </tui-textfield>
+
+  <label tuiLabel>Стоимость (₽):</label>
+  <tui-textfield>
+    <input tuiInputNumber formControlName="price">
+  </tui-textfield>
+</form>

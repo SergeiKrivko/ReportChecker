@@ -1,0 +1,6 @@
+<div class="container">
+  @for (model of models$ | async; track model.id) {
+    <app-admin-llm-model [model]="model"/>
+  }
+  <button tuiButton iconStart="@tui.plus" (click)="addModel()">Добавить</button>
+</div>

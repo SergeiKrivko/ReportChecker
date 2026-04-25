@@ -1,0 +1,8 @@
+<div class="container">
+  @for (plan of plans$ | async; track plan.id) {
+    @if (plan.name !== 'Free') {
+      <app-admin-subscription-plan [subscriptionPlan]="plan"/>
+    }
+  }
+  <button tuiButton iconStart="@tui.plus" (click)="addPlan()">Добавить</button>
+</div>

@@ -11,6 +11,9 @@ import {NewReportPage} from './pages/new-report.page/new-report.page';
 import {LandingPage} from './pages/landing-page/landing-page';
 import {SubscriptionPlansPage} from './pages/subscription-plans.page/subscription-plans.page';
 import {NewSubscriptionPage} from './pages/new-subscription.page/new-subscription.page';
+import {AdminRootPage} from './pages/admin-root.page/admin-root.page';
+import {AdminModelsPage} from './pages/admin-models.page/admin-models.page';
+import {AdminSubscriptionsPage} from './pages/admin-subscriptions.page/admin-subscriptions.page';
 
 export const routes: Routes = [
   {path: '', pathMatch: "full", component: LandingPage},
@@ -25,6 +28,12 @@ export const routes: Routes = [
           {path: "settings", pathMatch: "full", component: SettingsPage},
         ]
       },
+    ]
+  },
+  {
+    path: "admin", component: AdminRootPage, children: [
+      {path: "models", pathMatch: "full", component: AdminModelsPage},
+      {path: "subscriptions", pathMatch: "full", component: AdminSubscriptionsPage},
     ]
   },
   {path: "auth", pathMatch: "full", component: AuthPage},

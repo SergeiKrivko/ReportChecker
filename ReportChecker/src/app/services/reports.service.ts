@@ -57,7 +57,10 @@ export class ReportsService {
 
   loadModels() {
     return this.apiClient.modelsAll().pipe(
-      map(e => e.map(llmModelToEntity)),
+      map(e => e
+        .map(llmModelToEntity)
+        .sort((a, b) => ((a.displayName ?? "") > (b.displayName ?? "") ? 1 : -1))
+      ),
       tap(models => patchState(this.store$$, {models}))
     );
   }

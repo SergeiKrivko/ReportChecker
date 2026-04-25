@@ -1,0 +1,35 @@
+<form tuiCardLarge tuiAppearance="outline-grayscale" class="container" [formGroup]="control">
+  <label tuiLabel>Название:</label>
+  <tui-textfield>
+    <input tuiTextfield formControlName="name">
+  </tui-textfield>
+
+  <label tuiLabel>Описание:</label>
+  <tui-textfield>
+    <textarea tuiTextarea formControlName="description"></textarea>
+  </tui-textfield>
+
+  <label tuiLabel>Лимит токенов:</label>
+  <tui-textfield>
+    <input tuiInputNumber formControlName="tokensLimit">
+  </tui-textfield>
+
+  <label tuiLabel>Лимит отчетов:</label>
+  <tui-textfield>
+    <input tuiInputNumber formControlName="reportsLimit">
+  </tui-textfield>
+
+  <label tuiLabel>Предложения:</label>
+  <div class="offers-container">
+    @for (offer of subscriptionPlan().offers; track offer.id) {
+      <div class="h-container">
+        <app-admin-subscription-offer [subscriptionPlan]="subscriptionPlan()" [subscriptionOffer]="offer" class="offer-card"/>
+        @if ($index === (subscriptionPlan().offers?.length ?? 0) - 1) {
+          <button tuiIconButton appearance="flat" iconStart="@tui.plus" (click)="addOffer()"></button>
+        } @else {
+          <button tuiIconButton appearance="flat-destructive" iconStart="@tui.trash" (click)="deleteOffer(offer.id)"></button>
+        }
+      </div>
+    }
+  </div>
+</form>
