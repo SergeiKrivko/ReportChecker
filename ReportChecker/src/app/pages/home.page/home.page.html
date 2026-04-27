@@ -10,8 +10,27 @@
   </div>
   <div class="reports-container">
     @for (report of reports$ | async; track report.id) {
-      <a tuiCardLarge tuiHeader tuiSurface="floating" [routerLink]="report.id">
-        <h3>{{ report.name }}</h3>
+      <a tuiCardLarge tuiHeader tuiSurface="floating" [routerLink]="report.id" class="report-card">
+        <div class="left-container">
+          <tui-avatar [src]="report.sourceProvider | iconBySource" size="m"/>
+          <div class="info-container">
+            <h4>{{ report.name }}</h4>
+          </div>
+        </div>
+        <div class="right-container">
+          <div class="issue-counts-container">
+            @if (report.issueCount | mapPriority:1) {
+              <tui-badge appearance="primary-destructive">{{ report.issueCount | mapPriority:1 }}</tui-badge>
+            }
+            @if (report.issueCount | mapPriority:2) {
+              <tui-badge appearance="warning">{{ report.issueCount | mapPriority:2 }}</tui-badge>
+            }
+            @if (report.issueCount | mapPriority:3) {
+              <tui-badge appearance="primary">{{ report.issueCount | mapPriority:3 }}</tui-badge>
+            }
+          </div>
+          <span class="update-date">{{ report.updatedAt | dateFromNow }} назад</span>
+        </div>
       </a>
     }
   </div>

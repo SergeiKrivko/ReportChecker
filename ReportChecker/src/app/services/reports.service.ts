@@ -146,6 +146,9 @@ const reportToEntity = (report: Report): ReportEntity => ({
   sourceProvider: report.sourceProvider ?? "File",
   format: report.format ?? "Latex",
   llmModelId: report.llmModelId,
+  source: report.source,
+  issueCount: report.issueCount,
+  updatedAt: report.updatedAt,
 });
 
 const sourceInfoToEntity = (info: SourceInfo): SourceInfoEntity => ({

@@ -4791,6 +4791,9 @@ export class Report implements IReport {
     llmModelId?: string | undefined;
     createdAt?: moment.Moment;
     deletedAt?: moment.Moment | undefined;
+    source?: ReportSourceUnion;
+    issueCount?: { [key: string]: number; } | undefined;
+    updatedAt?: moment.Moment | undefined;
 
     constructor(data?: IReport) {
         if (data) {
@@ -4811,6 +4814,15 @@ export class Report implements IReport {
             this.llmModelId = _data["llmModelId"];
             this.createdAt = _data["createdAt"] ? moment(_data["createdAt"].toString()) : <any>undefined;
             this.deletedAt = _data["deletedAt"] ? moment(_data["deletedAt"].toString()) : <any>undefined;
+            this.source = _data["source"] ? ReportSourceUnion.fromJS(_data["source"]) : <any>undefined;
+            if (_data["issueCount"]) {
+                this.issueCount = {} as any;
+                for (let key in _data["issueCount"]) {
+                    if (_data["issueCount"].hasOwnProperty(key))
+                        (<any>this.issueCount)![key] = _data["issueCount"][key];
+                }
+            }
+            this.updatedAt = _data["updatedAt"] ? moment(_data["updatedAt"].toString()) : <any>undefined;
         }
     }
 
@@ -4831,6 +4843,15 @@ export class Report implements IReport {
         data["llmModelId"] = this.llmModelId;
         data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
         data["deletedAt"] = this.deletedAt ? this.deletedAt.toISOString() : <any>undefined;
+        data["source"] = this.source ? this.source.toJSON() : <any>undefined;
+        if (this.issueCount) {
+            data["issueCount"] = {};
+            for (let key in this.issueCount) {
+                if (this.issueCount.hasOwnProperty(key))
+                    (<any>data["issueCount"])[key] = (<any>this.issueCount)[key];
+            }
+        }
+        data["updatedAt"] = this.updatedAt ? this.updatedAt.toISOString() : <any>undefined;
         return data;
     }
 }
@@ -4844,6 +4865,9 @@ export interface IReport {
     llmModelId?: string | undefined;
     createdAt?: moment.Moment;
     deletedAt?: moment.Moment | undefined;
+    source?: ReportSourceUnion;
+    issueCount?: { [key: string]: number; } | undefined;
+    updatedAt?: moment.Moment | undefined;
 }
 
 export class ReportSourceUnion implements IReportSourceUnion {

@@ -7,6 +7,10 @@ import {RouterLink} from '@angular/router';
 import {SubscriptionLimit} from '../../components/subscription-limit/subscription-limit';
 import {SubscriptionsService} from '../../services/subscriptions.service';
 import {LimitReachedPipe} from '../../pipes/limit-reached-pipe';
+import {TuiAvatar, TuiBadge} from '@taiga-ui/kit';
+import {IconBySourcePipe} from '../../pipes/icon-by-source-pipe';
+import {MapPriorityPipe} from '../../pipes/map-priority-pipe';
+import {DateFromNowPipe} from '../../pipes/date-from-now-pipe';
 
 @Component({
   selector: 'app-home.page',
@@ -18,7 +22,12 @@ import {LimitReachedPipe} from '../../pipes/limit-reached-pipe';
     TuiSurface,
     RouterLink,
     SubscriptionLimit,
-    LimitReachedPipe
+    LimitReachedPipe,
+    TuiAvatar,
+    IconBySourcePipe,
+    MapPriorityPipe,
+    TuiBadge,
+    DateFromNowPipe
   ],
   templateUrl: './home.page.html',
   styleUrl: './home.page.scss',

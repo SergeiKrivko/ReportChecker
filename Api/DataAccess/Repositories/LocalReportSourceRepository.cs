@@ -13,6 +13,8 @@ public class LocalReportSourceRepository(ReportCheckerDbContext dbContext)
         {
             InitialFileId = entity.InitialFileId,
             EntryFilePath = entity.EntryFilePath,
+            ClientId = entity.ClientId,
+            ClientMachineName = entity.ClientMachineName
         };
     }
 

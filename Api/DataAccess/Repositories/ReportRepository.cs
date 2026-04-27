@@ -2,6 +2,7 @@
 using ReportChecker.Abstractions;
 using ReportChecker.DataAccess.Entities;
 using ReportChecker.Models;
+using ReportChecker.Models.Sources;
 
 namespace ReportChecker.DataAccess.Repositories;
 
@@ -59,8 +60,12 @@ public class ReportRepository(ReportCheckerDbContext dbContext) : IReportReposit
     {
         var result = await dbContext.Reports
             .Where(e => e.OwnerId == userId && e.DeletedAt == null)
+            .Include(e => e.FileSource)
+            .Include(e => e.GitHubSource)
+            .Include(e => e.LocalSource)
+            .Include(e => e.Checks).ThenInclude(e => e.Issues).ThenInclude(e => e.Comments)
             .ToListAsync();
-        return result.Select(FromEntity);
+        return result.Select(FromEntity).OrderByDescending(e => e.UpdatedAt);
     }
 
     public async Task<IEnumerable<Report>> GetAllReportsOfSourceAsync(string sourceProvider)
@@ -80,6 +85,17 @@ public class ReportRepository(ReportCheckerDbContext dbContext) : IReportReposit
 
     private static Report FromEntity(ReportEntity entity)
     {
+        DateTime updatedAt;
+        try
+        {
+            updatedAt = entity.Checks.SelectMany(e =>
+                e.Issues.SelectMany(i => i.Comments.Select(c => c.CreatedAt)))
+                .Max();
+        }
+        catch (InvalidOperationException)
+        {
+            updatedAt = entity.CreatedAt;
+        }
         return new Report
         {
             Id = entity.ReportId,
@@ -90,6 +106,43 @@ public class ReportRepository(ReportCheckerDbContext dbContext) : IReportReposit
             LlmModelId = entity.LlmModelId,
             CreatedAt = entity.CreatedAt,
             DeletedAt = entity.DeletedAt,
+
+            IssueCount = entity.Checks
+                .SelectMany(e => e.Issues)
+                .GroupBy(e => e.Priority)
+                .ToDictionary(e => e.Key,
+                    e => e.Count(i => i.Comments
+                        .Where(c => c.Status != null)
+                        .OrderByDescending(c => c.CreatedAt)
+                        .First().Status == IssueStatus.Open)),
+            UpdatedAt = updatedAt,
+            Source = new ReportSourceUnion
+            {
+                File = entity.FileSource == null
+                    ? null
+                    : new FileReportSource
+                    {
+                        InitialFileId = entity.FileSource.InitialFileId,
+                        EntryFilePath = entity.FileSource.EntryFilePath,
+                    },
+                GitHub = entity.GitHubSource == null
+                    ? null
+                    : new GitHubReportSource()
+                    {
+                        RepositoryId = entity.GitHubSource.RepositoryId,
+                        Branch = entity.GitHubSource.Branch,
+                        Path = entity.GitHubSource.Path,
+                    },
+                Local = entity.LocalSource == null
+                    ? null
+                    : new LocalReportSource()
+                    {
+                        InitialFileId = entity.LocalSource.InitialFileId,
+                        EntryFilePath = entity.LocalSource.EntryFilePath,
+                        ClientId = entity.LocalSource.ClientId,
+                        ClientMachineName = entity.LocalSource.ClientMachineName
+                    },
+            }
         };
     }
 }
