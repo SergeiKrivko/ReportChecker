@@ -19,6 +19,6 @@ public interface ILlmUsageRepository
         CancellationToken ct = default);
 
     public Task<IReadOnlyList<LlmUsageInterval>> GetTimeUsageAsync(Guid userId, DateTime timeFrom, DateTime timeTo,
-        Guid? modelId = null, Guid? reportId = null,
+        Guid? modelId = null, Guid? reportId = null, int? numberOfIntervals = null,
         CancellationToken ct = default);
 }

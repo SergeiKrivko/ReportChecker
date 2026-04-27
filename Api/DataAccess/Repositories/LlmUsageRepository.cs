@@ -99,7 +99,7 @@ public class LlmUsageRepository(ReportCheckerDbContext dbContext) : ILlmUsageRep
     }
 
     public async Task<IReadOnlyList<LlmUsageInterval>> GetTimeUsageAsync(Guid userId, DateTime timeFrom,
-        DateTime timeTo, Guid? modelId = null, Guid? reportId = null,
+        DateTime timeTo, Guid? modelId = null, Guid? reportId = null, int? numberOfIntervals = null,
         CancellationToken ct = default)
     {
         var query = dbContext.LlmUsages
@@ -112,8 +112,9 @@ public class LlmUsageRepository(ReportCheckerDbContext dbContext) : ILlmUsageRep
         if (reportId != null)
             query = query.Where(e => e.ReportId == reportId.Value);
 
+        numberOfIntervals ??= (int)(timeTo - timeFrom).TotalDays;
         var entities = await query.ToListAsync(ct);
-        return entities.GroupByIntervals(e => e.FinishedAt, timeFrom, timeTo, 50)
+        return entities.GroupByIntervals(e => e.FinishedAt, timeFrom, timeTo, numberOfIntervals.Value)
             .Select(e => new LlmUsageInterval
             {
                 StartTime = e.IntervalStart,
