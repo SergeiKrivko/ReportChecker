@@ -2266,6 +2266,161 @@ export class ApiClient extends ApiClientBase {
     }
 
     /**
+     * @param start (optional)
+     * @param end (optional)
+     * @return OK
+     */
+    usage(start: moment.Moment | undefined, end: moment.Moment | undefined): Observable<LlmUsageGroup[]> {
+        let url_ = this.baseUrl + "/api/v1/statistics/usage?";
+        if (start === null)
+            throw new Error("The parameter 'start' cannot be null.");
+        else if (start !== undefined)
+            url_ += "start=" + encodeURIComponent(start ? "" + start.toISOString() : "") + "&";
+        if (end === null)
+            throw new Error("The parameter 'end' cannot be null.");
+        else if (end !== undefined)
+            url_ += "end=" + encodeURIComponent(end ? "" + end.toISOString() : "") + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("get", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.processUsage(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processUsage(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<LlmUsageGroup[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<LlmUsageGroup[]>;
+        }));
+    }
+
+    protected processUsage(response: HttpResponseBase): Observable<LlmUsageGroup[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(LlmUsageGroup.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param start (optional)
+     * @param end (optional)
+     * @param report (optional)
+     * @param model (optional)
+     * @param intervals (optional)
+     * @return OK
+     */
+    timeUsage(start: moment.Moment | undefined, end: moment.Moment | undefined, report: string | undefined, model: string | undefined, intervals: number | undefined): Observable<LlmUsageInterval[]> {
+        let url_ = this.baseUrl + "/api/v1/statistics/timeUsage?";
+        if (start === null)
+            throw new Error("The parameter 'start' cannot be null.");
+        else if (start !== undefined)
+            url_ += "start=" + encodeURIComponent(start ? "" + start.toISOString() : "") + "&";
+        if (end === null)
+            throw new Error("The parameter 'end' cannot be null.");
+        else if (end !== undefined)
+            url_ += "end=" + encodeURIComponent(end ? "" + end.toISOString() : "") + "&";
+        if (report === null)
+            throw new Error("The parameter 'report' cannot be null.");
+        else if (report !== undefined)
+            url_ += "report=" + encodeURIComponent("" + report) + "&";
+        if (model === null)
+            throw new Error("The parameter 'model' cannot be null.");
+        else if (model !== undefined)
+            url_ += "model=" + encodeURIComponent("" + model) + "&";
+        if (intervals === null)
+            throw new Error("The parameter 'intervals' cannot be null.");
+        else if (intervals !== undefined)
+            url_ += "intervals=" + encodeURIComponent("" + intervals) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("get", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.processTimeUsage(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processTimeUsage(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<LlmUsageInterval[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<LlmUsageInterval[]>;
+        }));
+    }
+
+    protected processTimeUsage(response: HttpResponseBase): Observable<LlmUsageInterval[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(LlmUsageInterval.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
      * @return OK
      */
     offersAll(planId: string): Observable<SubscriptionOffer[]> {
@@ -2912,7 +3067,7 @@ export class ApiClient extends ApiClientBase {
      * @param body (optional)
      * @return OK
      */
-    subscriptions(body: CreateUserSubscriptionSchema | undefined): Observable<CreatedSubscription> {
+    subscriptionsPOST(body: CreateUserSubscriptionSchema | undefined): Observable<CreatedSubscription> {
         let url_ = this.baseUrl + "/api/v1/subscriptions";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -2931,11 +3086,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("post", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processSubscriptions(response_);
+            return this.processSubscriptionsPOST(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processSubscriptions(response_ as any);
+                    return this.processSubscriptionsPOST(response_ as any);
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<CreatedSubscription>;
                 }
@@ -2944,7 +3099,7 @@ export class ApiClient extends ApiClientBase {
         }));
     }
 
-    protected processSubscriptions(response: HttpResponseBase): Observable<CreatedSubscription> {
+    protected processSubscriptionsPOST(response: HttpResponseBase): Observable<CreatedSubscription> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -3014,6 +3169,62 @@ export class ApiClient extends ApiClientBase {
         if (status === 200) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
             return _observableOf(null as any);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    subscriptionsGET(subscriptionId: string): Observable<UserSubscription> {
+        let url_ = this.baseUrl + "/api/v1/subscriptions/{subscriptionId}";
+        if (subscriptionId === undefined || subscriptionId === null)
+            throw new Error("The parameter 'subscriptionId' must be defined.");
+        url_ = url_.replace("{subscriptionId}", encodeURIComponent("" + subscriptionId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("get", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.processSubscriptionsGET(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processSubscriptionsGET(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<UserSubscription>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<UserSubscription>;
+        }));
+    }
+
+    protected processSubscriptionsGET(response: HttpResponseBase): Observable<UserSubscription> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = UserSubscription.fromJS(resultData200);
+            return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
@@ -4202,6 +4413,102 @@ export interface ILlmModel {
     isDefault?: boolean;
     createdAt: moment.Moment;
     deletedAt?: moment.Moment | undefined;
+}
+
+export class LlmUsageGroup implements ILlmUsageGroup {
+    reportId!: string;
+    modelId!: string;
+    totalTokens?: number;
+    totalRequests?: number;
+
+    constructor(data?: ILlmUsageGroup) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.reportId = _data["reportId"];
+            this.modelId = _data["modelId"];
+            this.totalTokens = _data["totalTokens"];
+            this.totalRequests = _data["totalRequests"];
+        }
+    }
+
+    static fromJS(data: any): LlmUsageGroup {
+        data = typeof data === 'object' ? data : {};
+        let result = new LlmUsageGroup();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["reportId"] = this.reportId;
+        data["modelId"] = this.modelId;
+        data["totalTokens"] = this.totalTokens;
+        data["totalRequests"] = this.totalRequests;
+        return data;
+    }
+}
+
+export interface ILlmUsageGroup {
+    reportId: string;
+    modelId: string;
+    totalTokens?: number;
+    totalRequests?: number;
+}
+
+export class LlmUsageInterval implements ILlmUsageInterval {
+    startTime!: moment.Moment;
+    endTime!: moment.Moment;
+    totalTokens!: number;
+    totalRequests!: number;
+
+    constructor(data?: ILlmUsageInterval) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.startTime = _data["startTime"] ? moment(_data["startTime"].toString()) : <any>undefined;
+            this.endTime = _data["endTime"] ? moment(_data["endTime"].toString()) : <any>undefined;
+            this.totalTokens = _data["totalTokens"];
+            this.totalRequests = _data["totalRequests"];
+        }
+    }
+
+    static fromJS(data: any): LlmUsageInterval {
+        data = typeof data === 'object' ? data : {};
+        let result = new LlmUsageInterval();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["startTime"] = this.startTime ? this.startTime.toISOString() : <any>undefined;
+        data["endTime"] = this.endTime ? this.endTime.toISOString() : <any>undefined;
+        data["totalTokens"] = this.totalTokens;
+        data["totalRequests"] = this.totalRequests;
+        return data;
+    }
+}
+
+export interface ILlmUsageInterval {
+    startTime: moment.Moment;
+    endTime: moment.Moment;
+    totalTokens: number;
+    totalRequests: number;
 }
 
 export class LocalCheckSource implements ILocalCheckSource {

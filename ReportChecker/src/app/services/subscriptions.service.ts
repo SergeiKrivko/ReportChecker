@@ -3,7 +3,7 @@ import {CurrentSubscriptionEntity} from '../entities/current-subscription-entity
 import {ApiClient, CreateUserSubscriptionSchema, SubscriptionPlan, UserSubscriptionsSchema} from './api-client';
 import {patchState, signalState} from '@ngrx/signals';
 import {toObservable} from '@angular/core/rxjs-interop';
-import {combineLatest, map, Observable, of, switchMap, tap} from 'rxjs';
+import {map, Observable, of, switchMap, tap} from 'rxjs';
 import {AuthService} from '../auth/auth.service';
 import {SubscriptionPlanEntity} from '../entities/subscription-plan-entity';
 
@@ -42,8 +42,7 @@ export class SubscriptionsService {
   );
 
   createSubscription(offerId: string) {
-    console.log('createSubscription', offerId);
-    return this.apiClient.subscriptions(CreateUserSubscriptionSchema.fromJS({
+    return this.apiClient.subscriptionsPOST(CreateUserSubscriptionSchema.fromJS({
       offerId
     }));
   }

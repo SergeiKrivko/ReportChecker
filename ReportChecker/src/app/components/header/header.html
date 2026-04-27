@@ -62,7 +62,10 @@
                routerLink="/subscriptions"></a>
           </div>
           <app-subscription-limit name="Токены" [limit]="current.tokensLimit" [percentages]="true"/>
-          <label tuiLabel>Сброс лимита {{ resetLimitsAt$ | async | asDay }}</label>
+          <div class="h-container">
+            <label tuiLabel>Сброс лимита {{ resetLimitsAt$ | async | asDay }}</label>
+            <a tuiIconButton iconStart="@tui.chart-line" routerLink="/statistics" size="m" appearance="flat"></a>
+          </div>
         }
       </div>
     </tui-opt-group>

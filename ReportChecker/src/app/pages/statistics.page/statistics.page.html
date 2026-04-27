@@ -1,0 +1,58 @@
+<div class="container page-padding">
+  <form class="header-container" [formGroup]="control">
+    <tui-textfield [tuiTextfieldCleaner]="false" class="input">
+      <label tuiLabel>Choose range</label>
+      <input tuiInputDateRange formControlName="range"/>
+      <tui-calendar-range *tuiTextfieldDropdown/>
+    </tui-textfield>
+  </form>
+
+  @let timeChartData = timeChartData$ | async;
+  @if (timeChartData) {
+    <h2>Использование токенов</h2>
+    <tui-axes class="axes" [horizontalLines]="2" [verticalLines]="4">
+      @let timeHeight = timeHeight$ | async;
+      @let timeWidth = timeWidth$ | async;
+      <tui-line-chart
+        [dots]="true"
+        [value]="timeChartData"
+        [height]="timeHeight ?? 0"
+        [width]="timeWidth ?? 0"
+        [tuiHintContent]="hintContent"
+        [x]="0"
+        [y]="0"
+      />
+    </tui-axes>
+    <ng-template #hintContent let-value>
+      <span>{{ dateByX(value[0]) | asDay }}</span>
+      <br>
+      <span><b>{{ value[1] }}</b> токенов</span>
+    </ng-template>
+  }
+
+  <div class="wrap-container">
+    @let reportChartData = reportChartData$ | async;
+    @if (reportChartData) {
+      <div class="chart-container">
+        <h2>Использование по отчетам</h2>
+        <tui-ring-chart [value]="reportChartData ?? []" [(activeItemIndex)]="selectedReportIndex" size="xl">
+          @let report = getReportByIndex(selectedReportIndex);
+          <span>{{ report?.name ?? "Все отчеты" }}</span>
+          <div><b>{{ getReportTotalTokensByIndex(selectedReportIndex) }}</b> токенов</div>
+        </tui-ring-chart>
+      </div>
+    }
+
+    @let modelsChartData = modelsChartData$ | async;
+    @if (modelsChartData) {
+      <div class="chart-container">
+        <h2>Использование по моделям</h2>
+        <tui-ring-chart [value]="modelsChartData ?? []" [(activeItemIndex)]="selectedModelIndex" size="xl">
+          @let model = getModelByIndex(selectedModelIndex);
+          <span>{{ model?.displayName ?? "Все модели" }}</span>
+          <div><b>{{ getModelTotalTokensByIndex(selectedModelIndex) }}</b> токенов</div>
+        </tui-ring-chart>
+      </div>
+    }
+  </div>
+</div>
