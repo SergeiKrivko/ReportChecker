@@ -33,6 +33,7 @@ import {PatchEntity, PatchLineEntity, PatchStatusEntity} from '../entities/patch
 interface IssuesStore {
   issues: IssueEntity[];
   selectedIssue: IssueEntity | null;
+  selectedStatus: string | null;
   isProgress: boolean;
 }
 
@@ -46,10 +47,15 @@ export class IssuesService {
   private readonly store$$ = signalState<IssuesStore>({
     issues: [],
     selectedIssue: null,
+    selectedStatus: 'Open',
     isProgress: false,
   });
 
-  readonly issues$ = toObservable(this.store$$.issues);
+  readonly allIssues$ = toObservable(this.store$$.issues);
+  readonly selectedStatus$ = toObservable(this.store$$.selectedStatus);
+  readonly issues$ = combineLatest([this.allIssues$, this.selectedStatus$]).pipe(
+    map(([issues, status]) => issues.filter(e => !status || e.status == status))
+  );
   readonly selectedIssue$ = toObservable(this.store$$.selectedIssue);
   readonly isProgress$ = toObservable(this.store$$.isProgress);
 
@@ -65,7 +71,7 @@ export class IssuesService {
   }
 
   loadIssuesOnReportChanged$ = this.reportsService.selectedReport$.pipe(
-    tap(() => patchState(this.store$$, {issues: [], selectedIssue: null})),
+    tap(() => patchState(this.store$$, {issues: [], selectedIssue: null, selectedStatus: 'Open'})),
     switchMap(report => {
       if (!report) return NEVER;
 
@@ -114,7 +120,7 @@ export class IssuesService {
   private reloadIssue(reportId: string, issueId: string): Observable<IssueEntity> {
     return combineLatest([
       this.apiClient.issues(reportId, issueId),
-      this.issues$
+      this.allIssues$
     ]).pipe(
       first(),
       map(([iss, issues]) => {
@@ -142,7 +148,7 @@ export class IssuesService {
   }
 
   selectIssue(issueId: string) {
-    return this.issues$.pipe(
+    return this.allIssues$.pipe(
       tap(issues => {
         patchState(this.store$$, {
           selectedIssue: issues.find(e => e.id == issueId),
@@ -185,6 +191,10 @@ export class IssuesService {
       }),
       switchMap(() => NEVER)
     );
+  }
+
+  selectStatus(status: string | null) {
+    patchState(this.store$$, {selectedStatus: status});
   }
 }
 

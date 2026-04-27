@@ -32,16 +32,37 @@
       <a tuiIconButton iconStart="@tui.settings" appearance="flat" routerLink="./settings"></a>
     </div>
   </div>
-  <div class="issues-container">
-    @for (issue of issues$ | async; track issue.id) {
-      <a tuiCardLarge tuiSurface="floating" [routerLink]="'./issues/' + issue.id" class="issue-card">
-        <app-issue-header [issue]="issue"/>
-      </a>
-    }
+  <div class="header-container">
+    <tui-segmented size="m">
+      <button type="button" (click)="selectStatus('Open')">
+        <tui-icon icon="@tui.alert-triangle"/>
+        Активные
+        @let activeIssues = activeIssues$ | async;
+        <b>{{ activeIssues?.length ?? 0 }}</b>
+      </button>
+      <button type="button" (click)="selectStatus('Closed')">
+        <tui-icon icon="@tui.x"/>
+        Закрытые
+        @let closedIssues = closedIssues$ | async;
+        <b>{{ closedIssues?.length ?? 0 }}</b>
+      </button>
+      <button type="button" (click)="selectStatus('Fixed')">
+        <tui-icon icon="@tui.check"/>
+        Исправленные
+        @let fixedIssues = fixedIssues$ | async;
+        <b>{{ fixedIssues?.length ?? 0 }}</b>
+      </button>
+      <button type="button" (click)="selectStatus(null)">
+        Все
+      </button>
+    </tui-segmented>
   </div>
-
   <div class="issues-container">
-    @for (issue of closedIssues$ | async; track issue.id) {
+    @let issues = issues$ | async;
+    @if (issues?.length == 0) {
+      Нет ошибок
+    }
+    @for (issue of issues; track issue.id) {
       <a tuiCardLarge tuiSurface="floating" [routerLink]="'./issues/' + issue.id" class="issue-card">
         <app-issue-header [issue]="issue"/>
       </a>

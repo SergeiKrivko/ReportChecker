@@ -14,11 +14,11 @@ export class IssueAppearancePipe implements PipeTransform {
         return "negative";
       if (issue.priority >= 3 && issue.priority <= 5)
         return "warning";
-      return "secondary";
+      return "info";
     }
     if (issue.status == 'Fixed')
       return "positive";
-    return "info";
+    return "secondary-grayscale";
   }
 
 }

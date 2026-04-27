@@ -11,7 +11,7 @@ export class PreviousIssuePipe implements PipeTransform {
   private readonly issueService = inject(IssuesService);
 
   transform(issue: IssueEntity, status: string | null = null): Observable<IssueEntity | null> {
-    return this.issueService.issues$.pipe(
+    return this.issueService.allIssues$.pipe(
       map(issues => {
         issues = issues
           .filter(e => e.id == issue.id || (e.status === 'Open') == ((status ?? issue.status) === 'Open'))
