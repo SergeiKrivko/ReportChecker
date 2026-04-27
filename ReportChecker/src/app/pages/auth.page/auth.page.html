@@ -23,6 +23,7 @@
       <app-subscription-limit name="Отчеты" [limit]="current.reportsLimit"/>
     }
   </div>
+  <a tuiButton iconStart="@tui.chart-line" appearance="flat" routerLink="/statistics">Использование</a>
   @if (isAdmin$ | async) {
     <a tuiButton iconStart="@tui.key-round" appearance="accent" routerLink="/admin/models">Админ</a>
   }
