@@ -6,7 +6,7 @@ import {Moment} from 'moment';
 })
 export class AsDayPipe implements PipeTransform {
 
-  transform(value?: Moment): string | undefined {
+  transform(value?: Moment | null | undefined): string | undefined {
     if (!value)
       return undefined;
     return value.format('DD.MM.YYYY');

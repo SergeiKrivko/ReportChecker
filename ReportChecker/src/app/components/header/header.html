@@ -1,9 +1,10 @@
 <div class="container">
   <div class="header-container">
-    <div class="logo" routerLink="/">
+    @let routerLink = routerLink$ | async;
+    <div class="logo" [routerLink]="routerLink">
       <tui-avatar src="favicon.svg"/>
       @if (showTitle$ | async) {
-        <h1 routerLink="/">ReportChecker</h1>
+        <h1 [routerLink]="routerLink">ReportChecker</h1>
       }
     </div>
 
@@ -19,15 +20,60 @@
     </tui-scrollbar>
 
     @let userInfo = userInfo$ | async;
-    <a tuiButton routerLink="/auth" class="account-button"
-       appearance="secondary">
+    @if (userInfo) {
+      <button tuiButton class="account-button account-button-desktop" [tuiDropdown]="content" tuiDropdownOpen
+              tuiDropdownAlign="right" appearance="secondary">
+        <tui-avatar [src]="userInfo?.avatarUrl" size="m"/>
+        <label>{{ userInfo?.name }}</label>
+      </button>
+    } @else {
+      <a tuiButton class="account-button" routerLink="/auth" appearance="secondary">
+        <tui-icon icon="@tui.log-in"/>
+        <label>Войти</label>
+      </a>
+    }
+    <a tuiButton class="account-button account-button-mobile" routerLink="/auth" appearance="secondary">
       @if (userInfo) {
         <tui-avatar [src]="userInfo?.avatarUrl" size="m"/>
         <label>{{ userInfo?.name }}</label>
       } @else {
-        <tui-icon icon="@tui.log-in" />
+        <tui-icon icon="@tui.log-in"/>
         <label>Войти</label>
       }
     </a>
   </div>
 </div>
+
+<ng-template #content>
+  <tui-data-list>
+    <tui-opt-group>
+      <div class="subscriptions-container">
+        @let current = currentSubscription$ | async;
+        @if (current) {
+          <div class="h-container">
+            @if (current?.active) {
+              @let plan = current?.active?.planId | subscriptionPlanById | async;
+              <tui-badge appearance="primary" size="xl">{{ plan?.name ?? "????" }}</tui-badge>
+              <label tuiLabel>Действует до {{ currentEndsAt$ | async | asDay }}</label>
+            } @else {
+              <tui-badge appearance="primary" size="xl">Free</tui-badge>
+            }
+            <a tuiIconButton iconStart="@tui.arrow-up-from-line" appearance="accent" size="m"
+               routerLink="/subscriptions"></a>
+          </div>
+          <app-subscription-limit name="Токены" [limit]="current.tokensLimit" [percentages]="true"/>
+          <label tuiLabel>Сброс лимита {{ resetLimitsAt$ | async | asDay }}</label>
+        }
+      </div>
+    </tui-opt-group>
+    @if (isAdmin$ | async) {
+      <tui-opt-group>
+        <a tuiOption tuiAppearance="flat-grayscale" routerLink="admin/models">Админ</a>
+      </tui-opt-group>
+    }
+    <tui-opt-group>
+      <a tuiOption tuiAppearance="flat-grayscale" routerLink="/auth">Добавить аккаунт</a>
+      <button tuiOption tuiAppearance="flat-destructive" (click)="logOut()">Выйти</button>
+    </tui-opt-group>
+  </tui-data-list>
+</ng-template>

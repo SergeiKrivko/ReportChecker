@@ -1,55 +1,51 @@
 <div class="container page-padding">
-  <div class="subscriptions-container">
-    <a tuiButton iconStart="@tui.chevron-left" appearance="flat" routerLink="..">Назад</a>
-    @let current = currentSubscription$ | async;
-    <div class="limits-container" tuiCardLarge>
-      <h3>Текущая подписка</h3>
-      <div class="h-container">
-        @if (current?.active) {
-          @let plan = current?.active?.planId | subscriptionPlanById | async;
-          <tui-badge appearance="primary" size="xl">{{ plan?.name ?? "????" }}</tui-badge>
-          <label tuiLabel>Истекает через {{ currentEndsAt$ | async | dateFromNow }}</label>
-        } @else {
-          <h4>Free</h4>
-        }
-      </div>
-      <a appearance="accent" tuiButton iconStart="circle-dollar-sign"
-         routerLink="/subscriptions">{{ current?.active ? 'Продлить / Улучшить' : 'Улучшить' }}
-      </a>
-    </div>
-    <div class="limits-container" tuiCardLarge>
-      @if (current) {
-        <h3>Лимиты</h3>
-        <app-subscription-limit name="Токены" [limit]="current.tokensLimit" [percentages]="true"/>
-        <app-subscription-limit name="Отчеты" [limit]="current.reportsLimit"/>
+  <a tuiButton iconStart="@tui.chevron-left" appearance="flat" routerLink=".." class="button-back">Назад</a>
+  @let current = currentSubscription$ | async;
+  <div class="limits-container" tuiCardLarge>
+    <h3>Текущая подписка</h3>
+    <div class="h-container">
+      @if (current?.active) {
+        @let plan = current?.active?.planId | subscriptionPlanById | async;
+        <tui-badge appearance="primary" size="xl">{{ plan?.name ?? "????" }}</tui-badge>
+        <label tuiLabel>Истекает через {{ currentEndsAt$ | async | dateFromNow }}</label>
+      } @else {
+        <h4>Free</h4>
       }
     </div>
-    @if (isAdmin$ | async) {
-      <a tuiButton iconStart="@tui.key-round" appearance="accent" routerLink="/admin/models">Админ</a>
+    <a appearance="accent" tuiButton iconStart="circle-dollar-sign"
+       routerLink="/subscriptions">{{ current?.active ? 'Продлить / Улучшить' : 'Улучшить' }}
+    </a>
+  </div>
+  <div class="limits-container" tuiCardLarge>
+    @if (current) {
+      <h3>Лимиты</h3>
+      <app-subscription-limit name="Токены" [limit]="current.tokensLimit" [percentages]="true"/>
+      <app-subscription-limit name="Отчеты" [limit]="current.reportsLimit"/>
     }
   </div>
-  <div class="providers-container">
-    @for (authProvider of authProviders$ | async; track authProvider.key) {
-      <div tuiCardLarge class="provider-container">
-        <div class="h-container">
-          <h3>{{ authProvider.name }}</h3>
-          @if (!authProvider.userInfo) {
-            <button tuiButton (click)="logIn(authProvider.key)" class="button">Войти</button>
-          } @else if (authProvider.key == 'password') {
-            <button tuiButton (click)="logIn(authProvider.key)" class="button" iconStart="@tui.edit"
-                    appearance="flat" size="m"></button>
-          }
-        </div>
-        @if (authProvider.userInfo) {
-          <div class="h-container">
-            <tui-avatar [src]="authProvider.userInfo.avatarUrl"/>
-            <label tuiLabel class="username">{{ authProvider.userInfo.name }}</label>
-          </div>
+  @if (isAdmin$ | async) {
+    <a tuiButton iconStart="@tui.key-round" appearance="accent" routerLink="/admin/models">Админ</a>
+  }
+  @for (authProvider of authProviders$ | async; track authProvider.key) {
+    <div tuiCardLarge class="provider-container">
+      <div class="h-container">
+        <h3>{{ authProvider.name }}</h3>
+        @if (!authProvider.userInfo) {
+          <button tuiButton (click)="logIn(authProvider.key)" class="button">Войти</button>
+        } @else if (authProvider.key == 'password') {
+          <button tuiButton (click)="logIn(authProvider.key)" class="button" iconStart="@tui.edit"
+                  appearance="flat" size="m"></button>
         }
       </div>
-    }
-    @if (isAuthenticated()) {
-      <button tuiButton appearance="outline-destructive" iconStart="@tui.log-out" (click)="logOut()">Выйти</button>
-    }
-  </div>
+      @if (authProvider.userInfo) {
+        <div class="h-container">
+          <tui-avatar [src]="authProvider.userInfo.avatarUrl"/>
+          <label tuiLabel class="username">{{ authProvider.userInfo.name }}</label>
+        </div>
+      }
+    </div>
+  }
+  @if (isAuthenticated()) {
+    <button tuiButton appearance="outline-destructive" iconStart="@tui.log-out" (click)="logOut()">Выйти</button>
+  }
 </div>

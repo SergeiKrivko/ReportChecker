@@ -19,5 +19,6 @@ export class App implements OnInit {
   ngOnInit() {
     this.authClient.loadUserInfo().subscribe();
     this.subscriptionsService.loadLimits$.subscribe();
+    this.subscriptionsService.loadPlans$.subscribe()
   }
 }

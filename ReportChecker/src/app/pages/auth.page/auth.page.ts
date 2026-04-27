@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
 import {AuthService} from '../../auth/auth.service';
 import {AsyncPipe} from '@angular/common';
 import {TuiCard} from '@taiga-ui/layout';
@@ -11,7 +11,6 @@ import {SubscriptionLimit} from '../../components/subscription-limit/subscriptio
 import {ActivatedRoute, RouterLink} from '@angular/router';
 import {AuthClient} from '../../auth/auth.client';
 import {SubscriptionPlanByIdPipe} from '../../pipes/subscription-plan-by-id-pipe';
-import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {DateFromNowPipe} from '../../pipes/date-from-now-pipe';
 import {Moment} from 'moment';
 
@@ -40,12 +39,11 @@ interface AuthProvider {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AuthPage implements OnInit {
+export class AuthPage {
   private readonly subscriptionsService = inject(SubscriptionsService);
   private readonly authService = inject(AuthService);
   private readonly authClient = inject(AuthClient);
   private readonly activatedRoute = inject(ActivatedRoute);
-  private readonly destroyRef = inject(DestroyRef);
 
   private readonly authProviders$$: AuthProvider[] = [
     {key: "password", name: "Логин и пароль"},
@@ -70,12 +68,6 @@ export class AuthPage implements OnInit {
       return endsAt;
     })
   );
-
-  ngOnInit() {
-    this.subscriptionsService.loadPlans$.pipe(
-      takeUntilDestroyed(this.destroyRef),
-    ).subscribe()
-  }
 
   protected authProviders$: Observable<AuthProvider[]> = this.authClient.userInfo$.pipe(
     map(userInfo => this.authProviders$$.map(provider => {
