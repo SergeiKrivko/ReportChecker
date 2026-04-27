@@ -2,6 +2,7 @@
 using ReportChecker.Abstractions;
 using ReportChecker.DataAccess.Converters;
 using ReportChecker.DataAccess.Entities;
+using ReportChecker.DataAccess.Extensions;
 using ReportChecker.Models;
 
 namespace ReportChecker.DataAccess.Repositories;
@@ -52,5 +53,74 @@ public class LlmUsageRepository(ReportCheckerDbContext dbContext) : ILlmUsageRep
         await dbContext.LlmUsages.AddAsync(entity, ct);
         await dbContext.SaveChangesAsync(ct);
         return id;
+    }
+
+    public async Task<IReadOnlyDictionary<Guid, int>> GetModelsUsageAsync(Guid userId, DateTime timeFrom,
+        DateTime timeTo, CancellationToken ct = default)
+    {
+        return await dbContext.LlmUsages
+            .Where(e => e.FinishedAt > timeFrom && e.FinishedAt < timeTo)
+            .Include(e => e.Report)
+            .Where(e => e.Report.OwnerId == userId)
+            .GroupBy(e => e.ModelId)
+            .ToDictionaryAsync(e => e.Key, e => e.Sum(u => u.TotalTokens), ct);
+    }
+
+    public async Task<IReadOnlyDictionary<Guid, int>> GetReportsUsageAsync(Guid userId, DateTime timeFrom,
+        DateTime timeTo, CancellationToken ct = default)
+    {
+        return await dbContext.LlmUsages
+            .Where(e => e.FinishedAt > timeFrom && e.FinishedAt < timeTo)
+            .Include(e => e.Report)
+            .Where(e => e.Report.OwnerId == userId)
+            .GroupBy(e => e.ReportId)
+            .ToDictionaryAsync(e => e.Key, e => e.Sum(u => u.TotalTokens), ct);
+    }
+
+    public async Task<IReadOnlyList<LlmUsageGroup>> GetUsageStatisticsAsync(Guid userId, DateTime timeFrom,
+        DateTime timeTo, CancellationToken ct = default)
+    {
+        return await dbContext.LlmUsages
+            .Where(e => e.FinishedAt > timeFrom && e.FinishedAt < timeTo)
+            .Include(e => e.Report)
+            .Where(e => e.Report.OwnerId == userId)
+            .GroupBy(e => e.ModelId)
+            .Select(e => e
+                .GroupBy(a => a.ReportId)
+                .Select(a => new LlmUsageGroup
+                {
+                    ModelId = e.Key,
+                    ReportId = a.Key,
+                    TotalTokens = a.Sum(g => g.TotalTokens),
+                    TotalRequests = a.Sum(g => g.TotalRequests),
+                }))
+            .SelectMany(e => e)
+            .ToListAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<LlmUsageInterval>> GetTimeUsageAsync(Guid userId, DateTime timeFrom,
+        DateTime timeTo, Guid? modelId = null, Guid? reportId = null,
+        CancellationToken ct = default)
+    {
+        var query = dbContext.LlmUsages
+            .Where(e => e.FinishedAt > timeFrom && e.FinishedAt < timeTo)
+            .Include(e => e.Report)
+            .Where(e => e.Report.OwnerId == userId);
+
+        if (modelId != null)
+            query = query.Where(e => e.ModelId == modelId.Value);
+        if (reportId != null)
+            query = query.Where(e => e.ReportId == reportId.Value);
+
+        var entities = await query.ToListAsync(ct);
+        return entities.GroupByIntervals(e => e.FinishedAt, timeFrom, timeTo, 50)
+            .Select(e => new LlmUsageInterval
+            {
+                StartTime = e.IntervalStart,
+                EndTime = e.IntervalEnd,
+                TotalTokens = e.Items.Sum(u => u.TotalTokens),
+                TotalRequests = e.Items.Sum(u => u.TotalRequests),
+            })
+            .ToList();
     }
 }
