@@ -80,22 +80,28 @@ public class LlmUsageRepository(ReportCheckerDbContext dbContext) : ILlmUsageRep
     public async Task<IReadOnlyList<LlmUsageGroup>> GetUsageStatisticsAsync(Guid userId, DateTime timeFrom,
         DateTime timeTo, CancellationToken ct = default)
     {
-        return await dbContext.LlmUsages
+        var entities = await dbContext.LlmUsages
             .Where(e => e.FinishedAt > timeFrom && e.FinishedAt < timeTo)
             .Include(e => e.Report)
             .Where(e => e.Report.OwnerId == userId)
             .GroupBy(e => e.ModelId)
             .Select(e => e
                 .GroupBy(a => a.ReportId)
-                .Select(a => new LlmUsageGroup
+                .Select(a => new
                 {
                     ModelId = e.Key,
                     ReportId = a.Key,
                     TotalTokens = a.Sum(g => g.TotalTokens),
                     TotalRequests = a.Sum(g => g.TotalRequests),
                 }))
-            .SelectMany(e => e)
             .ToListAsync(ct);
+        return entities.SelectMany(l => l.Select(e => new LlmUsageGroup
+        {
+            ModelId = e.ModelId,
+            ReportId = e.ReportId,
+            TotalTokens = e.TotalTokens,
+            TotalRequests = e.TotalRequests,
+        })).ToList();
     }
 
     public async Task<IReadOnlyList<LlmUsageInterval>> GetTimeUsageAsync(Guid userId, DateTime timeFrom,
