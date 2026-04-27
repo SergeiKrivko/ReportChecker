@@ -12,7 +12,7 @@ public class StatisticsController(ILlmUsageRepository llmUsageRepository) : Cont
 {
     [HttpGet("usage")]
     [Authorize]
-    public async Task<ActionResult> GetReportsUsage(
+    public async Task<ActionResult<IEnumerable<LlmUsageGroup>>> GetReportsUsage(
         [FromQuery(Name = "start")] DateTime? timeStart = null,
         [FromQuery(Name = "end")] DateTime? timeEnd = null,
         CancellationToken ct = default)
