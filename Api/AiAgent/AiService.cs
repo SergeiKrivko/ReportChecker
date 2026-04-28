@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Collections;
+using AiAgent.Models;
+using Microsoft.Extensions.Logging;
 using ReportChecker.Abstractions;
 using ReportChecker.Models;
 
@@ -33,7 +35,7 @@ public class AiService(
             if (logger.IsEnabled(LogLevel.Information))
                 logger.LogInformation("Processing issues from {count} chapters", chapterGroup.Length);
 
-            var comments = await aiAgentClient.CheckIssues(new IAiAgentClient<string>.IssuesRequest
+            var comments = await aiAgentClient.CheckIssues(new IssuesRequestAgent
             {
                 Chapters = chapterGroup
                     .Select(e => e.ToAgent(context.Issues.Where(x => x.Status == IssueStatus.Open).ToList()))
@@ -52,7 +54,7 @@ public class AiService(
             if (logger.IsEnabled(LogLevel.Debug))
                 logger.LogDebug("Processing issues from {count} chapters", chapterGroup.Length);
 
-            var issues = await aiAgentClient.FindIssues(new IAiAgentClient<string>.IssuesRequest
+            var issues = await aiAgentClient.FindIssues(new IssuesRequestAgent
             {
                 Chapters = chapterGroup.Select(e => e.ToAgent(context.Issues)).ToArray(),
                 Instructions = instructions,
@@ -70,7 +72,7 @@ public class AiService(
         }
     }
 
-    private async Task ProcessIssuesAsync(Guid checkId, IEnumerable<IAiAgentClient<string>.IssueCreate> issues,
+    private async Task ProcessIssuesAsync(Guid checkId, IEnumerable<IssueCreateAgent> issues,
         IReadOnlyCollection<Chapter> chapters)
     {
         foreach (var issue in issues)
@@ -103,7 +105,7 @@ public class AiService(
         {
             var chapter = context.NewChapters.First(e => e.Name == issue.Chapter);
             await commentRepository.SetProgressStatusAsync(lastCommentId, ProgressStatus.InProgress);
-            var resp = await aiAgentClient.WriteComment(new IAiAgentClient<string>.WriteCommentRequest
+            var resp = await aiAgentClient.WriteComment(new WriteCommentRequestAgent
             {
                 Issue = issue.ToAgent(),
                 Text = chapter.Content.AddLineNumbers(),
@@ -139,7 +141,7 @@ public class AiService(
             await using var aiAgentClient = await aiAgentFactory.CreateClientAsync(context.Report, LlmUsageType.Instruction);
             foreach (var chapterGroup in chapterGroupService.GroupChapters(context.NewChapters))
             {
-                var comments = await aiAgentClient.ApplyInstruction(new IAiAgentClient<string>.InstructionRequest
+                var comments = await aiAgentClient.ApplyInstruction(new InstructionRequestAgent
                 {
                     Instruction = instruction,
                     Chapters = chapterGroup.Select(c => c.ToAgent(context.Issues)).ToArray()
@@ -168,7 +170,7 @@ public class AiService(
             await using var aiAgentClient = await aiAgentFactory.CreateClientAsync(context.Report, LlmUsageType.Instruction);
             foreach (var chapterGroup in chapterGroupService.GroupChapters(context.NewChapters))
             {
-                var newIssues = await aiAgentClient.SearchInstruction(new IAiAgentClient<string>.InstructionRequest
+                var newIssues = await aiAgentClient.SearchInstruction(new InstructionRequestAgent
                 {
                     Instruction = instruction,
                     Chapters = chapterGroup.Select(c => c.ToAgent(context.Issues)).ToArray()
@@ -186,7 +188,7 @@ public class AiService(
     }
 
     private async Task ProcessInstructionAsync(CheckContext context,
-        IAiAgentClient<string>.InstructionCreate instruction,
+        InstructionCreateAgent instruction,
         Guid commentId)
     {
         try

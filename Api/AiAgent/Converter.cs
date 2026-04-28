@@ -1,13 +1,14 @@
 ﻿using System.Text;
+using AiAgent.Models;
 using ReportChecker.Models;
 
 namespace AiAgent;
 
 internal static class Converter
 {
-    public static IAiAgentClient<string>.Chapter ToAgent(this Chapter chapter, IReadOnlyCollection<Issue> issues)
+    public static ChapterAgent ToAgent(this Chapter chapter, IReadOnlyCollection<Issue> issues)
     {
-        return new IAiAgentClient<string>.Chapter
+        return new ChapterAgent
         {
             Name = chapter.Name,
             Text = chapter.Content.AddLineNumbers(),
@@ -15,9 +16,9 @@ internal static class Converter
         };
     }
 
-    public static IAiAgentClient<string>.Chapter ToAgent(this ChapterDifference chapter, IReadOnlyCollection<Issue> issues)
+    public static ChapterAgent ToAgent(this ChapterDifference chapter, IReadOnlyCollection<Issue> issues)
     {
-        return new IAiAgentClient<string>.Chapter
+        return new ChapterAgent
         {
             Name = chapter.Name,
             Text = chapter.Difference.ToAgent(),
@@ -50,9 +51,9 @@ internal static class Converter
         return builder.ToString();
     }
 
-    public static IAiAgentClient<string>.IssueRead ToAgent(this Issue issue)
+    public static IssueReadAgent ToAgent(this Issue issue)
     {
-        return new IAiAgentClient<string>.IssueRead
+        return new IssueReadAgent
         {
             Id = issue.Id,
             Title = issue.Title,
@@ -60,12 +61,13 @@ internal static class Converter
                 .Select(e => e.ToAgent())
                 .ToArray(),
             Priority = issue.Priority,
+            Status = issue.Status.ToString()
         };
     }
 
-    public static IAiAgentClient<string>.CommentRead ToAgent(this Comment comment)
+    public static CommentReadAgent ToAgent(this Comment comment)
     {
-        return new IAiAgentClient<string>.CommentRead
+        return new CommentReadAgent
         {
             Id = comment.Id,
             Content = comment.Content,
@@ -75,18 +77,18 @@ internal static class Converter
         };
     }
 
-    public static IAiAgentClient<string>.PatchLine[] ToAgentLines(this string content)
+    public static PatchLine[] ToAgentLines(this string content)
     {
         return content.Split('\n')
-            .Select((e, i) => new IAiAgentClient<string>.PatchLine
+            .Select((e, i) => new PatchLine
             {
                 Content = e,
                 Number = i + 1,
             }).ToArray();
     }
 
-    public static PatchLine ToDomain(this IAiAgentClient<string>.PatchLine line,
-        IReadOnlyList<IAiAgentClient<string>.PatchLine>? previousLines = null)
+    public static PatchLine ToDomain(this PatchLineAgent line,
+        IReadOnlyList<PatchLine>? previousLines = null)
     {
         var type = Enum.Parse<PatchLineType>(line.Type);
         var previousContent = type == PatchLineType.Add
@@ -101,11 +103,11 @@ internal static class Converter
         };
     }
 
-    public static IAiAgentClient<string>.PatchRead ToAgent(this Patch patch)
+    public static PatchReadAgent ToAgent(this Patch patch)
     {
-        return new IAiAgentClient<string>.PatchRead
+        return new PatchReadAgent
         {
-            Lines = patch.Lines.Select(e => new IAiAgentClient<string>.PatchLine
+            Lines = patch.Lines.Select(e => new PatchLineAgent
             {
                 Number = e.Number,
                 Content = e.Content ?? "",

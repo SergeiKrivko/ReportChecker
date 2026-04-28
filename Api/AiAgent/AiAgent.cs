@@ -1,11 +1,14 @@
-﻿using Avalux.OpenAi.Client;
+﻿using System.Reflection;
+using AiAgent.Models;
+using Avalux.OpenAi.Client;
+using Avalux.OpenAi.Client.Models;
 using Microsoft.Extensions.Logging;
 using ReportChecker.Abstractions;
 using ReportChecker.Models;
 
 namespace AiAgent;
 
-public class AiAgent : AiAgentClientBase<string>
+public class AiAgent : IAiAgent
 {
     private readonly ILogger _logger;
     private readonly OpenAiClient<string> _client;
@@ -15,8 +18,7 @@ public class AiAgent : AiAgentClientBase<string>
     private readonly Guid _reportId;
 
     internal AiAgent(OpenAiClient<string> client, LlmUsageType type, LlmModel model, Guid reportId,
-        ILlmUsageRepository llmUsageRepository, ILogger<AiAgent> logger) :
-        base(client)
+        ILlmUsageRepository llmUsageRepository, ILogger<AiAgent> logger)
     {
         _logger = logger;
         _client = client;
@@ -27,7 +29,7 @@ public class AiAgent : AiAgentClientBase<string>
         _reportId = reportId;
     }
 
-    public override async ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         if (_logger.IsEnabled(LogLevel.Information))
             _logger.LogInformation("Disposing AI agent... Total requests: {totalRequests}",
@@ -45,5 +47,98 @@ public class AiAgent : AiAgentClientBase<string>
                                 _client.Usage.OutputTokens * _model.OutputCoefficient),
             TotalRequests = _client.Usage.TotalRequests,
         });
+    }
+
+    private static async Task<string> GetSystemPrompt(string name)
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        await using var stream = assembly.GetManifestResourceStream($"AiAgent.Prompts.{name}.prompt.txt");
+        if (stream == null)
+            throw new Exception($"Resource '{name}' not found");
+        using var reader = new StreamReader(stream);
+        return await reader.ReadToEndAsync();
+    }
+
+    public async Task<IssueCreateAgent[]?> FindIssues(IssuesRequestAgent param)
+    {
+        var request = new ChatRequest()
+            .AddSystemPrompt(await GetSystemPrompt("FindIssues"))
+            .SetResponseType<IEnumerable<IssueCreateAgent>>()
+            .AddUserMessage(param.Instructions);
+        foreach (var paramChapter in param.Chapters)
+        {
+            request.AddUserMessage(paramChapter);
+        }
+
+        var response = await _client.CompleteAsync(request);
+        if (_logger.IsEnabled(LogLevel.Information))
+            _logger.LogInformation("Agent response: {response}", response.ReadAsString());
+        return response.ReadAsJson<IssueCreateAgent[]>();
+    }
+
+    public async Task<CommentResponseAgent?> WriteComment(WriteCommentRequestAgent param)
+    {
+        var request = new ChatRequest()
+            .AddSystemPrompt(await GetSystemPrompt("WriteComment"))
+            .SetResponseType<CommentResponseAgent>()
+            .AddUserMessage(param.Instructions)
+            .AddUserMessage(param.Issue)
+            .AddUserMessage(param.Text);
+
+        var response = await _client.CompleteAsync(request);
+        if (_logger.IsEnabled(LogLevel.Information))
+            _logger.LogInformation("Agent response: {response}", response.ReadAsString());
+        return response.ReadAsJson<CommentResponseAgent>();
+    }
+
+    public async Task<CommentCreateAgent[]?> CheckIssues(IssuesRequestAgent param)
+    {
+        var request = new ChatRequest()
+            .AddSystemPrompt(await GetSystemPrompt("CheckIssues"))
+            .SetResponseType<IEnumerable<CommentCreateAgent>>()
+            .AddUserMessage(param.Instructions);
+        foreach (var paramChapter in param.Chapters)
+        {
+            request.AddUserMessage(paramChapter);
+        }
+
+        var response = await _client.CompleteAsync(request);
+        if (_logger.IsEnabled(LogLevel.Information))
+            _logger.LogInformation("Agent response: {response}", response.ReadAsString());
+        return response.ReadAsJson<CommentCreateAgent[]>();
+    }
+
+    public async Task<CommentCreateAgent[]?> ApplyInstruction(InstructionRequestAgent param)
+    {
+        var request = new ChatRequest()
+            .AddSystemPrompt(await GetSystemPrompt("ApplyInstruction"))
+            .SetResponseType<CommentCreateAgent[]>()
+            .AddUserMessage(param.Instruction);
+        foreach (var paramChapter in param.Chapters)
+        {
+            request.AddUserMessage(paramChapter);
+        }
+
+        var response = await _client.CompleteAsync(request);
+        if (_logger.IsEnabled(LogLevel.Information))
+            _logger.LogInformation("Agent response: {response}", response.ReadAsString());
+        return response.ReadAsJson<CommentCreateAgent[]>();
+    }
+
+    public async Task<IssueCreateAgent[]?> SearchInstruction(InstructionRequestAgent param)
+    {
+        var request = new ChatRequest()
+            .AddSystemPrompt(await GetSystemPrompt("SearchInstruction"))
+            .SetResponseType<IssueCreateAgent[]>()
+            .AddUserMessage(param.Instruction);
+        foreach (var paramChapter in param.Chapters)
+        {
+            request.AddUserMessage(paramChapter);
+        }
+
+        var response = await _client.CompleteAsync(request);
+        if (_logger.IsEnabled(LogLevel.Information))
+            _logger.LogInformation("Agent response: {response}", response.ReadAsString());
+        return response.ReadAsJson<IssueCreateAgent[]>();
     }
 }

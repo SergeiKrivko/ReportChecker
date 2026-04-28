@@ -14,7 +14,7 @@ public class AiAgentFactory(
     IConfiguration configuration,
     ILogger<AiAgent> logger) : IAiAgentFactory
 {
-    public async Task<IAiAgentClient<string>> CreateClientAsync(Report report, LlmUsageType type)
+    public async Task<IAiAgent> CreateClientAsync(Report report, LlmUsageType type)
     {
         LlmModel? model = null;
         if (report.LlmModelId.HasValue)

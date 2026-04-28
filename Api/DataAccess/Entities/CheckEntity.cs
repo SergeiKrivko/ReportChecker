@@ -14,7 +14,7 @@ public class CheckEntity
     public ProgressStatus Status { get; init; }
 
     public virtual ReportEntity Report { get; init; } = null!;
-    public virtual ICollection<IssueEntity> Issues { get; init; } = null!;
+    public virtual ICollection<IssueEntity> Issues { get; init; } = [];
 
     public virtual GitHubCheckSourceEntity? GitHubSource { get; init; }
     public virtual FileCheckSourceEntity? FileSource { get; init; }

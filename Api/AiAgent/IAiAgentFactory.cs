@@ -4,5 +4,5 @@ namespace AiAgent;
 
 public interface IAiAgentFactory
 {
-    public Task<IAiAgentClient<string>> CreateClientAsync(Report report, LlmUsageType type);
+    public Task<IAiAgent> CreateClientAsync(Report report, LlmUsageType type);
 }
