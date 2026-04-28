@@ -47,6 +47,8 @@
     </div>
   }
   @if (isAuthenticated()) {
-    <button tuiButton appearance="outline-destructive" iconStart="@tui.log-out" (click)="logOut()">Выйти</button>
+    <button tuiButton appearance="outline-destructive" iconStart="@tui.log-out" (click)="logOut()"
+            class="log-out-button">Выйти
+    </button>
   }
 </div>

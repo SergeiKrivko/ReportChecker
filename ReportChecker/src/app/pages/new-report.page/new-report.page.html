@@ -2,7 +2,7 @@
   @if (selectedProvider) {
     <button tuiButton iconStart="@tui.chevron-left" (click)="deselectProvider()" appearance="flat">Назад</button>
   } @else {
-    <a tuiButton iconStart="@tui.chevron-left" routerLink="../.." appearance="flat">Назад</a>
+    <a tuiButton iconStart="@tui.chevron-left" routerLink=".." appearance="flat">Назад</a>
   }
   <div class="body-container">
     @switch (selectedProvider?.key) {

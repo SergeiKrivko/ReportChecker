@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
-import {TuiButton, TuiSurface} from '@taiga-ui/core';
+import {TuiButton, TuiLoader, TuiSurface} from '@taiga-ui/core';
 import {ReportsService} from '../../services/reports.service';
 import {AsyncPipe} from '@angular/common';
 import {TuiCardLarge, TuiHeader} from '@taiga-ui/layout';
@@ -27,7 +27,8 @@ import {DateFromNowPipe} from '../../pipes/date-from-now-pipe';
     IconBySourcePipe,
     MapPriorityPipe,
     TuiBadge,
-    DateFromNowPipe
+    DateFromNowPipe,
+    TuiLoader
   ],
   templateUrl: './home.page.html',
   styleUrl: './home.page.scss',
@@ -39,6 +40,7 @@ export class HomePage {
   private readonly subscriptionService = inject(SubscriptionsService);
 
   protected readonly reports$ = this.reportService.reports$;
+  protected readonly loaded$ = this.reportService.loaded$;
 
   readonly limits$ = this.subscriptionService.current$;
 }

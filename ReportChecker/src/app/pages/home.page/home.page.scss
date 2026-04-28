@@ -60,4 +60,18 @@
       }
     }
   }
+
+  .center-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    justify-content: center;
+    align-items: center;
+    padding-top: 2rem;
+
+    * {
+      margin: 0;
+      text-align: center;
+    }
+  }
 }
