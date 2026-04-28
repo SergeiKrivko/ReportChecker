@@ -1,18 +1,23 @@
 import {ChangeDetectionStrategy, Component, DestroyRef, inject, OnDestroy, OnInit} from '@angular/core';
 import {
   ActivatedRoute,
-  IsActiveMatchOptions,
+  IsActiveMatchOptions, RouterLink,
   RouterOutlet
 } from '@angular/router';
 import {ReportsService} from '../../services/reports.service';
-import {combineLatest, map, NEVER, switchMap, take} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, NEVER, Observable, switchMap, take, tap} from 'rxjs';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {PathService} from '../../services/path.service';
+import {AsyncPipe} from '@angular/common';
+import {TuiButton} from '@taiga-ui/core';
 
 @Component({
   selector: 'app-report-root.page',
   imports: [
     RouterOutlet,
+    AsyncPipe,
+    TuiButton,
+    RouterLink,
   ],
   templateUrl: './report-root.page.html',
   styleUrl: './report-root.page.scss',
@@ -25,6 +30,9 @@ export class ReportRootPage implements OnInit, OnDestroy {
   private readonly reportsService = inject(ReportsService);
   private readonly pathService = inject(PathService);
 
+  private readonly isNotFound$$ = new BehaviorSubject(false);
+  protected readonly isNotFound$: Observable<boolean> = this.isNotFound$$;
+
   ngOnInit() {
     combineLatest([
       this.route.params,
@@ -36,6 +44,7 @@ export class ReportRootPage implements OnInit, OnDestroy {
           return this.reportsService.selectReport(appId);
         return NEVER;
       }),
+      tap(report => this.isNotFound$$.next(report === undefined)),
       take(1),
       takeUntilDestroyed(this.destroyRef),
     ).subscribe();

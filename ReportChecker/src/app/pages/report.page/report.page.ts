@@ -1,11 +1,10 @@
 import {ChangeDetectionStrategy, Component, inject, OnInit} from '@angular/core';
 import {RouterLink} from '@angular/router';
-import {map} from 'rxjs';
+import {map, Observable} from 'rxjs';
 import {IssuesService} from '../../services/issues.service';
 import {AsyncPipe} from '@angular/common';
 import {TuiButton, TuiIcon, TuiLoader, TuiSurface} from '@taiga-ui/core';
-import {FormControl, ReactiveFormsModule} from '@angular/forms';
-import {FileEntity} from '../../entities/file-entity';
+import {ReactiveFormsModule} from '@angular/forms';
 import {IssueHeader} from '../../components/issue-header/issue-header';
 import {TuiCard} from '@taiga-ui/layout';
 import {ReportsService} from '../../services/reports.service';
@@ -13,6 +12,7 @@ import {FileSpVersion} from '../../components/file-sp-version/file-sp-version';
 import {GithubSpVersion} from '../../components/github-sp-version/github-sp-version';
 import {InstructionService} from '../../services/instruction.service';
 import {TuiSegmented} from '@taiga-ui/kit';
+import {isNotFound} from '@angular/core/primitives/di';
 
 @Component({
   selector: 'app-check.page',
@@ -55,14 +55,30 @@ export class ReportPage implements OnInit {
   );
   protected readonly isProgress$ = this.issuesService.isProgress$;
   protected readonly instructionTasks$ = this.instructionService.tasks$;
-
-  protected readonly control = new FormControl<FileEntity | null>(null);
+  protected readonly selectedStatus$: Observable<number> = this.issuesService.selectedStatus$.pipe(
+    map(status => statusIndexMap[status ?? '']),
+  );
 
   ngOnInit() {
     this.issuesService.deselectIssue();
   }
 
-  protected selectStatus(status: string | null) {
-    this.issuesService.selectStatus(status);
+  protected selectStatus(index: number) {
+    this.issuesService.selectStatus(indexStatusMap[index]);
   }
+
+  protected readonly isNotFound = isNotFound;
 }
+
+const statusIndexMap: Record<string, number> = {
+  'Open': 0,
+  'Closed': 1,
+  'Fixed': 2,
+  '': 3,
+};
+const indexStatusMap: Record<number, string | null> = {
+  0: 'Open',
+  1: 'Closed',
+  2: 'Fixed',
+  3: null,
+};

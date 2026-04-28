@@ -1,1 +1,10 @@
-<router-outlet/>
+@if (isNotFound$ | async) {
+  <div class="container page-padding">
+    <h1 class="error-code">404</h1>
+    <h2 class="error-name">Отчет не найден</h2>
+    <p>Возможно, отчёт был удалён или у вас нет доступа. Проверьте ссылку или вернитесь к списку.</p>
+    <button tuiButton iconStart="@tui.chevron-left" routerLink="/reports" appearance="flat">К списку отчетов</button>
+  </div>
+} @else {
+  <router-outlet/>
+}
