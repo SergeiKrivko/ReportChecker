@@ -38,7 +38,8 @@ public class AiService(
             var comments = await aiAgentClient.CheckIssues(new IssuesRequestAgent
             {
                 Chapters = chapterGroup
-                    .Select(e => e.ToAgent(context.Issues.Where(x => x.Status == IssueStatus.Open).ToList()))
+                    .Select(e => e.ToAgent(context.Issues.Where(x => x.Status == IssueStatus.Open).ToList(),
+                        context.Report.ImageProcessingMode))
                     .ToArray(),
                 Instructions = instructions,
             });
@@ -56,7 +57,8 @@ public class AiService(
 
             var issues = await aiAgentClient.FindIssues(new IssuesRequestAgent
             {
-                Chapters = chapterGroup.Select(e => e.ToAgent(context.Issues)).ToArray(),
+                Chapters = chapterGroup.Select(e => e.ToAgent(context.Issues, context.Report.ImageProcessingMode))
+                    .ToArray(),
                 Instructions = instructions,
             });
             await ProcessIssuesAsync(context.Check.Id, issues ?? [], context.NewChapters);
@@ -110,6 +112,8 @@ public class AiService(
                 Issue = issue.ToAgent(),
                 Text = chapter.Content.AddLineNumbers(),
                 Instructions = instructions,
+                Images = chapter.Images,
+                ImageProcessingMode = context.Report.ImageProcessingMode,
             });
             var id = await commentRepository.CreateCommentAsync(issue.Id, Guid.Empty, resp?.Comment.Content,
                 resp?.Comment.Status is null ? null : Enum.Parse<IssueStatus>(resp.Comment.Status),
@@ -138,7 +142,8 @@ public class AiService(
         await instructionTaskRepository.SetStatusAsync(taskId, ProgressStatus.InProgress);
         try
         {
-            await using var aiAgentClient = await aiAgentFactory.CreateClientAsync(context.Report, LlmUsageType.Instruction);
+            await using var aiAgentClient =
+                await aiAgentFactory.CreateClientAsync(context.Report, LlmUsageType.Instruction);
             foreach (var chapterGroup in chapterGroupService.GroupChapters(context.NewChapters))
             {
                 var comments = await aiAgentClient.ApplyInstruction(new InstructionRequestAgent
@@ -167,7 +172,8 @@ public class AiService(
         await instructionTaskRepository.SetStatusAsync(taskId, ProgressStatus.InProgress);
         try
         {
-            await using var aiAgentClient = await aiAgentFactory.CreateClientAsync(context.Report, LlmUsageType.Instruction);
+            await using var aiAgentClient =
+                await aiAgentFactory.CreateClientAsync(context.Report, LlmUsageType.Instruction);
             foreach (var chapterGroup in chapterGroupService.GroupChapters(context.NewChapters))
             {
                 var newIssues = await aiAgentClient.SearchInstruction(new InstructionRequestAgent

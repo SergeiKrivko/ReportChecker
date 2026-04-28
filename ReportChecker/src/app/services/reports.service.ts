@@ -3,13 +3,19 @@ import {
   ApiClient,
   CreateCheckSchema,
   CreateReportSchema,
-  IFileCheckSource, IFileReportSource, IGitHubCheckSource, IGitHubReportSource, LlmModel,
+  IFileCheckSource,
+  IFileReportSource,
+  IGitHubCheckSource,
+  IGitHubReportSource,
+  ImageProcessingMode,
+  LlmModel,
   Report,
   SourceInfo,
-  TestSourceRequestSchema, UpdateReportSchema
+  TestSourceRequestSchema,
+  UpdateReportSchema
 } from './api-client';
 import {catchError, first, map, NEVER, Observable, of, switchMap, take, tap} from 'rxjs';
-import {ReportEntity} from '../entities/report-entity';
+import {ImageProcessingModeEntity, ReportEntity} from '../entities/report-entity';
 import {patchState, signalState} from '@ngrx/signals';
 import {toObservable} from '@angular/core/rxjs-interop';
 import {SourceInfoEntity} from '../entities/source-info-entity';
@@ -65,13 +71,19 @@ export class ReportsService {
     );
   }
 
-  createReport(name: string, source: IGitHubReportSource | IFileReportSource, sourceProvider: string, format: string, llmModelId?: string): Observable<string> {
+  createReport(name: string,
+               source: IGitHubReportSource | IFileReportSource,
+               sourceProvider: string,
+               format: string,
+               llmModelId?: string,
+               imageProcessingMode: ImageProcessingModeEntity = ImageProcessingModeEntity.Disable): Observable<string> {
     return this.apiClient.reportsPOST(CreateReportSchema.fromJS({
       name: name,
       source: sourceProvider == 'GitHub' ? {gitHub: source} : {file: source},
       sourceProvider: sourceProvider,
       format: format,
-      llmModelId
+      llmModelId,
+      imageProcessingMode: imageProcessingModeReverseMap[imageProcessingMode],
     }));
   }
 
@@ -91,14 +103,15 @@ export class ReportsService {
     );
   }
 
-  updateReport(newName: string, llmModelId?: string): Observable<any> {
+  updateReport(newName: string, llmModelId?: string, imageProcessingMode: ImageProcessingModeEntity = ImageProcessingModeEntity.Disable): Observable<any> {
     return this.selectedReport$.pipe(
       first(),
       switchMap(report => {
         if (report)
           return this.apiClient.reportsPUT(report.id, UpdateReportSchema.fromJS({
             name: newName,
-            llmModelId
+            llmModelId,
+            imageProcessingMode: imageProcessingModeReverseMap[imageProcessingMode],
           }));
         return NEVER;
       }),
@@ -146,6 +159,7 @@ const reportToEntity = (report: Report): ReportEntity => ({
   sourceProvider: report.sourceProvider ?? "File",
   format: report.format ?? "Latex",
   llmModelId: report.llmModelId,
+  imageProcessingMode: imageProcessingModeMap[report.imageProcessingMode ?? ImageProcessingMode.Disable],
   source: report.source,
   issueCount: report.issueCount,
   updatedAt: report.updatedAt,
@@ -161,3 +175,16 @@ const llmModelToEntity = (info: LlmModel): LlmModelEntity => ({
   displayName: info.displayName,
 });
 
+const imageProcessingModeMap: Record<ImageProcessingMode, ImageProcessingModeEntity> = {
+  [ImageProcessingMode.Auto]: ImageProcessingModeEntity.Auto,
+  [ImageProcessingMode.Disable]: ImageProcessingModeEntity.Disable,
+  [ImageProcessingMode.LowDetail]: ImageProcessingModeEntity.LowDetail,
+  [ImageProcessingMode.HighDetail]: ImageProcessingModeEntity.HighDetail,
+};
+
+const imageProcessingModeReverseMap: Record<ImageProcessingModeEntity, ImageProcessingMode> = {
+  [ImageProcessingModeEntity.Auto]: ImageProcessingMode.Auto,
+  [ImageProcessingModeEntity.Disable]: ImageProcessingMode.Disable,
+  [ImageProcessingModeEntity.LowDetail]: ImageProcessingMode.LowDetail,
+  [ImageProcessingModeEntity.HighDetail]: ImageProcessingMode.HighDetail,
+};

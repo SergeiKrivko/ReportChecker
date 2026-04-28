@@ -10,6 +10,7 @@ import {AsyncPipe} from "@angular/common";
 import {FormControl, FormGroup, ReactiveFormsModule} from "@angular/forms";
 import {TuiDataListWrapperComponent, TuiSelectDirective} from "@taiga-ui/kit";
 import {LlmModelEntity} from '../../entities/llm-model-entity';
+import {ImageProcessingModeEntity} from '../../entities/report-entity';
 
 @Component({
   selector: 'app-source-tester',
@@ -44,6 +45,7 @@ export class SourceTester implements OnInit {
 
   protected readonly control = new FormGroup({
     llmModel: new FormControl<LlmModelEntity | null>(null),
+    imageProcessingMode: new FormControl<ImageProcessingModeEntity>(ImageProcessingModeEntity.Disable),
   });
 
   ngOnInit() {
@@ -71,7 +73,9 @@ export class SourceTester implements OnInit {
     if (!source || !format)
       return;
     const llmModelId = this.control.value.llmModel?.id;
-    this.reportsService.createReport(this.name() || "New report", source, this.provider(), format, llmModelId).pipe(
+    const imageProcessingMode = this.control.value.imageProcessingMode;
+    this.reportsService.createReport(this.name() || "New report", source, this.provider(), format, llmModelId,
+      imageProcessingMode ?? ImageProcessingModeEntity.Disable).pipe(
       switchMap(reportId => this.reportsService.loadReports().pipe(map(() => reportId))),
       switchMap(id => from(this.router.navigate(['/reports/' + id]))),
       takeUntilDestroyed(this.destroyRef),
@@ -83,4 +87,22 @@ export class SourceTester implements OnInit {
       return "По умолчанию"
     return model.displayName ?? "???";
   }
+
+  protected readonly imageProcessingModes: ImageProcessingModeEntity[] = [
+    ImageProcessingModeEntity.Disable,
+    ImageProcessingModeEntity.Auto,
+    ImageProcessingModeEntity.LowDetail,
+    ImageProcessingModeEntity.HighDetail,
+  ];
+
+  protected stringifyImageProcessingMode(mode: ImageProcessingModeEntity): string {
+    return imageProcessingModesMap[mode];
+  }
+}
+
+const imageProcessingModesMap: Record<ImageProcessingModeEntity, string> = {
+  [ImageProcessingModeEntity.Disable]: "Отключить",
+  [ImageProcessingModeEntity.Auto]: "Автоматически",
+  [ImageProcessingModeEntity.LowDetail]: "Низкая детализация",
+  [ImageProcessingModeEntity.HighDetail]: "Высокая детализация",
 }

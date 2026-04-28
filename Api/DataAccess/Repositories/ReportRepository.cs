@@ -9,7 +9,7 @@ namespace ReportChecker.DataAccess.Repositories;
 public class ReportRepository(ReportCheckerDbContext dbContext) : IReportRepository
 {
     public async Task<Guid> CreateReportAsync(Guid ownerId, string name, string format, string sourceProvider,
-        Guid? llmModelId)
+        Guid? llmModelId, ImageProcessingMode imageProcessingMode)
     {
         var id = Guid.NewGuid();
         var entity = new ReportEntity
@@ -20,6 +20,7 @@ public class ReportRepository(ReportCheckerDbContext dbContext) : IReportReposit
             SourceProvider = sourceProvider,
             Format = format,
             LlmModelId = llmModelId,
+            ImageProcessingMode = imageProcessingMode,
             CreatedAt = DateTime.UtcNow,
             DeletedAt = null,
         };
@@ -37,13 +38,15 @@ public class ReportRepository(ReportCheckerDbContext dbContext) : IReportReposit
         return result > 0;
     }
 
-    public async Task<bool> RenameReportAsync(Guid reportId, string newName, Guid? llmModelId)
+    public async Task<bool> UpdateReportAsync(Guid reportId, string newName, Guid? llmModelId,
+        ImageProcessingMode imageProcessingMode)
     {
         var result = await dbContext.Reports
             .Where(e => e.ReportId == reportId && e.DeletedAt == null)
             .ExecuteUpdateAsync(e => e
                 .SetProperty(x => x.Name, newName)
-                .SetProperty(x => x.LlmModelId, llmModelId));
+                .SetProperty(x => x.LlmModelId, llmModelId)
+                .SetProperty(x => x.ImageProcessingMode, imageProcessingMode));
         await dbContext.SaveChangesAsync();
         return result > 0;
     }
@@ -89,13 +92,14 @@ public class ReportRepository(ReportCheckerDbContext dbContext) : IReportReposit
         try
         {
             updatedAt = entity.Checks.SelectMany(e =>
-                e.Issues.SelectMany(i => i.Comments.Select(c => c.CreatedAt)))
+                    e.Issues.SelectMany(i => i.Comments.Select(c => c.CreatedAt)))
                 .Max();
         }
         catch (InvalidOperationException)
         {
             updatedAt = entity.CreatedAt;
         }
+
         return new Report
         {
             Id = entity.ReportId,
@@ -104,6 +108,7 @@ public class ReportRepository(ReportCheckerDbContext dbContext) : IReportReposit
             SourceProvider = entity.SourceProvider,
             Format = entity.Format,
             LlmModelId = entity.LlmModelId,
+            ImageProcessingMode = entity.ImageProcessingMode,
             CreatedAt = entity.CreatedAt,
             DeletedAt = entity.DeletedAt,
 

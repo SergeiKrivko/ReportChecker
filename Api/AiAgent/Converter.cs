@@ -12,16 +12,20 @@ internal static class Converter
         {
             Name = chapter.Name,
             Text = chapter.Content.AddLineNumbers(),
+            Images = chapter.Images,
             Issues = issues.Where(e => e.Chapter == chapter.Name).Select(e => e.ToAgent()).ToArray(),
         };
     }
 
-    public static ChapterAgent ToAgent(this ChapterDifference chapter, IReadOnlyCollection<Issue> issues)
+    public static ChapterAgent ToAgent(this ChapterDifference chapter, IReadOnlyCollection<Issue> issues,
+        ImageProcessingMode imageProcessingMode)
     {
         return new ChapterAgent
         {
             Name = chapter.Name,
             Text = chapter.Difference.ToAgent(),
+            Images = chapter.Images,
+            ImageProcessingMode = imageProcessingMode,
             Issues = issues.Where(e => e.Chapter == chapter.Name).Select(e => e.ToAgent()).ToArray(),
         };
     }

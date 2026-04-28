@@ -17,18 +17,19 @@ public class LatexFormatProvider(IConfiguration configuration) : IFormatProvider
     {
         try
         {
-            return await ParseFileAsync(null, archive).ToListAsync();
+            return await ParseFileAsync(null, archive, new Context()).ToListAsync();
         }
         catch (FileNotFoundException)
         {
-            return await ParseFileAsync($"{archive.EntryFilePath}/report.tex", archive).ToListAsync();
+            return await ParseFileAsync($"{archive.EntryFilePath}/report.tex", archive, new Context()).ToListAsync();
         }
     }
 
     private const string IncludePrefix = "\\include{";
+    private const string IncludeGraphicsPrefix = "\\includegraphics";
     private const string IncludeSuffix = "}";
 
-    private async IAsyncEnumerable<Chapter> ParseFileAsync(string? fileName, IFileArchive archive)
+    private async IAsyncEnumerable<Chapter> ParseFileAsync(string? fileName, IFileArchive archive, Context context)
     {
         string text;
         await using (var entryStream = fileName == null
@@ -41,18 +42,23 @@ public class LatexFormatProvider(IConfiguration configuration) : IFormatProvider
 
         var path = new List<string> { fileName?.TrimStart('/') ?? "<root>" };
         var builder = new StringBuilder();
+        var images = new List<ChapterImage>();
         foreach (var line in text.Split('\n'))
         {
             var level = LineLevel(line, out var title);
             if (level <= 3)
             {
                 if (builder.Length > 0)
+                {
                     yield return new Chapter
                     {
                         Name = string.Join(ChapterSeparator, path.Where(e => !string.IsNullOrWhiteSpace(e))),
                         Content = builder.ToString(),
+                        Images = images.ToArray(),
                     };
+                }
                 builder.Clear();
+                images.Clear();
 
                 while (level < path.Count)
                     path.RemoveAt(path.Count - 1);
@@ -62,6 +68,41 @@ public class LatexFormatProvider(IConfiguration configuration) : IFormatProvider
             }
 
             builder.AppendLine(line);
+            if (line.Trim().StartsWith(IncludeGraphicsPrefix))
+            {
+                var includeFileName = line.Trim().Substring(IncludeGraphicsPrefix.Length).TrimEnd('}');
+                if (includeFileName.Contains(']'))
+                    includeFileName = includeFileName.Substring(includeFileName.IndexOf(']') + 2);
+                var mimeType = Path.GetExtension(includeFileName) switch
+                {
+                    ".png" => "image/png",
+                    ".jpg" => "image/jpg",
+                    ".svg" => "image/svg",
+                    _ => null,
+                };
+                await using (var imageStream = await archive.ReadAsync($"{context.ImagesPath ?? Path.GetDirectoryName(fileName)}/{includeFileName}".TrimStart('/')))
+                {
+                    if (imageStream != null && mimeType != null)
+                    {
+                        using var memoryStream = new MemoryStream();
+                        await imageStream.CopyToAsync(memoryStream);
+
+                        images.Add(new ChapterImage
+                        {
+                            Data = memoryStream.ToArray(),
+                            MimeType = mimeType
+                        });
+                    }
+                }
+            }
+            else if (line.Trim().StartsWith("\\graphicspath{"))
+            {
+                var imagesPath = line.Trim().Substring("\\graphicspath{".Length).TrimStart('{');
+                if (imagesPath.Contains('%'))
+                    imagesPath = imagesPath.Substring(0, imagesPath.IndexOf('%'));
+                imagesPath = imagesPath.TrimEnd(' ', '}', '/');
+                context.ImagesPath = $"{Path.GetDirectoryName(fileName)}/{imagesPath}";
+            }
         }
 
         if (builder.Length > 0)
@@ -69,6 +110,7 @@ public class LatexFormatProvider(IConfiguration configuration) : IFormatProvider
             {
                 Name = string.Join(ChapterSeparator, path.Where(e => !string.IsNullOrWhiteSpace(e))),
                 Content = builder.ToString(),
+                Images = images.ToArray(),
             };
 
         foreach (var line in text.Split('\n').Select(e => e.Trim()))
@@ -78,9 +120,14 @@ public class LatexFormatProvider(IConfiguration configuration) : IFormatProvider
                     line.Length - IncludePrefix.Length - IncludeSuffix.Length);
                 await foreach (var chapter in ParseFileAsync(
                                    $"{Path.GetDirectoryName(fileName)}/{includeFileName}.tex".TrimStart('/'),
-                                   archive))
+                                   archive, context))
                     yield return chapter;
             }
+    }
+
+    private class Context
+    {
+        public string? ImagesPath { get; set; }
     }
 
     public async Task<bool> TestSourceAsync(IFileArchive archive)

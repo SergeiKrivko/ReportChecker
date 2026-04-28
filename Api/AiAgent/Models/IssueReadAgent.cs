@@ -1,4 +1,7 @@
-﻿namespace AiAgent.Models;
+﻿using System.Text.Json.Serialization;
+using ReportChecker.Models;
+
+namespace AiAgent.Models;
 
 public class IssueReadAgent
 {
@@ -55,6 +58,8 @@ public class ChapterAgent
     public required string Text { get; init; }
 
     public IssueReadAgent[]? Issues { get; init; }
+    [JsonIgnore] public ChapterImage[] Images { get; init; } = [];
+    [JsonIgnore] public ImageProcessingMode ImageProcessingMode { get; init; }
 }
 
 public class IssuesRequestAgent
@@ -71,6 +76,8 @@ public class WriteCommentRequestAgent
     public required IssueReadAgent Issue { get; init; }
 
     public string[] Instructions { get; init; } = [];
+    [JsonIgnore] public ChapterImage[] Images { get; init; } = [];
+    [JsonIgnore] public ImageProcessingMode ImageProcessingMode { get; init; }
 }
 
 public class InstructionCreateAgent
@@ -90,7 +97,7 @@ public class CommentResponseAgent
 
     public InstructionCreateAgent? Instruction { get; init; }
 
-    public PatchLineAgent[]? Patch { get; init; }
+    public ICollection<PatchLineAgent>? Patch { get; init; }
 }
 
 public class InstructionRequestAgent
@@ -104,7 +111,7 @@ public class PatchLineAgent
 {
     public int Number { get; init; }
 
-    public required string Content { get; init; }
+    public string? Content { get; init; }
 
     public required string Type { get; init; }
 }

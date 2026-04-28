@@ -48,7 +48,7 @@ public class ReportController(
 
         var reportId = await
             reportService.CreateReportAsync(userId, schema.Name, schema.Format, schema.SourceProvider,
-                schema.Source, schema.LlmModelId);
+                schema.Source, schema.LlmModelId, schema.ImageProcessingMode);
         return Ok(reportId);
     }
 
@@ -73,7 +73,7 @@ public class ReportController(
         var report = await reportRepository.GetReportByIdAsync(reportId);
         if (report == null)
             return NotFound();
-        await reportRepository.RenameReportAsync(reportId, schema.Name, schema.LlmModelId);
+        await reportRepository.UpdateReportAsync(reportId, schema.Name, schema.LlmModelId, schema.ImageProcessingMode);
         return Ok();
     }
 

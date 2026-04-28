@@ -6,4 +6,5 @@ public class ChapterDifference
     public string? OldContent { get; init; }
     public required string NewContent { get; init; }
     public required IReadOnlyCollection<ChapterLine> Difference { get; init; }
+    public ChapterImage[] Images { get; init; } = [];
 }

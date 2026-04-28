@@ -10,4 +10,15 @@
     gap: 1rem;
     justify-content: space-between;
   }
+
+  .grid-container {
+    display: grid;
+    grid-gap: 1rem;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+
+    @media (max-width: 767px) {
+      grid-template-columns: 1fr;
+    }
+  }
 }

@@ -3238,6 +3238,7 @@ export class ApiClient extends ApiClientBase {
 export class Chapter implements IChapter {
     name!: string | undefined;
     content!: string | undefined;
+    images?: ChapterImage[] | undefined;
     children?: Chapter[] | undefined;
 
     constructor(data?: IChapter) {
@@ -3253,6 +3254,11 @@ export class Chapter implements IChapter {
         if (_data) {
             this.name = _data["name"];
             this.content = _data["content"];
+            if (Array.isArray(_data["images"])) {
+                this.images = [] as any;
+                for (let item of _data["images"])
+                    this.images!.push(ChapterImage.fromJS(item));
+            }
             if (Array.isArray(_data["children"])) {
                 this.children = [] as any;
                 for (let item of _data["children"])
@@ -3272,6 +3278,11 @@ export class Chapter implements IChapter {
         data = typeof data === 'object' ? data : {};
         data["name"] = this.name;
         data["content"] = this.content;
+        if (Array.isArray(this.images)) {
+            data["images"] = [];
+            for (let item of this.images)
+                data["images"].push(item.toJSON());
+        }
         if (Array.isArray(this.children)) {
             data["children"] = [];
             for (let item of this.children)
@@ -3284,7 +3295,48 @@ export class Chapter implements IChapter {
 export interface IChapter {
     name: string | undefined;
     content: string | undefined;
+    images?: ChapterImage[] | undefined;
     children?: Chapter[] | undefined;
+}
+
+export class ChapterImage implements IChapterImage {
+    data!: string | undefined;
+    mimeType!: string | undefined;
+
+    constructor(data?: IChapterImage) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.data = _data["data"];
+            this.mimeType = _data["mimeType"];
+        }
+    }
+
+    static fromJS(data: any): ChapterImage {
+        data = typeof data === 'object' ? data : {};
+        let result = new ChapterImage();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["data"] = this.data;
+        data["mimeType"] = this.mimeType;
+        return data;
+    }
+}
+
+export interface IChapterImage {
+    data: string | undefined;
+    mimeType: string | undefined;
 }
 
 export class Check implements ICheck {
@@ -3685,6 +3737,7 @@ export class CreateReportSchema implements ICreateReportSchema {
     sourceProvider!: string | undefined;
     source!: ReportSourceUnion;
     llmModelId?: string | undefined;
+    imageProcessingMode?: ImageProcessingMode;
 
     constructor(data?: ICreateReportSchema) {
         if (data) {
@@ -3705,6 +3758,7 @@ export class CreateReportSchema implements ICreateReportSchema {
             this.sourceProvider = _data["sourceProvider"];
             this.source = _data["source"] ? ReportSourceUnion.fromJS(_data["source"]) : new ReportSourceUnion();
             this.llmModelId = _data["llmModelId"];
+            this.imageProcessingMode = _data["imageProcessingMode"];
         }
     }
 
@@ -3722,6 +3776,7 @@ export class CreateReportSchema implements ICreateReportSchema {
         data["sourceProvider"] = this.sourceProvider;
         data["source"] = this.source ? this.source.toJSON() : <any>undefined;
         data["llmModelId"] = this.llmModelId;
+        data["imageProcessingMode"] = this.imageProcessingMode;
         return data;
     }
 }
@@ -3732,6 +3787,7 @@ export interface ICreateReportSchema {
     sourceProvider: string | undefined;
     source: ReportSourceUnion;
     llmModelId?: string | undefined;
+    imageProcessingMode?: ImageProcessingMode;
 }
 
 export class CreateSubscriptionOfferSchema implements ICreateSubscriptionOfferSchema {
@@ -4125,6 +4181,13 @@ export interface IGitHubReportSource {
     repositoryId: number;
     branch: string | undefined;
     path: string | undefined;
+}
+
+export enum ImageProcessingMode {
+    Disable = "Disable",
+    Auto = "Auto",
+    LowDetail = "LowDetail",
+    HighDetail = "HighDetail",
 }
 
 export class Instruction implements IInstruction {
@@ -4789,6 +4852,7 @@ export class Report implements IReport {
     sourceProvider!: string | undefined;
     format!: string | undefined;
     llmModelId?: string | undefined;
+    imageProcessingMode?: ImageProcessingMode;
     createdAt?: moment.Moment;
     deletedAt?: moment.Moment | undefined;
     source?: ReportSourceUnion;
@@ -4812,6 +4876,7 @@ export class Report implements IReport {
             this.sourceProvider = _data["sourceProvider"];
             this.format = _data["format"];
             this.llmModelId = _data["llmModelId"];
+            this.imageProcessingMode = _data["imageProcessingMode"];
             this.createdAt = _data["createdAt"] ? moment(_data["createdAt"].toString()) : <any>undefined;
             this.deletedAt = _data["deletedAt"] ? moment(_data["deletedAt"].toString()) : <any>undefined;
             this.source = _data["source"] ? ReportSourceUnion.fromJS(_data["source"]) : <any>undefined;
@@ -4841,6 +4906,7 @@ export class Report implements IReport {
         data["sourceProvider"] = this.sourceProvider;
         data["format"] = this.format;
         data["llmModelId"] = this.llmModelId;
+        data["imageProcessingMode"] = this.imageProcessingMode;
         data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
         data["deletedAt"] = this.deletedAt ? this.deletedAt.toISOString() : <any>undefined;
         data["source"] = this.source ? this.source.toJSON() : <any>undefined;
@@ -4863,6 +4929,7 @@ export interface IReport {
     sourceProvider: string | undefined;
     format: string | undefined;
     llmModelId?: string | undefined;
+    imageProcessingMode?: ImageProcessingMode;
     createdAt?: moment.Moment;
     deletedAt?: moment.Moment | undefined;
     source?: ReportSourceUnion;
@@ -5334,6 +5401,7 @@ export interface IUpdatePatchSchema {
 export class UpdateReportSchema implements IUpdateReportSchema {
     name!: string | undefined;
     llmModelId?: string | undefined;
+    imageProcessingMode?: ImageProcessingMode;
 
     constructor(data?: IUpdateReportSchema) {
         if (data) {
@@ -5348,6 +5416,7 @@ export class UpdateReportSchema implements IUpdateReportSchema {
         if (_data) {
             this.name = _data["name"];
             this.llmModelId = _data["llmModelId"];
+            this.imageProcessingMode = _data["imageProcessingMode"];
         }
     }
 
@@ -5362,6 +5431,7 @@ export class UpdateReportSchema implements IUpdateReportSchema {
         data = typeof data === 'object' ? data : {};
         data["name"] = this.name;
         data["llmModelId"] = this.llmModelId;
+        data["imageProcessingMode"] = this.imageProcessingMode;
         return data;
     }
 }
@@ -5369,6 +5439,7 @@ export class UpdateReportSchema implements IUpdateReportSchema {
 export interface IUpdateReportSchema {
     name: string | undefined;
     llmModelId?: string | undefined;
+    imageProcessingMode?: ImageProcessingMode;
 }
 
 export class UploadFileResponseSchema implements IUploadFileResponseSchema {

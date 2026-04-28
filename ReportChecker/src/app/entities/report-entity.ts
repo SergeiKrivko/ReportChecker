@@ -7,8 +7,16 @@ export interface ReportEntity {
   sourceProvider: string;
   format: string;
   llmModelId?: string;
+  imageProcessingMode: ImageProcessingModeEntity;
 
   source?: IReportSourceUnion,
   issueCount?: { [key: string]: number; },
   updatedAt?: Moment;
+}
+
+export enum ImageProcessingModeEntity {
+    Disable = "Disable",
+    Auto = "Auto",
+    LowDetail = "LowDetail",
+    HighDetail = "HighDetail",
 }

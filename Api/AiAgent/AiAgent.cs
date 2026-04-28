@@ -1,8 +1,10 @@
 ﻿using System.Reflection;
+using System.Text.Json;
 using AiAgent.Models;
 using Avalux.OpenAi.Client;
 using Avalux.OpenAi.Client.Models;
 using Microsoft.Extensions.Logging;
+using OpenAI.Chat;
 using ReportChecker.Abstractions;
 using ReportChecker.Models;
 
@@ -67,7 +69,20 @@ public class AiAgent : IAiAgent
             .AddUserMessage(param.Instructions);
         foreach (var paramChapter in param.Chapters)
         {
-            request.AddUserMessage(paramChapter);
+            Console.WriteLine(string.Join("; ", paramChapter.Images.Select(e => e.MimeType)));
+            if (paramChapter.Images.Length == 0 || paramChapter.ImageProcessingMode == ImageProcessingMode.Disable)
+                request.AddUserMessage(paramChapter);
+            else
+                request.AddUserMessage(paramChapter.Images
+                    .Select(e =>
+                        ChatMessageContentPart.CreateImagePart(new BinaryData(e.Data), e.MimeType,
+                            paramChapter.ImageProcessingMode switch
+                            {
+                                ImageProcessingMode.LowDetail => ChatImageDetailLevel.Low,
+                                ImageProcessingMode.HighDetail => ChatImageDetailLevel.High,
+                                _ => ChatImageDetailLevel.Auto,
+                            }))
+                    .Prepend(ChatMessageContentPart.CreateTextPart(paramChapter.Text)));
         }
 
         var response = await _client.CompleteAsync(request);
@@ -82,8 +97,19 @@ public class AiAgent : IAiAgent
             .AddSystemPrompt(await GetSystemPrompt("WriteComment"))
             .SetResponseType<CommentResponseAgent>()
             .AddUserMessage(param.Instructions)
-            .AddUserMessage(param.Issue)
-            .AddUserMessage(param.Text);
+            .AddUserMessage(param.Issue);
+        if (param.Images.Length > 0 && param.ImageProcessingMode != ImageProcessingMode.Disable)
+            request = request.AddUserMessage(param.Images
+                .Select(e =>
+                    ChatMessageContentPart.CreateImagePart(new BinaryData(e.Data), e.MimeType,
+                        param.ImageProcessingMode switch
+                        {
+                            ImageProcessingMode.LowDetail => ChatImageDetailLevel.Low,
+                            ImageProcessingMode.HighDetail => ChatImageDetailLevel.High,
+                            _ => ChatImageDetailLevel.Auto,
+                        })).Prepend(ChatMessageContentPart.CreateTextPart(param.Text)));
+        else
+            request = request.AddUserMessage(param.Text);
 
         var response = await _client.CompleteAsync(request);
         if (_logger.IsEnabled(LogLevel.Information))

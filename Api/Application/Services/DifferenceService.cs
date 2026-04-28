@@ -30,6 +30,7 @@ public class DifferenceService : IDifferenceService
             Name = newChapter.Name,
             OldContent = oldChapter?.Content,
             NewContent = newChapter.Content,
+            Images = newChapter.Images,
             Difference = GetDifference(oldChapter?.Content ?? "", newChapter.Content),
         };
     }

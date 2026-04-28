@@ -12,6 +12,7 @@ import {ReportsService} from '../../services/reports.service';
 import {FormControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {PathService} from '../../services/path.service';
 import {LlmModelEntity} from '../../entities/llm-model-entity';
+import {ImageProcessingModeEntity} from '../../entities/report-entity';
 
 @Component({
   selector: 'app-instructions.page',
@@ -42,6 +43,7 @@ export class SettingsPage implements OnInit, OnDestroy {
   protected readonly control = new FormGroup({
     name: new FormControl<string>(""),
     llmModel: new FormControl<LlmModelEntity | null>(null),
+    imageProcessingMode: new FormControl<ImageProcessingModeEntity>(ImageProcessingModeEntity.Disable),
   });
 
   ngOnInit() {
@@ -49,6 +51,7 @@ export class SettingsPage implements OnInit, OnDestroy {
       tap(([report, models]) => this.control.setValue({
         name: report?.name ?? "",
         llmModel: models.find(e => e.id == report?.llmModelId) ?? null,
+        imageProcessingMode: report?.imageProcessingMode ?? ImageProcessingModeEntity.Disable,
       })),
       takeUntilDestroyed(this.destroyRef),
     ).subscribe();
@@ -59,7 +62,8 @@ export class SettingsPage implements OnInit, OnDestroy {
       debounceTime(1000),
       switchMap(value => {
         if (value.name)
-          return this.reportsService.updateReport(value.name, value.llmModel?.id);
+          return this.reportsService.updateReport(value.name, value.llmModel?.id,
+            value.imageProcessingMode ?? ImageProcessingModeEntity.Disable);
         return NEVER;
       }),
       takeUntilDestroyed(this.destroyRef),
@@ -116,4 +120,22 @@ export class SettingsPage implements OnInit, OnDestroy {
       return "По умолчанию"
     return model.displayName ?? "???";
   }
+
+  protected readonly imageProcessingModes: ImageProcessingModeEntity[] = [
+    ImageProcessingModeEntity.Disable,
+    ImageProcessingModeEntity.Auto,
+    ImageProcessingModeEntity.LowDetail,
+    ImageProcessingModeEntity.HighDetail,
+  ];
+
+  protected stringifyImageProcessingMode(mode: ImageProcessingModeEntity): string {
+    return imageProcessingModesMap[mode];
+  }
+}
+
+const imageProcessingModesMap: Record<ImageProcessingModeEntity, string> = {
+  [ImageProcessingModeEntity.Disable]: "Отключить",
+  [ImageProcessingModeEntity.Auto]: "Автоматически",
+  [ImageProcessingModeEntity.LowDetail]: "Низкая детализация",
+  [ImageProcessingModeEntity.HighDetail]: "Высокая детализация",
 }

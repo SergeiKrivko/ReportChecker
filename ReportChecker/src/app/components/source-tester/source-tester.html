@@ -16,12 +16,20 @@
       </tui-notification>
     }
   }
-  <label tuiLabel>Модель:</label>
-  <tui-textfield [stringify]="stringifyModel">
-    <input placeholder="По умолчанию" tuiSelect formControlName="llmModel"/>
-    @let models = models$ | async;
-    <tui-data-list-wrapper *tuiTextfieldDropdown new [items]="models"/>
-  </tui-textfield>
+  <div class="grid-container">
+    <label tuiLabel>Модель:</label>
+    <tui-textfield [stringify]="stringifyModel">
+      <input placeholder="По умолчанию" tuiSelect formControlName="llmModel"/>
+      @let models = models$ | async;
+      <tui-data-list-wrapper *tuiTextfieldDropdown new [items]="models"/>
+    </tui-textfield>
+    <label tuiLabel>Обработка изображений:</label>
+    <tui-textfield [stringify]="stringifyImageProcessingMode">
+      <input placeholder="Отключить" tuiSelect formControlName="imageProcessingMode"/>
+      <tui-data-list-wrapper *tuiTextfieldDropdown new [items]="imageProcessingModes"/>
+    </tui-textfield>
+  </div>
+
   <button tuiButton iconStart="@tui.check" (click)="createReport()" [disabled]="sourceInfo?.status !== 'Success'">
     Создать отчет
   </button>
