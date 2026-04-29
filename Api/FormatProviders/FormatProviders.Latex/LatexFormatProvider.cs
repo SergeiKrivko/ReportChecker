@@ -15,26 +15,20 @@ public class LatexFormatProvider(IConfiguration configuration) : IFormatProvider
 
     public async Task<IEnumerable<Chapter>> GetChaptersAsync(IFileArchive archive)
     {
-        try
+        return await ParseFileAsync(null, new LatexContext
         {
-            return await ParseFileAsync(null, archive, new Context()).ToListAsync();
-        }
-        catch (FileNotFoundException)
-        {
-            return await ParseFileAsync($"{archive.EntryFilePath}/report.tex", archive, new Context()).ToListAsync();
-        }
+            Archive = archive,
+        }).ToListAsync();
     }
 
-    private const string IncludePrefix = "\\include{";
-    private const string IncludeGraphicsPrefix = "\\includegraphics";
-    private const string IncludeSuffix = "}";
-
-    private async IAsyncEnumerable<Chapter> ParseFileAsync(string? fileName, IFileArchive archive, Context context)
+    private async IAsyncEnumerable<Chapter> ParseFileAsync(string? fileName, LatexContext context)
     {
         string text;
+        context.FileName = fileName;
         await using (var entryStream = fileName == null
-                         ? await archive.ReadAsync() ?? throw new FileNotFoundException("Entry file not found")
-                         : await archive.ReadAsync(fileName) ??
+                         ? await context.Archive.ReadAsync() ??
+                           throw new FileNotFoundException("Entry file not found")
+                         : await context.Archive.ReadAsync(fileName) ??
                            throw new FileNotFoundException($"File '{fileName}' not found"))
         {
             text = await new StreamReader(entryStream).ReadToEndAsync();
@@ -43,66 +37,53 @@ public class LatexFormatProvider(IConfiguration configuration) : IFormatProvider
         var path = new List<string> { fileName?.TrimStart('/') ?? "<root>" };
         var builder = new StringBuilder();
         var images = new List<ChapterImage>();
+        var includedFiles = new List<string>();
         foreach (var line in text.Split('\n'))
         {
-            var level = LineLevel(line, out var title);
-            if (level <= 3)
+            if (line.TryParseCommand(out var command))
             {
-                if (builder.Length > 0)
+                Console.WriteLine($"\\{command.Command} [ {command.Options} ] {{ {command.Argument} }}");
+                var level = LineLevel(command, out var title);
+                if (level <= 3)
                 {
-                    yield return new Chapter
+                    if (builder.Length > 0)
                     {
-                        Name = string.Join(ChapterSeparator, path.Where(e => !string.IsNullOrWhiteSpace(e))),
-                        Content = builder.ToString(),
-                        Images = images.ToArray(),
-                    };
-                }
-                builder.Clear();
-                images.Clear();
+                        Console.WriteLine($"{string.Join(ChapterSeparator, path.Where(e => !string.IsNullOrWhiteSpace(e)))} --- {images.Count} images");
+                        Console.WriteLine(builder);
+                        yield return new Chapter
+                        {
+                            Name = string.Join(ChapterSeparator, path.Where(e => !string.IsNullOrWhiteSpace(e))),
+                            Content = builder.ToString(),
+                            Images = images.ToArray(),
+                        };
+                    }
 
-                while (level < path.Count)
-                    path.RemoveAt(path.Count - 1);
-                while (level > path.Count)
-                    path.Add("");
-                path.Add(title);
+                    builder.Clear();
+                    images.Clear();
+
+                    while (level < path.Count)
+                        path.RemoveAt(path.Count - 1);
+                    while (level > path.Count)
+                        path.Add("");
+                    path.Add(title);
+                }
+                else if (command.Command == "includegraphics")
+                {
+                    var image = await ProcessImage(command, context);
+                    if (image != null)
+                        images.Add(image);
+                }
+                else if (command.Command == "graphicspath")
+                {
+                    context.ImagesPath = command.Argument?.TrimEnd('/');
+                }
+                else if (command is { Command: "include", Argument: not null })
+                {
+                    includedFiles.Add(command.Argument);
+                }
             }
 
             builder.AppendLine(line);
-            if (line.Trim().StartsWith(IncludeGraphicsPrefix))
-            {
-                var includeFileName = line.Trim().Substring(IncludeGraphicsPrefix.Length).TrimEnd('}');
-                if (includeFileName.Contains(']'))
-                    includeFileName = includeFileName.Substring(includeFileName.IndexOf(']') + 2);
-                var mimeType = Path.GetExtension(includeFileName) switch
-                {
-                    ".png" => "image/png",
-                    ".jpg" => "image/jpg",
-                    ".svg" => "image/svg",
-                    _ => null,
-                };
-                await using (var imageStream = await archive.ReadAsync($"{context.ImagesPath ?? Path.GetDirectoryName(fileName)}/{includeFileName}".TrimStart('/')))
-                {
-                    if (imageStream != null && mimeType != null)
-                    {
-                        using var memoryStream = new MemoryStream();
-                        await imageStream.CopyToAsync(memoryStream);
-
-                        images.Add(new ChapterImage
-                        {
-                            Data = memoryStream.ToArray(),
-                            MimeType = mimeType
-                        });
-                    }
-                }
-            }
-            else if (line.Trim().StartsWith("\\graphicspath{"))
-            {
-                var imagesPath = line.Trim().Substring("\\graphicspath{".Length).TrimStart('{');
-                if (imagesPath.Contains('%'))
-                    imagesPath = imagesPath.Substring(0, imagesPath.IndexOf('%'));
-                imagesPath = imagesPath.TrimEnd(' ', '}', '/');
-                context.ImagesPath = $"{Path.GetDirectoryName(fileName)}/{imagesPath}";
-            }
         }
 
         if (builder.Length > 0)
@@ -113,21 +94,37 @@ public class LatexFormatProvider(IConfiguration configuration) : IFormatProvider
                 Images = images.ToArray(),
             };
 
-        foreach (var line in text.Split('\n').Select(e => e.Trim()))
-            if (line.StartsWith(IncludePrefix) && line.EndsWith(IncludeSuffix))
-            {
-                var includeFileName = line.Substring(IncludePrefix.Length,
-                    line.Length - IncludePrefix.Length - IncludeSuffix.Length);
-                await foreach (var chapter in ParseFileAsync(
-                                   $"{Path.GetDirectoryName(fileName)}/{includeFileName}.tex".TrimStart('/'),
-                                   archive, context))
-                    yield return chapter;
-            }
+        foreach (var file in includedFiles)
+        await foreach (var chapter in ParseFileAsync(
+                           $"{Path.GetDirectoryName(fileName)}/{file}.tex".TrimStart('/'),
+                           context))
+            yield return chapter;
     }
 
-    private class Context
+    private static async Task<ChapterImage?> ProcessImage(LatexCommand command, LatexContext context)
     {
-        public string? ImagesPath { get; set; }
+        if (command.Argument == null)
+            return null;
+        var includeFileName = command.Argument;
+        var mimeType = Path.GetExtension(includeFileName) switch
+        {
+            ".png" => "image/png",
+            ".jpg" => "image/jpg",
+            ".svg" => "image/svg",
+            _ => null,
+        };
+        await using var imageStream = await context.Archive.ReadAsync(
+            $"{context.ImagesPath ?? Path.GetDirectoryName(context.FileName)}/{includeFileName}".TrimStart('/'));
+        if (imageStream == null || mimeType == null)
+            return null;
+        using var memoryStream = new MemoryStream();
+        await imageStream.CopyToAsync(memoryStream);
+
+        return new ChapterImage
+        {
+            Data = memoryStream.ToArray(),
+            MimeType = mimeType
+        };
     }
 
     public async Task<bool> TestSourceAsync(IFileArchive archive)
@@ -139,35 +136,17 @@ public class LatexFormatProvider(IConfiguration configuration) : IFormatProvider
         return entry != null;
     }
 
-    private static int LineLevel(string line, out string title)
+    private static int LineLevel(LatexCommand command, out string title)
     {
-        line = line.Trim();
-        if (line.StartsWith("\\chapter{") && line.EndsWith('}'))
+        title = command.Argument ?? "";
+        return command.Command switch
         {
-            title = line.Substring("\\chapter{".Length).TrimEnd('}');
-            return 0;
-        }
-
-        if (line.StartsWith("\\section{") && line.EndsWith('}'))
-        {
-            title = line.Substring("\\section{".Length).TrimEnd('}');
-            return 1;
-        }
-
-        if (line.StartsWith("\\subsection{") && line.EndsWith('}'))
-        {
-            title = line.Substring("\\subsection{".Length).TrimEnd('}');
-            return 2;
-        }
-
-        if (line.StartsWith("\\subsubsection{") && line.EndsWith('}'))
-        {
-            title = line.Substring("\\subsubsection{".Length).TrimEnd('}');
-            return 3;
-        }
-
-        title = line;
-        return int.MaxValue;
+            "chapter" => 0,
+            "section" => 1,
+            "subsection" => 2,
+            "subsubsection" => 3,
+            _ => int.MaxValue,
+        };
     }
 
     public async Task<CheckSourceUnion?> ApplyPatchAsync(IFileArchive archive, string chapter,
@@ -210,23 +189,32 @@ public class LatexFormatProvider(IConfiguration configuration) : IFormatProvider
             }
         }
 
+        var includedFiles = new List<string>();
         var patchApplied = false;
         var path = new List<string> { fileName?.TrimStart('/') ?? "<root>" };
-        var isPatchChapter = chapter == string.Join(ChapterSeparator, path.Where(e => !string.IsNullOrWhiteSpace(e)));
+        var isPatchChapter =
+            chapter == string.Join(ChapterSeparator, path.Where(e => !string.IsNullOrWhiteSpace(e)));
         var lineNumber = 0;
         var builder = new StringBuilder();
         foreach (var line in lst)
         {
-            var level = LineLevel(line, out var title);
-            if (level <= 3)
+            if (line.TryParseCommand(out var command))
             {
-                while (level < path.Count)
-                    path.RemoveAt(path.Count - 1);
-                while (level > path.Count)
-                    path.Add("");
-                path.Add(title);
-                isPatchChapter =
-                    chapter == string.Join(ChapterSeparator, path.Where(e => !string.IsNullOrWhiteSpace(e)));
+                var level = LineLevel(command, out var title);
+                if (level <= 3)
+                {
+                    while (level < path.Count)
+                        path.RemoveAt(path.Count - 1);
+                    while (level > path.Count)
+                        path.Add("");
+                    path.Add(title);
+                    isPatchChapter =
+                        chapter == string.Join(ChapterSeparator, path.Where(e => !string.IsNullOrWhiteSpace(e)));
+                }
+            }
+            else if (command is { Command: "include", Argument: not null })
+            {
+                includedFiles.Add(command.Argument);
             }
 
             if (isPatchChapter)
@@ -275,17 +263,14 @@ public class LatexFormatProvider(IConfiguration configuration) : IFormatProvider
                     : await archive.WriteAsync(fileName, stream, ct));
         }
 
-        foreach (var line in text.Split('\n').Select(e => e.Trim()))
-            if (line.StartsWith(IncludePrefix) && line.EndsWith(IncludeSuffix))
-            {
-                var includeFileName = line.Substring(IncludePrefix.Length,
-                    line.Length - IncludePrefix.Length - IncludeSuffix.Length);
-                var (flag, source) = await ApplyPatchAsync(
-                    $"{Path.GetDirectoryName(fileName)}/{includeFileName}.tex".TrimStart('/'),
-                    archive, chapter, lines, ct);
-                if (flag)
-                    return (flag, source);
-            }
+        foreach (var file in includedFiles)
+        {
+            var (flag, source) = await ApplyPatchAsync(
+                $"{Path.GetDirectoryName(fileName)}/{file}.tex".TrimStart('/'),
+                archive, chapter, lines, ct);
+            if (flag)
+                return (flag, source);
+        }
 
         return (false, null);
     }

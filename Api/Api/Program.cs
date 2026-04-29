@@ -1,10 +1,6 @@
 using System.Net.Http.Headers;
-using System.Text.Encodings.Web;
-using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Text.Unicode;
 using AiAgent;
-using AiAgent.Models;
 using Avalux.Auth.ApiClient;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -24,15 +20,6 @@ using ReportChecker.SourceProviders.File;
 using ReportChecker.SourceProviders.GitHub;
 using ReportChecker.SourceProviders.Local;
 using IFormatProvider = ReportChecker.Abstractions.IFormatProvider;
-
-var data =
-    "{\n  \"Comment\": {\n    \"IssueId\": \"345740f0-bedd-4220-93d6-8052741433d9\",\n    \"Content\": \"Да, я вижу изображение. На нем схематически представлен принцип работы алгоритма обратной трассировки лучей.<br><br>На схеме изображены:<br><ul><li><b>Наблюдатель</b>, из точки которого исходят лучи.</li><li><b>Изображение</b> (экран) - сетка пикселей, через которые проходят лучи.</li><li><b>Первичные лучи</b>, направленные от наблюдателя через пиксели к объектам сцены.</li><li><b>Трехмерный объект</b> (куб), с которым пересекаются лучи.</li><li><b>Зеркало</b>, от которого отражается один из первичных лучей.</li><li><b>Вторичный луч</b> - результат отражения первичного луча от зеркала.</li><li><b>Теневые лучи</b>, идущие от точек пересечения на объекте к источникам света (желтые круги) для определения освещенности.</li></ul>Изображение наглядно иллюстрирует, как первичные лучи определяют видимые точки объектов, а вторичные и теневые лучи используются для расчета отражений и теней, что полностью соответствует текстовому описанию алгоритма.\",\n    \"Status\": null\n  }\n}\n";
-Console.WriteLine(JsonSerializer.Deserialize<CommentResponseAgent>(data, new JsonSerializerOptions
-{
-    Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
-    PropertyNameCaseInsensitive = true,
-    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-}));
 
 var builder = WebApplication.CreateBuilder(args);
 
