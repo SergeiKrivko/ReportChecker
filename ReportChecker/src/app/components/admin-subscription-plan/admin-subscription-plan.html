@@ -23,13 +23,18 @@
   <div class="offers-container">
     @for (offer of subscriptionPlan().offers; track offer.id) {
       <div class="h-container">
-        <app-admin-subscription-offer [subscriptionPlan]="subscriptionPlan()" [subscriptionOffer]="offer" class="offer-card"/>
+        <app-admin-subscription-offer [subscriptionPlan]="subscriptionPlan()" [subscriptionOffer]="offer"
+                                      class="offer-card"/>
         @if ($index === (subscriptionPlan().offers?.length ?? 0) - 1) {
           <button tuiIconButton appearance="flat" iconStart="@tui.plus" (click)="addOffer()"></button>
         } @else {
-          <button tuiIconButton appearance="flat-destructive" iconStart="@tui.trash" (click)="deleteOffer(offer.id)"></button>
+          <button tuiIconButton appearance="flat-destructive" iconStart="@tui.trash"
+                  (click)="deleteOffer(offer.id)"></button>
         }
       </div>
+    }
+    @if (subscriptionPlan().offers?.length === 0) {
+      <button tuiButton appearance="flat" iconStart="@tui.plus" (click)="addOffer()">Добавить</button>
     }
   </div>
 </form>

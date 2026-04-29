@@ -1,6 +1,6 @@
 import {Component, DestroyRef, inject, OnDestroy, OnInit} from '@angular/core';
 import {
-  ApiClient,
+  ApiClient, CreateSubscriptionOfferSchema,
   CreateSubscriptionPlanSchema,
   SubscriptionPlan
 } from '../../services/api-client';
@@ -48,10 +48,14 @@ export class AdminSubscriptionsPage implements OnInit, OnDestroy {
 
   protected addPlan() {
     this.apiClient.plansPOST(CreateSubscriptionPlanSchema.fromJS({
-      displayName: "New plan",
+      name: "New plan",
       tokensLimit: 0,
       reportsLimit: 1,
     })).pipe(
+      switchMap(id => this.apiClient.offersPOST(id, CreateSubscriptionOfferSchema.fromJS({
+        price: 100,
+        months: 1,
+      }))),
       switchMap(() => this.loadPlans()),
       takeUntilDestroyed(this.destroyRef),
     ).subscribe();
