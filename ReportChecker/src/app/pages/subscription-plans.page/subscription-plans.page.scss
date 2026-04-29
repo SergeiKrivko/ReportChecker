@@ -5,6 +5,12 @@
   align-items: stretch;
   gap: 1rem;
 
+  @media (max-width: 767px) {
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+  }
+
   .plan-card {
     display: flex;
     flex-direction: column;
