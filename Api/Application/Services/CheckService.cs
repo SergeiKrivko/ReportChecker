@@ -33,7 +33,7 @@ public class CheckService(
         else
             await sourceProvider.SaveAsync(checkId, source);
 
-        var context = await GetContextAsync(report, check);
+        var context = await GetContextAsync(report, check, true);
         _RunCheck(context);
         return checkId;
     }
@@ -81,7 +81,7 @@ public class CheckService(
         if (check == null)
             throw new ArgumentException($"Latest check of report {reportId} not found");
 
-        var context = await GetContextAsync(report, check);
+        var context = await GetContextAsync(report, check, false);
         var issue = await issueRepository.GetIssueByIdAsync(issueId);
         if (issue == null)
             throw new ArgumentException($"Issue {issueId} not found");
@@ -112,7 +112,7 @@ public class CheckService(
         return chapters;
     }
 
-    private async Task<CheckContext> GetContextAsync(Report report, Check check)
+    private async Task<CheckContext> GetContextAsync(Report report, Check check, bool includePreviousCheck = false)
     {
         var sourceProvider = providerService.GetSourceProvider(report.SourceProvider);
         var formatProvider = providerService.GetFormatProvider(report.Format);
@@ -122,11 +122,14 @@ public class CheckService(
         var issues = await issueRepository.GetAllIssuesOfReportAsync(report.Id);
 
         List<Chapter> previousChapters = [];
-        var previousCheck = await checkRepository.GetPreviousCheckAsync(check);
-        if (previousCheck != null)
+        if (includePreviousCheck)
         {
-            var previousSource = await sourceProvider.OpenAsync(report.Id, previousCheck.Id);
-            previousChapters = (await formatProvider.GetChaptersAsync(previousSource)).ToList();
+            var previousCheck = await checkRepository.GetPreviousCheckAsync(check);
+            if (previousCheck != null)
+            {
+                var previousSource = await sourceProvider.OpenAsync(report.Id, previousCheck.Id);
+                previousChapters = (await formatProvider.GetChaptersAsync(previousSource)).ToList();
+            }
         }
 
         return new CheckContext
