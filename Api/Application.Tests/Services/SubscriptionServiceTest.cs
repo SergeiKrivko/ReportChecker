@@ -38,7 +38,7 @@ namespace Application.Tests.Services
 
             _context = new ReportCheckerDbContext(options);
 
-            await _context.Database.MigrateAsync("20260424151929_Subscriptions");
+            await _context.Database.MigrateAsync("20260430100526_Payments");
 
             // Initialize repositories with real DbContext
             _userSubscriptionRepository = new UserSubscriptionRepository(_context);

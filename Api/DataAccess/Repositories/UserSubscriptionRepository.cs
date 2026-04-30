@@ -102,6 +102,9 @@ public class UserSubscriptionRepository(ReportCheckerDbContext dbContext) : IUse
     public async Task<bool> ConfirmSubscriptionAsync(Guid subscriptionId, CancellationToken ct = default)
     {
         var now = DateTime.UtcNow;
+        var subscription = await GetSubscriptionByIdAsync(subscriptionId, ct);
+        if (subscription == null)
+            throw new Exception("Subscription not found");
         var subscriptions = await dbContext.UserSubscriptions
             .Where(e => e.Id == subscriptionId || e.LinkedSubscriptionId == subscriptionId)
             .ToListAsync(ct);
@@ -114,6 +117,9 @@ public class UserSubscriptionRepository(ReportCheckerDbContext dbContext) : IUse
 
         await dbContext.UserSubscriptions
             .Where(e => parentSubscriptionIds.Contains(e.Id))
+            .ExecuteUpdateAsync(p => p.SetProperty(e => e.DeletedAt, now), ct);
+        await dbContext.UserSubscriptions
+            .Where(e => e.DeletedAt == null && e.ConfirmedAt != null && e.EndsAt > subscription.StartsAt)
             .ExecuteUpdateAsync(p => p.SetProperty(e => e.DeletedAt, now), ct);
 
         var count = await dbContext.UserSubscriptions
