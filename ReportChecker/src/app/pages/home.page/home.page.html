@@ -3,7 +3,7 @@
   @let loaded = loaded$ | async;
   @if (!loaded || !reports) {
     <div class="center-container">
-      <tui-loader size="xxl"/>
+      <tui-loader size="xxl" class="loader"/>
       <h2>Загрузка отчетов...</h2>
     </div>
   } @else if (reports.length == 0) {

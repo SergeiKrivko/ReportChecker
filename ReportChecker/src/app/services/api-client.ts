@@ -3233,6 +3233,120 @@ export class ApiClient extends ApiClientBase {
         }
         return _observableOf(null as any);
     }
+
+    /**
+     * @param body (optional)
+     * @return OK
+     */
+    payment(subscriptionId: string, body: PaymentRequestSchema | undefined): Observable<DownloadUrlResponse> {
+        let url_ = this.baseUrl + "/api/v1/subscriptions/{subscriptionId}/payment";
+        if (subscriptionId === undefined || subscriptionId === null)
+            throw new Error("The parameter 'subscriptionId' must be defined.");
+        url_ = url_.replace("{subscriptionId}", encodeURIComponent("" + subscriptionId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("post", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.processPayment(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processPayment(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<DownloadUrlResponse>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<DownloadUrlResponse>;
+        }));
+    }
+
+    protected processPayment(response: HttpResponseBase): Observable<DownloadUrlResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = DownloadUrlResponse.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    checkPayments(): Observable<UserSubscription> {
+        let url_ = this.baseUrl + "/api/v1/subscriptions/checkPayments";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("get", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.processCheckPayments(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processCheckPayments(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<UserSubscription>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<UserSubscription>;
+        }));
+    }
+
+    protected processCheckPayments(response: HttpResponseBase): Observable<UserSubscription> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = UserSubscription.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
 }
 
 export class Chapter implements IChapter {
@@ -4838,6 +4952,36 @@ export enum PatchStatus {
     Applied = "Applied",
 }
 
+export class PaymentRequestSchema implements IPaymentRequestSchema {
+
+    constructor(data?: IPaymentRequestSchema) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+    }
+
+    static fromJS(data: any): PaymentRequestSchema {
+        data = typeof data === 'object' ? data : {};
+        let result = new PaymentRequestSchema();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        return data;
+    }
+}
+
+export interface IPaymentRequestSchema {
+}
+
 export enum ProgressStatus {
     Queued = "Queued",
     InProgress = "InProgress",
@@ -5486,8 +5630,7 @@ export class UserSubscription implements IUserSubscription {
     id!: string;
     planId!: string;
     userId!: string;
-    linkedSubscriptionId?: string | undefined;
-    parentSubscriptionId?: string | undefined;
+    paymentId?: string | undefined;
     defaultPricePerMonth!: number;
     price!: number;
     createdAt!: moment.Moment;
@@ -5510,8 +5653,7 @@ export class UserSubscription implements IUserSubscription {
             this.id = _data["id"];
             this.planId = _data["planId"];
             this.userId = _data["userId"];
-            this.linkedSubscriptionId = _data["linkedSubscriptionId"];
-            this.parentSubscriptionId = _data["parentSubscriptionId"];
+            this.paymentId = _data["paymentId"];
             this.defaultPricePerMonth = _data["defaultPricePerMonth"];
             this.price = _data["price"];
             this.createdAt = _data["createdAt"] ? moment(_data["createdAt"].toString()) : <any>undefined;
@@ -5534,8 +5676,7 @@ export class UserSubscription implements IUserSubscription {
         data["id"] = this.id;
         data["planId"] = this.planId;
         data["userId"] = this.userId;
-        data["linkedSubscriptionId"] = this.linkedSubscriptionId;
-        data["parentSubscriptionId"] = this.parentSubscriptionId;
+        data["paymentId"] = this.paymentId;
         data["defaultPricePerMonth"] = this.defaultPricePerMonth;
         data["price"] = this.price;
         data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
@@ -5551,8 +5692,7 @@ export interface IUserSubscription {
     id: string;
     planId: string;
     userId: string;
-    linkedSubscriptionId?: string | undefined;
-    parentSubscriptionId?: string | undefined;
+    paymentId?: string | undefined;
     defaultPricePerMonth: number;
     price: number;
     createdAt: moment.Moment;

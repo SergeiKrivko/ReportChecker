@@ -19,6 +19,7 @@ public class ReportCheckerDbContext : DbContext
     public DbSet<SubscriptionPlanEntity> SubscriptionPlans { get; init; }
     public DbSet<SubscriptionOfferEntity> SubscriptionOffers { get; init; }
     public DbSet<UserSubscriptionEntity> UserSubscriptions { get; init; }
+    public DbSet<PaymentEntity> Payments { get; init; }
 
     public DbSet<FileReportSourceEntity> FileReportSources { get; init; }
     public DbSet<FileCheckSourceEntity> FileCheckSources { get; init; }

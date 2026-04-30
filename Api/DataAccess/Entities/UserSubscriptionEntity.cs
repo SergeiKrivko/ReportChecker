@@ -7,6 +7,7 @@ public class UserSubscriptionEntity
     public required Guid UserId { get; init; }
     public Guid? LinkedSubscriptionId { get; init; }
     public Guid? ParentSubscriptionId { get; init; }
+    public Guid? PaymentId { get; init; }
 
     public required decimal DefaultPricePerMonth { get; init; }
     public required decimal Price { get; init; }
@@ -23,4 +24,6 @@ public class UserSubscriptionEntity
 
     public virtual ICollection<UserSubscriptionEntity> LinkedSubscriptions { get; init; } = [];
     public virtual ICollection<UserSubscriptionEntity> ChildrenSubscriptions { get; init; } = [];
+    
+    public virtual PaymentEntity? Payment { get; init; }
 }

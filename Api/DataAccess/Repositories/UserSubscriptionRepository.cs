@@ -10,7 +10,6 @@ public class UserSubscriptionRepository(ReportCheckerDbContext dbContext) : IUse
 {
     public async Task<UserSubscription?> GetSubscriptionByIdAsync(Guid id, CancellationToken ct = default)
     {
-        var now = DateTime.UtcNow;
         var entity = await dbContext.UserSubscriptions
             .Where(e => e.Id == id)
             .FirstOrDefaultAsync(ct);
@@ -137,5 +136,24 @@ public class UserSubscriptionRepository(ReportCheckerDbContext dbContext) : IUse
             .ExecuteUpdateAsync(p => p.SetProperty(e => e.DeletedAt, now), ct);
         await dbContext.SaveChangesAsync(ct);
         return count > 0;
+    }
+
+    public async Task<bool> SetPaymentAsync(Guid subscriptionId, Guid paymentId, CancellationToken ct = default)
+    {
+        var count = await dbContext.UserSubscriptions
+            .Where(e => e.Id == subscriptionId)
+            .ExecuteUpdateAsync(p => p.SetProperty(e => e.PaymentId, paymentId), ct);
+        await dbContext.SaveChangesAsync(ct);
+        return count > 0;
+    }
+
+    public async Task<IReadOnlyDictionary<Guid, Payment>> GetPaymentsAsync(Guid userId, CancellationToken ct = default)
+    {
+        var entities = await dbContext.UserSubscriptions
+            .Where(e => e.UserId == userId && e.DeletedAt == null && e.ConfirmedAt == null)
+            .Where(e => e.PaymentId != null)
+            .Include(e => e.Payment)
+            .ToListAsync(ct);
+        return entities.ToDictionary(e => e.Id, e => e.Payment!.ToDomain());
     }
 }

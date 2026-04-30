@@ -12,6 +12,7 @@ public static class UserSubscriptionConverter
             Id = entity.Id,
             UserId = entity.UserId,
             PlanId = entity.PlanId,
+            PaymentId = entity.PaymentId,
             DefaultPricePerMonth = entity.DefaultPricePerMonth,
             Price = entity.Price,
             CreatedAt = entity.CreatedAt,

@@ -5,8 +5,7 @@ public class UserSubscription
     public required Guid Id { get; init; }
     public required Guid PlanId { get; init; }
     public required Guid UserId { get; init; }
-    public Guid? LinkedSubscriptionId { get; init; }
-    public Guid? ParentSubscriptionId { get; init; }
+    public Guid? PaymentId { get; init; }
 
     public required decimal DefaultPricePerMonth { get; init; }
     public required decimal Price { get; init; }

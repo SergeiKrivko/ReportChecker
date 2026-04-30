@@ -1,9 +1,15 @@
 import {inject, Injectable} from '@angular/core';
 import {CurrentSubscriptionEntity} from '../entities/current-subscription-entity';
-import {ApiClient, CreateUserSubscriptionSchema, SubscriptionPlan, UserSubscriptionsSchema} from './api-client';
+import {
+  ApiClient, ApiException,
+  CreateUserSubscriptionSchema,
+  PaymentRequestSchema,
+  SubscriptionPlan,
+  UserSubscriptionsSchema
+} from './api-client';
 import {patchState, signalState} from '@ngrx/signals';
 import {toObservable} from '@angular/core/rxjs-interop';
-import {map, Observable, of, switchMap, tap} from 'rxjs';
+import {catchError, EMPTY, map, Observable, of, switchMap, tap, throwError} from 'rxjs';
 import {AuthService} from '../auth/auth.service';
 import {SubscriptionPlanEntity} from '../entities/subscription-plan-entity';
 
@@ -45,6 +51,22 @@ export class SubscriptionsService {
     return this.apiClient.subscriptionsPOST(CreateUserSubscriptionSchema.fromJS({
       offerId
     }));
+  }
+
+  createPayment(subscriptionId: string): Observable<string | undefined> {
+    return this.apiClient.payment(subscriptionId, PaymentRequestSchema.fromJS({})).pipe(
+      map(resp => resp.url),
+    );
+  }
+
+  checkPayments() {
+    return this.apiClient.checkPayments().pipe(
+      catchError((error: ApiException) => {
+        if (error.status == 404)
+          return EMPTY;
+        return throwError(() => error);
+      })
+    );
   }
 }
 

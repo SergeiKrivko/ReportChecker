@@ -49,4 +49,16 @@ export class NewSubscriptionPage implements OnInit {
       takeUntilDestroyed(this.destroyRef),
     ).subscribe();
   }
+
+  createPyment(subscriptionId?: string) {
+    if (!subscriptionId)
+      return;
+    this.subscriptionsService.createPayment(subscriptionId).pipe(
+      tap(url => {
+        if (url)
+          window.location.href = url;
+      }),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe();
+  }
 }

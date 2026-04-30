@@ -67,4 +67,26 @@ public class SubscriptionsController(
             return NotFound();
         return Ok(subscription);
     }
+
+    [HttpPost("{subscriptionId:guid}/payment")]
+    [Authorize]
+    public async Task<ActionResult<DownloadUrlResponse>> CreatePayment(Guid subscriptionId,
+        [FromBody] PaymentRequestSchema schema, CancellationToken ct = default)
+    {
+        var url = await subscriptionService.CreatePaymentAsync(subscriptionId, User.UserId, ct);
+        return Ok(new DownloadUrlResponse
+        {
+            Url = url,
+        });
+    }
+
+    [HttpGet("checkPayments")]
+    [Authorize]
+    public async Task<ActionResult<UserSubscription>> CheckPayments(CancellationToken ct = default)
+    {
+        var subscription = await subscriptionService.CheckPaymentsAsync(User.UserId, ct);
+        if (subscription == null)
+            return NotFound();
+        return Ok(subscription);
+    }
 }

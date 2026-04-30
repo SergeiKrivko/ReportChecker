@@ -9,6 +9,7 @@
     <Project Path="Api/Abstractions/Abstractions.csproj" />
     <Project Path="Api/Api/Api.csproj" />
     <Project Path="Api/S3/S3.csproj" />
+    <Project Path="Api/YooMoney/YooMoney.csproj" />
   </Folder>
   <Folder Name="/Api/SourceProviders/">
     <Project Path="Api/SourceProviders/SourceProviders.File/SourceProviders.File.csproj" />

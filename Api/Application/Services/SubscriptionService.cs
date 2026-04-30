@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using ReportChecker.Abstractions;
 using ReportChecker.Models;
 
@@ -10,6 +11,9 @@ public class SubscriptionService(
     ISubscriptionPlanRepository subscriptionPlanRepository,
     ISubscriptionOfferRepository subscriptionOfferRepository,
     IReportRepository reportRepository,
+    IPaymentRepository paymentRepository,
+    IPaymentClient paymentClient,
+    ILogger<SubscriptionService> logger,
     IConfiguration configuration) : ISubscriptionService
 {
     private const int DaysPerMonth = 30;
@@ -144,8 +148,8 @@ public class SubscriptionService(
 
         var newSubscriptionMonths = offer.Months - 1;
         var limit = await GetTokensLimitAsync(userId, ct);
-        var tokensDiscount =
-            decimal.Round((1 - (decimal)limit.Current / limit.Maximum) * activeSubscription.DefaultPricePerMonth, 2);
+        var tokensDiscount = decimal.Max(0,
+            decimal.Round((1 - (decimal)limit.Current / limit.Maximum) * activeSubscription.DefaultPricePerMonth, 2));
         var endsAt = now.AddDays(offer.Months * DaysPerMonth);
         decimal monthsDiscount = 0;
         var nextSubscriptions = new List<UserSubscription>();
@@ -213,5 +217,60 @@ public class SubscriptionService(
     public async Task ConfirmSubscriptionAsync(Guid subscriptionId, CancellationToken ct = default)
     {
         await userSubscriptionRepository.ConfirmSubscriptionAsync(subscriptionId, ct);
+    }
+
+    public async Task<string> CreatePaymentAsync(Guid subscriptionId, Guid userId, CancellationToken ct = default)
+    {
+        var subscription = await userSubscriptionRepository.GetSubscriptionByIdAsync(subscriptionId, ct);
+        if (subscription == null)
+            throw new Exception("Subscription not found");
+        if (subscription.UserId != userId)
+            throw new Exception("Subscription not found");
+        if (subscription.DeletedAt != null)
+            throw new Exception("Subscription is deleted");
+        if (subscription.ConfirmedAt != null)
+            throw new Exception("Subscription is already confirmed");
+        if (subscription.PaymentId != null)
+            throw new Exception("Subscription has payment");
+
+        var paymentId = await paymentRepository.CreatePaymentAsync(subscription.Price, ct);
+        await userSubscriptionRepository.SetPaymentAsync(subscriptionId, paymentId, ct);
+        return await paymentClient.CreatePaymentAsync(subscription.Price, paymentId, ct);
+    }
+
+    public async Task<UserSubscription?> CheckPaymentsAsync(Guid userId, CancellationToken ct = default)
+    {
+        var flag = false;
+        UserSubscription? subscription = null;
+        var payments = await userSubscriptionRepository.GetPaymentsAsync(userId, ct);
+        foreach (var (subscriptionId, payment) in payments)
+        {
+            var isSuccessful = false;
+            if (payment.Status == PaymentStatus.Succeeded)
+            {
+                isSuccessful = true;
+            }
+            else if (await paymentClient.IsPaymentSuccessfulAsync(payment.Id, ct))
+            {
+                await paymentRepository.SetPaymentStatusAsync(payment.Id, PaymentStatus.Succeeded, ct);
+                isSuccessful = true;
+            }
+
+            if (!isSuccessful)
+                continue;
+            if (flag)
+            {
+                logger.LogWarning("More then 1 successful payment: '{paymentId}'", payment.Id);
+                await paymentRepository.SetPaymentStatusAsync(payment.Id, PaymentStatus.RequireRefund, ct);
+            }
+            else
+            {
+                await ConfirmSubscriptionAsync(subscriptionId, ct);
+                subscription = await userSubscriptionRepository.GetSubscriptionByIdAsync(subscriptionId, ct);
+                flag = true;
+            }
+        }
+
+        return subscription;
     }
 }

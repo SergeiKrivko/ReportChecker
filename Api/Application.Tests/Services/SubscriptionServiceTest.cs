@@ -2,6 +2,7 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using ReportChecker.Abstractions;
 using ReportChecker.Application.Services;
@@ -21,6 +22,8 @@ namespace Application.Tests.Services
         private ISubscriptionOfferRepository _offerRepository;
         private ILlmUsageRepository _llmUsageRepository;
         private IReportRepository _reportRepository;
+        private IPaymentRepository _paymentRepository;
+        private IPaymentClient _paymentClient;
         private IConfiguration _configuration;
 
         [SetUp]
@@ -43,6 +46,8 @@ namespace Application.Tests.Services
             _offerRepository = new SubscriptionOfferRepository(_context);
             _llmUsageRepository = new LlmUsageRepository(_context);
             _reportRepository = new ReportRepository(_context);
+            _paymentRepository = new PaymentRepository(_context);
+            _paymentClient = new Mock<IPaymentClient>().Object;
 
             var mockConfiguration = new Mock<IConfiguration>();
             mockConfiguration.Setup(c => c["MaxFutureSubscriptions"]).Returns("3");
@@ -54,6 +59,9 @@ namespace Application.Tests.Services
                 _planRepository,
                 _offerRepository,
                 _reportRepository,
+                _paymentRepository,
+                _paymentClient,
+                NullLogger<SubscriptionService>.Instance,
                 _configuration);
         }
 

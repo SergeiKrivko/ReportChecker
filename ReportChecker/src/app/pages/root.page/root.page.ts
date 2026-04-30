@@ -6,6 +6,7 @@ import {IssuesService} from '../../services/issues.service';
 import {AuthService} from '../../auth/auth.service';
 import {toObservable} from '@angular/core/rxjs-interop';
 import {InstructionService} from '../../services/instruction.service';
+import {SubscriptionsService} from '../../services/subscriptions.service';
 
 @Component({
   selector: 'app-root.page',
@@ -21,6 +22,7 @@ export class RootPage implements OnInit {
   private readonly reportsService = inject(ReportsService);
   private readonly issuesService = inject(IssuesService);
   private readonly instructionService = inject(InstructionService);
+  private readonly subscriptionsService = inject(SubscriptionsService);
   private readonly router = inject(Router);
 
   private readonly isAuthenticated$ = toObservable(this.authService.isAuthenticated);
@@ -33,6 +35,7 @@ export class RootPage implements OnInit {
             this.reportsService.loadReports(),
             this.issuesService.loadIssuesOnReportChanged$,
             this.instructionService.loadTasks$,
+            this.subscriptionsService.checkPayments(),
           ]);
         return from(this.router.navigateByUrl(`auth?returnUrl=${encodeURIComponent(window.location.pathname)}`));
       }),

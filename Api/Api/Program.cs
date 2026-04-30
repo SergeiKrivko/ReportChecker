@@ -19,6 +19,7 @@ using ReportChecker.S3;
 using ReportChecker.SourceProviders.File;
 using ReportChecker.SourceProviders.GitHub;
 using ReportChecker.SourceProviders.Local;
+using YooMoney;
 using IFormatProvider = ReportChecker.Abstractions.IFormatProvider;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -42,6 +43,7 @@ builder.Services.AddScoped<ILlmUsageRepository, LlmUsageRepository>();
 builder.Services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
 builder.Services.AddScoped<ISubscriptionOfferRepository, SubscriptionOfferRepository>();
 builder.Services.AddScoped<IUserSubscriptionRepository, UserSubscriptionRepository>();
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IReportSourceRepository<FileReportSource>, FileReportSourceRepository>();
 builder.Services.AddScoped<ICheckSourceRepository<FileCheckSource>, FileCheckSourceRepository>();
 builder.Services.AddScoped<IReportSourceRepository<GitHubReportSource>, GitHubReportSourceRepository>();
@@ -81,6 +83,8 @@ builder.Services.AddHttpClient("Auth",
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer",
             builder.Configuration["Security.ApiToken"] ?? throw new Exception());
     });
+builder.Services.AddHttpClient("YooMoney");
+builder.Services.AddScoped<IPaymentClient, YooMoneyService>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options => { options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); });

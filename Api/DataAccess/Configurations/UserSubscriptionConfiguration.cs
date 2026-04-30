@@ -32,5 +32,9 @@ public class UserSubscriptionConfiguration : IEntityTypeConfiguration<UserSubscr
         builder.HasOne(e => e.ParentSubscription)
             .WithMany(e => e.ChildrenSubscriptions)
             .HasForeignKey(e => e.ParentSubscriptionId);
+
+        builder.HasOne(e => e.Payment)
+            .WithOne(e => e.UserSubscription)
+            .HasForeignKey<UserSubscriptionEntity>(e => e.PaymentId);
     }
 }

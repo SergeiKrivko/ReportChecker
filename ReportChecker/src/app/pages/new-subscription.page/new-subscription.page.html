@@ -29,5 +29,6 @@
       <b>{{ subscription?.subscription?.price }}₽</b>
     }
   </div>
-  <tui-notification appearance="negative">На данный момент оплата не реализована.</tui-notification>
+<!--  <tui-notification appearance="negative">На данный момент оплата не реализована.</tui-notification>-->
+  <button tuiButton appearance="accent" (click)="createPyment(subscription?.subscription?.id)">К оплате</button>
 </div>

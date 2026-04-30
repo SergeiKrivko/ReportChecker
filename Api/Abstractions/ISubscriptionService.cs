@@ -11,4 +11,6 @@ public interface ISubscriptionService
     public Task<bool> CheckReportsLimitAsync(Guid userId, CancellationToken ct = default);
     public Task<CreatedSubscription> CreateSubscriptionAsync(Guid userId, Guid offerId, CancellationToken ct = default);
     public Task ConfirmSubscriptionAsync(Guid subscriptionId, CancellationToken ct = default);
+    public Task<string> CreatePaymentAsync(Guid subscriptionId, Guid userId, CancellationToken ct = default);
+    public Task<UserSubscription?> CheckPaymentsAsync(Guid userId, CancellationToken ct = default);
 }
