@@ -41,6 +41,7 @@ export class ReportPage implements OnInit {
   private readonly instructionService = inject(InstructionService);
 
   protected readonly selectedReport$ = this.reportsService.selectedReport$;
+  protected readonly isLoaded$ = this.issuesService.isLoaded$;
   protected readonly issues$ = this.issuesService.issues$.pipe(
     map(issues => issues.sort((a, b) => a.priority - b.priority))
   );

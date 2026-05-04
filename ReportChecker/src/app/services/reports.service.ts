@@ -45,6 +45,7 @@ export class ReportsService {
   readonly selectedReport$ = toObservable(this.store$$.selectedReport);
   readonly loaded$ = toObservable(this.store$$.loaded);
   readonly models$ = toObservable(this.store$$.models);
+  readonly isLoaded$ = toObservable(this.store$$.loaded);
 
   loadReports() {
     patchState(this.store$$, {

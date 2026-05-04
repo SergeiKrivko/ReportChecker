@@ -42,4 +42,22 @@
       padding: 0.5rem 1rem;
     }
   }
+
+  .center-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    justify-content: center;
+    align-items: center;
+    padding-top: 2rem;
+
+    * {
+      margin: 0;
+      text-align: center;
+    }
+
+    .loader {
+      width: 5rem;
+    }
+  }
 }

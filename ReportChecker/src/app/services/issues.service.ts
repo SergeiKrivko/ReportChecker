@@ -35,6 +35,7 @@ interface IssuesStore {
   selectedIssue: IssueEntity | null;
   selectedStatus: string | null;
   isProgress: boolean;
+  isLoaded: boolean;
 }
 
 @Injectable({
@@ -49,9 +50,11 @@ export class IssuesService {
     selectedIssue: null,
     selectedStatus: 'Open',
     isProgress: false,
+    isLoaded: false,
   });
 
   readonly allIssues$ = toObservable(this.store$$.issues);
+  readonly isLoaded$ = toObservable(this.store$$.isLoaded);
   readonly selectedStatus$ = toObservable(this.store$$.selectedStatus);
   readonly issues$ = combineLatest([this.allIssues$, this.selectedStatus$]).pipe(
     map(([issues, status]) => issues.filter(e => !status || e.status == status))
@@ -65,13 +68,14 @@ export class IssuesService {
         patchState(this.store$$, {
           issues: reports.map(issueToEntity),
           selectedIssue: null,
+          isLoaded: true,
         })
       }),
     );
   }
 
   loadIssuesOnReportChanged$ = this.reportsService.selectedReport$.pipe(
-    tap(() => patchState(this.store$$, {issues: [], selectedIssue: null, selectedStatus: 'Open'})),
+    tap(() => patchState(this.store$$, {issues: [], selectedIssue: null, selectedStatus: 'Open', isLoaded: false})),
     switchMap(report => {
       if (!report) return NEVER;
 
@@ -127,7 +131,7 @@ export class IssuesService {
         const issue = issueToEntity(iss);
         const index = issues.findIndex(i => i.id == issueId);
         issues[index] = issue;
-        patchState(this.store$$, {issues: issues});
+        patchState(this.store$$, {issues: issues, isLoaded: true});
 
         if (issue.id == this.store$$.selectedIssue()?.id) {
           patchState(this.store$$, {selectedIssue: issue})
