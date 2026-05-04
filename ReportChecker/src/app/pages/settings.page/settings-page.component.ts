@@ -6,7 +6,7 @@ import {TuiButton, TuiTextfield} from '@taiga-ui/core';
 import {InstructionInput} from '../../components/instruction-input/instruction-input';
 import {TUI_CONFIRM, TuiConfirmData, TuiDataListWrapperComponent, TuiSelectDirective} from '@taiga-ui/kit';
 import {combineLatest, debounceTime, from, map, NEVER, switchMap, tap} from 'rxjs';
-import {Router} from '@angular/router';
+import {Router, RouterLink} from '@angular/router';
 import {TuiResponsiveDialogService} from '@taiga-ui/addon-mobile';
 import {ReportsService} from '../../services/reports.service';
 import {FormControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
@@ -23,7 +23,8 @@ import {ImageProcessingModeEntity} from '../../entities/report-entity';
     TuiTextfield,
     ReactiveFormsModule,
     TuiDataListWrapperComponent,
-    TuiSelectDirective
+    TuiSelectDirective,
+    RouterLink
   ],
   templateUrl: './settings-page.component.html',
   styleUrl: './settings-page.component.scss',

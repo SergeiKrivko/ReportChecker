@@ -1,23 +1,25 @@
 <div class="container page-padding">
   @let report = selectedReport$ | async;
   <div class="header-container">
-    <div class="progress-container">
-      @if (isProgress$ | async) {
+    <a tuiButton iconStart="@tui.chevron-left" routerLink=".." appearance="flat" class="desktop-only">Назад</a>
+    <a tuiIconButton iconStart="@tui.chevron-left" routerLink=".." appearance="flat" class="mobile-only"></a>
+    @if (isProgress$ | async) {
+      <div class="progress-container">
         <tui-loader/>
         <div>Поиск ошибок...</div>
-      }
-    </div>
-    <div class="progress-container">
-      @let instructionTasks = instructionTasks$ | async;
-      @if ((instructionTasks?.length ?? 0) > 0) {
+      </div>
+    }
+    @let instructionTasks = instructionTasks$ | async;
+    @if ((instructionTasks?.length ?? 0) > 0) {
+      <div class="progress-container">
         <tui-loader/>
         @if (instructionTasks?.length == 1) {
           <div>Применение инструкции...</div>
         } @else {
           <div>Применение инструкций ({{ instructionTasks?.length }})...</div>
         }
-      }
-    </div>
+      </div>
+    }
     <div class="right-container">
       <div class="version-wrapper">
         @switch (report?.sourceProvider) {
