@@ -18,7 +18,8 @@ public class InstructionController(
 {
     [HttpGet]
     [Authorize]
-    public async Task<ActionResult<IEnumerable<Instruction>>> GetInstructionsAsync(Guid reportId)
+    public async Task<ActionResult<IEnumerable<Instruction>>> GetInstructionsAsync(Guid reportId,
+        CancellationToken ct)
     {
         var userId = User.UserId;
         var report = await reportRepository.GetReportByIdAsync(reportId);
@@ -26,13 +27,14 @@ public class InstructionController(
             return NotFound();
         if (report.OwnerId != userId)
             return Unauthorized();
-        var instructions = await instructionRepository.GetInstructionsAsync(reportId);
+        var instructions = await instructionRepository.GetInstructionsAsync(reportId, ct);
         return Ok(instructions);
     }
 
     [HttpPost]
     [Authorize]
-    public async Task<ActionResult<Guid>> CreateInstruction(Guid reportId, [FromBody] string instruction)
+    public async Task<ActionResult<Guid>> CreateInstruction(Guid reportId, [FromBody] string instruction,
+        CancellationToken ct)
     {
         var userId = User.UserId;
         var report = await reportRepository.GetReportByIdAsync(reportId);
@@ -40,13 +42,14 @@ public class InstructionController(
             return NotFound();
         if (report.OwnerId != userId)
             return Unauthorized();
-        var id = await instructionRepository.CreateInstructionAsync(reportId, instruction);
+        var id = await instructionRepository.CreateInstructionAsync(reportId, instruction, userId, null, ct);
         return Ok(id);
     }
 
     [HttpPut("{instructionId:guid}")]
     [Authorize]
-    public async Task<ActionResult> UpdateInstructionAsync(Guid reportId, Guid instructionId, [FromBody] string content)
+    public async Task<ActionResult> UpdateInstructionAsync(Guid reportId, Guid instructionId, [FromBody] string content,
+        CancellationToken ct)
     {
         var userId = User.UserId;
         var report = await reportRepository.GetReportByIdAsync(reportId);
@@ -54,13 +57,14 @@ public class InstructionController(
             return NotFound();
         if (report.OwnerId != userId)
             return Unauthorized();
-        var id = await instructionRepository.UpdateInstructionAsync(instructionId, content);
+        var id = await instructionRepository.UpdateInstructionAsync(instructionId, content, userId, ct);
         return Ok(id);
     }
 
     [HttpDelete("{instructionId:guid}")]
     [Authorize]
-    public async Task<ActionResult> DeleteInstructionAsync(Guid reportId, Guid instructionId)
+    public async Task<ActionResult> DeleteInstructionAsync(Guid reportId, Guid instructionId,
+        CancellationToken ct)
     {
         var userId = User.UserId;
         var report = await reportRepository.GetReportByIdAsync(reportId);
@@ -68,7 +72,7 @@ public class InstructionController(
             return NotFound();
         if (report.OwnerId != userId)
             return Unauthorized();
-        var id = await instructionRepository.DeleteInstructionAsync(instructionId);
+        var id = await instructionRepository.DeleteInstructionAsync(instructionId, ct);
         return Ok(id);
     }
 
@@ -91,16 +95,19 @@ public class InstructionController(
     {
         if (schema.InstructionId != null)
         {
-            var id = await instructionTaskService.CreateInstructionTaskAsync(reportId, schema.InstructionId.Value, schema.Mode,
+            var id = await instructionTaskService.CreateInstructionTaskAsync(reportId, schema.InstructionId.Value,
+                schema.Mode,
                 ct);
             return Ok(id);
         }
+
         if (schema.Instruction != null)
         {
             var id = await instructionTaskService.CreateInstructionTaskAsync(reportId, schema.Instruction, schema.Mode,
                 ct);
             return Ok(id);
         }
+
         return BadRequest("Both InstructionId and Instruction fields are empty");
     }
 }

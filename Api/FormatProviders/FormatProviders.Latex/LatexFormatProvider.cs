@@ -42,14 +42,11 @@ public class LatexFormatProvider(IConfiguration configuration) : IFormatProvider
         {
             if (line.TryParseCommand(out var command))
             {
-                Console.WriteLine($"\\{command.Command} [ {command.Options} ] {{ {command.Argument} }}");
                 var level = LineLevel(command, out var title);
                 if (level <= 3)
                 {
                     if (builder.Length > 0)
                     {
-                        Console.WriteLine($"{string.Join(ChapterSeparator, path.Where(e => !string.IsNullOrWhiteSpace(e)))} --- {images.Count} images");
-                        Console.WriteLine(builder);
                         yield return new Chapter
                         {
                             Name = string.Join(ChapterSeparator, path.Where(e => !string.IsNullOrWhiteSpace(e))),

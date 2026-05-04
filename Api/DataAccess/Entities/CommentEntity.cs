@@ -17,5 +17,6 @@ public class CommentEntity
 
     public IssueEntity Issue { get; init; } = null!;
     public ICollection<CommentReadEntity> Reads { get; init; } = [];
+    public ICollection<InstructionEntity> Instructions { get; init; } = [];
     public PatchEntity? Patch { get; init; }
 }

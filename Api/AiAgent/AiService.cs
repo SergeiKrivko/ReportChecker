@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using AiAgent.Models;
+﻿using AiAgent.Models;
 using Microsoft.Extensions.Logging;
 using ReportChecker.Abstractions;
 using ReportChecker.Models;
@@ -201,7 +200,8 @@ public class AiService(
         {
             if (instruction.Save)
             {
-                await instructionRepository.CreateInstructionAsync(context.Report.Id, instruction.InstructionText);
+                await instructionRepository.CreateInstructionAsync(context.Report.Id, instruction.InstructionText,
+                    Guid.Empty, commentId);
             }
 
             if (instruction.Apply)

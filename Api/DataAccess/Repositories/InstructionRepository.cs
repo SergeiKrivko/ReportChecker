@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ReportChecker.Abstractions;
+using ReportChecker.DataAccess.Converters;
 using ReportChecker.DataAccess.Entities;
 using ReportChecker.Models;
 
@@ -9,12 +10,10 @@ public class InstructionRepository(ReportCheckerDbContext dbContext) : IInstruct
 {
     public async Task<Instruction?> GetInstructionByIdAsync(Guid id, CancellationToken ct = default)
     {
-        Console.WriteLine(id);
         var entity = await dbContext.Instructions
             .Where(i => i.Id == id && i.DeletedAt == null)
             .FirstOrDefaultAsync(ct);
-        Console.WriteLine(entity is null);
-        return entity is null ? null : FromEntity(entity);
+        return entity?.ToDomain();
     }
 
     public async Task<IEnumerable<Instruction>> GetInstructionsAsync(Guid reportId, CancellationToken ct = default)
@@ -22,16 +21,19 @@ public class InstructionRepository(ReportCheckerDbContext dbContext) : IInstruct
         var entities = await dbContext.Instructions
             .Where(i => i.ReportId == reportId && i.DeletedAt == null)
             .ToListAsync(ct);
-        return entities.Select(FromEntity);
+        return entities.Select(e => e.ToDomain());
     }
 
-    public async Task<Guid> CreateInstructionAsync(Guid reportId, string content, CancellationToken ct = default)
+    public async Task<Guid> CreateInstructionAsync(Guid reportId, string content, Guid userId, Guid? commentId = null,
+        CancellationToken ct = default)
     {
         var id = Guid.NewGuid();
         var entity = new InstructionEntity
         {
             Id = id,
             ReportId = reportId,
+            UserId = userId,
+            CommentId = commentId,
             Content = content,
             CreatedAt = DateTime.UtcNow,
             DeletedAt = null,
@@ -41,11 +43,13 @@ public class InstructionRepository(ReportCheckerDbContext dbContext) : IInstruct
         return id;
     }
 
-    public async Task<bool> UpdateInstructionAsync(Guid id, string content, CancellationToken ct = default)
+    public async Task<bool> UpdateInstructionAsync(Guid id, string content, Guid userId, CancellationToken ct = default)
     {
         var count = await dbContext.Instructions
             .Where(i => i.Id == id && i.DeletedAt == null)
-            .ExecuteUpdateAsync(i => i.SetProperty(e => e.Content, content), ct);
+            .ExecuteUpdateAsync(p => p
+                .SetProperty(e => e.Content, content)
+                .SetProperty(e => e.UserId, userId), ct);
         await dbContext.SaveChangesAsync(ct);
         return count > 0;
     }
@@ -57,17 +61,5 @@ public class InstructionRepository(ReportCheckerDbContext dbContext) : IInstruct
             .ExecuteUpdateAsync(i => i.SetProperty(e => e.DeletedAt, DateTime.UtcNow), ct);
         await dbContext.SaveChangesAsync(ct);
         return count > 0;
-    }
-
-    private static Instruction FromEntity(InstructionEntity entity)
-    {
-        return new Instruction
-        {
-            Id = entity.Id,
-            ReportId = entity.ReportId,
-            Content = entity.Content,
-            CreatedAt = entity.CreatedAt,
-            DeletedAt = entity.DeletedAt,
-        };
     }
 }

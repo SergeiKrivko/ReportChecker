@@ -15,5 +15,10 @@ public class InstructionConfiguration : IEntityTypeConfiguration<InstructionEnti
         builder.Property(e => e.Content).IsRequired();
         builder.Property(e => e.CreatedAt).IsRequired();
         builder.Property(e => e.DeletedAt);
+
+        builder.HasOne(e => e.Comment)
+            .WithMany(e => e.Instructions)
+            .HasForeignKey(e => e.CommentId)
+            .IsRequired(false);
     }
 }
