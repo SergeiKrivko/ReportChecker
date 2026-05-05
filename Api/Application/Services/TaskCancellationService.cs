@@ -1,8 +1,9 @@
-﻿using ReportChecker.Abstractions;
+﻿using Microsoft.Extensions.Logging;
+using ReportChecker.Abstractions;
 
 namespace ReportChecker.Application.Services;
 
-public class TaskCancellationService : ITaskCancellationService
+public class TaskCancellationService(ILogger<TaskCancellationService> logger) : ITaskCancellationService
 {
     private readonly Dictionary<Guid, CancellationTokenSource> _checkCancellationTokens = [];
 
@@ -18,8 +19,11 @@ public class TaskCancellationService : ITaskCancellationService
 
     public async Task<bool> CancelCheckAsync(Guid checkId)
     {
+        if (logger.IsEnabled(LogLevel.Information))
+            logger.LogInformation("Cancelling check '{checkId}'", checkId);
         if (!_checkCancellationTokens.TryGetValue(checkId, out var token))
             return false;
+        DeleteCheckCancellationToken(checkId);
         await token.CancelAsync();
         return true;
     }

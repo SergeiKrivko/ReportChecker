@@ -44,7 +44,8 @@ public class CheckRepository(ReportCheckerDbContext dbContext) : ICheckRepositor
     public async Task<Check?> GetLatestCheckOfReportAsync(Guid reportId, CancellationToken ct = default)
     {
         var result = await dbContext.Checks
-            .Where(e => e.ReportId == reportId && e.Status != ProgressStatus.Failed)
+            .Where(e => e.ReportId == reportId && e.Status != ProgressStatus.Failed &&
+                        e.Status != ProgressStatus.Cancelled)
             .OrderByDescending(e => e.CreatedAt)
             .FirstOrDefaultAsync(ct);
         return result is null ? null : FromEntity(result);
