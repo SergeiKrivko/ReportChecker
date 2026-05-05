@@ -10,13 +10,6 @@
     align-items: center;
     justify-content: space-between;
 
-    .progress-container {
-      display: flex;
-      flex-direction: row;
-      gap: 1rem;
-      align-items: center;
-    }
-
     .right-container {
       display: flex;
       flex-direction: row;
@@ -59,5 +52,16 @@
     .loader {
       width: 5rem;
     }
+  }
+}
+
+.progress-container {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  align-items: center;
+
+  span {
+    flex-grow: 1;
   }
 }

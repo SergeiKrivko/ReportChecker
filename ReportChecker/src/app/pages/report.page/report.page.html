@@ -3,12 +3,6 @@
   <div class="header-container">
     <a tuiButton iconStart="@tui.chevron-left" routerLink=".." appearance="flat" class="desktop-only">Назад</a>
     <a tuiIconButton iconStart="@tui.chevron-left" routerLink=".." appearance="flat" class="mobile-only"></a>
-    @if (isProgress$ | async) {
-      <div class="progress-container">
-        <tui-loader/>
-        <div>Поиск ошибок...</div>
-      </div>
-    }
     @let instructionTasks = instructionTasks$ | async;
     @if ((instructionTasks?.length ?? 0) > 0) {
       <div class="progress-container">
@@ -34,6 +28,17 @@
       <a tuiIconButton iconStart="@tui.settings" appearance="flat" routerLink="./settings"></a>
     </div>
   </div>
+
+  @if (isProgress$ | async) {
+    <tui-notification size="l" appearance="secondary-grayscale">
+      <div class="progress-container">
+        <tui-loader/>
+        <span>Поиск ошибок...</span>
+        <button tuiButton appearance="outline" size="m" (click)="cancelCheck()">Отменить</button>
+      </div>
+    </tui-notification>
+  }
+
   @if (isLoaded$ | async) {
     <div class="header-container">
       <tui-segmented size="m" (activeItemIndexChange)="selectStatus($event)"

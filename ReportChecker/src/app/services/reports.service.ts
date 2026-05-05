@@ -14,7 +14,7 @@ import {
   TestSourceRequestSchema,
   UpdateReportSchema
 } from './api-client';
-import {catchError, first, map, NEVER, Observable, of, switchMap, take, tap} from 'rxjs';
+import {catchError, EMPTY, first, map, NEVER, Observable, of, switchMap, take, tap} from 'rxjs';
 import {ImageProcessingModeEntity, ReportEntity} from '../entities/report-entity';
 import {patchState, signalState} from '@ngrx/signals';
 import {toObservable} from '@angular/core/rxjs-interop';
@@ -45,7 +45,6 @@ export class ReportsService {
   readonly selectedReport$ = toObservable(this.store$$.selectedReport);
   readonly loaded$ = toObservable(this.store$$.loaded);
   readonly models$ = toObservable(this.store$$.models);
-  readonly isLoaded$ = toObservable(this.store$$.loaded);
 
   loadReports() {
     patchState(this.store$$, {
@@ -93,7 +92,7 @@ export class ReportsService {
       take(1),
       switchMap(report => {
         if (report)
-          return this.apiClient.checks(report.id, CreateCheckSchema.fromJS({
+          return this.apiClient.checksPOST(report.id, CreateCheckSchema.fromJS({
             source: report.sourceProvider == 'GitHub' ? {gitHub: source, id} : {file: source, id},
           }));
         return NEVER;
@@ -150,6 +149,22 @@ export class ReportsService {
       source: provider == 'GitHub' ? {gitHub: source} : {file: source}
     })).pipe(
       map(sourceInfoToEntity),
+    )
+  }
+
+  cancelCheck() {
+    return this.selectedReport$.pipe(
+      switchMap(report => {
+        if (!report)
+          return EMPTY;
+        return this.apiClient.latest(report.id).pipe(
+          switchMap(latest => {
+            if (!latest)
+              return EMPTY;
+            return this.apiClient.checksDELETE(report.id, latest.id);
+          }),
+        );
+      })
     )
   }
 }

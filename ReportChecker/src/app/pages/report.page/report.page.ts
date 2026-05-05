@@ -3,7 +3,7 @@ import {RouterLink} from '@angular/router';
 import {map, Observable} from 'rxjs';
 import {IssuesService} from '../../services/issues.service';
 import {AsyncPipe} from '@angular/common';
-import {TuiButton, TuiIcon, TuiLoader, TuiSurface} from '@taiga-ui/core';
+import {TuiButton, TuiIcon, TuiLoader, TuiNotification, TuiSurface} from '@taiga-ui/core';
 import {ReactiveFormsModule} from '@angular/forms';
 import {IssueHeader} from '../../components/issue-header/issue-header';
 import {TuiCard} from '@taiga-ui/layout';
@@ -29,6 +29,7 @@ import {isNotFound} from '@angular/core/primitives/di';
     GithubSpVersion,
     TuiSegmented,
     TuiIcon,
+    TuiNotification,
   ],
   templateUrl: './report.page.html',
   styleUrl: './report.page.scss',
@@ -69,6 +70,10 @@ export class ReportPage implements OnInit {
   }
 
   protected readonly isNotFound = isNotFound;
+
+  protected cancelCheck() {
+    this.reportsService.cancelCheck().subscribe();
+  }
 }
 
 const statusIndexMap: Record<string, number> = {

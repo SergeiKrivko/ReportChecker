@@ -99,7 +99,7 @@ export class ApiClient extends ApiClientBase {
      * @param body (optional)
      * @return OK
      */
-    checks(reportId: string, body: CreateCheckSchema | undefined): Observable<string> {
+    checksPOST(reportId: string, body: CreateCheckSchema | undefined): Observable<string> {
         let url_ = this.baseUrl + "/api/v1/reports/{reportId}/checks";
         if (reportId === undefined || reportId === null)
             throw new Error("The parameter 'reportId' must be defined.");
@@ -121,11 +121,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("post", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processChecks(response_);
+            return this.processChecksPOST(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processChecks(response_ as any);
+                    return this.processChecksPOST(response_ as any);
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<string>;
                 }
@@ -134,7 +134,7 @@ export class ApiClient extends ApiClientBase {
         }));
     }
 
-    protected processChecks(response: HttpResponseBase): Observable<string> {
+    protected processChecksPOST(response: HttpResponseBase): Observable<string> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -267,6 +267,61 @@ export class ApiClient extends ApiClientBase {
                 result200 = <any>null;
             }
             return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    checksDELETE(reportId: string, checkId: string): Observable<void> {
+        let url_ = this.baseUrl + "/api/v1/reports/{reportId}/checks/{checkId}";
+        if (reportId === undefined || reportId === null)
+            throw new Error("The parameter 'reportId' must be defined.");
+        url_ = url_.replace("{reportId}", encodeURIComponent("" + reportId));
+        if (checkId === undefined || checkId === null)
+            throw new Error("The parameter 'checkId' must be defined.");
+        url_ = url_.replace("{checkId}", encodeURIComponent("" + checkId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("delete", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.processChecksDELETE(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processChecksDELETE(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<void>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<void>;
+        }));
+    }
+
+    protected processChecksDELETE(response: HttpResponseBase): Observable<void> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return _observableOf(null as any);
             }));
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
@@ -4307,6 +4362,8 @@ export enum ImageProcessingMode {
 export class Instruction implements IInstruction {
     id?: string;
     reportId?: string;
+    userId?: string;
+    commentId?: string | undefined;
     content!: string | undefined;
     createdAt?: moment.Moment;
     deletedAt?: moment.Moment | undefined;
@@ -4324,6 +4381,8 @@ export class Instruction implements IInstruction {
         if (_data) {
             this.id = _data["id"];
             this.reportId = _data["reportId"];
+            this.userId = _data["userId"];
+            this.commentId = _data["commentId"];
             this.content = _data["content"];
             this.createdAt = _data["createdAt"] ? moment(_data["createdAt"].toString()) : <any>undefined;
             this.deletedAt = _data["deletedAt"] ? moment(_data["deletedAt"].toString()) : <any>undefined;
@@ -4341,6 +4400,8 @@ export class Instruction implements IInstruction {
         data = typeof data === 'object' ? data : {};
         data["id"] = this.id;
         data["reportId"] = this.reportId;
+        data["userId"] = this.userId;
+        data["commentId"] = this.commentId;
         data["content"] = this.content;
         data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
         data["deletedAt"] = this.deletedAt ? this.deletedAt.toISOString() : <any>undefined;
@@ -4351,6 +4412,8 @@ export class Instruction implements IInstruction {
 export interface IInstruction {
     id?: string;
     reportId?: string;
+    userId?: string;
+    commentId?: string | undefined;
     content: string | undefined;
     createdAt?: moment.Moment;
     deletedAt?: moment.Moment | undefined;
@@ -4987,6 +5050,8 @@ export enum ProgressStatus {
     InProgress = "InProgress",
     Completed = "Completed",
     Failed = "Failed",
+    Cancelled = "Cancelled",
+    CancellationRequested = "CancellationRequested",
 }
 
 export class Report implements IReport {
