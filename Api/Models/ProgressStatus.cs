@@ -2,8 +2,10 @@
 
 public enum ProgressStatus
 {
-    Queued,
-    InProgress,
-    Completed,
-    Failed
+    Queued = 0,
+    InProgress = 1,
+    Completed = 2,
+    Failed = 3,
+    Cancelled = 4,
+    CancellationRequested = 5,
 }

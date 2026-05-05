@@ -4,11 +4,13 @@ namespace ReportChecker.Abstractions;
 
 public interface IAiService
 {
-    public Task FindIssuesAsync(CheckContext context);
+    public Task FindIssuesAsync(CheckContext context, CancellationToken ct = default);
 
-    public Task WriteComment(CheckContext context, Issue issue);
+    public Task WriteComment(CheckContext context, Issue issue, CancellationToken ct = default);
 
-    public Task ProcessInstructionApplyAsync(Guid taskId, CheckContext context, string instruction);
+    public Task ProcessInstructionApplyAsync(Guid taskId, CheckContext context, string instruction,
+        CancellationToken ct = default);
 
-    public Task ProcessInstructionSearchAsync(Guid taskId, CheckContext context, string instruction);
+    public Task ProcessInstructionSearchAsync(Guid taskId, CheckContext context, string instruction,
+        CancellationToken ct = default);
 }

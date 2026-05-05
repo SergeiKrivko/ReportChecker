@@ -13,6 +13,7 @@ public class CheckController(
     IReportRepository reportRepository,
     ICheckRepository checkRepository,
     IReportService reportService,
+    ITaskCancellationService taskCancellationService,
     ICheckService checkService) : ControllerBase
 {
     [HttpGet]
@@ -77,5 +78,16 @@ public class CheckController(
             : await checkService.CreateCheckAsync(reportId, userId, schema.Source, schema.Name);
 
         return Ok(checkId);
+    }
+
+    [HttpDelete("{checkId:guid}")]
+    [Authorize]
+    public async Task<ActionResult> CancelCheckAsync(Guid reportId, Guid checkId, CancellationToken ct)
+    {
+        var res = await taskCancellationService.CancelCheckAsync(checkId);
+        if (!res)
+            return NotFound();
+        await checkRepository.SetCheckStatusAsync(checkId, ProgressStatus.Cancelled, ct);
+        return Ok();
     }
 }

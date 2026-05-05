@@ -13,6 +13,7 @@ public class CheckService(
     IServiceProvider serviceProvider,
     IAiService aiService,
     IIssueRepository issueRepository,
+    ITaskCancellationService taskCancellationService,
     ILogger<CheckService> logger) : ICheckService
 {
     public async Task<Guid> CreateCheckAsync(Guid reportId, Guid userId, CheckSourceUnion source, string? name = null)
@@ -42,8 +43,13 @@ public class CheckService(
     {
         try
         {
+            var ctSource = new CancellationTokenSource();
+            taskCancellationService.AddCheckCancellationToken(context.Check.Id, ctSource);
+
             var scope = serviceProvider.CreateScope();
-            await scope.ServiceProvider.GetRequiredService<ICheckService>().RunCheck(context);
+            await scope.ServiceProvider.GetRequiredService<ICheckService>().RunCheckAsync(context, ctSource.Token);
+
+            taskCancellationService.DeleteCheckCancellationToken(context.Check.Id);
         }
         catch (Exception e)
         {
@@ -51,21 +57,21 @@ public class CheckService(
         }
     }
 
-    public async Task RunCheck(CheckContext context)
+    public async Task RunCheckAsync(CheckContext context, CancellationToken ct = default)
     {
         var sourceProvider = providerService.GetSourceProvider(context.Report.SourceProvider);
-        await checkRepository.SetCheckStatusAsync(context.Check.Id, ProgressStatus.InProgress);
+        await checkRepository.SetCheckStatusAsync(context.Check.Id, ProgressStatus.InProgress, ct);
         await sourceProvider.WriteCheckStatusAsync(context.Report, context.Check, false);
 
         try
         {
-            await aiService.FindIssuesAsync(context);
-            await checkRepository.SetCheckStatusAsync(context.Check.Id, ProgressStatus.Completed);
+            await aiService.FindIssuesAsync(context, ct);
+            await checkRepository.SetCheckStatusAsync(context.Check.Id, ProgressStatus.Completed, ct);
             await sourceProvider.WriteCheckStatusAsync(context.Report, context.Check, true);
         }
         catch (Exception)
         {
-            await checkRepository.SetCheckStatusAsync(context.Check.Id, ProgressStatus.Failed);
+            await checkRepository.SetCheckStatusAsync(context.Check.Id, ProgressStatus.Failed, ct);
             await sourceProvider.WriteCheckStatusAsync(context.Report, context.Check, true);
             throw;
         }
@@ -89,7 +95,7 @@ public class CheckService(
         RunComment(context, issue);
     }
 
-    private async void RunComment(CheckContext context, Issue issue)
+    private async void RunComment(CheckContext context, Issue issue, CancellationToken ct = default)
     {
         try
         {

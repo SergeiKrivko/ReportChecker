@@ -51,21 +51,21 @@ public class AiAgent : IAiAgent
         });
     }
 
-    private static async Task<string> GetSystemPrompt(string name)
+    private static async Task<string> GetSystemPrompt(string name, CancellationToken ct = default)
     {
         var assembly = Assembly.GetExecutingAssembly();
         await using var stream = assembly.GetManifestResourceStream($"AiAgent.Prompts.{name}.prompt.txt");
         if (stream == null)
             throw new Exception($"Resource '{name}' not found");
         using var reader = new StreamReader(stream);
-        return await reader.ReadToEndAsync();
+        return await reader.ReadToEndAsync(ct);
     }
 
-    public async Task<IssueCreateAgent[]?> FindIssues(IssuesRequestAgent param)
+    public async Task<IssueCreateAgent[]?> FindIssues(IssuesRequestAgent param, CancellationToken ct = default)
     {
         List<ChatMessage> messages =
         [
-            ChatMessage.CreateSystemMessage(await GetSystemPrompt("FindIssues")),
+            ChatMessage.CreateSystemMessage(await GetSystemPrompt("FindIssues", ct)),
             ChatMessage.CreateResponseTypeDefinition<IssueCreateAgent[]>(),
             ChatMessage.CreateUserMessage(param.Instructions),
         ];
@@ -73,7 +73,7 @@ public class AiAgent : IAiAgent
             .SetResponseFormat<IssueCreateAgent>();
         AddChapters(messages, param.Chapters);
 
-        var response = await _client.CompleteChatAsync(messages, options);
+        var response = await _client.CompleteChatAsync(messages, options, ct);
         _usage.Add(response);
         var completion = response.Value;
         if (_logger.IsEnabled(LogLevel.Information))
@@ -81,11 +81,11 @@ public class AiAgent : IAiAgent
         return completion.ReadAsJson<IssueCreateAgent[]>();
     }
 
-    public async Task<CommentResponseAgent?> WriteComment(WriteCommentRequestAgent param)
+    public async Task<CommentResponseAgent?> WriteComment(WriteCommentRequestAgent param, CancellationToken ct = default)
     {
         List<ChatMessage> messages =
         [
-            ChatMessage.CreateSystemMessage(await GetSystemPrompt("WriteComment")),
+            ChatMessage.CreateSystemMessage(await GetSystemPrompt("WriteComment", ct)),
             ChatMessage.CreateResponseTypeDefinition<CommentResponseAgent>(),
             ChatMessage.CreateUserMessage(param.Instructions),
             ChatMessage.CreateUserMessage(param.Issue),
@@ -105,7 +105,7 @@ public class AiAgent : IAiAgent
         else
             messages.Add(ChatMessage.CreateUserMessage(param.Text));
 
-        var response = await _client.CompleteChatAsync(messages, options);
+        var response = await _client.CompleteChatAsync(messages, options, ct);
         _usage.Add(response);
         var completion = response.Value;
         if (_logger.IsEnabled(LogLevel.Information))
@@ -113,11 +113,11 @@ public class AiAgent : IAiAgent
         return completion.ReadAsJson<CommentResponseAgent>();
     }
 
-    public async Task<CommentCreateAgent[]?> CheckIssues(IssuesRequestAgent param)
+    public async Task<CommentCreateAgent[]?> CheckIssues(IssuesRequestAgent param, CancellationToken ct = default)
     {
         List<ChatMessage> messages =
         [
-            ChatMessage.CreateSystemMessage(await GetSystemPrompt("CheckIssues")),
+            ChatMessage.CreateSystemMessage(await GetSystemPrompt("CheckIssues", ct)),
             ChatMessage.CreateResponseTypeDefinition<CommentCreateAgent[]>(),
             ChatMessage.CreateUserMessage(param.Instructions),
         ];
@@ -125,7 +125,7 @@ public class AiAgent : IAiAgent
             .SetResponseFormat<CommentCreateAgent[]>();
         AddChapters(messages, param.Chapters);
 
-        var response = await _client.CompleteChatAsync(messages, options);
+        var response = await _client.CompleteChatAsync(messages, options, ct);
         _usage.Add(response);
         var completion = response.Value;
         if (_logger.IsEnabled(LogLevel.Information))
@@ -133,11 +133,11 @@ public class AiAgent : IAiAgent
         return completion.ReadAsJson<CommentCreateAgent[]>();
     }
 
-    public async Task<CommentCreateAgent[]?> ApplyInstruction(InstructionRequestAgent param)
+    public async Task<CommentCreateAgent[]?> ApplyInstruction(InstructionRequestAgent param, CancellationToken ct = default)
     {
         List<ChatMessage> messages =
         [
-            ChatMessage.CreateSystemMessage(await GetSystemPrompt("ApplyInstruction")),
+            ChatMessage.CreateSystemMessage(await GetSystemPrompt("ApplyInstruction", ct)),
             ChatMessage.CreateResponseTypeDefinition<CommentCreateAgent[]>(),
             ChatMessage.CreateUserMessage(param.Instruction),
         ];
@@ -145,7 +145,7 @@ public class AiAgent : IAiAgent
             .SetResponseFormat<CommentCreateAgent[]>();
         AddChapters(messages, param.Chapters);
 
-        var response = await _client.CompleteChatAsync(messages, options);
+        var response = await _client.CompleteChatAsync(messages, options, ct);
         _usage.Add(response);
         var completion = response.Value;
         if (_logger.IsEnabled(LogLevel.Information))
@@ -153,11 +153,11 @@ public class AiAgent : IAiAgent
         return completion.ReadAsJson<CommentCreateAgent[]>();
     }
 
-    public async Task<IssueCreateAgent[]?> SearchInstruction(InstructionRequestAgent param)
+    public async Task<IssueCreateAgent[]?> SearchInstruction(InstructionRequestAgent param, CancellationToken ct = default)
     {
         List<ChatMessage> messages =
         [
-            ChatMessage.CreateSystemMessage(await GetSystemPrompt("SearchInstruction")),
+            ChatMessage.CreateSystemMessage(await GetSystemPrompt("SearchInstruction", ct)),
             ChatMessage.CreateResponseTypeDefinition<IssueCreateAgent[]>(),
             ChatMessage.CreateUserMessage(param.Instruction),
         ];
@@ -165,7 +165,7 @@ public class AiAgent : IAiAgent
             .SetResponseFormat<IssueCreateAgent[]>();
         AddChapters(messages, param.Chapters);
 
-        var response = await _client.CompleteChatAsync(messages, options);
+        var response = await _client.CompleteChatAsync(messages, options, ct);
         _usage.Add(response);
         var completion = response.Value;
         if (_logger.IsEnabled(LogLevel.Information))

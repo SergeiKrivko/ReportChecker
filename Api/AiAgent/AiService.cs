@@ -16,7 +16,7 @@ public class AiService(
     IChapterGroupService chapterGroupService,
     ILogger<AiService> logger) : IAiService
 {
-    public async Task FindIssuesAsync(CheckContext context)
+    public async Task FindIssuesAsync(CheckContext context, CancellationToken ct = default)
     {
         await using var aiAgentClient = await aiAgentFactory.CreateClientAsync(context.Report, LlmUsageType.Check);
 
@@ -24,24 +24,21 @@ public class AiService(
             .GetDifference(context.NewChapters, context.OldChapters)
             .Where(e => e.NewContent != e.OldContent)
             .ToList();
-        var instructions = (await instructionRepository.GetInstructionsAsync(context.Report.Id))
+        var instructions = (await instructionRepository.GetInstructionsAsync(context.Report.Id, ct))
             .Select(e => e.Content)
             .ToArray();
 
-        foreach (var chapterGroup in
-                 chapterGroupService.GroupChapters(changedChapters.Where(e => e.OldContent != null)))
+        foreach (var comments in await Task.WhenAll(chapterGroupService
+                     .GroupChapters(changedChapters.Where(e => e.OldContent != null))
+                     .Select(chapterGroup => aiAgentClient.CheckIssues(new IssuesRequestAgent
+                     {
+                         Chapters = chapterGroup
+                             .Select(e => e.ToAgent(context.Issues.Where(x => x.Status == IssueStatus.Open).ToList(),
+                                 context.Report.ImageProcessingMode))
+                             .ToArray(),
+                         Instructions = instructions,
+                     }, ct))))
         {
-            if (logger.IsEnabled(LogLevel.Information))
-                logger.LogInformation("Processing issues from {count} chapters", chapterGroup.Length);
-
-            var comments = await aiAgentClient.CheckIssues(new IssuesRequestAgent
-            {
-                Chapters = chapterGroup
-                    .Select(e => e.ToAgent(context.Issues.Where(x => x.Status == IssueStatus.Open).ToList(),
-                        context.Report.ImageProcessingMode))
-                    .ToArray(),
-                Instructions = instructions,
-            });
             foreach (var comment in comments ?? [])
             {
                 await commentRepository.CreateCommentAsync(comment.IssueId, Guid.Empty, comment.Content,
@@ -49,18 +46,15 @@ public class AiService(
             }
         }
 
-        foreach (var chapterGroup in chapterGroupService.GroupChapters(changedChapters))
+        foreach (var issues in await Task.WhenAll(chapterGroupService.GroupChapters(changedChapters)
+                     .Select(chapterGroup => aiAgentClient.FindIssues(new IssuesRequestAgent
+                     {
+                         Chapters = chapterGroup.Select(e => e.ToAgent(context.Issues, context.Report.ImageProcessingMode))
+                             .ToArray(),
+                         Instructions = instructions,
+                     }, ct))))
         {
-            if (logger.IsEnabled(LogLevel.Debug))
-                logger.LogDebug("Processing issues from {count} chapters", chapterGroup.Length);
-
-            var issues = await aiAgentClient.FindIssues(new IssuesRequestAgent
-            {
-                Chapters = chapterGroup.Select(e => e.ToAgent(context.Issues, context.Report.ImageProcessingMode))
-                    .ToArray(),
-                Instructions = instructions,
-            });
-            await ProcessIssuesAsync(context.Check.Id, issues ?? [], context.NewChapters);
+            await ProcessIssuesAsync(context.Check.Id, issues ?? [], context.NewChapters, ct);
         }
 
         foreach (var chapter in context.OldChapters.Where(e => context.NewChapters.All(x => x.Name != e.Name)))
@@ -74,7 +68,7 @@ public class AiService(
     }
 
     private async Task ProcessIssuesAsync(Guid checkId, IEnumerable<IssueCreateAgent> issues,
-        IReadOnlyCollection<Chapter> chapters)
+        IReadOnlyCollection<Chapter> chapters, CancellationToken ct = default)
     {
         foreach (var issue in issues)
         {
@@ -89,15 +83,15 @@ public class AiService(
             {
                 var oldLines = chapter.Content.ToAgentLines();
                 await patchRepository.CreatePatchAsync(commentId, issue.Patch.Select(e => e.ToDomain(oldLines)),
-                    PatchStatus.Completed);
+                    PatchStatus.Completed, ct);
             }
         }
     }
 
-    public async Task WriteComment(CheckContext context, Issue issue)
+    public async Task WriteComment(CheckContext context, Issue issue, CancellationToken ct = default)
     {
         await using var aiAgentClient = await aiAgentFactory.CreateClientAsync(context.Report, LlmUsageType.Comment);
-        var instructions = (await instructionRepository.GetInstructionsAsync(context.Report.Id))
+        var instructions = (await instructionRepository.GetInstructionsAsync(context.Report.Id, ct))
             .Select(e => e.Content)
             .ToArray();
 
@@ -113,7 +107,7 @@ public class AiService(
                 Instructions = instructions,
                 Images = chapter.Images,
                 ImageProcessingMode = context.Report.ImageProcessingMode,
-            });
+            }, ct);
             var id = await commentRepository.CreateCommentAsync(issue.Id, Guid.Empty, resp?.Comment.Content,
                 resp?.Comment.Status is null ? null : Enum.Parse<IssueStatus>(resp.Comment.Status),
                 (resp?.Instruction?.Apply ?? false) || (resp?.Instruction?.Search ?? false)
@@ -126,7 +120,7 @@ public class AiService(
             {
                 var oldLines = chapter.Content.ToAgentLines();
                 await patchRepository.CreatePatchAsync(id, resp.Patch.Select(e => e.ToDomain(oldLines)),
-                    PatchStatus.Completed);
+                    PatchStatus.Completed, ct);
             }
         }
         catch (Exception)
@@ -136,7 +130,8 @@ public class AiService(
         }
     }
 
-    public async Task ProcessInstructionApplyAsync(Guid taskId, CheckContext context, string instruction)
+    public async Task ProcessInstructionApplyAsync(Guid taskId, CheckContext context, string instruction,
+        CancellationToken ct = default)
     {
         await instructionTaskRepository.SetStatusAsync(taskId, ProgressStatus.InProgress);
         try
@@ -149,7 +144,7 @@ public class AiService(
                 {
                     Instruction = instruction,
                     Chapters = chapterGroup.Select(c => c.ToAgent(context.Issues)).ToArray()
-                });
+                }, ct);
                 foreach (var comment in comments ?? [])
                 {
                     await commentRepository.CreateCommentAsync(comment.IssueId, Guid.Empty, comment.Content,
@@ -166,7 +161,8 @@ public class AiService(
         }
     }
 
-    public async Task ProcessInstructionSearchAsync(Guid taskId, CheckContext context, string instruction)
+    public async Task ProcessInstructionSearchAsync(Guid taskId, CheckContext context, string instruction,
+        CancellationToken ct = default)
     {
         await instructionTaskRepository.SetStatusAsync(taskId, ProgressStatus.InProgress);
         try
@@ -179,8 +175,8 @@ public class AiService(
                 {
                     Instruction = instruction,
                     Chapters = chapterGroup.Select(c => c.ToAgent(context.Issues)).ToArray()
-                });
-                await ProcessIssuesAsync(context.Check.Id, newIssues ?? [], context.NewChapters);
+                }, ct);
+                await ProcessIssuesAsync(context.Check.Id, newIssues ?? [], context.NewChapters, ct);
             }
 
             await instructionTaskRepository.SetStatusAsync(taskId, ProgressStatus.Completed);

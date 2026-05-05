@@ -7,7 +7,8 @@ namespace ReportChecker.DataAccess.Repositories;
 
 public class CheckRepository(ReportCheckerDbContext dbContext) : ICheckRepository
 {
-    public async Task<Guid> CreateCheckAsync(Guid reportId, Guid userId, string? name = null)
+    public async Task<Guid> CreateCheckAsync(Guid reportId, Guid userId, string? name = null,
+        CancellationToken ct = default)
     {
         var id = Guid.NewGuid();
         var entity = new CheckEntity
@@ -18,62 +19,62 @@ public class CheckRepository(ReportCheckerDbContext dbContext) : ICheckRepositor
             Name = name,
             CreatedAt = DateTime.UtcNow,
         };
-        await dbContext.Checks.AddAsync(entity);
-        await dbContext.SaveChangesAsync();
+        await dbContext.Checks.AddAsync(entity, ct);
+        await dbContext.SaveChangesAsync(ct);
         return id;
     }
 
-    public async Task<Check?> GetCheckByIdAsync(Guid checkId)
+    public async Task<Check?> GetCheckByIdAsync(Guid checkId, CancellationToken ct = default)
     {
         var result = await dbContext.Checks
             .Where(e => e.CheckId == checkId)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(ct);
         return result is null ? null : FromEntity(result);
     }
 
-    public async Task<Check?> GetPreviousCheckAsync(Check offset)
+    public async Task<Check?> GetPreviousCheckAsync(Check offset, CancellationToken ct = default)
     {
         var result = await dbContext.Checks
             .Where(e => e.ReportId == offset.ReportId && e.CreatedAt < offset.CreatedAt)
             .OrderByDescending(e => e.CreatedAt)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(ct);
         return result is null ? null : FromEntity(result);
     }
 
-    public async Task<Check?> GetLatestCheckOfReportAsync(Guid reportId)
+    public async Task<Check?> GetLatestCheckOfReportAsync(Guid reportId, CancellationToken ct = default)
     {
         var result = await dbContext.Checks
-            .Include(e => e.Report)
-            .Where(e => e.ReportId == reportId && e.Report.DeletedAt == null)
+            .Where(e => e.ReportId == reportId && e.Status != ProgressStatus.Failed)
             .OrderByDescending(e => e.CreatedAt)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(ct);
         return result is null ? null : FromEntity(result);
     }
 
-    public async Task<IEnumerable<Check>> GetAllChecksOfReportAsync(Guid reportId)
+    public async Task<IEnumerable<Check>> GetAllChecksOfReportAsync(Guid reportId, CancellationToken ct = default)
     {
         var result = await dbContext.Checks
             .Where(e => e.ReportId == reportId)
-            .ToListAsync();
+            .ToListAsync(ct);
         return result.Select(FromEntity);
     }
 
-    public async Task SetCheckStatusAsync(Guid checkId, ProgressStatus status)
+    public async Task SetCheckStatusAsync(Guid checkId, ProgressStatus status, CancellationToken ct = default)
     {
         await dbContext.Checks
             .Where(e => e.CheckId == checkId)
-            .ExecuteUpdateAsync(e => e.SetProperty(x => x.Status, status));
-        await dbContext.SaveChangesAsync();
+            .ExecuteUpdateAsync(e => e.SetProperty(x => x.Status, status), ct);
+        await dbContext.SaveChangesAsync(ct);
     }
 
-    public async Task<int> CountChecksAsync(Guid userId, DateTime startDate)
+    public async Task<int> CountChecksAsync(Guid userId, DateTime startDate, CancellationToken ct = default)
     {
         return await dbContext.Checks
             .Where(e => e.CreatedAt > startDate)
             .Include(e => e.Report)
             .Where(e => e.Report.OwnerId == userId)
-            .CountAsync();
+            .CountAsync(ct);
     }
+
 
     private static Check FromEntity(CheckEntity entity)
     {
