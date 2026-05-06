@@ -35,6 +35,8 @@ interface IssuesStore {
   selectedIssue: IssueEntity | null;
   selectedStatus: string | null;
   isProgress: boolean;
+  isCancelled: boolean;
+  isFailed: boolean;
   isLoaded: boolean;
 }
 
@@ -50,6 +52,8 @@ export class IssuesService {
     selectedIssue: null,
     selectedStatus: 'Open',
     isProgress: false,
+    isCancelled: false,
+    isFailed: false,
     isLoaded: false,
   });
 
@@ -61,6 +65,8 @@ export class IssuesService {
   );
   readonly selectedIssue$ = toObservable(this.store$$.selectedIssue);
   readonly isProgress$ = toObservable(this.store$$.isProgress);
+  readonly isFailed$ = toObservable(this.store$$.isFailed);
+  readonly isCancelled$ = toObservable(this.store$$.isCancelled);
 
   loadIssues(reportId: string) {
     return this.apiClient.issuesAll(reportId).pipe(
@@ -84,14 +90,22 @@ export class IssuesService {
 
       return timer(0, currentInterval).pipe(
         switchMap(() => this.apiClient.latest(report.id)),
-        tap(check => patchState(this.store$$, {isProgress: check.status === "InProgress"})),
+        tap(check => patchState(this.store$$, {
+          isProgress: check.status === "InProgress",
+          isFailed: check.status === "Failed",
+          isCancelled: check.status === "Cancelled"
+        })),
         switchMap(check => {
           // Если InProgress - поллим issues каждые 2 секунды
           if (check.status === "InProgress") {
             return interval(2000).pipe(
               switchMap(() => this.loadIssues(report.id)),
               switchMap(() => this.apiClient.latest(report.id)),
-              tap(nextCheck => patchState(this.store$$, {isProgress: nextCheck.status === "InProgress"})),
+              tap(nextCheck => patchState(this.store$$, {
+                isProgress: nextCheck.status === "InProgress",
+                isFailed: nextCheck.status === "Failed",
+                isCancelled: nextCheck.status === "Cancelled"
+              })),
               takeWhile(nextCheck => nextCheck.status === "InProgress", true)
             );
           }

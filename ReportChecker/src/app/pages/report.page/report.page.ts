@@ -3,7 +3,7 @@ import {RouterLink} from '@angular/router';
 import {map, Observable} from 'rxjs';
 import {IssuesService} from '../../services/issues.service';
 import {AsyncPipe} from '@angular/common';
-import {TuiButton, TuiIcon, TuiLoader, TuiNotification, TuiSurface} from '@taiga-ui/core';
+import {TuiAppearance, TuiButton, TuiIcon, TuiLoader, TuiNotification, TuiSurface} from '@taiga-ui/core';
 import {ReactiveFormsModule} from '@angular/forms';
 import {IssueHeader} from '../../components/issue-header/issue-header';
 import {TuiCard} from '@taiga-ui/layout';
@@ -30,6 +30,7 @@ import {isNotFound} from '@angular/core/primitives/di';
     TuiSegmented,
     TuiIcon,
     TuiNotification,
+    TuiAppearance,
   ],
   templateUrl: './report.page.html',
   styleUrl: './report.page.scss',
@@ -56,6 +57,8 @@ export class ReportPage implements OnInit {
     map(issues => issues.filter(e => e.status == "Fixed"))
   );
   protected readonly isProgress$ = this.issuesService.isProgress$;
+  protected readonly isFailed$ = this.issuesService.isFailed$;
+  protected readonly isCancelled$ = this.issuesService.isCancelled$;
   protected readonly instructionTasks$ = this.instructionService.tasks$;
   protected readonly selectedStatus$: Observable<number> = this.issuesService.selectedStatus$.pipe(
     map(status => statusIndexMap[status ?? '']),
@@ -73,6 +76,10 @@ export class ReportPage implements OnInit {
 
   protected cancelCheck() {
     this.reportsService.cancelCheck().subscribe();
+  }
+
+  protected restartCheck() {
+    this.reportsService.restartCheck().subscribe();
   }
 }
 

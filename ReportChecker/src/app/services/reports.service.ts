@@ -167,6 +167,16 @@ export class ReportsService {
       })
     )
   }
+
+  restartCheck() {
+    return this.selectedReport$.pipe(
+      switchMap(report => {
+        if (!report)
+          return EMPTY;
+        return this.apiClient.restart(report.id);
+      }),
+    )
+  }
 }
 
 const reportToEntity = (report: Report): ReportEntity => ({

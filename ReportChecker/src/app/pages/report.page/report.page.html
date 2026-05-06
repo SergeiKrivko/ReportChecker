@@ -37,6 +37,22 @@
         <button tuiButton appearance="outline" size="m" (click)="cancelCheck()">Отменить</button>
       </div>
     </tui-notification>
+  } @else if (isFailed$ | async) {
+    <tui-notification size="l" appearance="negative" icon="">
+      <div class="progress-container">
+        <tui-icon icon="@tui.x" tuiAppearance="flat-destructive"/>
+        <span>Не удалось выполнить проверку</span>
+        <button tuiButton appearance="outline" size="m" (click)="restartCheck()">Перезапустить</button>
+      </div>
+    </tui-notification>
+  } @else if (isCancelled$ | async) {
+    <tui-notification size="l" appearance="secondary-grayscale">
+      <div class="progress-container">
+        <tui-icon icon="@tui.ban"></tui-icon>
+        <span>Проверка отменена</span>
+        <button tuiButton appearance="outline" size="m" (click)="restartCheck()">Перезапустить</button>
+      </div>
+    </tui-notification>
   }
 
   @if (isLoaded$ | async) {
