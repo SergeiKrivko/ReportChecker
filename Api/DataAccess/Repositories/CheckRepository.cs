@@ -41,11 +41,15 @@ public class CheckRepository(ReportCheckerDbContext dbContext) : ICheckRepositor
         return result is null ? null : FromEntity(result);
     }
 
-    public async Task<Check?> GetLatestCheckOfReportAsync(Guid reportId, CancellationToken ct = default)
+    public async Task<Check?> GetLatestCheckOfReportAsync(Guid reportId, bool includeFailed = false,
+        CancellationToken ct = default)
     {
-        var result = await dbContext.Checks
-            .Where(e => e.ReportId == reportId && e.Status != ProgressStatus.Failed &&
-                        e.Status != ProgressStatus.Cancelled)
+        var result = await (includeFailed
+                ? dbContext.Checks
+                    .Where(e => e.ReportId == reportId)
+                : dbContext.Checks
+                    .Where(e => e.ReportId == reportId && e.Status != ProgressStatus.Failed &&
+                                e.Status != ProgressStatus.Cancelled))
             .OrderByDescending(e => e.CreatedAt)
             .FirstOrDefaultAsync(ct);
         return result is null ? null : FromEntity(result);

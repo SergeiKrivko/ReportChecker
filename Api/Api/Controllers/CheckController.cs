@@ -32,7 +32,7 @@ public class CheckController(
 
     [HttpGet("latest")]
     [Authorize]
-    public async Task<ActionResult<Check>> GetLatestCheckAsync(Guid reportId)
+    public async Task<ActionResult<Check>> GetLatestCheckAsync(Guid reportId, CancellationToken ct)
     {
         var userId = User.UserId;
         var report = await reportRepository.GetReportByIdAsync(reportId);
@@ -40,8 +40,16 @@ public class CheckController(
             return NotFound();
         if (report.OwnerId != userId)
             return Unauthorized();
-        var check = await checkRepository.GetLatestCheckOfReportAsync(reportId);
+        var check = await checkRepository.GetLatestCheckOfReportAsync(reportId, true, ct);
         return Ok(check);
+    }
+
+    [HttpPost("latest/restart")]
+    [Authorize]
+    public async Task<ActionResult> RestartLatestCheck(Guid reportId, CancellationToken ct)
+    {
+        await checkService.RestartLatestCheckAsync(reportId, ct);
+        return Ok();
     }
 
     [HttpGet("latest/chapters")]

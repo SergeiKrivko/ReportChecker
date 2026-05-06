@@ -57,6 +57,22 @@ public class CheckService(
         }
     }
 
+    public async Task RestartLatestCheckAsync(Guid reportId, CancellationToken ct = default)
+    {
+        var report = await reportRepository.GetReportByIdAsync(reportId);
+        if (report == null)
+            throw new Exception("Report not found");
+
+        var check = await checkRepository.GetLatestCheckOfReportAsync(reportId, true, ct);
+        if (check == null)
+            throw new Exception("Latest check not found");
+        if (check.Status != ProgressStatus.Failed && check.Status != ProgressStatus.Cancelled)
+            throw new Exception($"Check with status '{check.Status}' can not be restarted");
+
+        var context = await GetContextAsync(report, check, false, ct);
+        _RunCheck(context);
+    }
+
     public async Task RunCheckAsync(CheckContext context, CancellationToken ct = default)
     {
         var sourceProvider = providerService.GetSourceProvider(context.Report.SourceProvider);
@@ -87,7 +103,7 @@ public class CheckService(
         if (check == null)
             throw new ArgumentException($"Latest check of report {reportId} not found");
 
-        var context = await GetContextAsync(report, check, false);
+        var context = await GetContextAsync(report, check);
         var issue = await issueRepository.GetIssueByIdAsync(issueId);
         if (issue == null)
             throw new ArgumentException($"Issue {issueId} not found");
@@ -100,7 +116,7 @@ public class CheckService(
         try
         {
             var service = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<IAiService>();
-            await service.WriteComment(context, issue);
+            await service.WriteComment(context, issue, ct);
         }
         catch (Exception e)
         {
@@ -118,7 +134,8 @@ public class CheckService(
         return chapters;
     }
 
-    private async Task<CheckContext> GetContextAsync(Report report, Check check, bool includePreviousCheck = false)
+    private async Task<CheckContext> GetContextAsync(Report report, Check check, bool includePreviousCheck = false,
+        CancellationToken ct = default)
     {
         var sourceProvider = providerService.GetSourceProvider(report.SourceProvider);
         var formatProvider = providerService.GetFormatProvider(report.Format);
@@ -130,7 +147,7 @@ public class CheckService(
         List<Chapter> previousChapters = [];
         if (includePreviousCheck)
         {
-            var previousCheck = await checkRepository.GetPreviousCheckAsync(check);
+            var previousCheck = await checkRepository.GetPreviousCheckAsync(check, ct);
             if (previousCheck != null)
             {
                 var previousSource = await sourceProvider.OpenAsync(report.Id, previousCheck.Id);
