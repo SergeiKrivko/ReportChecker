@@ -208,10 +208,10 @@ public class LatexFormatProvider(IConfiguration configuration) : IFormatProvider
                     isPatchChapter =
                         chapter == string.Join(ChapterSeparator, path.Where(e => !string.IsNullOrWhiteSpace(e)));
                 }
-            }
-            else if (command is { Command: "include", Argument: not null })
-            {
-                includedFiles.Add(command.Argument);
+                else if (command is { Command: "include", Argument: not null })
+                {
+                    includedFiles.Add(command.Argument);
+                }
             }
 
             if (isPatchChapter)

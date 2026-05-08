@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using ReportChecker.Abstractions;
 using ReportChecker.Models;
-using ReportChecker.Models.Sources;
+
 
 namespace ReportChecker.Application.Services;
 
@@ -53,13 +53,13 @@ public class PatchService(
             var issue = await issueRepository.GetIssueByIdAsync(comment.IssueId);
             if (issue is null)
                 throw new Exception($"Issue {comment.IssueId} not found");
-            var check = await checkRepository.GetCheckByIdAsync(issue.CheckId);
+            var check = await checkRepository.GetCheckByIdAsync(issue.CheckId, ct);
             if (check is null)
                 throw new Exception($"Check {issue.CheckId} not found");
             var report = await reportRepository.GetReportByIdAsync(check.ReportId);
             if (report is null)
                 throw new Exception($"Report {check.ReportId} not found");
-            var latestCheck = await checkRepository.GetLatestCheckOfReportAsync(check.ReportId);
+            var latestCheck = await checkRepository.GetLatestCheckOfReportAsync(check.ReportId, ct: ct);
             if (latestCheck is null)
                 throw new Exception($"Latest check of report {check.ReportId} not found");
 
