@@ -25,5 +25,15 @@ public static class CompletionOptionsExtension
             //         BinaryData.FromObjectAsJson(type.ToSchema(), JsonSerializerOptions));
             return options;
         }
+
+#pragma warning disable OPENAI001
+
+        public ChatCompletionOptions DisableReasoning()
+        {
+            options.ReasoningEffortLevel = ChatReasoningEffortLevel.None;
+            return options;
+        }
+
+#pragma warning restore OPENAI001
     }
 }

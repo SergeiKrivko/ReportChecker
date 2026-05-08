@@ -70,7 +70,8 @@ public class AiAgent : IAiAgent
             ChatMessage.CreateUserMessage(param.Instructions),
         ];
         var options = new ChatCompletionOptions()
-            .SetResponseFormat<IssueCreateAgent>();
+            .SetResponseFormat<IssueCreateAgent>()
+            .DisableReasoning();
         AddChapters(messages, param.Chapters);
 
         var response = await _client.CompleteChatAsync(messages, options, ct);
@@ -91,7 +92,8 @@ public class AiAgent : IAiAgent
             ChatMessage.CreateUserMessage(param.Issue),
         ];
         var options = new ChatCompletionOptions()
-            .SetResponseFormat<CommentResponseAgent>();
+            .SetResponseFormat<CommentResponseAgent>()
+            .DisableReasoning();
         if (param.Images.Length > 0 && param.ImageProcessingMode != ImageProcessingMode.Disable)
             messages.Add(ChatMessage.CreateUserMessage(param.Images
                 .Select(e =>
@@ -122,7 +124,8 @@ public class AiAgent : IAiAgent
             ChatMessage.CreateUserMessage(param.Instructions),
         ];
         var options = new ChatCompletionOptions()
-            .SetResponseFormat<CommentCreateAgent[]>();
+            .SetResponseFormat<CommentCreateAgent[]>()
+            .DisableReasoning();
         AddChapters(messages, param.Chapters);
 
         var response = await _client.CompleteChatAsync(messages, options, ct);
@@ -142,7 +145,8 @@ public class AiAgent : IAiAgent
             ChatMessage.CreateUserMessage(param.Instruction),
         ];
         var options = new ChatCompletionOptions()
-            .SetResponseFormat<CommentCreateAgent[]>();
+            .SetResponseFormat<CommentCreateAgent[]>()
+            .DisableReasoning();
         AddChapters(messages, param.Chapters);
 
         var response = await _client.CompleteChatAsync(messages, options, ct);
@@ -162,7 +166,8 @@ public class AiAgent : IAiAgent
             ChatMessage.CreateUserMessage(param.Instruction),
         ];
         var options = new ChatCompletionOptions()
-            .SetResponseFormat<IssueCreateAgent[]>();
+            .SetResponseFormat<IssueCreateAgent[]>()
+            .DisableReasoning();
         AddChapters(messages, param.Chapters);
 
         var response = await _client.CompleteChatAsync(messages, options, ct);
