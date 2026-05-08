@@ -33,12 +33,19 @@ public class GitHubArchive(GitHubClient client, long repositoryId, string commit
 
     private async Task<Stream?> _OpenAsync(string name)
     {
-        var contents = await client.Repository.Content.GetAllContentsByRef(repositoryId, name, commitRef);
-        if (contents == null)
+        try
+        {
+            var contents = await client.Repository.Content.GetAllContentsByRef(repositoryId, name, commitRef);
+            if (contents == null)
+                return null;
+            if (contents.Count != 1)
+                return null;
+            return await _httpClient.GetStreamAsync(contents[0].DownloadUrl);
+        }
+        catch (NotFoundException)
+        {
             return null;
-        if (contents.Count != 1)
-            return null;
-        return await _httpClient.GetStreamAsync(contents[0].DownloadUrl);
+        }
     }
 
     public async Task<CheckSourceUnion?> WriteAsync(string name, Stream content, CancellationToken ct)
