@@ -34,13 +34,20 @@ public class GithubWebhookProcessor(
             if (report == null)
                 logger.LogWarning("Report '{report}' not found (maybe deleted)", source.ReportId);
             else
-                await checkService.CreateCheckAsync(report.Id, report.OwnerId, new CheckSourceUnion
+                try
                 {
-                    GitHub = new GitHubCheckSource
+                    await checkService.CreateCheckAsync(report.Id, report.OwnerId, new CheckSourceUnion
                     {
-                        CommitHash = pushEvent.After,
-                    }
-                });
+                        GitHub = new GitHubCheckSource
+                        {
+                            CommitHash = pushEvent.After,
+                        }
+                    });
+                }
+                catch (Exception e)
+                {
+                    logger.LogError("Error while processing report '{reportId}': {error}", report.Id, e.ToString());
+                }
         }
     }
 }
