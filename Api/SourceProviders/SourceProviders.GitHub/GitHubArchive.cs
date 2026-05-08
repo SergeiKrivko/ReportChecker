@@ -28,7 +28,7 @@ public class GitHubArchive(GitHubClient client, long repositoryId, string commit
     {
         if (rootName == null)
             return null;
-        return await _OpenAsync(rootName);
+        return await _OpenAsync(rootName) ?? throw new Exception($"Root file ('{rootName}') not found");
     }
 
     private async Task<Stream?> _OpenAsync(string name)
@@ -83,7 +83,6 @@ public class GitHubArchive(GitHubClient client, long repositoryId, string commit
         await content.CopyToAsync(memoryStream, ct);
         var bytes = memoryStream.ToArray();
         var base64 = Convert.ToBase64String(bytes);
-        Console.WriteLine(Encoding.UTF8.GetString(Convert.FromBase64String(base64)));
         await client.Repository.Content.UpdateFile(repositoryId, name,
             new UpdateFileRequest($"Fix issue in file '{name}' by ReportChecker", base64, sha, branch,
                 convertContentToBase64: false));
