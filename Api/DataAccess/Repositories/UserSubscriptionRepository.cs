@@ -119,7 +119,8 @@ public class UserSubscriptionRepository(ReportCheckerDbContext dbContext) : IUse
             .Where(e => parentSubscriptionIds.Contains(e.Id))
             .ExecuteUpdateAsync(p => p.SetProperty(e => e.DeletedAt, now), ct);
         await dbContext.UserSubscriptions
-            .Where(e => e.DeletedAt == null && e.ConfirmedAt != null && e.EndsAt > subscription.StartsAt)
+            .Where(e => e.UserId == subscriptions[0].UserId && e.DeletedAt == null && e.ConfirmedAt != null &&
+                        e.EndsAt > subscription.StartsAt)
             .ExecuteUpdateAsync(p => p.SetProperty(e => e.DeletedAt, now), ct);
 
         var count = await dbContext.UserSubscriptions
