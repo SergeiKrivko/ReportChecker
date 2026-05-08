@@ -36,6 +36,18 @@
           overflow: hidden;
         }
       }
+
+      .title-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        @media (max-width: 767px) {
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          overflow: hidden;
+        }
+      }
     }
   }
 

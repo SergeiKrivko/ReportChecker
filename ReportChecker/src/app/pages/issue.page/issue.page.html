@@ -3,7 +3,10 @@
     <div class="header-container">
       <div class="side-container">
         <a tuiIconButton routerLink="../.." iconStart="@tui.chevron-left" appearance="flat"></a>
-        <h2 class="issue-title no-margin" [innerHTML]="issue.title"></h2>
+        <div class="title-wrapper">
+          <h2 class="issue-title no-margin" [innerHTML]="issue.title"></h2>
+          <label>{{ getChapter(issue) }}</label>
+        </div>
       </div>
       <div class="side-container">
         @if (issue.status == 'Open') {

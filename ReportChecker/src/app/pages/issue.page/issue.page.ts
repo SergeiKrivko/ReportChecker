@@ -85,6 +85,10 @@ export class IssuePage implements OnInit, OnDestroy {
     this.pathService.clear(1);
   }
 
+  protected getChapter(issue: IssueEntity) {
+    return issue.chapter?.split('//').join(' • ');
+  }
+
   issueIcon(issue: IssueEntity): string {
     if (issue.status == 'Open') {
       if (issue.priority >= 1 && issue.priority <= 2)
