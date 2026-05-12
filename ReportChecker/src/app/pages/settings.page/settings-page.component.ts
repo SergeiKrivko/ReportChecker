@@ -5,7 +5,7 @@ import {AsyncPipe} from '@angular/common';
 import {TuiButton, TuiTextfield} from '@taiga-ui/core';
 import {InstructionInput} from '../../components/instruction-input/instruction-input';
 import {TUI_CONFIRM, TuiConfirmData, TuiDataListWrapperComponent, TuiSelectDirective} from '@taiga-ui/kit';
-import {combineLatest, debounceTime, from, map, NEVER, switchMap, tap} from 'rxjs';
+import {combineLatest, debounceTime, EMPTY, from, map, NEVER, switchMap, tap} from 'rxjs';
 import {Router, RouterLink} from '@angular/router';
 import {TuiResponsiveDialogService} from '@taiga-ui/addon-mobile';
 import {ReportsService} from '../../services/reports.service';
@@ -95,7 +95,12 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   protected searchMoreIssues() {
-    this.instructionService.createSearchAnyTask().pipe(
+    this.instructionService.tasks$.pipe(
+      switchMap(tasks => {
+        if (tasks.find(e => e.mode == 'SearchAny'))
+          return EMPTY;
+        return this.instructionService.createSearchAnyTask();
+      }),
       takeUntilDestroyed(this.destroyRef),
     ).subscribe();
   }
