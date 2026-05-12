@@ -12,4 +12,6 @@ public interface IInstructionTaskService
 
     public Task<Guid> CreateInstructionTaskAsync(Guid reportId, string instruction, InstructionTaskMode mode,
         CancellationToken ct = default);
+
+    public Task<bool> CancelInstructionTaskAsync(Guid taskId, CancellationToken ct = default);
 }

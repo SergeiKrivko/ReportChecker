@@ -13,12 +13,13 @@ public class InstructionTaskService(
     ICheckRepository checkRepository,
     IIssueRepository issueRepository,
     IProviderService providerService,
+    ITaskCancellationService taskCancellationService,
     ILogger<InstructionTaskService> logger) : IInstructionTaskService
 {
     public async Task<IReadOnlyList<InstructionTask>> GetActiveInstructionTasksAsync(Guid reportId,
         CancellationToken ct = default)
     {
-        return await instructionTaskRepository.GetAllForReportAsync(reportId);
+        return await instructionTaskRepository.GetAllForReportAsync(reportId, ct);
     }
 
     public async Task<Guid> CreateInstructionTaskAsync(Guid reportId, Guid instructionId, InstructionTaskMode mode,
@@ -33,13 +34,13 @@ public class InstructionTaskService(
     public async Task<Guid> CreateInstructionTaskAsync(Guid reportId, string instruction, InstructionTaskMode mode,
         CancellationToken ct = default)
     {
-        var id = await instructionTaskRepository.CreateAsync(reportId, instruction, mode);
+        var id = await instructionTaskRepository.CreateAsync(reportId, instruction, mode, ct: ct);
 
         var report = await reportRepository.GetReportByIdAsync(reportId);
         if (report == null)
             throw new ArgumentException($"Report with id {reportId} does not exist");
 
-        var check = await checkRepository.GetLatestCheckOfReportAsync(reportId);
+        var check = await checkRepository.GetLatestCheckOfReportAsync(reportId, ct: ct);
         if (check == null)
             throw new ArgumentException($"Report {reportId} have no checks");
 
@@ -65,22 +66,32 @@ public class InstructionTaskService(
     {
         try
         {
+            var ctSource = new CancellationTokenSource();
+            taskCancellationService.AddInstructionCancellationToken(taskId, ctSource);
             var service = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<IAiService>();
             switch (mode)
             {
                 case InstructionTaskMode.Apply:
-                    await service.ProcessInstructionApplyAsync(taskId, context, instruction);
+                    await service.ProcessInstructionApplyAsync(taskId, context, instruction, ctSource.Token);
                     break;
                 case InstructionTaskMode.Search:
-                    await service.ProcessInstructionSearchAsync(taskId, context, instruction);
+                    await service.ProcessInstructionSearchAsync(taskId, context, instruction, ctSource.Token);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(mode), mode, null);
             }
+
+            taskCancellationService.DeleteInstructionCancellationToken(taskId);
         }
         catch (Exception e)
         {
             logger.LogError("Error during comment processing: {e}", e);
+            taskCancellationService.DeleteInstructionCancellationToken(taskId);
         }
+    }
+
+    public async Task<bool> CancelInstructionTaskAsync(Guid taskId, CancellationToken ct = default)
+    {
+        return await taskCancellationService.CancelInstructionAsync(taskId);
     }
 }

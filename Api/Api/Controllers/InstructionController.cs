@@ -110,4 +110,18 @@ public class InstructionController(
 
         return BadRequest("Both InstructionId and Instruction fields are empty");
     }
+
+    [HttpDelete("tasks/{taskId:guid}")]
+    public async Task<ActionResult> CancelInstructionTask(Guid reportId, Guid taskId, CancellationToken ct)
+    {
+        var report = await reportRepository.GetReportByIdAsync(reportId);
+        if (report == null || report.OwnerId != User.UserId)
+            return NotFound("Report not found");
+        var task = await instructionTaskRepository.GetByIdAsync(taskId, ct);
+        if (task == null || task.ReportId != reportId)
+            return NotFound("Instruction task not found");
+
+        await instructionTaskService.CancelInstructionTaskAsync(taskId, ct);
+        return Ok();
+    }
 }
