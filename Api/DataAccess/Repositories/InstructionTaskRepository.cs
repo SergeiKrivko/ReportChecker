@@ -68,6 +68,7 @@ public class InstructionTaskRepository(ReportCheckerDbContext dbContext) : IInst
             ReportId = entity.ReportId,
             Status = entity.Status,
             Instruction = entity.Instruction,
+            Mode = entity.Mode,
         };
     }
 }
