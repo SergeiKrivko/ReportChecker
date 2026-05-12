@@ -3,17 +3,6 @@
   <div class="header-container">
     <a tuiButton iconStart="@tui.chevron-left" routerLink=".." appearance="flat" class="desktop-only">Назад</a>
     <a tuiIconButton iconStart="@tui.chevron-left" routerLink=".." appearance="flat" class="mobile-only"></a>
-    @let instructionTasks = instructionTasks$ | async;
-    @if ((instructionTasks?.length ?? 0) > 0) {
-      <div class="progress-container">
-        <tui-loader/>
-        @if (instructionTasks?.length == 1) {
-          <div>Применение инструкции...</div>
-        } @else {
-          <div>Применение инструкций ({{ instructionTasks?.length }})...</div>
-        }
-      </div>
-    }
     <div class="right-container">
       <div class="version-wrapper">
         @switch (report?.sourceProvider) {
@@ -51,6 +40,28 @@
         <tui-icon icon="@tui.ban"></tui-icon>
         <span>Проверка отменена</span>
         <button tuiButton appearance="outline" size="m" (click)="restartCheck()">Перезапустить</button>
+      </div>
+    </tui-notification>
+  }
+  @let instructionTasks = instructionTasks$ | async;
+  @for (task of instructionTasks; track task.id) {
+    <tui-notification size="l" appearance="secondary-grayscale">
+      <div class="progress-container">
+        <tui-loader/>
+        @switch (task.mode) {
+          @case ('Apply') {
+            <span>Применение инструкции к существующим ошибкам...</span>
+          }
+          @case ('Search') {
+            <span>Поиск ошибок по инструкции...</span>
+          }
+          @case ('SearchAny') {
+            <span>Поиск дополнительных ошибок...</span>
+          }
+        }
+        @if (task.id) {
+          <button tuiButton appearance="outline" size="m" (click)="cancelInstruction(task.id)">Отменить</button>
+        }
       </div>
     </tui-notification>
   }

@@ -94,6 +94,11 @@ export class SettingsPage implements OnInit, OnDestroy {
     ).subscribe();
   }
 
+  protected searchMoreIssues() {
+    this.instructionService.createSearchAnyTask().pipe(
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe();
+  }
 
   protected deleteReport() {
     const data: TuiConfirmData = {

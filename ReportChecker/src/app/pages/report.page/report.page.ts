@@ -12,7 +12,6 @@ import {FileSpVersion} from '../../components/file-sp-version/file-sp-version';
 import {GithubSpVersion} from '../../components/github-sp-version/github-sp-version';
 import {InstructionService} from '../../services/instruction.service';
 import {TuiSegmented} from '@taiga-ui/kit';
-import {isNotFound} from '@angular/core/primitives/di';
 
 @Component({
   selector: 'app-check.page',
@@ -72,14 +71,16 @@ export class ReportPage implements OnInit {
     this.issuesService.selectStatus(indexStatusMap[index]);
   }
 
-  protected readonly isNotFound = isNotFound;
-
   protected cancelCheck() {
     this.reportsService.cancelCheck().subscribe();
   }
 
   protected restartCheck() {
     this.reportsService.restartCheck().subscribe();
+  }
+
+  protected cancelInstruction(id: string) {
+    this.instructionService.cancelTask(id).subscribe();
   }
 }
 

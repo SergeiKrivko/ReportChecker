@@ -1,6 +1,6 @@
 import {inject, Injectable} from '@angular/core';
 import {InstructionEntity} from '../entities/instruction-entity';
-import {first, interval, map, NEVER, Observable, of, switchMap, takeWhile, tap, timer} from 'rxjs';
+import {EMPTY, first, interval, map, NEVER, Observable, of, switchMap, takeWhile, tap, timer} from 'rxjs';
 import {patchState, signalState} from '@ngrx/signals';
 import {ApiClient, CreateInstructionTaskSchema, Instruction, InstructionTask} from './api-client';
 import {ReportsService} from './reports.service';
@@ -91,12 +91,38 @@ export class InstructionService {
       first(),
       switchMap(report => {
         if (report)
-          return this.apiClient.tasks(report.id, CreateInstructionTaskSchema.fromJS({
+          return this.apiClient.tasksPOST(report.id, CreateInstructionTaskSchema.fromJS({
             instructionId: id, mode
           })).pipe(
             switchMap(() => this.loadInstructions(report.id)),
           );
-        return NEVER;
+        return EMPTY;
+      }),
+    );
+  }
+
+  createSearchAnyTask() {
+    return this.reportsService.selectedReport$.pipe(
+      first(),
+      switchMap(report => {
+        if (report)
+          return this.apiClient.tasksPOST(report.id, CreateInstructionTaskSchema.fromJS({
+            instruction: "", mode: 'SearchAny'
+          })).pipe(
+            switchMap(() => this.loadInstructions(report.id)),
+          );
+        return EMPTY;
+      }),
+    );
+  }
+
+  cancelTask(id: string) {
+    return this.reportsService.selectedReport$.pipe(
+      first(),
+      switchMap(report => {
+        if (report)
+          return this.apiClient.tasksDELETE(report.id, id);
+        return EMPTY;
       }),
     );
   }
