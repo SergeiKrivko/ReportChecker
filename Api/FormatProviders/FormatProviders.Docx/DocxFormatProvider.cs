@@ -14,7 +14,7 @@ public class DocxFormatProvider(IConfiguration configuration) : IFormatProvider
 
     private string ChapterSeparator { get; } = configuration["Reports.ChapterSeparator"] ?? "//";
 
-    public async Task<IEnumerable<Chapter>> GetChaptersAsync(IFileArchive archive)
+    public async Task<IReadOnlyList<Chapter>> GetChaptersAsync(IFileArchive archive)
     {
         var chapters = new List<Chapter>();
         var currentText = new StringBuilder();

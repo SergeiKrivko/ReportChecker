@@ -15,7 +15,7 @@ public class PdfFormatProvider(IConfiguration configuration) : IFormatProvider
 
     private string ChapterSeparator { get; } = configuration["Reports.ChapterSeparator"] ?? "//";
 
-    public async Task<IEnumerable<Chapter>> GetChaptersAsync(IFileArchive archive)
+    public async Task<IReadOnlyList<Chapter>> GetChaptersAsync(IFileArchive archive)
     {
         await using var sourceStream = await archive.ReadAsync() ?? throw new FileNotFoundException();
         using var document = PdfDocument.Open(sourceStream);
@@ -24,7 +24,7 @@ public class PdfFormatProvider(IConfiguration configuration) : IFormatProvider
             var result =
                 ExtractTextBetweenBookmarks(document, bookmarks.GetNodes().OfType<DocumentBookmarkNode>().ToList());
 
-            return await Task.FromResult<IEnumerable<Chapter>>(result);
+            return await Task.FromResult<IReadOnlyList<Chapter>>(result);
         }
 
         return

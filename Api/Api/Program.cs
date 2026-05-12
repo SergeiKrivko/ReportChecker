@@ -19,6 +19,7 @@ using ReportChecker.S3;
 using ReportChecker.SourceProviders.File;
 using ReportChecker.SourceProviders.GitHub;
 using ReportChecker.SourceProviders.Local;
+using StackExchange.Redis;
 using YooMoney;
 using IFormatProvider = ReportChecker.Abstractions.IFormatProvider;
 
@@ -27,7 +28,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddDbContext<ReportCheckerDbContext>(options =>
 {
-    options.UseNpgsql(builder.Configuration["DB_CONNECTION_STRING"]);
+    options.UseNpgsql(builder.Configuration["ConnectionStrings.Postgres"]);
+});
+builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
+{
+    var redisConnection = builder.Configuration["ConnectionStrings.Redis"];
+    return ConnectionMultiplexer.Connect(redisConnection ?? "localhost:6381");
 });
 
 builder.Services.AddScoped<ICheckRepository, CheckRepository>();

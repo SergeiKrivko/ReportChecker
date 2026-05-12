@@ -13,7 +13,7 @@ public class LatexFormatProvider(IConfiguration configuration) : IFormatProvider
 
     private string ChapterSeparator { get; } = configuration["Reports.ChapterSeparator"] ?? "//";
 
-    public async Task<IEnumerable<Chapter>> GetChaptersAsync(IFileArchive archive)
+    public async Task<IReadOnlyList<Chapter>> GetChaptersAsync(IFileArchive archive)
     {
         return await ParseFileAsync(null, new LatexContext
         {

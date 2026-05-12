@@ -3,11 +3,17 @@ using Microsoft.Extensions.Configuration;
 using Octokit;
 using ReportChecker.Abstractions;
 using ReportChecker.SourceProviders.GitHub.Models;
+using StackExchange.Redis;
 
 namespace ReportChecker.SourceProviders.GitHub;
 
-public class GithubService(IUserRepository userRepository, IConfiguration configuration)
+public class GithubService(
+    IUserRepository userRepository,
+    IConfiguration configuration,
+    IConnectionMultiplexer redisConnection)
 {
+    private readonly IDatabase _redis = redisConnection.GetDatabase(2);
+
     private readonly GitHubClient _client = new(new ProductHeaderValue(configuration["GitHub.AppName"]))
     {
         Credentials = new Credentials(GenerateJwt(), AuthenticationType.Bearer),
@@ -21,27 +27,46 @@ public class GithubService(IUserRepository userRepository, IConfiguration config
             throw new Exception("User credentials not found");
 
         var installation = await _client.GitHubApps.GetUserInstallationForCurrent(account.Login ?? account.Name);
-        var token = await _client.GitHubApps.CreateInstallationToken(installation.Id);
+        var token = await GetInstallationTokenAsync(installation.Id);
 
         return new GitHubClient(new ProductHeaderValue(configuration["GitHub.AppName"]))
         {
-            Credentials = new Credentials(token.Token),
+            Credentials = new Credentials(token),
         };
     }
 
     public async Task<GitHubClient> CreateRepositoryClient(long repositoryId)
     {
         var installation = await _client.GitHubApps.GetRepositoryInstallationForCurrent(repositoryId);
-        var token = await _client.GitHubApps.CreateInstallationToken(installation.Id);
+        var token = await GetInstallationTokenAsync(installation.Id);
 
         return new GitHubClient(new ProductHeaderValue(configuration["GitHub.AppName"]))
         {
-            Credentials = new Credentials(token.Token),
+            Credentials = new Credentials(token),
         };
     }
 
+    private async Task<string> GetInstallationTokenAsync(long installationId)
+    {
+        var key = $"installation-token-{installationId}";
+        var cache = await _redis.StringGetAsync(key);
+        if (cache.HasValue)
+            return cache.ToString();
+        var token = await _client.GitHubApps.CreateInstallationToken(installationId);
+        var ttl = token.ExpiresAt.AddMinutes(-5) - DateTime.UtcNow;
+        await _redis.StringSetAsync(key, token.Token, ttl);
+        return token.Token;
+    }
+
+    private static string? _jwt;
+    private static DateTime _jwtExpiresAt = DateTime.UnixEpoch;
+
     private static string GenerateJwt()
     {
+        var now = DateTime.UtcNow;
+        if (_jwtExpiresAt > now && _jwt != null)
+            return _jwt;
+
         var privateKeySource = new EnvironmentVariablePrivateKeySource("GitHub.PrivateKey");
         var generator = new GitHubJwtFactory(
             privateKeySource,
@@ -52,7 +77,9 @@ public class GithubService(IUserRepository userRepository, IConfiguration config
             }
         );
 
-        return generator.CreateEncodedJwtToken();
+        _jwt = generator.CreateEncodedJwtToken();
+        _jwtExpiresAt = now;
+        return _jwt;
     }
 
     public async Task<IEnumerable<Models.Repository>> GetRepositories(Guid userId)

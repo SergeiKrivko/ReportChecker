@@ -1,8 +1,10 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Text.Json;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ReportChecker.Abstractions;
 using ReportChecker.Models;
 using ReportChecker.Models.Sources;
+using StackExchange.Redis;
 
 namespace ReportChecker.Application.Services;
 
@@ -14,8 +16,12 @@ public class CheckService(
     IAiService aiService,
     IIssueRepository issueRepository,
     ITaskCancellationService taskCancellationService,
+    IConnectionMultiplexer redisConnection,
     ILogger<CheckService> logger) : ICheckService
 {
+    private readonly IDatabase _redis = redisConnection.GetDatabase(0);
+    private readonly TimeSpan _redisTtl = TimeSpan.FromHours(1);
+
     public async Task<Guid> CreateCheckAsync(Guid reportId, Guid userId, CheckSourceUnion source, string? name = null)
     {
         var checkId = await checkRepository.CreateCheckAsync(reportId, userId, name);
@@ -126,11 +132,16 @@ public class CheckService(
 
     public async Task<IEnumerable<Chapter>> GetChaptersAsync(Report report, Check check)
     {
+        var chapters = await GetChaptersFromCache(check.Id);
+        if (chapters != null)
+            return chapters;
+
         var sourceProvider = providerService.GetSourceProvider(report.SourceProvider);
         var sourceStream = await sourceProvider.OpenAsync(report.Id, check.Id);
 
         var formatProvider = providerService.GetFormatProvider(report.Format);
-        var chapters = await formatProvider.GetChaptersAsync(sourceStream);
+        chapters = await formatProvider.GetChaptersAsync(sourceStream);
+        await SaveChaptersCache(check.Id, chapters);
         return chapters;
     }
 
@@ -140,18 +151,29 @@ public class CheckService(
         var sourceProvider = providerService.GetSourceProvider(report.SourceProvider);
         var formatProvider = providerService.GetFormatProvider(report.Format);
 
-        var source = await sourceProvider.OpenAsync(report.Id, check.Id);
-        var chapters = await formatProvider.GetChaptersAsync(source);
+        var chapters = await GetChaptersFromCache(check.Id);
+        if (chapters == null)
+        {
+            var source = await sourceProvider.OpenAsync(report.Id, check.Id);
+            chapters = await formatProvider.GetChaptersAsync(source);
+            await SaveChaptersCache(check.Id, chapters);
+        }
+
         var issues = await issueRepository.GetAllIssuesOfReportAsync(report.Id);
 
-        List<Chapter> previousChapters = [];
+        IReadOnlyList<Chapter>? previousChapters = [];
         if (includePreviousCheck)
         {
             var previousCheck = await checkRepository.GetPreviousCheckAsync(check, ct);
             if (previousCheck != null)
             {
-                var previousSource = await sourceProvider.OpenAsync(report.Id, previousCheck.Id);
-                previousChapters = (await formatProvider.GetChaptersAsync(previousSource)).ToList();
+                previousChapters = await GetChaptersFromCache(previousCheck.Id);
+                if (previousChapters == null)
+                {
+                    var previousSource = await sourceProvider.OpenAsync(report.Id, previousCheck.Id);
+                    previousChapters = (await formatProvider.GetChaptersAsync(previousSource)).ToList();
+                    await SaveChaptersCache(previousCheck.Id, previousChapters);
+                }
             }
         }
 
@@ -163,5 +185,16 @@ public class CheckService(
             NewChapters = chapters.ToList(),
             Issues = issues.ToList(),
         };
+    }
+
+    private async Task<IReadOnlyList<Chapter>?> GetChaptersFromCache(Guid checkId)
+    {
+        var value = await _redis.StringGetAsync($"chapters-{checkId}");
+        return value.HasValue ? JsonSerializer.Deserialize<List<Chapter>>(value.ToString()) : null;
+    }
+
+    private async Task SaveChaptersCache(Guid checkId, IEnumerable<Chapter> chapters)
+    {
+        await _redis.StringSetAsync($"chapters-{checkId}", JsonSerializer.Serialize(chapters), _redisTtl);
     }
 }
