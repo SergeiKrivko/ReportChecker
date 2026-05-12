@@ -95,6 +95,8 @@ public class InstructionTaskService(
 
     public async Task<bool> CancelInstructionTaskAsync(Guid taskId, CancellationToken ct = default)
     {
-        return await taskCancellationService.CancelInstructionAsync(taskId);
+        var res = await taskCancellationService.CancelInstructionAsync(taskId);
+        await instructionTaskRepository.SetStatusAsync(taskId, ProgressStatus.Cancelled, ct);
+        return res;
     }
 }
