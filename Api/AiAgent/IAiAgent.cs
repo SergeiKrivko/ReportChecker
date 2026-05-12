@@ -9,5 +9,6 @@ public interface IAiAgent: IAsyncDisposable
     public Task<CommentCreateAgent[]?> CheckIssues(IssuesRequestAgent param, CancellationToken ct = default);
     public Task<CommentCreateAgent[]?> ApplyInstruction(InstructionRequestAgent param, CancellationToken ct = default);
     public Task<IssueCreateAgent[]?> SearchInstruction(InstructionRequestAgent param, CancellationToken ct = default);
+    public Task<IssueCreateAgent[]?> SearchAny(ChapterAgent[] param, CancellationToken ct = default);
 
 }

@@ -13,4 +13,6 @@ public interface IAiService
 
     public Task ProcessInstructionSearchAsync(Guid taskId, CheckContext context, string instruction,
         CancellationToken ct = default);
+
+    public Task ProcessSearchAnyAsync(Guid taskId, CheckContext context, CancellationToken ct = default);
 }

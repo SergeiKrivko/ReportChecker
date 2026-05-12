@@ -3,5 +3,6 @@
 public enum InstructionTaskMode
 {
     Apply,
-    Search
+    Search,
+    SearchAny,
 }

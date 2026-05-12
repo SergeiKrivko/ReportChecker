@@ -77,6 +77,9 @@ public class InstructionTaskService(
                 case InstructionTaskMode.Search:
                     await service.ProcessInstructionSearchAsync(taskId, context, instruction, ctSource.Token);
                     break;
+                case InstructionTaskMode.SearchAny:
+                    await service.ProcessSearchAnyAsync(taskId, context, ctSource.Token);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(mode), mode, null);
             }

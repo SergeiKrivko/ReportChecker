@@ -178,6 +178,26 @@ public class AiAgent : IAiAgent
         return completion.ReadAsJson<IssueCreateAgent[]>();
     }
 
+    public async Task<IssueCreateAgent[]?> SearchAny(ChapterAgent[] param, CancellationToken ct = default)
+    {
+        List<ChatMessage> messages =
+        [
+            ChatMessage.CreateSystemMessage(await GetSystemPrompt("SearchAny", ct)),
+            ChatMessage.CreateResponseTypeDefinition<IssueCreateAgent[]>(),
+        ];
+        var options = new ChatCompletionOptions()
+            .SetResponseFormat<IssueCreateAgent[]>()
+            .DisableReasoning();
+        AddChapters(messages, param);
+
+        var response = await _client.CompleteChatAsync(messages, options, ct);
+        _usage.Add(response);
+        var completion = response.Value;
+        if (_logger.IsEnabled(LogLevel.Information))
+            _logger.LogInformation("Agent response: {response}", completion.ReadAsString());
+        return completion.ReadAsJson<IssueCreateAgent[]>();
+    }
+
     private static void AddChapters(List<ChatMessage> messages, IEnumerable<ChapterAgent> chapters)
     {
         foreach (var paramChapter in chapters)

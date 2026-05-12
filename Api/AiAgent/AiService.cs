@@ -49,7 +49,8 @@ public class AiService(
         foreach (var issues in await Task.WhenAll(chapterGroupService.GroupChapters(changedChapters)
                      .Select(chapterGroup => aiAgentClient.FindIssues(new IssuesRequestAgent
                      {
-                         Chapters = chapterGroup.Select(e => e.ToAgent(context.Issues, context.Report.ImageProcessingMode))
+                         Chapters = chapterGroup
+                             .Select(e => e.ToAgent(context.Issues, context.Report.ImageProcessingMode))
                              .ToArray(),
                          Instructions = instructions,
                      }, ct))))
@@ -133,7 +134,7 @@ public class AiService(
     public async Task ProcessInstructionApplyAsync(Guid taskId, CheckContext context, string instruction,
         CancellationToken ct = default)
     {
-        await instructionTaskRepository.SetStatusAsync(taskId, ProgressStatus.InProgress);
+        await instructionTaskRepository.SetStatusAsync(taskId, ProgressStatus.InProgress, ct);
         try
         {
             await using var aiAgentClient =
@@ -152,19 +153,19 @@ public class AiService(
                 }
             }
 
-            await instructionTaskRepository.SetStatusAsync(taskId, ProgressStatus.Completed);
+            await instructionTaskRepository.SetStatusAsync(taskId, ProgressStatus.Completed, ct);
         }
         catch (Exception e)
         {
             logger.LogError("Ошибка при применении инструкции к существующим ошибкам:\n{error}", e.ToString());
-            await instructionTaskRepository.SetStatusAsync(taskId, ProgressStatus.Failed);
+            await instructionTaskRepository.SetStatusAsync(taskId, ProgressStatus.Failed, ct);
         }
     }
 
     public async Task ProcessInstructionSearchAsync(Guid taskId, CheckContext context, string instruction,
         CancellationToken ct = default)
     {
-        await instructionTaskRepository.SetStatusAsync(taskId, ProgressStatus.InProgress);
+        await instructionTaskRepository.SetStatusAsync(taskId, ProgressStatus.InProgress, ct);
         try
         {
             await using var aiAgentClient =
@@ -179,12 +180,35 @@ public class AiService(
                 await ProcessIssuesAsync(context.Check.Id, newIssues ?? [], context.NewChapters, ct);
             }
 
-            await instructionTaskRepository.SetStatusAsync(taskId, ProgressStatus.Completed);
+            await instructionTaskRepository.SetStatusAsync(taskId, ProgressStatus.Completed, ct);
         }
         catch (Exception e)
         {
             logger.LogError("Ошибка при поиске новых ошибок по инструкции:\n{error}", e.ToString());
-            await instructionTaskRepository.SetStatusAsync(taskId, ProgressStatus.Failed);
+            await instructionTaskRepository.SetStatusAsync(taskId, ProgressStatus.Failed, ct);
+        }
+    }
+
+    public async Task ProcessSearchAnyAsync(Guid taskId, CheckContext context, CancellationToken ct = default)
+    {
+        await instructionTaskRepository.SetStatusAsync(taskId, ProgressStatus.InProgress, ct);
+        try
+        {
+            await using var aiAgentClient =
+                await aiAgentFactory.CreateClientAsync(context.Report, LlmUsageType.Instruction);
+            foreach (var chapterGroup in chapterGroupService.GroupChapters(context.NewChapters))
+            {
+                var newIssues =
+                    await aiAgentClient.SearchAny(chapterGroup.Select(c => c.ToAgent(context.Issues)).ToArray(), ct);
+                await ProcessIssuesAsync(context.Check.Id, newIssues ?? [], context.NewChapters, ct);
+            }
+
+            await instructionTaskRepository.SetStatusAsync(taskId, ProgressStatus.Completed, ct);
+        }
+        catch (Exception e)
+        {
+            logger.LogError("Ошибка при поиске новых ошибок:\n{error}", e.ToString());
+            await instructionTaskRepository.SetStatusAsync(taskId, ProgressStatus.Failed, ct);
         }
     }
 
