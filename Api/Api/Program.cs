@@ -132,7 +132,8 @@ app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 app.UseCors(policy => policy
-    .WithOrigins("http://localhost:4200", app.Configuration["Frontend.Url"] ?? "https://report-checker.vercel.app")
+    .WithOrigins("http://localhost:4200", app.Configuration["Frontend.Url"] ?? throw new Exception("Frontend url not set"))
+    .WithOrigins(app.Configuration["Security.CorsOrigins"]?.Split(';') ?? [])
     .AllowAnyHeader()
     .AllowAnyMethod()
 );
