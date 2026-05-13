@@ -20,7 +20,7 @@ export const appConfig: ApplicationConfig = {
       deps: [AuthService],
     },
     // { provide: API_BASE_URL, useValue: "http://localhost:5000" },
-    { provide: API_BASE_URL, useValue: "https://reportchecker.nachert.art" },
+    { provide: API_BASE_URL, useValue: "https:///api.reportchecker.ru" },
     provideAnimations(),
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
