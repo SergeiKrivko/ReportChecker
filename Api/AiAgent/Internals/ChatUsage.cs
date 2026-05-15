@@ -13,20 +13,18 @@ internal class ChatUsage
     public int TotalRequests { get; private set; } = 0;
     public decimal TotalMoney { get; private set; } = 0;
 
-    public void Add(ClientResult<ChatCompletion> result)
+#pragma warning disable SCME0001
+
+    public void Add(ChatTokenUsage usage)
     {
-        InputTokens += result.Value.Usage.InputTokenCount;
-        OutputTokens += result.Value.Usage.OutputTokenCount;
-        TotalTokens += result.Value.Usage.TotalTokenCount;
+        InputTokens += usage.InputTokenCount;
+        OutputTokens += usage.OutputTokenCount;
+        TotalTokens += usage.TotalTokenCount;
         TotalRequests += 1;
 
-        Console.WriteLine(result.GetRawResponse().Content);
-        var document = JsonDocument.Parse(result.GetRawResponse().Content);
-        var money = document.RootElement
-            .GetProperty("usage"u8)
-            .GetProperty("cost_rub"u8)
-            .GetDecimal();
-        Console.WriteLine($"{money} RUB");
+        var money = usage.Patch.GetDecimal("$.cost_rub"u8);
         TotalMoney += money;
     }
+
+#pragma warning restore SCME0001
 }

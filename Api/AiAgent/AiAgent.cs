@@ -75,8 +75,8 @@ public class AiAgent : IAiAgent
         AddChapters(messages, param.Chapters);
 
         var response = await _client.CompleteChatAsync(messages, options, ct);
-        _usage.Add(response);
         var completion = response.Value;
+        _usage.Add(completion.Usage);
         if (_logger.IsEnabled(LogLevel.Information))
             _logger.LogInformation("Agent response: {response}", completion.ReadAsString());
         return completion.ReadAsJson<IssueCreateAgent[]>();
@@ -108,8 +108,8 @@ public class AiAgent : IAiAgent
             messages.Add(ChatMessage.CreateUserMessage(param.Text));
 
         var response = await _client.CompleteChatAsync(messages, options, ct);
-        _usage.Add(response);
         var completion = response.Value;
+        _usage.Add(completion.Usage);
         if (_logger.IsEnabled(LogLevel.Information))
             _logger.LogInformation("Agent response: {response}", completion.ReadAsString());
         return completion.ReadAsJson<CommentResponseAgent>();
@@ -129,8 +129,8 @@ public class AiAgent : IAiAgent
         AddChapters(messages, param.Chapters);
 
         var response = await _client.CompleteChatAsync(messages, options, ct);
-        _usage.Add(response);
         var completion = response.Value;
+        _usage.Add(completion.Usage);
         if (_logger.IsEnabled(LogLevel.Information))
             _logger.LogInformation("Agent response: {response}", completion.ReadAsString());
         return completion.ReadAsJson<CommentCreateAgent[]>();
@@ -150,8 +150,8 @@ public class AiAgent : IAiAgent
         AddChapters(messages, param.Chapters);
 
         var response = await _client.CompleteChatAsync(messages, options, ct);
-        _usage.Add(response);
         var completion = response.Value;
+        _usage.Add(completion.Usage);
         if (_logger.IsEnabled(LogLevel.Information))
             _logger.LogInformation("Agent response: {response}", completion.ReadAsString());
         return completion.ReadAsJson<CommentCreateAgent[]>();
@@ -171,8 +171,8 @@ public class AiAgent : IAiAgent
         AddChapters(messages, param.Chapters);
 
         var response = await _client.CompleteChatAsync(messages, options, ct);
-        _usage.Add(response);
         var completion = response.Value;
+        _usage.Add(completion.Usage);
         if (_logger.IsEnabled(LogLevel.Information))
             _logger.LogInformation("Agent response: {response}", completion.ReadAsString());
         return completion.ReadAsJson<IssueCreateAgent[]>();
@@ -191,8 +191,8 @@ public class AiAgent : IAiAgent
         AddChapters(messages, param);
 
         var response = await _client.CompleteChatAsync(messages, options, ct);
-        _usage.Add(response);
         var completion = response.Value;
+        _usage.Add(completion.Usage);
         if (_logger.IsEnabled(LogLevel.Information))
             _logger.LogInformation("Agent response: {response}", completion.ReadAsString());
         return completion.ReadAsJson<IssueCreateAgent[]>();
