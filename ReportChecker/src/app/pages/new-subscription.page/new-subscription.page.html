@@ -6,8 +6,6 @@
   <div class="info-container">
     @if (!subscription) {
       <tui-loader></tui-loader>
-    } @else if (subscription?.errorText) {
-      <tui-notification appearance="negative">{{ subscription?.errorText }}</tui-notification>
     } @else {
       <label tuiLabel>Название:</label>
       <b>{{ plan?.name }}</b>

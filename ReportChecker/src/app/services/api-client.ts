@@ -53,11 +53,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("get", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processChecksAll(response_);
+            return this.transformResult(url_, response_, (r) => this.processChecksAll(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processChecksAll(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processChecksAll(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<Check[]>;
                 }
@@ -121,11 +121,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("post", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processChecksPOST(response_);
+            return this.transformResult(url_, response_, (r) => this.processChecksPOST(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processChecksPOST(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processChecksPOST(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<string>;
                 }
@@ -178,11 +178,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("get", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processLatest(response_);
+            return this.transformResult(url_, response_, (r) => this.processLatest(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processLatest(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processLatest(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<Check>;
                 }
@@ -233,11 +233,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("post", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processRestart(response_);
+            return this.transformResult(url_, response_, (r) => this.processRestart(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processRestart(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processRestart(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<void>;
                 }
@@ -286,11 +286,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("get", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processChapters(response_);
+            return this.transformResult(url_, response_, (r) => this.processChapters(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processChapters(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processChapters(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<Chapter[]>;
                 }
@@ -351,11 +351,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("delete", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processChecksDELETE(response_);
+            return this.transformResult(url_, response_, (r) => this.processChecksDELETE(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processChecksDELETE(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processChecksDELETE(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<void>;
                 }
@@ -407,11 +407,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("get", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processCommentsAll(response_);
+            return this.transformResult(url_, response_, (r) => this.processCommentsAll(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processCommentsAll(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processCommentsAll(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<Comment[]>;
                 }
@@ -478,11 +478,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("post", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processCommentsPOST(response_);
+            return this.transformResult(url_, response_, (r) => this.processCommentsPOST(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processCommentsPOST(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processCommentsPOST(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<string>;
                 }
@@ -541,11 +541,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("get", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processCommentsGET(response_);
+            return this.transformResult(url_, response_, (r) => this.processCommentsGET(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processCommentsGET(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processCommentsGET(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<Comment>;
                 }
@@ -608,11 +608,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("put", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processCommentsPUT(response_);
+            return this.transformResult(url_, response_, (r) => this.processCommentsPUT(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processCommentsPUT(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processCommentsPUT(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<string>;
                 }
@@ -670,11 +670,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("delete", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processCommentsDELETE(response_);
+            return this.transformResult(url_, response_, (r) => this.processCommentsDELETE(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processCommentsDELETE(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processCommentsDELETE(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<void>;
                 }
@@ -730,11 +730,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("post", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processRead(response_);
+            return this.transformResult(url_, response_, (r) => this.processRead(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processRead(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processRead(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<void>;
                 }
@@ -793,11 +793,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("put", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processPatch(response_);
+            return this.transformResult(url_, response_, (r) => this.processPatch(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processPatch(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processPatch(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<void>;
                 }
@@ -856,11 +856,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("post", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processFilesPOST(response_);
+            return this.transformResult(url_, response_, (r) => this.processFilesPOST(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processFilesPOST(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processFilesPOST(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<UploadFileResponseSchema>;
                 }
@@ -919,11 +919,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("get", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processFilesGET(response_);
+            return this.transformResult(url_, response_, (r) => this.processFilesGET(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processFilesGET(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processFilesGET(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<DownloadUrlResponse>;
                 }
@@ -972,11 +972,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("get", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processRepositoriesAll(response_);
+            return this.transformResult(url_, response_, (r) => this.processRepositoriesAll(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processRepositoriesAll(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processRepositoriesAll(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<Repository[]>;
                 }
@@ -1037,11 +1037,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("get", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processBranches(response_);
+            return this.transformResult(url_, response_, (r) => this.processBranches(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processBranches(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processBranches(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<string[]>;
                 }
@@ -1107,11 +1107,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("get", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processFilesAll(response_);
+            return this.transformResult(url_, response_, (r) => this.processFilesAll(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processFilesAll(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processFilesAll(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<RepositoryFile[]>;
                 }
@@ -1167,11 +1167,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("get", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processInstallation(response_);
+            return this.transformResult(url_, response_, (r) => this.processInstallation(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processInstallation(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processInstallation(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<boolean>;
                 }
@@ -1224,11 +1224,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("get", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processRepositories(response_);
+            return this.transformResult(url_, response_, (r) => this.processRepositories(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processRepositories(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processRepositories(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<RepositoryInfo>;
                 }
@@ -1280,11 +1280,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("get", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processInstructionsAll(response_);
+            return this.transformResult(url_, response_, (r) => this.processInstructionsAll(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processInstructionsAll(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processInstructionsAll(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<Instruction[]>;
                 }
@@ -1348,11 +1348,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("post", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processInstructionsPOST(response_);
+            return this.transformResult(url_, response_, (r) => this.processInstructionsPOST(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processInstructionsPOST(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processInstructionsPOST(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<string>;
                 }
@@ -1412,11 +1412,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("put", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processInstructionsPUT(response_);
+            return this.transformResult(url_, response_, (r) => this.processInstructionsPUT(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processInstructionsPUT(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processInstructionsPUT(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<void>;
                 }
@@ -1467,11 +1467,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("delete", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processInstructionsDELETE(response_);
+            return this.transformResult(url_, response_, (r) => this.processInstructionsDELETE(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processInstructionsDELETE(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processInstructionsDELETE(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<void>;
                 }
@@ -1520,11 +1520,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("get", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processTasksAll(response_);
+            return this.transformResult(url_, response_, (r) => this.processTasksAll(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processTasksAll(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processTasksAll(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<InstructionTask[]>;
                 }
@@ -1588,11 +1588,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("post", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processTasksPOST(response_);
+            return this.transformResult(url_, response_, (r) => this.processTasksPOST(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processTasksPOST(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processTasksPOST(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<string>;
                 }
@@ -1647,11 +1647,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("delete", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processTasksDELETE(response_);
+            return this.transformResult(url_, response_, (r) => this.processTasksDELETE(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processTasksDELETE(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processTasksDELETE(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<void>;
                 }
@@ -1700,11 +1700,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("get", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processIssuesAll(response_);
+            return this.transformResult(url_, response_, (r) => this.processIssuesAll(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processIssuesAll(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processIssuesAll(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<Issue[]>;
                 }
@@ -1766,11 +1766,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("get", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processIssues(response_);
+            return this.transformResult(url_, response_, (r) => this.processIssues(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processIssues(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processIssues(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<Issue>;
                 }
@@ -1819,11 +1819,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("get", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processModelsAll(response_);
+            return this.transformResult(url_, response_, (r) => this.processModelsAll(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processModelsAll(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processModelsAll(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<LlmModel[]>;
                 }
@@ -1884,11 +1884,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("post", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processModelsPOST(response_);
+            return this.transformResult(url_, response_, (r) => this.processModelsPOST(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processModelsPOST(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processModelsPOST(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<string>;
                 }
@@ -1941,11 +1941,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("get", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processModelsGET(response_);
+            return this.transformResult(url_, response_, (r) => this.processModelsGET(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processModelsGET(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processModelsGET(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<LlmModel>;
                 }
@@ -2001,11 +2001,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("put", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processModelsPUT(response_);
+            return this.transformResult(url_, response_, (r) => this.processModelsPUT(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processModelsPUT(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processModelsPUT(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<void>;
                 }
@@ -2053,11 +2053,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("delete", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processModelsDELETE(response_);
+            return this.transformResult(url_, response_, (r) => this.processModelsDELETE(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processModelsDELETE(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processModelsDELETE(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<void>;
                 }
@@ -2103,11 +2103,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("get", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processReportsAll(response_);
+            return this.transformResult(url_, response_, (r) => this.processReportsAll(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processReportsAll(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processReportsAll(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<Report[]>;
                 }
@@ -2168,11 +2168,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("post", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processReportsPOST(response_);
+            return this.transformResult(url_, response_, (r) => this.processReportsPOST(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processReportsPOST(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processReportsPOST(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<string>;
                 }
@@ -2225,11 +2225,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("get", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processReportsGET(response_);
+            return this.transformResult(url_, response_, (r) => this.processReportsGET(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processReportsGET(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processReportsGET(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<Report>;
                 }
@@ -2280,11 +2280,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("delete", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processReportsDELETE(response_);
+            return this.transformResult(url_, response_, (r) => this.processReportsDELETE(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processReportsDELETE(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processReportsDELETE(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<void>;
                 }
@@ -2337,11 +2337,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("put", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processReportsPUT(response_);
+            return this.transformResult(url_, response_, (r) => this.processReportsPUT(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processReportsPUT(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processReportsPUT(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<void>;
                 }
@@ -2392,11 +2392,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("post", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processTestSource(response_);
+            return this.transformResult(url_, response_, (r) => this.processTestSource(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processTestSource(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processTestSource(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<SourceInfo>;
                 }
@@ -2455,11 +2455,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("get", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processUsage(response_);
+            return this.transformResult(url_, response_, (r) => this.processUsage(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processUsage(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processUsage(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<LlmUsageGroup[]>;
                 }
@@ -2540,11 +2540,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("get", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processTimeUsage(response_);
+            return this.transformResult(url_, response_, (r) => this.processTimeUsage(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processTimeUsage(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processTimeUsage(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<LlmUsageInterval[]>;
                 }
@@ -2603,11 +2603,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("get", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processOffersAll(response_);
+            return this.transformResult(url_, response_, (r) => this.processOffersAll(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processOffersAll(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processOffersAll(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<SubscriptionOffer[]>;
                 }
@@ -2671,11 +2671,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("post", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processOffersPOST(response_);
+            return this.transformResult(url_, response_, (r) => this.processOffersPOST(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processOffersPOST(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processOffersPOST(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<string>;
                 }
@@ -2731,11 +2731,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("get", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processOffersGET(response_);
+            return this.transformResult(url_, response_, (r) => this.processOffersGET(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processOffersGET(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processOffersGET(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<SubscriptionOffer>;
                 }
@@ -2794,11 +2794,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("put", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processOffersPUT(response_);
+            return this.transformResult(url_, response_, (r) => this.processOffersPUT(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processOffersPUT(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processOffersPUT(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<void>;
                 }
@@ -2849,11 +2849,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("delete", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processOffersDELETE(response_);
+            return this.transformResult(url_, response_, (r) => this.processOffersDELETE(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processOffersDELETE(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processOffersDELETE(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<void>;
                 }
@@ -2899,11 +2899,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("get", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processPlansAll(response_);
+            return this.transformResult(url_, response_, (r) => this.processPlansAll(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processPlansAll(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processPlansAll(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<SubscriptionPlan[]>;
                 }
@@ -2964,11 +2964,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("post", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processPlansPOST(response_);
+            return this.transformResult(url_, response_, (r) => this.processPlansPOST(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processPlansPOST(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processPlansPOST(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<string>;
                 }
@@ -3021,11 +3021,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("get", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processPlansAll2(response_);
+            return this.transformResult(url_, response_, (r) => this.processPlansAll2(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processPlansAll2(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processPlansAll2(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<SubscriptionPlan[]>;
                 }
@@ -3088,11 +3088,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("put", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processPlansPUT(response_);
+            return this.transformResult(url_, response_, (r) => this.processPlansPUT(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processPlansPUT(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processPlansPUT(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<void>;
                 }
@@ -3140,11 +3140,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("delete", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processPlansDELETE(response_);
+            return this.transformResult(url_, response_, (r) => this.processPlansDELETE(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processPlansDELETE(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processPlansDELETE(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<void>;
                 }
@@ -3190,11 +3190,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("get", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processCurrent(response_);
+            return this.transformResult(url_, response_, (r) => this.processCurrent(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processCurrent(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processCurrent(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<UserSubscriptionsSchema>;
                 }
@@ -3248,11 +3248,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("post", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processSubscriptionsPOST(response_);
+            return this.transformResult(url_, response_, (r) => this.processSubscriptionsPOST(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processSubscriptionsPOST(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processSubscriptionsPOST(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<CreatedSubscription>;
                 }
@@ -3308,11 +3308,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("post", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processConfirm(response_);
+            return this.transformResult(url_, response_, (r) => this.processConfirm(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processConfirm(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processConfirm(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<void>;
                 }
@@ -3361,11 +3361,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("get", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processSubscriptionsGET(response_);
+            return this.transformResult(url_, response_, (r) => this.processSubscriptionsGET(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processSubscriptionsGET(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processSubscriptionsGET(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<UserSubscription>;
                 }
@@ -3422,11 +3422,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("post", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processPayment(response_);
+            return this.transformResult(url_, response_, (r) => this.processPayment(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processPayment(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processPayment(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<DownloadUrlResponse>;
                 }
@@ -3475,11 +3475,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("get", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.processCheckPayments(response_);
+            return this.transformResult(url_, response_, (r) => this.processCheckPayments(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processCheckPayments(response_ as any);
+                    return this.transformResult(url_, response_, (r) => this.processCheckPayments(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<UserSubscription>;
                 }
@@ -4199,7 +4199,6 @@ export class CreatedSubscription implements ICreatedSubscription {
     unusedTokensDiscount?: number;
     monthsDiscount?: number;
     nextSubscriptions?: UserSubscription[] | undefined;
-    errorText?: string | undefined;
 
     constructor(data?: ICreatedSubscription) {
         if (data) {
@@ -4220,7 +4219,6 @@ export class CreatedSubscription implements ICreatedSubscription {
                 for (let item of _data["nextSubscriptions"])
                     this.nextSubscriptions!.push(UserSubscription.fromJS(item));
             }
-            this.errorText = _data["errorText"];
         }
     }
 
@@ -4241,7 +4239,6 @@ export class CreatedSubscription implements ICreatedSubscription {
             for (let item of this.nextSubscriptions)
                 data["nextSubscriptions"].push(item.toJSON());
         }
-        data["errorText"] = this.errorText;
         return data;
     }
 }
@@ -4251,7 +4248,6 @@ export interface ICreatedSubscription {
     unusedTokensDiscount?: number;
     monthsDiscount?: number;
     nextSubscriptions?: UserSubscription[] | undefined;
-    errorText?: string | undefined;
 }
 
 export class DownloadUrlResponse implements IDownloadUrlResponse {
