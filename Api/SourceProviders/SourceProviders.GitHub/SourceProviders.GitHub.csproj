@@ -18,6 +18,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\Abstractions\Abstractions.csproj" />
+      <ProjectReference Include="..\..\Exceptions\Exceptions.csproj" />
       <ProjectReference Include="..\..\Models\Models.csproj" />
     </ItemGroup>
 

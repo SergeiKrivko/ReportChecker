@@ -1,6 +1,7 @@
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using ReportChecker.Abstractions;
+using ReportChecker.Exceptions;
 using ReportChecker.Models;
 using ReportChecker.Models.Sources;
 using IFormatProvider = ReportChecker.Abstractions.IFormatProvider;
@@ -27,9 +28,9 @@ public class LatexFormatProvider(IConfiguration configuration) : IFormatProvider
         context.FileName = fileName;
         await using (var entryStream = fileName == null
                          ? await context.Archive.ReadAsync() ??
-                           throw new FileNotFoundException("Entry file not found")
+                           throw new NotFoundException("Entry file not found")
                          : await context.Archive.ReadAsync(fileName) ??
-                           throw new FileNotFoundException($"File '{fileName}' not found"))
+                           throw new NotFoundException($"File '{fileName}' not found"))
         {
             text = await new StreamReader(entryStream).ReadToEndAsync();
         }
@@ -169,9 +170,9 @@ public class LatexFormatProvider(IConfiguration configuration) : IFormatProvider
     {
         string text;
         await using (var entryStream = fileName == null
-                         ? await archive.ReadAsync() ?? throw new FileNotFoundException("Entry file not found")
+                         ? await archive.ReadAsync() ?? throw new NotFoundException("Entry file not found")
                          : await archive.ReadAsync(fileName) ??
-                           throw new FileNotFoundException($"File '{fileName}' not found"))
+                           throw new NotFoundException($"File '{fileName}' not found"))
         {
             text = await new StreamReader(entryStream).ReadToEndAsync(ct);
         }

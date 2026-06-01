@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using ReportChecker.Abstractions;
+using ReportChecker.Exceptions;
 using ReportChecker.Models;
 
 namespace ReportChecker.Application.Services;
@@ -39,7 +40,7 @@ public class SubscriptionService(
             monthStart = subscription.StartsAt;
             var plan = await subscriptionPlanRepository.GetPlanByIdAsync(subscription.PlanId, ct);
             if (plan == null)
-                throw new Exception($"plan '{subscription.PlanId}' not found");
+                throw new NotFoundException($"Plan '{subscription.PlanId}' not found");
             maxTokens = plan.TokensLimit;
         }
 
@@ -100,16 +101,16 @@ public class SubscriptionService(
     {
         var offer = await subscriptionOfferRepository.GetOfferById(offerId, ct);
         if (offer == null)
-            return ErrorResult($"Offer {offerId} not found");
+            throw new NotFoundException($"Offer {offerId} not found");
         if (offer.DeletedAt != null)
-            return ErrorResult("Предложение удалено");
+            throw new SubscriptionException("Предложение удалено");
         if (offer.Months <= 0)
-            return ErrorResult("Количество месяцев должно быть натуральным числом");
+            throw new BadRequestException("Количество месяцев должно быть натуральным числом");
         var plan = await subscriptionPlanRepository.GetPlanByIdAsync(offer.PlanId, ct);
         if (plan == null)
-            return ErrorResult($"Plan {offer.PlanId} not found");
+            throw new NotFoundException($"Plan {offer.PlanId} not found");
         if (plan.DeletedAt != null)
-            return ErrorResult("Подписка удалена");
+            throw new NotFoundException("Подписка удалена");
 
         var now = DateTime.UtcNow;
         var defaultPricePerMonth = offer.Price / offer.Months;
@@ -119,7 +120,7 @@ public class SubscriptionService(
         if (activeSubscription == null)
         {
             if (futureSubscriptions.Any())
-                return ErrorResult("Обнаружены будущие подписки при отсутствии текущей. " +
+                throw new SubscriptionException("Обнаружены будущие подписки при отсутствии текущей. " +
                                    "Покупка подписки невозможна. Обратитесь в поддержку.");
             subscription = await userSubscriptionRepository.CreateSubscriptionAsync(plan.Id, userId,
                 defaultPricePerMonth, offer.Price, now, now.AddDays(offer.Months * DaysPerMonth), ct);
@@ -131,12 +132,12 @@ public class SubscriptionService(
 
         var activePlan = await subscriptionPlanRepository.GetPlanByIdAsync(activeSubscription.PlanId, ct);
         if (activePlan == null)
-            return ErrorResult("Active plan not found");
+            throw new NotFoundException("Active plan not found");
         if (plan.TokensLimit <= activePlan.TokensLimit)
         {
             if ((activeSubscription.EndsAt - now).TotalDays >= DaysPerMonth ||
                 futureSubscriptions.Any())
-                return ErrorResult("Невозможно купить новую подписку: осталось больше месяца.");
+                throw new SubscriptionException("Невозможно купить новую подписку: осталось больше месяца.");
             subscription = await userSubscriptionRepository.CreateSubscriptionAsync(plan.Id, userId,
                 defaultPricePerMonth, offer.Price, activeSubscription.EndsAt,
                 activeSubscription.EndsAt.AddDays(offer.Months * DaysPerMonth), ct);
@@ -161,9 +162,9 @@ public class SubscriptionService(
         {
             var futurePlan = await subscriptionPlanRepository.GetPlanByIdAsync(futureSubscription.PlanId, ct);
             if (futurePlan == null)
-                return ErrorResult("Future plan not found");
+                throw new NotFoundException("Future plan not found");
             if (futurePlan.TokensLimit > plan.TokensLimit)
-                return ErrorResult("Апгрейд невозможен. В будущем есть более дорогие подписки.");
+                throw new SubscriptionException("Апгрейд невозможен. В будущем есть более дорогие подписки.");
             var monthsRemaining = futureSubscription.StartsAt > now
                 ? (int)((futureSubscription.EndsAt - futureSubscription.StartsAt).TotalDays / DaysPerMonth)
                 : (int)((futureSubscription.EndsAt - now).TotalDays / DaysPerMonth);
@@ -203,14 +204,6 @@ public class SubscriptionService(
             MonthsDiscount = monthsDiscount,
             UnusedTokensDiscount = tokensDiscount,
             NextSubscriptions = nextSubscriptions,
-        };
-    }
-
-    private static CreatedSubscription ErrorResult(string errorMessage)
-    {
-        return new CreatedSubscription
-        {
-            ErrorText = errorMessage,
         };
     }
 

@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ReportChecker.Abstractions;
 using ReportChecker.Api.Extensions;
-using ReportChecker.Api.Schemas;
+using ReportChecker.Exceptions;
 using ReportChecker.Models;
 
 namespace ReportChecker.Api.Controllers;
@@ -20,10 +20,8 @@ public class IssuesController(
     {
         var userId = User.UserId;
         var report = await reportRepository.GetReportByIdAsync(reportId);
-        if (report == null)
-            return NotFound();
-        if (report.OwnerId != userId)
-            return Unauthorized();
+        if (report == null || report.OwnerId != userId)
+            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
         var result = await issueRepository.GetAllIssuesOfReportAsync(reportId, userId);
         return Ok(result);
     }
@@ -34,18 +32,16 @@ public class IssuesController(
     {
         var userId = User.UserId;
         var report = await reportRepository.GetReportByIdAsync(reportId);
-        if (report == null)
-            return NotFound();
-        if (report.OwnerId != userId)
-            return Unauthorized();
+        if (report == null || report.OwnerId != userId)
+            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
 
         var issue = await issueRepository.GetIssueByIdAsync(issueId, userId);
         if (issue == null)
-            return NotFound();
+            throw new NotFoundException($"Ошибка '{issueId}' не найдена");
 
         var check = await checkRepository.GetCheckByIdAsync(issue.CheckId);
-        if (issue.CheckId != check?.Id)
-            return NotFound();
+        if (check?.ReportId != report.Id)
+            throw new NotFoundException($"Ошибка '{issueId}' не найдена");
 
         return Ok(issue);
     }

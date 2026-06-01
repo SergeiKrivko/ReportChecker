@@ -1,5 +1,6 @@
 ﻿using System.IO.Compression;
 using ReportChecker.Abstractions;
+using ReportChecker.Exceptions;
 using ReportChecker.Models;
 using ReportChecker.Models.Sources;
 
@@ -39,7 +40,7 @@ public class ZipFileArchive(
         var zip = new ZipArchive(memoryStream, ZipArchiveMode.Update);
         var entry = zip.GetEntry(name);
         if (entry == null)
-            throw new Exception("No entry file");
+            throw new NotFoundException("No entry file");
         await using var entryStream = await entry.OpenAsync(ct);
         await content.CopyToAsync(entryStream, ct);
         await zip.DisposeAsync();
@@ -63,7 +64,7 @@ public class ZipFileArchive(
     public async Task<CheckSourceUnion?> WriteAsync(Stream content, CancellationToken ct)
     {
         if (entryFile == null)
-            throw new Exception("No entry file");
+            throw new NotFoundException("No entry file");
         return await WriteAsync(entryFile, content, ct);
     }
 }

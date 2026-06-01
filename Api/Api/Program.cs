@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using Octokit.Webhooks;
 using Octokit.Webhooks.AspNetCore;
 using ReportChecker.Abstractions;
+using ReportChecker.Api.BackgroundServices;
 using ReportChecker.Application.Services;
 using ReportChecker.DataAccess;
 using ReportChecker.DataAccess.Repositories;
@@ -95,6 +96,7 @@ builder.Services.AddScoped<IPaymentClient, YooMoneyService>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options => { options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); });
+builder.Services.AddExceptionHandler<ExceptionsHandler>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
@@ -142,6 +144,8 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapGitHubWebhooks("api/v1/github/webhooks");
+app.UseExceptionHandler("/Error");
+app.UseHsts();
 
 await using (var scope = app.Services.CreateAsyncScope())
 {

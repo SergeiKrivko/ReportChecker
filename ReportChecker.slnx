@@ -3,6 +3,7 @@
     <Project Path="Api/AiAgent/AiAgent.csproj" />
     <Project Path="Api/Application/Application.csproj" />
     <Project Path="Api/DataAccess/DataAccess.csproj" />
+    <Project Path="Api/Exceptions/Exceptions.csproj" />
     <Project Path="Api/Models/Models.csproj" />
     <File Path="Api/.dockerignore" />
     <File Path="Api/Dockerfile" />

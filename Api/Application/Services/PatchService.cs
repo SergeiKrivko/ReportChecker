@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ReportChecker.Abstractions;
+using ReportChecker.Exceptions;
 using ReportChecker.Models;
 
 
@@ -46,29 +47,29 @@ public class PatchService(
         {
             var patch = await patchRepository.GetPatchById(patchId, ct);
             if (patch is null)
-                throw new Exception($"Patch {patchId} not found");
+                throw new NotFoundException($"Patch {patchId} not found");
             var comment = await commentRepository.GetCommentByIdAsync(patch.CommentId);
             if (comment is null)
-                throw new Exception($"Comment {patch.CommentId} not found");
+                throw new NotFoundException($"Comment {patch.CommentId} not found");
             var issue = await issueRepository.GetIssueByIdAsync(comment.IssueId);
             if (issue is null)
-                throw new Exception($"Issue {comment.IssueId} not found");
+                throw new NotFoundException($"Issue {comment.IssueId} not found");
             var check = await checkRepository.GetCheckByIdAsync(issue.CheckId, ct);
             if (check is null)
-                throw new Exception($"Check {issue.CheckId} not found");
+                throw new NotFoundException($"Check {issue.CheckId} not found");
             var report = await reportRepository.GetReportByIdAsync(check.ReportId);
             if (report is null)
-                throw new Exception($"Report {check.ReportId} not found");
+                throw new NotFoundException($"Report {check.ReportId} not found");
             var latestCheck = await checkRepository.GetLatestCheckOfReportAsync(check.ReportId, ct: ct);
             if (latestCheck is null)
-                throw new Exception($"Latest check of report {check.ReportId} not found");
+                throw new NotFoundException($"Latest check of report {check.ReportId} not found");
 
             var sourceProvider = providerService.GetSourceProvider(report.SourceProvider);
             var source = await sourceProvider.OpenAsync(report.Id, latestCheck.Id);
             if (source.WriteMode == WriteMode.External)
                 return;
             if (source.WriteMode == WriteMode.NotSupported)
-                throw new NotSupportedException("This source provider don't support write");
+                throw new NotSupportedBySourceProviderException(sourceProvider);
 
             var formatProvider = providerService.GetFormatProvider(report.Format);
             var newSource = await formatProvider.ApplyPatchAsync(source, issue.Chapter, patch.Lines, ct);

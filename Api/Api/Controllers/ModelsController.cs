@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ReportChecker.Abstractions;
 using ReportChecker.Api.Schemas;
+using ReportChecker.Exceptions;
 using ReportChecker.Models;
 
 namespace ReportChecker.Api.Controllers;
@@ -23,9 +24,8 @@ public class ModelsController(ILlmModelRepository llmModelRepository) : Controll
     public async Task<ActionResult<LlmModel>> GetModelByIdAsync(Guid modelId,
         CancellationToken ct = default)
     {
-        var model = await llmModelRepository.GetModelByIdAsync(modelId, ct);
-        if (model == null)
-            return NotFound();
+        var model = await llmModelRepository.GetModelByIdAsync(modelId, ct) ??
+                    throw new NotFoundException($"Модель '{modelId}' не найдена");
         return Ok(model);
     }
 
@@ -46,7 +46,7 @@ public class ModelsController(ILlmModelRepository llmModelRepository) : Controll
         var res = await llmModelRepository.UpdateModelAsync(modelId, schema.DisplayName, schema.ModelKey,
             schema.InputCoefficient, schema.OutputCoefficient, ct);
         if (!res)
-            return NotFound();
+            throw new NotFoundException($"Модель '{modelId}' не найдена");
         return Ok();
     }
 
@@ -57,7 +57,7 @@ public class ModelsController(ILlmModelRepository llmModelRepository) : Controll
     {
         var res = await llmModelRepository.DeleteModelAsync(modelId, ct);
         if (!res)
-            return NotFound();
+            throw new NotFoundException($"Модель '{modelId}' не найдена");
         return Ok();
     }
 }

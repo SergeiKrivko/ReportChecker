@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ReportChecker.Abstractions;
+using ReportChecker.Exceptions;
 using ReportChecker.Models;
 
 namespace ReportChecker.Application.Services;
@@ -27,7 +28,7 @@ public class InstructionTaskService(
     {
         var instruction = await instructionRepository.GetInstructionByIdAsync(instructionId, ct);
         if (instruction == null)
-            throw new NullReferenceException("Instruction not found");
+            throw new NotFoundException("Instruction not found");
         return await CreateInstructionTaskAsync(reportId, instruction.Content, mode, ct);
     }
 
@@ -38,11 +39,11 @@ public class InstructionTaskService(
 
         var report = await reportRepository.GetReportByIdAsync(reportId);
         if (report == null)
-            throw new ArgumentException($"Report with id {reportId} does not exist");
+            throw new NotFoundException($"Report with id {reportId} does not exist");
 
         var check = await checkRepository.GetLatestCheckOfReportAsync(reportId, ct: ct);
         if (check == null)
-            throw new ArgumentException($"Report {reportId} have no checks");
+            throw new NotFoundException($"Report {reportId} have no checks");
 
         var sourceProvider = providerService.GetSourceProvider(report.SourceProvider);
         var sourceStream = await sourceProvider.OpenAsync(reportId, check.Id);

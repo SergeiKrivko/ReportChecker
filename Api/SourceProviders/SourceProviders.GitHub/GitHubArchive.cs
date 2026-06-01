@@ -1,6 +1,4 @@
-﻿using System.Security.Cryptography;
-using System.Text;
-using Octokit;
+﻿using Octokit;
 using ReportChecker.Abstractions;
 using ReportChecker.Models;
 using ReportChecker.Models.Sources;
@@ -28,7 +26,7 @@ public class GitHubArchive(GitHubClient client, long repositoryId, string commit
     {
         if (rootName == null)
             return null;
-        return await _OpenAsync(rootName) ?? throw new Exception($"Root file ('{rootName}') not found");
+        return await _OpenAsync(rootName) ?? throw new Exceptions.NotFoundException($"Root file ('{rootName}') not found");
     }
 
     private async Task<Stream?> _OpenAsync(string name)
@@ -59,7 +57,7 @@ public class GitHubArchive(GitHubClient client, long repositoryId, string commit
     public async Task<CheckSourceUnion?> WriteAsync(Stream content, CancellationToken ct)
     {
         if (rootName == null)
-            throw new Exception("No root file");
+            throw new Exceptions.NotFoundException("No root file");
         await _WriteAsync(rootName, content, ct);
 
         return null;
@@ -69,9 +67,9 @@ public class GitHubArchive(GitHubClient client, long repositoryId, string commit
     {
         var contents = await client.Repository.Content.GetAllContentsByRef(repositoryId, name, commitRef);
         if (contents == null)
-            throw new Exception("File not found");
+            throw new Exceptions.NotFoundException("File not found");
         if (contents.Count != 1)
-            throw new Exception("Not a file");
+            throw new Exceptions.NotFoundException("Not a file");
         return contents[0].Sha;
     }
 

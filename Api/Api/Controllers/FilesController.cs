@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ReportChecker.Abstractions;
 using ReportChecker.Api.Extensions;
 using ReportChecker.Api.Schemas;
+using ReportChecker.Exceptions;
 using ReportChecker.Models.Sources;
 
 namespace ReportChecker.Api.Controllers;
@@ -41,11 +42,11 @@ public class FilesController(
                 });
                 break;
             default:
-                return BadRequest("Unknown bucket");
+                throw new BadRequestException("Unknown bucket");
         }
 
         if (!TryGetS3Buket(bucket, out var s3Bucket))
-            return BadRequest("Unknown bucket");
+            throw new BadRequestException("Unknown bucket");
         await fileRepository.UploadFileAsync(s3Bucket, id, file.FileName,
             file.OpenReadStream());
         return Ok(new UploadFileResponseSchema
@@ -62,15 +63,15 @@ public class FilesController(
     {
         var report = await reportRepository.GetReportByIdAsync(reportId);
         if (User.UserId != report?.OwnerId)
-            return Unauthorized();
+            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
         var check = await checkRepository.GetLatestCheckOfReportAsync(reportId);
         if (check == null)
-            return NotFound();
+            throw new NotFoundException($"Отчет '{reportId}' не содержит ни одной проверки");
         var source = await checkSourceRepository.GetByCheckIdAsync(check.Id);
         if (source == null)
-            return NotFound();
+            throw new NotFoundException($"Не удалось получить информацию об источнике файла");
         if (!TryGetS3Buket(bucket, out var s3Bucket))
-            return BadRequest("Unknown bucket");
+            throw new BadRequestException("Unknown bucket");
         var fileUrl = source.Data.FileName == null
             ? await fileRepository.GetDownloadUrlAsync(s3Bucket, source.Id,
                 TimeSpan.FromHours(1))

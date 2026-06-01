@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ReportChecker.Abstractions;
 using ReportChecker.Api.Extensions;
 using ReportChecker.Api.Schemas;
+using ReportChecker.Exceptions;
 using ReportChecker.Models;
 
 namespace ReportChecker.Api.Controllers;
@@ -23,10 +24,8 @@ public class InstructionController(
     {
         var userId = User.UserId;
         var report = await reportRepository.GetReportByIdAsync(reportId);
-        if (report == null)
-            return NotFound();
-        if (report.OwnerId != userId)
-            return Unauthorized();
+        if (report == null || report.OwnerId != userId)
+            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
         var instructions = await instructionRepository.GetInstructionsAsync(reportId, ct);
         return Ok(instructions);
     }
@@ -38,10 +37,8 @@ public class InstructionController(
     {
         var userId = User.UserId;
         var report = await reportRepository.GetReportByIdAsync(reportId);
-        if (report == null)
-            return NotFound();
-        if (report.OwnerId != userId)
-            return Unauthorized();
+        if (report == null || report.OwnerId != userId)
+            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
         var id = await instructionRepository.CreateInstructionAsync(reportId, instruction, userId, null, ct);
         return Ok(id);
     }
@@ -53,10 +50,8 @@ public class InstructionController(
     {
         var userId = User.UserId;
         var report = await reportRepository.GetReportByIdAsync(reportId);
-        if (report == null)
-            return NotFound();
-        if (report.OwnerId != userId)
-            return Unauthorized();
+        if (report == null || report.OwnerId != userId)
+            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
         var id = await instructionRepository.UpdateInstructionAsync(instructionId, content, userId, ct);
         return Ok(id);
     }
@@ -68,10 +63,8 @@ public class InstructionController(
     {
         var userId = User.UserId;
         var report = await reportRepository.GetReportByIdAsync(reportId);
-        if (report == null)
-            return NotFound();
-        if (report.OwnerId != userId)
-            return Unauthorized();
+        if (report == null || report.OwnerId != userId)
+            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
         var id = await instructionRepository.DeleteInstructionAsync(instructionId, ct);
         return Ok(id);
     }
@@ -81,10 +74,8 @@ public class InstructionController(
     {
         var userId = User.UserId;
         var report = await reportRepository.GetReportByIdAsync(reportId);
-        if (report == null)
-            return NotFound();
-        if (report.OwnerId != userId)
-            return Unauthorized();
+        if (report == null || report.OwnerId != userId)
+            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
         var tasks = await instructionTaskRepository.GetAllForReportAsync(reportId, ProgressStatus.InProgress);
         return Ok(tasks);
     }
@@ -108,7 +99,7 @@ public class InstructionController(
             return Ok(id);
         }
 
-        return BadRequest("Both InstructionId and Instruction fields are empty");
+        throw new BadRequestException("Both InstructionId and Instruction fields are empty");
     }
 
     [HttpDelete("tasks/{taskId:guid}")]
@@ -116,10 +107,10 @@ public class InstructionController(
     {
         var report = await reportRepository.GetReportByIdAsync(reportId);
         if (report == null || report.OwnerId != User.UserId)
-            return NotFound("Report not found");
+            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
         var task = await instructionTaskRepository.GetByIdAsync(taskId, ct);
         if (task == null || task.ReportId != reportId)
-            return NotFound("Instruction task not found");
+            throw new NotFoundException($"Задача '{taskId}' не найдена");
 
         await instructionTaskService.CancelInstructionTaskAsync(taskId, ct);
         return Ok();

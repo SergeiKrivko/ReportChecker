@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ReportChecker.Abstractions;
 using ReportChecker.Api.Extensions;
 using ReportChecker.Api.Schemas;
+using ReportChecker.Exceptions;
 using ReportChecker.Models;
 
 namespace ReportChecker.Api.Controllers;
@@ -25,18 +26,16 @@ public class CommentsController(
         var userId = User.UserId;
 
         var report = await reportRepository.GetReportByIdAsync(reportId);
-        if (report == null)
-            return NotFound();
-        if (report.OwnerId != userId)
-            return Unauthorized();
+        if (report == null || report.OwnerId != userId)
+            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
 
         var issue = await issueRepository.GetIssueByIdAsync(issueId);
         if (issue == null)
-            return NotFound();
+            throw new NotFoundException($"Ошибка '{issueId}' не найдена");
 
         var check = await checkRepository.GetCheckByIdAsync(issue.CheckId);
         if (issue.CheckId != check?.Id)
-            return NotFound();
+            throw new NotFoundException($"Ошибка '{issueId}' не найдена");
 
         var comments = await commentRepository.GetAllCommentsOfIssueAsync(issueId, userId);
         return Ok(comments);
@@ -49,22 +48,19 @@ public class CommentsController(
         var userId = User.UserId;
 
         var report = await reportRepository.GetReportByIdAsync(reportId);
-        if (report == null)
-            return NotFound();
-        if (report.OwnerId != userId)
-            return Unauthorized();
+        if (report == null || report.OwnerId != userId)
+            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
 
         var issue = await issueRepository.GetIssueByIdAsync(issueId);
         if (issue == null)
-            return NotFound();
+            throw new NotFoundException($"Ошибка '{issueId}' не найдена");
 
         var check = await checkRepository.GetCheckByIdAsync(issue.CheckId);
         if (issue.CheckId != check?.Id)
-            return NotFound();
+            throw new NotFoundException($"Ошибка '{issueId}' не найдена");
 
-        var comment = await commentRepository.GetCommentByIdAsync(commentId, userId);
-        if (comment == null)
-            return NotFound();
+        var comment = await commentRepository.GetCommentByIdAsync(commentId, userId) ??
+                      throw new NotFoundException($"Комментарий '{commentId}' не найден");
         return Ok(comment);
     }
 
@@ -76,14 +72,12 @@ public class CommentsController(
         var userId = User.UserId;
 
         var report = await reportRepository.GetReportByIdAsync(reportId);
-        if (report == null)
-            return NotFound();
-        if (report.OwnerId != userId)
-            return Unauthorized();
+        if (report == null || report.OwnerId != userId)
+            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
 
         var issue = await issueRepository.GetIssueByIdAsync(issueId);
         if (issue == null)
-            return NotFound();
+            throw new NotFoundException($"Ошибка '{issueId}' не найдена");
 
         var id = await commentRepository.CreateCommentAsync(issueId, userId, schema.Content, schema.Status);
         if (!string.IsNullOrWhiteSpace(schema.Content))
@@ -100,10 +94,8 @@ public class CommentsController(
         var userId = User.UserId;
 
         var comment = await commentRepository.GetCommentByIdAsync(commentId);
-        if (comment == null)
-            return NotFound();
-        if (comment.UserId != userId)
-            return Unauthorized();
+        if (comment == null || comment.UserId != userId)
+            throw new NotFoundException($"Комментарий '{commentId}' не найден либо написан другим пользователем");
 
         await commentRepository.UpdateCommentAsync(commentId, schema.Content);
         return Ok(commentId);
@@ -115,10 +107,8 @@ public class CommentsController(
         var userId = User.UserId;
 
         var comment = await commentRepository.GetCommentByIdAsync(commentId);
-        if (comment == null)
-            return NotFound();
-        if (comment.UserId != userId)
-            return Unauthorized();
+        if (comment == null || comment.UserId != userId)
+            throw new NotFoundException($"Комментарий '{commentId}' не найден либо написан другим пользователем");
 
         await commentRepository.DeleteCommentAsync(commentId);
         return Ok();
@@ -140,7 +130,8 @@ public class CommentsController(
         }
         else
         {
-            return BadRequest("Not implemented");
+            throw new BadRequestException("На данный момент нельзя отметить комментарий как непрочитанный. " +
+                                          "Поле `IsRead` должно быть `true`");
         }
 
         return Ok();
@@ -154,22 +145,18 @@ public class CommentsController(
         var userId = User.UserId;
 
         var report = await reportRepository.GetReportByIdAsync(reportId);
-        if (report == null)
-            return NotFound();
-        if (report.OwnerId != userId)
-            return Unauthorized();
+        if (report == null || report.OwnerId != userId)
+            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
 
         var issue = await issueRepository.GetIssueByIdAsync(issueId);
         if (issue == null)
-            return NotFound();
+            throw new NotFoundException($"Ошибка '{issueId}' не найдена");
 
         var comment = await commentRepository.GetCommentByIdAsync(commentId);
-        if (comment == null)
-            return NotFound();
-        if (comment.IssueId != issueId)
-            return Unauthorized();
+        if (comment == null || comment.UserId != userId)
+            throw new NotFoundException($"Комментарий '{commentId}' не найден либо написан другим пользователем");
         if (comment.Patch == null)
-            return NotFound();
+            throw new NotFoundException($"Комментарий '{commentId}' не содержит предложений по исправлению");
 
         await patchService.SetPatchStatus(comment.Patch.Id, schema.Status, ct);
         return Ok();

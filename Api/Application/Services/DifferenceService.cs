@@ -2,6 +2,7 @@
 using DiffPlex.DiffBuilder;
 using DiffPlex.DiffBuilder.Model;
 using ReportChecker.Abstractions;
+using ReportChecker.Exceptions;
 using ReportChecker.Models;
 
 namespace ReportChecker.Application.Services;
@@ -24,7 +25,7 @@ public class DifferenceService : IDifferenceService
     public ChapterDifference GetDifference(Chapter newChapter, Chapter? oldChapter)
     {
         if (oldChapter != null && oldChapter.Name != newChapter.Name)
-            throw new InvalidOperationException("Different chapters are not supported.");
+            throw new InternalErrorException("Different chapters are not supported.");
         return new ChapterDifference
         {
             Name = newChapter.Name,

@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Octokit;
 using ReportChecker.Abstractions;
+using ReportChecker.Exceptions;
 using ReportChecker.Models;
 using ReportChecker.Models.Sources;
+using NotFoundException = ReportChecker.Exceptions.NotFoundException;
 
 namespace ReportChecker.SourceProviders.GitHub;
 
@@ -18,9 +20,9 @@ public class GitHubSourceProvider(
     public async Task<IFileArchive> OpenAsync(Guid reportId, Guid checkId)
     {
         var reportSource = await reportSourceRepository.GetByReportIdAsync(reportId) ??
-                           throw new Exception("Report source not found");
+                           throw new NotFoundException("Report source not found");
         var checkSource = await checkSourceRepository.GetByCheckIdAsync(checkId) ??
-                          throw new Exception("Check source not found");
+                          throw new NotFoundException("Check source not found");
         return await OpenAsync(reportSource.Data, checkSource.Data);
     }
 
@@ -34,7 +36,7 @@ public class GitHubSourceProvider(
     public async Task<IFileArchive> OpenAsync(ReportSourceUnion source)
     {
         if (source.GitHub == null)
-            throw new Exception("GitHub source not set");
+            throw new BadRequestException("GitHub source not set");
         var client = await githubService.CreateRepositoryClient(source.GitHub.RepositoryId);
         var branch = await client.Repository.Branch.Get(source.GitHub.RepositoryId, source.GitHub.Branch);
         return new GitHubArchive(client, source.GitHub.RepositoryId, branch.Commit.Sha,
@@ -44,7 +46,7 @@ public class GitHubSourceProvider(
     public async Task<SourceSchema> GetFirstSourceAsync(Guid reportId)
     {
         var source = await reportSourceRepository.GetByReportIdAsync(reportId) ??
-                     throw new Exception("Report source not found");
+                     throw new NotFoundException("Report source not found");
         var client = await githubService.CreateRepositoryClient(source.Data.RepositoryId);
         var branch = await client.Repository.Branch.Get(source.Data.RepositoryId, source.Data.Branch);
 
@@ -59,7 +61,7 @@ public class GitHubSourceProvider(
     public async Task<Guid> SaveAsync(Guid? checkId, CheckSourceUnion source)
     {
         if (source.GitHub == null)
-            throw new Exception("GitHub source not set");
+            throw new BadRequestException("GitHub source not set");
         return await checkSourceRepository.CreateAsync(source.Id ?? Guid.NewGuid(), checkId, source.GitHub);
     }
 
@@ -71,7 +73,7 @@ public class GitHubSourceProvider(
     public async Task<Guid> SaveAsync(Guid reportId, ReportSourceUnion source)
     {
         if (source.GitHub == null)
-            throw new Exception("GitHub source not set");
+            throw new BadRequestException("GitHub source not set");
         return await reportSourceRepository.CreateAsync(reportId, source.GitHub);
     }
 
@@ -80,9 +82,9 @@ public class GitHubSourceProvider(
     public async Task WriteCheckStatusAsync(Report report, Check check, bool isCompleted)
     {
         var reportSource = await reportSourceRepository.GetByReportIdAsync(report.Id) ??
-                           throw new Exception("Report source not found");
+                           throw new NotFoundException("Report source not found");
         var checkSource = await checkSourceRepository.GetByCheckIdAsync(check.Id) ??
-                          throw new Exception("Check source not found");
+                          throw new NotFoundException("Check source not found");
         var client = await githubService.CreateRepositoryClient(reportSource.Data.RepositoryId);
 
         var allSuites =

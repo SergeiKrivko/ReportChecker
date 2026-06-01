@@ -35,8 +35,4 @@
         <ProjectReference Include="..\YooMoney\YooMoney.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-        <Folder Include="BackgroundServices\"/>
-    </ItemGroup>
-
 </Project>

@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Octokit;
 using ReportChecker.Abstractions;
+using ReportChecker.Exceptions;
 using ReportChecker.SourceProviders.GitHub.Models;
 using StackExchange.Redis;
 
@@ -24,7 +25,8 @@ public class GithubService(
         var user = await userRepository.GetUserByIdAsync(userId);
         var account = user?.Accounts.FirstOrDefault(e => e.Provider == "github");
         if (account == null)
-            throw new Exception("User credentials not found");
+            throw new UnauthorizedException("Не удалось найти данные аккаунта GitHub. " +
+                                            "Проверьте, что вы авторизованы через GitHub");
 
         var installation = await _client.GitHubApps.GetUserInstallationForCurrent(account.Login ?? account.Name);
         var token = await GetInstallationTokenAsync(installation.Id);

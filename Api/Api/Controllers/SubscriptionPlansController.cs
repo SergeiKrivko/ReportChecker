@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ReportChecker.Abstractions;
 using ReportChecker.Api.Schemas;
+using ReportChecker.Exceptions;
 using ReportChecker.Models;
 
 namespace ReportChecker.Api.Controllers;
@@ -36,7 +37,7 @@ public class SubscriptionPlansController(
     {
         var plan = await subscriptionPlanRepository.GetPlanByIdAsync(planId, ct);
         if (plan == null)
-            return NotFound();
+            throw new NotFoundException("План не найден");
         return Ok(plan);
     }
 
@@ -57,7 +58,7 @@ public class SubscriptionPlansController(
         var res = await subscriptionPlanRepository.UpdatePlanAsync(planId, schema.Name, schema.Description,
             schema.TokensLimit, schema.ReportsLimit, schema.IsHidden, ct);
         if (!res)
-            return NotFound();
+            throw new NotFoundException("План не найден");
         return Ok();
     }
 
@@ -67,7 +68,7 @@ public class SubscriptionPlansController(
     {
         var res = await subscriptionPlanRepository.DeletePlanAsync(planId, ct);
         if (!res)
-            return NotFound();
+            throw new NotFoundException("План не найден");
         return Ok();
     }
 }

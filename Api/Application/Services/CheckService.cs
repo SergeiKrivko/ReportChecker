@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ReportChecker.Abstractions;
 using ReportChecker.Models;
+using ReportChecker.Exceptions;
 using ReportChecker.Models.Sources;
 using StackExchange.Redis;
 
@@ -27,11 +28,11 @@ public class CheckService(
         var checkId = await checkRepository.CreateCheckAsync(reportId, userId, name);
         var report = await reportRepository.GetReportByIdAsync(reportId);
         if (report == null)
-            throw new ArgumentException($"Report with id {reportId} does not exist");
+            throw new NotFoundException($"Report with id {reportId} does not exist");
 
         var check = await checkRepository.GetCheckByIdAsync(checkId);
         if (check == null)
-            throw new Exception("Created check not found");
+            throw new NotFoundException("Created check not found");
 
         var sourceProvider = providerService.GetSourceProvider(report.SourceProvider);
 
@@ -67,13 +68,13 @@ public class CheckService(
     {
         var report = await reportRepository.GetReportByIdAsync(reportId);
         if (report == null)
-            throw new Exception("Report not found");
+            throw new NotFoundException("Report not found");
 
         var check = await checkRepository.GetLatestCheckOfReportAsync(reportId, true, ct);
         if (check == null)
-            throw new Exception("Latest check not found");
+            throw new NotFoundException("Latest check not found");
         if (check.Status != ProgressStatus.Failed && check.Status != ProgressStatus.Cancelled)
-            throw new Exception($"Check with status '{check.Status}' can not be restarted");
+            throw new NotFoundException($"Check with status '{check.Status}' can not be restarted");
 
         var context = await GetContextAsync(report, check, false, ct);
         _RunCheck(context);
@@ -103,16 +104,16 @@ public class CheckService(
     {
         var report = await reportRepository.GetReportByIdAsync(reportId);
         if (report == null)
-            throw new ArgumentException($"Report with id {reportId} does not exist");
+            throw new NotFoundException($"Report with id {reportId} does not exist");
 
         var check = await checkRepository.GetLatestCheckOfReportAsync(reportId);
         if (check == null)
-            throw new ArgumentException($"Latest check of report {reportId} not found");
+            throw new NotFoundException($"Latest check of report {reportId} not found");
 
         var context = await GetContextAsync(report, check);
         var issue = await issueRepository.GetIssueByIdAsync(issueId);
         if (issue == null)
-            throw new ArgumentException($"Issue {issueId} not found");
+            throw new NotFoundException($"Issue {issueId} not found");
 
         RunComment(context, issue);
     }

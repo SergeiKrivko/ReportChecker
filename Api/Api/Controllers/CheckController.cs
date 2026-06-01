@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ReportChecker.Abstractions;
 using ReportChecker.Api.Extensions;
 using ReportChecker.Api.Schemas;
+using ReportChecker.Exceptions;
 using ReportChecker.Models;
 
 namespace ReportChecker.Api.Controllers;
@@ -22,10 +23,8 @@ public class CheckController(
     {
         var userId = User.UserId;
         var report = await reportRepository.GetReportByIdAsync(reportId);
-        if (report == null)
-            return NotFound();
-        if (report.OwnerId != userId)
-            return Unauthorized();
+        if (report == null || report.OwnerId != userId)
+            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
         var checks = await checkRepository.GetAllChecksOfReportAsync(reportId);
         return Ok(checks);
     }
@@ -36,11 +35,12 @@ public class CheckController(
     {
         var userId = User.UserId;
         var report = await reportRepository.GetReportByIdAsync(reportId);
-        if (report == null)
-            return NotFound();
-        if (report.OwnerId != userId)
-            return Unauthorized();
-        var check = await checkRepository.GetLatestCheckOfReportAsync(reportId, true, ct);
+        if (report == null || report.OwnerId != userId)
+            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
+
+        var check = await checkRepository.GetLatestCheckOfReportAsync(reportId, true, ct) ??
+                    throw new NotFoundException("Не найдено ни одной проверки для данного отчета");
+
         return Ok(check);
     }
 
@@ -58,13 +58,10 @@ public class CheckController(
     {
         var userId = User.UserId;
         var report = await reportRepository.GetReportByIdAsync(reportId);
-        if (report == null)
-            return NotFound();
-        if (report.OwnerId != userId)
-            return Unauthorized();
-        var check = await checkRepository.GetLatestCheckOfReportAsync(reportId);
-        if (check == null)
-            return NotFound();
+        if (report == null || report.OwnerId != userId)
+            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
+        var check = await checkRepository.GetLatestCheckOfReportAsync(reportId) ??
+                    throw new NotFoundException("Не найдено ни одной проверки для данного отчета");
         var chapters = await checkService.GetChaptersAsync(report, check);
         return Ok(chapters);
     }
@@ -76,10 +73,8 @@ public class CheckController(
         var userId = User.UserId;
 
         var report = await reportRepository.GetReportByIdAsync(reportId);
-        if (report == null)
-            return NotFound();
-        if (report.OwnerId != userId)
-            return Unauthorized();
+        if (report == null || report.OwnerId != userId)
+            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
 
         var checkId = schema?.Source == null
             ? await reportService.CreateCheckAsync(report)
@@ -94,7 +89,7 @@ public class CheckController(
     {
         var res = await taskCancellationService.CancelCheckAsync(checkId);
         if (!res)
-            return NotFound();
+            throw new NotFoundException("Проверка не найдена");
         await checkRepository.SetCheckStatusAsync(checkId, ProgressStatus.Cancelled, ct);
         return Ok();
     }

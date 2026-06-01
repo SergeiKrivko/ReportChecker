@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using ReportChecker.Abstractions;
 using ReportChecker.Api.Extensions;
 using ReportChecker.Api.Schemas;
+using ReportChecker.Exceptions;
 using ReportChecker.Models;
 
 namespace ReportChecker.Api.Controllers;
@@ -30,10 +31,8 @@ public class ReportController(
     {
         var userId = User.UserId;
         var report = await reportRepository.GetReportByIdAsync(reportId);
-        if (report == null)
-            return NotFound();
-        if (report.OwnerId != userId)
-            return Unauthorized();
+        if (report == null || report.OwnerId != userId)
+            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
         return Ok(report);
     }
 
@@ -58,10 +57,8 @@ public class ReportController(
     {
         var userId = User.UserId;
         var report = await reportRepository.GetReportByIdAsync(reportId);
-        if (report == null)
-            return NotFound();
-        if (report.OwnerId != userId)
-            return Unauthorized();
+        if (report == null || report.OwnerId != userId)
+            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
         await reportRepository.DeleteReportAsync(reportId);
         return Ok();
     }
@@ -71,13 +68,14 @@ public class ReportController(
     public async Task<ActionResult> UpdateReportById(Guid reportId, [FromBody] UpdateReportSchema schema)
     {
         var report = await reportRepository.GetReportByIdAsync(reportId);
-        if (report == null)
-            return NotFound();
+        if (report == null || report.OwnerId != User.UserId)
+            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
         await reportRepository.UpdateReportAsync(reportId, schema.Name, schema.LlmModelId, schema.ImageProcessingMode);
         return Ok();
     }
 
     [HttpPost("test-source")]
+    [Authorize]
     public async Task<ActionResult<SourceInfo>> CheckReportSource([FromBody] TestSourceRequestSchema schema)
     {
         var res = await reportService.GetSourceInfoAsync(schema.Provider, schema.Source);

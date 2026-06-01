@@ -8,6 +8,7 @@ using ReportChecker.Abstractions;
 using ReportChecker.Application.Services;
 using ReportChecker.DataAccess;
 using ReportChecker.DataAccess.Repositories;
+using ReportChecker.Exceptions;
 using ReportChecker.Models;
 
 namespace Application.Tests.Services
@@ -123,7 +124,6 @@ namespace Application.Tests.Services
             var result = await _service.CreateSubscriptionAsync(userId, offer.Id, CancellationToken.None);
 
             // Assert
-            result.ErrorText.Should().BeNull();
             result.Subscription.Should().NotBeNull();
             result.Subscription.PlanId.Should().Be(plan.Id);
             result.Subscription.UserId.Should().Be(userId);
@@ -135,36 +135,32 @@ namespace Application.Tests.Services
         }
 
         [Test]
-        public async Task CreateSubscriptionAsync_WithOfferNotFound_ShouldReturnError()
+        public void CreateSubscriptionAsync_WithOfferNotFound_ShouldThrowException()
         {
             // Arrange
             var userId = Guid.NewGuid();
             var invalidOfferId = Guid.NewGuid();
 
-            // Act
-            var result = await _service.CreateSubscriptionAsync(userId, invalidOfferId, CancellationToken.None);
-
-            // Assert
-            result.ErrorText.Should().NotBeNullOrEmpty();
-            result.Subscription.Should().BeNull();
+            // Act & Assert
+            Func<Task> act = async () => await _service.CreateSubscriptionAsync(userId, invalidOfferId, CancellationToken.None);
+            act.Should().ThrowAsync<ReportCheckerBaseException>()
+                .WithMessage("*Offer*not found*");
         }
 
         [Test]
-        public async Task CreateSubscriptionAsync_WithDeletedOffer_ShouldReturnError()
+        public void CreateSubscriptionAsync_WithDeletedOffer_ShouldThrowException()
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var (plan, offer) = await CreateTestPlanAndOfferAsync();
+            var (plan, offer) = CreateTestPlanAndOfferAsync().Result;
 
-            await _offerRepository.DeleteOfferAsync(offer.Id, CancellationToken.None);
+            _offerRepository.DeleteOfferAsync(offer.Id, CancellationToken.None).Wait();
 
-            // Act
+            // Act & Assert
             _context.ChangeTracker.Clear();
-            var result = await _service.CreateSubscriptionAsync(userId, offer.Id, CancellationToken.None);
-
-            // Assert
-            result.ErrorText.Should().NotBeNullOrEmpty();
-            result.Subscription.Should().BeNull();
+            Func<Task> act = async () => await _service.CreateSubscriptionAsync(userId, offer.Id, CancellationToken.None);
+            act.Should().ThrowAsync<ReportCheckerBaseException>()
+                .WithMessage("*Offer*not found*");
         }
 
         #endregion
@@ -188,7 +184,6 @@ namespace Application.Tests.Services
             var result = await _service.CreateSubscriptionAsync(userId, offer.Id, CancellationToken.None);
 
             // Assert
-            result.ErrorText.Should().BeNull();
             result.Subscription.Should().NotBeNull();
             result.Subscription.StartsAt.Should().Be(endsAt);
             result.Subscription.EndsAt.Should().Be(endsAt.AddDays(30));
@@ -196,46 +191,44 @@ namespace Application.Tests.Services
         }
 
         [Test]
-        public async Task CreateSubscriptionAsync_SamePlan_WithMoreThan30DaysRemaining_ShouldReturnError()
+        public void CreateSubscriptionAsync_SamePlan_WithMoreThan30DaysRemaining_ShouldThrowException()
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var (plan, offer) = await CreateTestPlanAndOfferAsync("Basic", 100, 1, 100);
+            var (plan, offer) = CreateTestPlanAndOfferAsync("Basic", 100, 1, 100).Result;
 
             // Create active subscription with 40 days remaining
             var startsAt = DateTime.UtcNow.AddDays(-20);
             var endsAt = DateTime.UtcNow.AddDays(40);
-            await CreateActiveSubscriptionAsync(userId, plan.Id, 100, 100, startsAt, endsAt);
+            CreateActiveSubscriptionAsync(userId, plan.Id, 100, 100, startsAt, endsAt).Wait();
 
-            // Act
-            var result = await _service.CreateSubscriptionAsync(userId, offer.Id, CancellationToken.None);
-
-            // Assert
-            result.ErrorText.Should().NotBeNullOrEmpty();
+            // Act & Assert
+            Func<Task> act = async () => await _service.CreateSubscriptionAsync(userId, offer.Id, CancellationToken.None);
+            act.Should().ThrowAsync<ReportCheckerBaseException>()
+                .WithMessage("*same plan*30 days*");
         }
 
         [Test]
-        public async Task CreateSubscriptionAsync_SamePlan_WithFutureSubscriptionsExist_ShouldReturnError()
+        public void CreateSubscriptionAsync_SamePlan_WithFutureSubscriptionsExist_ShouldThrowException()
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var (plan, offer) = await CreateTestPlanAndOfferAsync("Basic", 100, 1, 100);
+            var (plan, offer) = CreateTestPlanAndOfferAsync("Basic", 100, 1, 100).Result;
 
             // Create active subscription with 20 days remaining
             var startsAt = DateTime.UtcNow.AddDays(-10);
             var endsAt = DateTime.UtcNow.AddDays(20);
-            await CreateActiveSubscriptionAsync(userId, plan.Id, 100, 100, startsAt, endsAt);
+            CreateActiveSubscriptionAsync(userId, plan.Id, 100, 100, startsAt, endsAt).Wait();
 
             // Create future subscription
             var futureStartsAt = endsAt;
             var futureEndsAt = futureStartsAt.AddDays(30);
-            await CreateActiveSubscriptionAsync(userId, plan.Id, 100, 100, futureStartsAt, futureEndsAt);
+            CreateActiveSubscriptionAsync(userId, plan.Id, 100, 100, futureStartsAt, futureEndsAt).Wait();
 
-            // Act
-            var result = await _service.CreateSubscriptionAsync(userId, offer.Id, CancellationToken.None);
-
-            // Assert
-            result.ErrorText.Should().NotBeNullOrEmpty();
+            // Act & Assert
+            Func<Task> act = async () => await _service.CreateSubscriptionAsync(userId, offer.Id, CancellationToken.None);
+            act.Should().ThrowAsync<ReportCheckerBaseException>()
+                .WithMessage("*future subscription*same plan*");
         }
 
         #endregion
@@ -259,7 +252,6 @@ namespace Application.Tests.Services
             var result = await _service.CreateSubscriptionAsync(userId, newOffer.Id, CancellationToken.None);
 
             // Assert
-            result.ErrorText.Should().BeNull();
             result.Subscription.Should().NotBeNull();
             result.Subscription.PlanId.Should().Be(newPlan.Id);
             result.Subscription.StartsAt.Should().NotBeAfter(DateTime.UtcNow);
@@ -284,7 +276,6 @@ namespace Application.Tests.Services
             var result = await _service.CreateSubscriptionAsync(userId, newOffer.Id, CancellationToken.None);
 
             // Assert
-            result.ErrorText.Should().BeNull();
             result.Subscription.Should().NotBeNull();
             result.Subscription.PlanId.Should().Be(newPlan.Id);
             result.UnusedTokensDiscount.Should().BeGreaterThan(0);
@@ -313,7 +304,6 @@ namespace Application.Tests.Services
             var result = await _service.CreateSubscriptionAsync(userId, newOffer.Id, CancellationToken.None);
 
             // Assert
-            result.ErrorText.Should().BeNull();
             result.Subscription.Should().NotBeNull();
             result.Subscription.PlanId.Should().Be(newPlan.Id);
             // Should have remaining months shifted
@@ -321,27 +311,26 @@ namespace Application.Tests.Services
         }
 
         [Test]
-        public async Task CreateSubscriptionAsync_Upgrade_WithBetterFuturePlan_ShouldReturnError()
+        public void CreateSubscriptionAsync_Upgrade_WithBetterFuturePlan_ShouldThrowException()
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var (oldPlan, oldOffer) = await CreateTestPlanAndOfferAsync("Basic", 100, 1, 100);
-            var (betterFuturePlan, betterFutureOffer) = await CreateTestPlanAndOfferAsync("Premium", 200, 1, 200);
-            var (newPlan, newOffer) = await CreateTestPlanAndOfferAsync("Standard", 150, 1, 150);
+            var (oldPlan, oldOffer) = CreateTestPlanAndOfferAsync("Basic", 100, 1, 100).Result;
+            var (betterFuturePlan, betterFutureOffer) = CreateTestPlanAndOfferAsync("Premium", 200, 1, 200).Result;
+            var (newPlan, newOffer) = CreateTestPlanAndOfferAsync("Standard", 150, 1, 150).Result;
 
             // Create active subscription
-            await CreateActiveSubscriptionAsync(userId, oldPlan.Id, 100, 100,
-                DateTime.UtcNow.AddDays(-10), DateTime.UtcNow.AddDays(20));
+            CreateActiveSubscriptionAsync(userId, oldPlan.Id, 100, 100,
+                DateTime.UtcNow.AddDays(-10), DateTime.UtcNow.AddDays(20)).Wait();
 
             // Create better future subscription
-            await CreateActiveSubscriptionAsync(userId, betterFuturePlan.Id, 200, 200,
-                DateTime.UtcNow.AddDays(20), DateTime.UtcNow.AddDays(50));
+            CreateActiveSubscriptionAsync(userId, betterFuturePlan.Id, 200, 200,
+                DateTime.UtcNow.AddDays(20), DateTime.UtcNow.AddDays(50)).Wait();
 
-            // Act
-            var result = await _service.CreateSubscriptionAsync(userId, newOffer.Id, CancellationToken.None);
-
-            // Assert
-            result.ErrorText.Should().NotBeNullOrEmpty();
+            // Act & Assert
+            Func<Task> act = async () => await _service.CreateSubscriptionAsync(userId, newOffer.Id, CancellationToken.None);
+            act.Should().ThrowAsync<ReportCheckerBaseException>()
+                .WithMessage("*better plan*future*");
         }
 
         #endregion
@@ -365,7 +354,6 @@ namespace Application.Tests.Services
             var result = await _service.CreateSubscriptionAsync(userId, newOffer.Id, CancellationToken.None);
 
             // Assert
-            result.ErrorText.Should().BeNull();
             result.Subscription.Should().NotBeNull();
             result.Subscription.PlanId.Should().Be(newPlan.Id);
             result.Subscription.StartsAt.Should().Be(endsAt);
@@ -373,47 +361,45 @@ namespace Application.Tests.Services
         }
 
         [Test]
-        public async Task CreateSubscriptionAsync_Downgrade_WithMoreThan30DaysRemaining_ShouldReturnError()
+        public void CreateSubscriptionAsync_Downgrade_WithMoreThan30DaysRemaining_ShouldThrowException()
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var (oldPlan, oldOffer) = await CreateTestPlanAndOfferAsync("Premium", 200, 1, 200);
-            var (newPlan, newOffer) = await CreateTestPlanAndOfferAsync("Basic", 100, 1, 100);
+            var (oldPlan, oldOffer) = CreateTestPlanAndOfferAsync("Premium", 200, 1, 200).Result;
+            var (newPlan, newOffer) = CreateTestPlanAndOfferAsync("Basic", 100, 1, 100).Result;
 
             // Create active subscription with 40 days remaining
             var startsAt = DateTime.UtcNow.AddDays(-10);
             var endsAt = DateTime.UtcNow.AddDays(40);
-            await CreateActiveSubscriptionAsync(userId, oldPlan.Id, 200, 200, startsAt, endsAt);
+            CreateActiveSubscriptionAsync(userId, oldPlan.Id, 200, 200, startsAt, endsAt).Wait();
 
-            // Act
-            var result = await _service.CreateSubscriptionAsync(userId, newOffer.Id, CancellationToken.None);
-
-            // Assert
-            result.ErrorText.Should().NotBeNullOrEmpty();
+            // Act & Assert
+            Func<Task> act = async () => await _service.CreateSubscriptionAsync(userId, newOffer.Id, CancellationToken.None);
+            act.Should().ThrowAsync<ReportCheckerBaseException>()
+                .WithMessage("*downgrade*30 days*");
         }
 
         [Test]
-        public async Task CreateSubscriptionAsync_Downgrade_WithFutureSubscriptions_ShouldReturnError()
+        public void CreateSubscriptionAsync_Downgrade_WithFutureSubscriptions_ShouldThrowException()
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var (oldPlan, oldOffer) = await CreateTestPlanAndOfferAsync("Premium", 200, 1, 200);
-            var (futurePlan, futureOffer) = await CreateTestPlanAndOfferAsync("Standard", 150, 1, 150);
-            var (newPlan, newOffer) = await CreateTestPlanAndOfferAsync("Basic", 100, 1, 100);
+            var (oldPlan, oldOffer) = CreateTestPlanAndOfferAsync("Premium", 200, 1, 200).Result;
+            var (futurePlan, futureOffer) = CreateTestPlanAndOfferAsync("Standard", 150, 1, 150).Result;
+            var (newPlan, newOffer) = CreateTestPlanAndOfferAsync("Basic", 100, 1, 100).Result;
 
             // Create active subscription
-            await CreateActiveSubscriptionAsync(userId, oldPlan.Id, 200, 200,
-                DateTime.UtcNow.AddDays(-10), DateTime.UtcNow.AddDays(20));
+            CreateActiveSubscriptionAsync(userId, oldPlan.Id, 200, 200,
+                DateTime.UtcNow.AddDays(-10), DateTime.UtcNow.AddDays(20)).Wait();
 
             // Create future subscription
-            await CreateActiveSubscriptionAsync(userId, futurePlan.Id, 150, 150,
-                DateTime.UtcNow.AddDays(20), DateTime.UtcNow.AddDays(50));
+            CreateActiveSubscriptionAsync(userId, futurePlan.Id, 150, 150,
+                DateTime.UtcNow.AddDays(20), DateTime.UtcNow.AddDays(50)).Wait();
 
-            // Act
-            var result = await _service.CreateSubscriptionAsync(userId, newOffer.Id, CancellationToken.None);
-
-            // Assert
-            result.ErrorText.Should().NotBeNullOrEmpty();
+            // Act & Assert
+            Func<Task> act = async () => await _service.CreateSubscriptionAsync(userId, newOffer.Id, CancellationToken.None);
+            act.Should().ThrowAsync<ReportCheckerBaseException>()
+                .WithMessage("*future subscriptions*downgrade*");
         }
 
         #endregion
@@ -437,7 +423,6 @@ namespace Application.Tests.Services
 
             // Assert
             _context.ChangeTracker.Clear();
-            result.ErrorText.Should().BeNull();
 
             // Verify unconfirmed subscription is deleted
             unconfirmed =
@@ -466,7 +451,6 @@ namespace Application.Tests.Services
 
             // Assert
             _context.ChangeTracker.Clear();
-            result.ErrorText.Should().BeNull();
 
             unconfirmed =
                 await _userSubscriptionRepository.GetSubscriptionByIdAsync(unconfirmed.Id, CancellationToken.None);
@@ -482,17 +466,16 @@ namespace Application.Tests.Services
         #region Scenario 6: Edge Cases
 
         [Test]
-        public async Task CreateSubscriptionAsync_WithZeroMonthsOffer_ShouldReturnError()
+        public void CreateSubscriptionAsync_WithZeroMonthsOffer_ShouldThrowException()
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var (plan, offer) = await CreateTestPlanAndOfferAsync(months: 0);
+            var (plan, offer) = CreateTestPlanAndOfferAsync(months: 0).Result;
 
-            // Act
-            var result = await _service.CreateSubscriptionAsync(userId, offer.Id, CancellationToken.None);
-
-            // Assert
-            result.ErrorText.Should().NotBeNullOrEmpty();
+            // Act & Assert
+            Func<Task> act = async () => await _service.CreateSubscriptionAsync(userId, offer.Id, CancellationToken.None);
+            act.Should().ThrowAsync<ReportCheckerBaseException>()
+                .WithMessage("*months*invalid*");
         }
 
         #endregion
@@ -527,7 +510,6 @@ namespace Application.Tests.Services
             var result = await _service.CreateSubscriptionAsync(userId, newOffer.Id, CancellationToken.None);
 
             // Assert
-            result.ErrorText.Should().BeNull();
             result.Subscription.Should().NotBeNull();
             // Should have discount applied
             result.UnusedTokensDiscount.Should().BeGreaterThan(0);
@@ -561,18 +543,15 @@ namespace Application.Tests.Services
             await CreateActiveSubscriptionAsync(userId, plan.Id, 100, 100, startsAt, endsAt);
 
             // Act
-            var result = await _service.CreateSubscriptionAsync(userId, offer.Id, CancellationToken.None);
-
-            // Assert
             if (shouldSucceed)
             {
-                result.ErrorText.Should().BeNull();
+                var result = await _service.CreateSubscriptionAsync(userId, offer.Id, CancellationToken.None);
                 result.Subscription.Should().NotBeNull();
             }
             else
             {
-                result.ErrorText.Should().NotBeNull();
-                result.Subscription.Should().BeNull();
+                Func<Task> act = async () => await _service.CreateSubscriptionAsync(userId, offer.Id, CancellationToken.None);
+                await act.Should().ThrowAsync<ReportCheckerBaseException>();
             }
         }
 
@@ -593,18 +572,15 @@ namespace Application.Tests.Services
             await CreateActiveSubscriptionAsync(userId, oldPlan.Id, oldTokensLimit, oldTokensLimit, startsAt, endsAt);
 
             // Act
-            var result = await _service.CreateSubscriptionAsync(userId, newOffer.Id, CancellationToken.None);
-
-            // Assert
             if (shouldSucceed)
             {
-                result.ErrorText.Should().BeNull();
+                var result = await _service.CreateSubscriptionAsync(userId, newOffer.Id, CancellationToken.None);
                 result.Subscription.Should().NotBeNull();
             }
             else
             {
-                result.ErrorText.Should().NotBeNull();
-                result.Subscription.Should().BeNull();
+                Func<Task> act = async () => await _service.CreateSubscriptionAsync(userId, newOffer.Id, CancellationToken.None);
+                await act.Should().ThrowAsync<ReportCheckerBaseException>();
             }
         }
 

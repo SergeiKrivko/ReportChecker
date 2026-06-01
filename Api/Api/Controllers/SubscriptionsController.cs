@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ReportChecker.Abstractions;
 using ReportChecker.Api.Extensions;
 using ReportChecker.Api.Schemas;
+using ReportChecker.Exceptions;
 using ReportChecker.Models;
 
 namespace ReportChecker.Api.Controllers;
@@ -48,11 +49,11 @@ public class SubscriptionsController(
     {
         var subscription = await userSubscriptionRepository.GetSubscriptionByIdAsync(subscriptionId, ct);
         if (subscription == null)
-            return NotFound();
+            throw new NotFoundException("Подписка не найдена");
         if (schema.UserId.HasValue && schema.UserId != subscription.UserId)
-            return BadRequest("UserId mismatch");
+            throw new BadRequestException("UserId mismatch");
         if (schema.Price.HasValue && decimal.Abs(schema.Price.Value - subscription.Price) > 1e-10M)
-            return BadRequest("Price mismatch");
+            throw new BadRequestException("Price mismatch");
 
         await subscriptionService.ConfirmSubscriptionAsync(subscriptionId, ct);
         return Ok();
@@ -64,7 +65,7 @@ public class SubscriptionsController(
     {
         var subscription = await userSubscriptionRepository.GetSubscriptionByIdAsync(subscriptionId, ct);
         if (subscription == null)
-            return NotFound();
+            throw new NotFoundException("Подписка не найдена");
         return Ok(subscription);
     }
 
@@ -86,7 +87,7 @@ public class SubscriptionsController(
     {
         var subscription = await subscriptionService.CheckPaymentsAsync(User.UserId, ct);
         if (subscription == null)
-            return NotFound();
+            throw new NotFoundException("Подписка не найдена");
         return Ok(subscription);
     }
 }

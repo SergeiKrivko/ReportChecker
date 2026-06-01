@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ReportChecker.Abstractions;
 using ReportChecker.Api.Schemas;
+using ReportChecker.Exceptions;
 using ReportChecker.Models;
 
 namespace ReportChecker.Api.Controllers;
@@ -25,7 +26,7 @@ public class SubscriptionOffersController(ISubscriptionOfferRepository subscript
     {
         var offer = await subscriptionOfferRepository.GetOfferById(offerId, ct);
         if (offer == null || offer.PlanId != planId)
-            return NotFound();
+            throw new NotFoundException("Предложение не найдено");
         return Ok(offer);
     }
 
@@ -45,7 +46,7 @@ public class SubscriptionOffersController(ISubscriptionOfferRepository subscript
     {
         var res = await subscriptionOfferRepository.UpdateOfferAsync(offerId, schema.Months, schema.Price, ct);
         if (!res)
-            return NotFound();
+            throw new NotFoundException("Предложение не найдено");
         return Ok();
     }
 
@@ -55,7 +56,7 @@ public class SubscriptionOffersController(ISubscriptionOfferRepository subscript
     {
         var res = await subscriptionOfferRepository.DeleteOfferAsync(offerId, ct);
         if (!res)
-            return NotFound();
+            throw new NotFoundException("Предложение не найдено");
         return Ok();
     }
 }
