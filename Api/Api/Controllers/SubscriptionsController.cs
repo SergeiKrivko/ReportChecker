@@ -16,10 +16,16 @@ public class SubscriptionsController(
 {
     [HttpGet("current")]
     [Authorize]
-    public async Task<ActionResult<UserSubscriptionsSchema>> GetActiveSubscription(CancellationToken ct = default)
+    public async Task<ActionResult<UserSubscriptionsSchema>> GetActiveSubscription(bool checkPayments = false,
+        CancellationToken ct = default)
     {
         var userId = User.UserId;
-        var active = await subscriptionService.GetActiveSubscription(userId, ct);
+
+        UserSubscription? active = null;
+        if (checkPayments)
+            active = await subscriptionService.CheckPaymentsAsync(User.UserId, ct);
+
+        active ??= await subscriptionService.GetActiveSubscription(userId, ct);
         var futureSubscriptions = await userSubscriptionRepository.GetFutureSubscriptionsAsync(userId, ct);
         var tokensLimit = await subscriptionService.GetTokensLimitAsync(userId, ct);
         var reportsLimit = await subscriptionService.GetReportsLimitAsync(userId, ct);
@@ -79,15 +85,5 @@ public class SubscriptionsController(
         {
             Url = url,
         });
-    }
-
-    [HttpGet("checkPayments")]
-    [Authorize]
-    public async Task<ActionResult<UserSubscription>> CheckPayments(CancellationToken ct = default)
-    {
-        var subscription = await subscriptionService.CheckPaymentsAsync(User.UserId, ct);
-        if (subscription == null)
-            throw new NotFoundException("Подписка не найдена");
-        return Ok(subscription);
     }
 }

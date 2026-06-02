@@ -27,7 +27,6 @@ export class ApiClientBase {
       return from(errorBlob.text()).pipe(
         map((data) => JSON.parse(data) as ProblemDetailsEntity),
         tap(error => {
-          console.log(error);
           this.alerts
             .open(error.title, {label: "Ошибка", appearance: "negative"})
             .subscribe();
