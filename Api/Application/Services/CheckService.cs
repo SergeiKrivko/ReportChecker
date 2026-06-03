@@ -106,7 +106,7 @@ public class CheckService(
         if (report == null)
             throw new NotFoundException($"Report with id {reportId} does not exist");
 
-        var check = await checkRepository.GetLatestCheckOfReportAsync(reportId);
+        var check = await checkRepository.GetLatestCheckOfReportAsync(reportId, includeFailed: true);
         if (check == null)
             throw new NotFoundException($"Latest check of report {reportId} not found");
 

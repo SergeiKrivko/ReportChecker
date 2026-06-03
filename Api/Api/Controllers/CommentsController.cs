@@ -153,7 +153,7 @@ public class CommentsController(
             throw new NotFoundException($"Ошибка '{issueId}' не найдена");
 
         var comment = await commentRepository.GetCommentByIdAsync(commentId);
-        if (comment == null || comment.UserId != userId)
+        if (comment == null)
             throw new NotFoundException($"Комментарий '{commentId}' не найден либо написан другим пользователем");
         if (comment.Patch == null)
             throw new NotFoundException($"Комментарий '{commentId}' не содержит предложений по исправлению");
