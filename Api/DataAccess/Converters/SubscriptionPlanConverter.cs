@@ -17,7 +17,11 @@ public static class SubscriptionPlanConverter
             IsHidden = entity.IsHidden,
             CreatedAt = entity.CreatedAt,
             DeletedAt = entity.DeletedAt,
-            Offers = entity.Offers.OrderBy(e => e.Price).Select(e => e.ToDomain()).ToList(),
+            Offers = entity.Offers
+                .Where(e => e.DeletedAt == null)
+                .OrderBy(e => e.Price)
+                .Select(e => e.ToDomain())
+                .ToList(),
         };
     }
 }
