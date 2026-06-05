@@ -12,6 +12,7 @@ namespace ReportChecker.Application.Services;
 public class CheckService(
     ICheckRepository checkRepository,
     IReportRepository reportRepository,
+    ICommentRepository commentRepository,
     IProviderService providerService,
     IServiceProvider serviceProvider,
     IAiService aiService,
@@ -115,15 +116,17 @@ public class CheckService(
         if (issue == null)
             throw new NotFoundException($"Issue {issueId} not found");
 
-        RunComment(context, issue);
+        var commentId =
+            await commentRepository.CreateCommentAsync(issueId, Guid.Empty, null, null, ProgressStatus.Queued);
+        RunComment(context, issue, commentId);
     }
 
-    private async void RunComment(CheckContext context, Issue issue, CancellationToken ct = default)
+    private async void RunComment(CheckContext context, Issue issue, Guid commentId, CancellationToken ct = default)
     {
         try
         {
             var service = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<IAiService>();
-            await service.WriteComment(context, issue, ct);
+            await service.WriteComment(context, issue, commentId, ct);
         }
         catch (Exception e)
         {

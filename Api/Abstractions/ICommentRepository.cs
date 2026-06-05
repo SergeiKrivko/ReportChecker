@@ -13,6 +13,7 @@ public interface ICommentRepository
         ProgressStatus? progressStatus = null);
 
     public Task UpdateCommentAsync(Guid commentId, string comment);
+    public Task FinishCommentAsync(Guid commentId, string? comment, IssueStatus? status);
     public Task DeleteCommentAsync(Guid commentId);
     public Task SetProgressStatusAsync(Guid commentId, ProgressStatus status);
     public Task<int> CountAiCommentsAsync(Guid userId, DateTime startDate);

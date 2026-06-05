@@ -24,6 +24,13 @@
       p {
         margin: 0;
       }
+
+      .progress-container {
+        display: flex;
+        flex-direction: row;
+        gap: 1rem;
+        align-items: center;
+      }
     }
 
     .status-container {

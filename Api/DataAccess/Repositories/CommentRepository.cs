@@ -79,6 +79,19 @@ public class CommentRepository(ReportCheckerDbContext dbContext) : ICommentRepos
         await dbContext.SaveChangesAsync();
     }
 
+    public async Task FinishCommentAsync(Guid commentId, string? comment, IssueStatus? status)
+    {
+        await dbContext.Comments
+            .Where(e => e.CommentId == commentId && e.DeletedAt == null)
+            .ExecuteUpdateAsync(e =>
+            {
+                e.SetProperty(x => x.ProgressStatus, ProgressStatus.Completed);
+                e.SetProperty(x => x.Status, status);
+                e.SetProperty(x => x.Content, comment);
+            });
+        await dbContext.SaveChangesAsync();
+    }
+
     public async Task DeleteCommentAsync(Guid commentId)
     {
         await dbContext.Comments

@@ -89,18 +89,17 @@ public class AiService(
         }
     }
 
-    public async Task WriteComment(CheckContext context, Issue issue, CancellationToken ct = default)
+    public async Task WriteComment(CheckContext context, Issue issue, Guid commentId, CancellationToken ct = default)
     {
         await using var aiAgentClient = await aiAgentFactory.CreateClientAsync(context.Report, LlmUsageType.Comment);
         var instructions = (await instructionRepository.GetInstructionsAsync(context.Report.Id, ct))
             .Select(e => e.Content)
             .ToArray();
 
-        var lastCommentId = issue.Comments.Last().Id;
         try
         {
             var chapter = context.NewChapters.First(e => e.Name == issue.Chapter);
-            await commentRepository.SetProgressStatusAsync(lastCommentId, ProgressStatus.InProgress);
+            await commentRepository.SetProgressStatusAsync(commentId, ProgressStatus.InProgress);
             var resp = await aiAgentClient.WriteComment(new WriteCommentRequestAgent
             {
                 Issue = issue.ToAgent(),
@@ -109,24 +108,19 @@ public class AiService(
                 Images = chapter.Images,
                 ImageProcessingMode = context.Report.ImageProcessingMode,
             }, ct);
-            var id = await commentRepository.CreateCommentAsync(issue.Id, Guid.Empty, resp?.Comment.Content,
-                resp?.Comment.Status is null ? null : Enum.Parse<IssueStatus>(resp.Comment.Status),
-                (resp?.Instruction?.Apply ?? false) || (resp?.Instruction?.Search ?? false)
-                    ? ProgressStatus.InProgress
-                    : null);
-            await commentRepository.SetProgressStatusAsync(lastCommentId, ProgressStatus.Completed);
-            if (resp?.Instruction != null)
-                await ProcessInstructionAsync(context, resp.Instruction, id);
+            await commentRepository.FinishCommentAsync(commentId, resp?.Comment.Content,
+                resp?.Comment.Status is null ? null : Enum.Parse<IssueStatus>(resp.Comment.Status));
+            await commentRepository.SetProgressStatusAsync(commentId, ProgressStatus.Completed);
             if (resp?.Patch != null)
             {
                 var oldLines = chapter.Content.ToAgentLines();
-                await patchRepository.CreatePatchAsync(id, resp.Patch.Select(e => e.ToDomain(oldLines)),
+                await patchRepository.CreatePatchAsync(commentId, resp.Patch.Select(e => e.ToDomain(oldLines)),
                     PatchStatus.Completed, ct);
             }
         }
         catch (Exception)
         {
-            await commentRepository.SetProgressStatusAsync(lastCommentId, ProgressStatus.Failed);
+            await commentRepository.SetProgressStatusAsync(commentId, ProgressStatus.Failed);
             throw;
         }
     }

@@ -6,7 +6,7 @@ public interface IAiService
 {
     public Task FindIssuesAsync(CheckContext context, CancellationToken ct = default);
 
-    public Task WriteComment(CheckContext context, Issue issue, CancellationToken ct = default);
+    public Task WriteComment(CheckContext context, Issue issue, Guid commentId, CancellationToken ct = default);
 
     public Task ProcessInstructionApplyAsync(Guid taskId, CheckContext context, string instruction,
         CancellationToken ct = default);

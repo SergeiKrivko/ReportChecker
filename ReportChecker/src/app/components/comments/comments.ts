@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, input} from '@angular/core';
 import {TuiAvatar, TuiButtonLoading, TuiTextarea} from '@taiga-ui/kit';
-import {TuiButton, TuiIcon, TuiTextfield} from '@taiga-ui/core';
+import {TuiButton, TuiIcon, TuiLoader, TuiTextfield} from '@taiga-ui/core';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {AsyncPipe} from '@angular/common';
 import {IssueEntity} from '../../entities/issue-entity';
@@ -24,6 +24,7 @@ import {Patch} from '../patch/patch';
     IsBotPipe,
     Patch,
     TuiTextarea,
+    TuiLoader,
   ],
   templateUrl: './comments.html',
   styleUrl: './comments.scss',
