@@ -12,7 +12,7 @@
         <h4>Free</h4>
       }
     </div>
-    <a appearance="accent" tuiButton iconStart="circle-dollar-sign"
+    <a appearance="accent" tuiButton iconStart="@tui.arrow-big-up-dash"
        routerLink="/subscriptions">{{ current?.active ? 'Продлить / Улучшить' : 'Улучшить' }}
     </a>
   </div>
@@ -25,7 +25,7 @@
     <a tuiButton iconStart="@tui.chart-line" appearance="flat" routerLink="/statistics">Использование</a>
   </div>
   @if (isAdmin$ | async) {
-    <a tuiButton iconStart="@tui.key-round" appearance="accent" routerLink="/admin/models">Админ</a>
+    <a tuiButton iconStart="@tui.key-round" appearance="accent" routerLink="/admin/models" class="mobile-only">Админ</a>
   }
   @for (authProvider of authProviders$ | async; track authProvider.key) {
     <div tuiCardLarge class="provider-container">
