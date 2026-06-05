@@ -68,6 +68,7 @@ const currentSubscriptionToEntity = (dto: UserSubscriptionsSchema | null): Curre
   return {
     active: dto.active,
     future: dto.future ?? [],
+    resetLimitsAt: dto.resetLimitsAt ?? null,
     tokensLimit: dto.tokensLimit,
     reportsLimit: dto.reportsLimit,
   };

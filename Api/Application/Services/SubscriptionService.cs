@@ -27,31 +27,49 @@ public class SubscriptionService(
     public async Task<Limit<int>> GetTokensLimitAsync(Guid userId, CancellationToken ct = default)
     {
         var subscription = await userSubscriptionRepository.GetActiveSubscriptionAsync(userId, ct);
-        DateTime monthStart;
+        var monthStart = await GetMonthStart(userId, ct);
         int maxTokens;
         if (subscription == null)
         {
-            var lastSubscription = await userSubscriptionRepository.GetLastSubscriptionAsync(userId, ct);
-            monthStart = lastSubscription?.EndsAt ?? DateTime.UnixEpoch;
             maxTokens = int.Parse(configuration["Subscriptions.Free.Tokens"] ?? "0");
         }
         else
         {
-            monthStart = subscription.StartsAt;
             var plan = await subscriptionPlanRepository.GetPlanByIdAsync(subscription.PlanId, ct);
             if (plan == null)
                 throw new NotFoundException($"Plan '{subscription.PlanId}' not found");
             maxTokens = plan.TokensLimit;
         }
 
-        monthStart =
-            monthStart.AddDays(double.Floor((DateTime.UtcNow - monthStart).TotalDays / DaysPerMonth) * DaysPerMonth);
         var usedTokens = await llmUsageRepository.GetTotalUsageAsync(userId, monthStart, ct);
         return new Limit<int>
         {
             Current = usedTokens,
             Maximum = maxTokens,
         };
+    }
+
+    public async Task<DateTime> GetResetLimitsTime(Guid userId, CancellationToken ct = default)
+    {
+        var monthStart = await GetMonthStart(userId, ct);
+        return monthStart.AddDays(30);
+    }
+
+    private async Task<DateTime> GetMonthStart(Guid userId, CancellationToken ct = default)
+    {
+        var subscription = await userSubscriptionRepository.GetActiveSubscriptionAsync(userId, ct);
+        DateTime monthStart;
+        if (subscription == null)
+        {
+            var lastSubscription = await userSubscriptionRepository.GetLastSubscriptionAsync(userId, ct);
+            monthStart = lastSubscription?.EndsAt ?? DateTime.UnixEpoch;
+        }
+        else
+        {
+            monthStart = subscription.StartsAt;
+        }
+
+        return monthStart.AddDays(double.Floor((DateTime.UtcNow - monthStart).TotalDays / DaysPerMonth) * DaysPerMonth);
     }
 
     public async Task<Limit<int>> GetReportsLimitAsync(Guid userId, CancellationToken ct = default)
@@ -121,7 +139,7 @@ public class SubscriptionService(
         {
             if (futureSubscriptions.Any())
                 throw new SubscriptionException("Обнаружены будущие подписки при отсутствии текущей. " +
-                                   "Покупка подписки невозможна. Обратитесь в поддержку.");
+                                                "Покупка подписки невозможна. Обратитесь в поддержку.");
             subscription = await userSubscriptionRepository.CreateSubscriptionAsync(plan.Id, userId,
                 defaultPricePerMonth, offer.Price, now, now.AddDays(offer.Months * DaysPerMonth), ct);
             return new CreatedSubscription

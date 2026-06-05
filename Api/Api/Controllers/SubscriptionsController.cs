@@ -33,6 +33,7 @@ public class SubscriptionsController(
         {
             Active = active,
             Future = futureSubscriptions,
+            ResetLimitsAt = await subscriptionService.GetResetLimitsTime(userId, ct),
             TokensLimit = tokensLimit,
             ReportsLimit = reportsLimit,
         });

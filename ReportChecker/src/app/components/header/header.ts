@@ -21,7 +21,6 @@ import {SubscriptionsService} from '../../services/subscriptions.service';
 import {Moment} from 'moment/moment';
 import {SubscriptionPlanByIdPipe} from '../../pipes/subscription-plan-by-id-pipe';
 import {AsDayPipe} from '../../pipes/as-day-pipe';
-import moment from 'moment';
 import {AuthService} from '../../auth/auth.service';
 
 @Component({
@@ -79,18 +78,7 @@ export class Header {
       return endsAt;
     })
   );
-  protected readonly resetLimitsAt$ = this.currentSubscription$.pipe(
-    map(current => {
-      let day = current?.active?.startsAt;
-      if (!day)
-        return undefined;
-      const now = moment();
-      while (day < now) {
-        day.add(30, 'days');
-      }
-      return day;
-    })
-  );
+  protected readonly resetLimitsAt$ = this.currentSubscription$.pipe(map(current => current?.resetLimitsAt));
 
   protected readonly isAdmin$: Observable<boolean> = this.authClient.userInfo$.pipe(
     map(userInfo => userInfo?.id === 'b13fa26b-0a30-4558-a2cd-da2d68022bab')

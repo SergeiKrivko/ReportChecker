@@ -8,6 +8,7 @@ export interface LimitEntity<T> {
 export interface CurrentSubscriptionEntity {
   active?: SubscriptionEntity | null;
   future: SubscriptionEntity[];
+  resetLimitsAt: Moment | null;
   reportsLimit: LimitEntity<number>;
   tokensLimit: LimitEntity<number>;
 }

@@ -5826,6 +5826,7 @@ export interface IUserSubscription {
 export class UserSubscriptionsSchema implements IUserSubscriptionsSchema {
     active?: UserSubscription;
     future?: UserSubscription[] | undefined;
+    resetLimitsAt?: moment.Moment;
     tokensLimit!: Int32Limit;
     reportsLimit!: Int32Limit;
 
@@ -5850,6 +5851,7 @@ export class UserSubscriptionsSchema implements IUserSubscriptionsSchema {
                 for (let item of _data["future"])
                     this.future!.push(UserSubscription.fromJS(item));
             }
+            this.resetLimitsAt = _data["resetLimitsAt"] ? moment(_data["resetLimitsAt"].toString()) : <any>undefined;
             this.tokensLimit = _data["tokensLimit"] ? Int32Limit.fromJS(_data["tokensLimit"]) : new Int32Limit();
             this.reportsLimit = _data["reportsLimit"] ? Int32Limit.fromJS(_data["reportsLimit"]) : new Int32Limit();
         }
@@ -5870,6 +5872,7 @@ export class UserSubscriptionsSchema implements IUserSubscriptionsSchema {
             for (let item of this.future)
                 data["future"].push(item.toJSON());
         }
+        data["resetLimitsAt"] = this.resetLimitsAt ? this.resetLimitsAt.toISOString() : <any>undefined;
         data["tokensLimit"] = this.tokensLimit ? this.tokensLimit.toJSON() : <any>undefined;
         data["reportsLimit"] = this.reportsLimit ? this.reportsLimit.toJSON() : <any>undefined;
         return data;
@@ -5879,6 +5882,7 @@ export class UserSubscriptionsSchema implements IUserSubscriptionsSchema {
 export interface IUserSubscriptionsSchema {
     active?: UserSubscription;
     future?: UserSubscription[] | undefined;
+    resetLimitsAt?: moment.Moment;
     tokensLimit: Int32Limit;
     reportsLimit: Int32Limit;
 }
