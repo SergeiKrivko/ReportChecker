@@ -23,7 +23,7 @@ public class SubscriptionsController(
 
         UserSubscription? active = null;
         if (checkPayments)
-            active = await subscriptionService.CheckPaymentsAsync(User.UserId, ct);
+            await subscriptionService.CheckPaymentsAsync(User.UserId, ct);
 
         active ??= await subscriptionService.GetActiveSubscription(userId, ct);
         var futureSubscriptions = await userSubscriptionRepository.GetFutureSubscriptionsAsync(userId, ct);
