@@ -1,18 +1,18 @@
 ﻿using AvaluxUI.Utils;
-using Cli.FormatProviders.Latex;
+using ReportChecker.Shared.FormatProviders.Latex;
 using CommandLine;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ReportChecker.Cli;
-using ReportChecker.Cli.Abstractions;
-using ReportChecker.Cli.Models;
+using ReportChecker.Shared.Abstractions;
+using ReportChecker.Shared.Models;
 using ReportChecker.Cli.Services;
 using Spectre.Console;
-using IFormatProvider = ReportChecker.Cli.Abstractions.IFormatProvider;
-using PatchLineType = ReportChecker.Cli.Models.PatchLineType;
-using PatchStatus = ReportChecker.Cli.Models.PatchStatus;
-using ProgressStatus = ReportChecker.Cli.Models.ProgressStatus;
+using IFormatProvider = ReportChecker.Shared.Abstractions.IFormatProvider;
+using PatchLineType = ReportChecker.Shared.Models.PatchLineType;
+using PatchStatus = ReportChecker.Shared.Models.PatchStatus;
+using ProgressStatus = ReportChecker.Shared.Models.ProgressStatus;
 
 Console.CancelKeyPress += (_, eventArgs) =>
 {

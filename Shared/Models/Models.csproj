@@ -4,11 +4,7 @@
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <RootNamespace>ReportChecker.Cli.Abstractions</RootNamespace>
+        <RootNamespace>ReportChecker.Shared.Models</RootNamespace>
     </PropertyGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\Models\Models.csproj" />
-    </ItemGroup>
 
 </Project>

@@ -1,7 +1,7 @@
 ﻿using System.Runtime.Versioning;
 using Avalux.Auth.UserClient;
-using ReportChecker.Cli.Abstractions;
-using ReportChecker.Cli.Models;
+using ReportChecker.Shared.Abstractions;
+using ReportChecker.Shared.Models;
 
 namespace ReportChecker.Cli.Services.Services;
 

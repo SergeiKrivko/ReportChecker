@@ -1,6 +1,6 @@
-﻿using ReportChecker.Cli.Models;
+﻿using ReportChecker.Shared.Models;
 
-namespace ReportChecker.Cli.Abstractions;
+namespace ReportChecker.Shared.Abstractions;
 
 public interface IReportService
 {

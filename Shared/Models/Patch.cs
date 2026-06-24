@@ -1,4 +1,4 @@
-﻿namespace ReportChecker.Cli.Models;
+﻿namespace ReportChecker.Shared.Models;
 
 public class Patch
 {

@@ -26,13 +26,21 @@
     <Project Path="Api/Application.Tests/Application.Tests.csproj" />
   </Folder>
   <Folder Name="/Cli/">
-    <Project Path="Cli/Abstractions/Abstractions.csproj" />
     <Project Path="Cli/Cli/Cli.csproj" />
-    <Project Path="Cli/Models/Models.csproj" />
     <Project Path="Cli/Services/Services.csproj" />
   </Folder>
-  <Folder Name="/Cli/FormatProviders/">
-    <Project Path="Cli/FormatProviders/Cli.FormatProviders.Latex/Cli.FormatProviders.Latex.csproj" />
+  <Folder Name="/Shared/">
+    <Project Path="Shared/Abstractions/Abstractions.csproj" />
+    <Project Path="Shared/Models/Models.csproj" />
+  </Folder>
+  <Folder Name="/Shared/FormatProviders/">
+    <Project Path="Shared/FormatProviders/Shared.FormatProviders.Latex/Shared.FormatProviders.Latex.csproj" />
+  </Folder>
+  <Folder Name="/Studio/">
+    <Project Path="Studio/Studio.Abstractions/Studio.Abstractions.csproj" />
+    <Project Path="Studio/Studio.Models/Studio.Models.csproj" />
+    <Project Path="Studio/Studio.Services/Studio.Services.csproj" />
+    <Project Path="Studio/Studio/Studio.csproj" />
   </Folder>
   <Folder Name="/Workflows/">
     <File Path=".github/workflows/cli.yml" />

@@ -1,10 +1,10 @@
 ﻿using System.IO.Compression;
 using System.Text;
-using ReportChecker.Cli.Abstractions;
-using ReportChecker.Cli.Models;
-using IFormatProvider = ReportChecker.Cli.Abstractions.IFormatProvider;
+using ReportChecker.Shared.Abstractions;
+using ReportChecker.Shared.Models;
+using IFormatProvider = ReportChecker.Shared.Abstractions.IFormatProvider;
 
-namespace Cli.FormatProviders.Latex;
+namespace ReportChecker.Shared.FormatProviders.Latex;
 
 public class LatexFormatProvider : IFormatProvider
 {

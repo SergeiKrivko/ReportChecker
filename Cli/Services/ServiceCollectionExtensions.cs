@@ -1,7 +1,7 @@
 ﻿using Avalux.Auth.UserClient;
 using AvaluxUI.Utils;
 using Microsoft.Extensions.DependencyInjection;
-using ReportChecker.Cli.Abstractions;
+using ReportChecker.Shared.Abstractions;
 using ReportChecker.Cli.Services.Services;
 
 namespace ReportChecker.Cli.Services;

@@ -21,9 +21,10 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Abstractions\Abstractions.csproj" />
+      <ProjectReference Include="..\..\Shared\Abstractions\Abstractions.csproj" />
+      <ProjectReference Include="..\..\Shared\FormatProviders\Shared.FormatProviders.Latex\Shared.FormatProviders.Latex.csproj" />
+      <ProjectReference Include="..\..\Shared\Models\Models.csproj" />
       <ProjectReference Include="..\FormatProviders\Cli.FormatProviders.Latex\Cli.FormatProviders.Latex.csproj" />
-      <ProjectReference Include="..\Models\Models.csproj" />
       <ProjectReference Include="..\Services\Services.csproj" />
     </ItemGroup>
 

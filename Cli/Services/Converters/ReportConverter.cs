@@ -1,4 +1,6 @@
-﻿namespace ReportChecker.Cli.Services.Converters;
+﻿using Models = ReportChecker.Shared.Models;
+
+namespace ReportChecker.Cli.Services.Converters;
 
 public static class ReportConverter
 {

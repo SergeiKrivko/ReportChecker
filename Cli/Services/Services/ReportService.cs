@@ -1,8 +1,8 @@
-﻿using System.Net;
-using AvaluxUI.Utils;
-using ReportChecker.Cli.Abstractions;
+﻿using AvaluxUI.Utils;
+using ReportChecker.Shared.Abstractions;
 using ReportChecker.Cli.Services.Converters;
-using IFormatProvider = ReportChecker.Cli.Abstractions.IFormatProvider;
+using IFormatProvider = ReportChecker.Shared.Abstractions.IFormatProvider;
+using Models = ReportChecker.Shared.Models;
 
 namespace ReportChecker.Cli.Services.Services;
 
