@@ -1,0 +1,23 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ReportChecker.Studio.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:models="clr-namespace:ReportChecker.Studio.Models;assembly=Studio.Models"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ReportChecker.Studio.Views.FileSystemView"
+             x:DataType="vm:FileSystemViewModel">
+
+    <TreeView ItemsSource="{Binding Files^}">
+        <TreeView.DataTemplates>
+            <TreeDataTemplate ItemsSource="{Binding Children}" DataType="models:IProjectFileSystemEntry">
+                <Panel DoubleTapped="Item_OnDoubleTapped" Margin="-5" HorizontalAlignment="Stretch" Background="Transparent">
+                    <StackPanel Orientation="Horizontal" Spacing="5" Margin="5">
+                        <TextBlock Text="{Binding Name}" />
+                    </StackPanel>
+                </Panel>
+            </TreeDataTemplate>
+        </TreeView.DataTemplates>
+    </TreeView>
+
+</UserControl>

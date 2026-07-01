@@ -1,0 +1,17 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ReportChecker.Studio.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ReportChecker.Studio.Views.EditorTabView"
+             x:DataType="vm:EditorTabViewModel">
+
+    <ToggleButton IsChecked="{Binding IsSelected}" CornerRadius="0" Command="{Binding SelectFile}">
+        <StackPanel Orientation="Horizontal" Spacing="3">
+            <TextBlock Text="{Binding Name}"/>
+            <Button Width="20" Height="20" CornerRadius="10" Command="{Binding Close}">✕</Button>
+        </StackPanel>
+    </ToggleButton>
+
+</UserControl>

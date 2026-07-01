@@ -1,0 +1,15 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ReportChecker.Studio.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:avaloniaEdit="https://github.com/avaloniaui/avaloniaedit"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ReportChecker.Studio.Views.EditorFileView"
+             x:DataType="vm:EditorFileViewModel">
+
+    <avaloniaEdit:TextEditor Name="Editor" Document="{Binding Document}"
+                             ShowLineNumbers="True"
+                             FontFamily="Cascadia Code,Consolas,Menlo,Monospace,Ubuntu Mono" />
+
+</UserControl>

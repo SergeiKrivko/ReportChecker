@@ -1,11 +1,13 @@
-using Avalonia.Controls;
+using ReactiveUI.Avalonia;
+using ReportChecker.Studio.ViewModels;
 
 namespace ReportChecker.Studio.Views;
 
-public partial class MainWindow : Window
+public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 {
-    public MainWindow()
+    public MainWindow(MainWindowViewModel vm)
     {
+        ViewModel = vm;
         InitializeComponent();
     }
 }

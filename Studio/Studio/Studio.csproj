@@ -18,11 +18,24 @@
         <PackageReference Include="Avalonia.Desktop" Version="11.3.8"/>
         <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.8"/>
         <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.8"/>
+        <PackageReference Include="AvaloniaEdit.TextMate" Version="11.4.1" />
         <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.3">
             <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
             <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
         </PackageReference>
+        <PackageReference Include="AvaluxUI.Avalonia" Version="1.1.0" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
         <PackageReference Include="ReactiveUI.Avalonia" Version="11.3.8"/>
+        <PackageReference Include="ReactiveUI.Avalonia.Microsoft.Extensions.DependencyInjection" Version="11.3.8"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\Shared\Abstractions\Abstractions.csproj" />
+      <ProjectReference Include="..\..\Shared\ApiClient\ApiClient.csproj" />
+      <ProjectReference Include="..\..\Shared\FormatProviders\Shared.FormatProviders.Latex\Shared.FormatProviders.Latex.csproj" />
+      <ProjectReference Include="..\..\Shared\Models\Models.csproj" />
+      <ProjectReference Include="..\Studio.Abstractions\Studio.Abstractions.csproj" />
+      <ProjectReference Include="..\Studio.Models\Studio.Models.csproj" />
+      <ProjectReference Include="..\Studio.Services\Studio.Services.csproj" />
     </ItemGroup>
 </Project>

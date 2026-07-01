@@ -11,4 +11,9 @@
       <ProjectReference Include="..\Studio.Models\Studio.Models.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="AvaluxUI.Utils" Version="1.4.0" />
+      <PackageReference Include="System.Reactive" Version="6.1.0" />
+    </ItemGroup>
+
 </Project>

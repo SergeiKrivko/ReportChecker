@@ -31,6 +31,7 @@
   </Folder>
   <Folder Name="/Shared/">
     <Project Path="Shared/Abstractions/Abstractions.csproj" />
+    <Project Path="Shared/ApiClient/ApiClient.csproj" />
     <Project Path="Shared/Models/Models.csproj" />
   </Folder>
   <Folder Name="/Shared/FormatProviders/">

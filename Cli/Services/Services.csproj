@@ -15,4 +15,10 @@
       <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.5" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\..\Shared\Abstractions\Abstractions.csproj" />
+      <ProjectReference Include="..\..\Shared\FormatProviders\Shared.FormatProviders.Latex\Shared.FormatProviders.Latex.csproj" />
+      <ProjectReference Include="..\..\Shared\Models\Models.csproj" />
+    </ItemGroup>
+
 </Project>

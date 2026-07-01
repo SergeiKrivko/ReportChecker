@@ -9,12 +9,10 @@
         Icon="/Assets/avalonia-logo.ico"
         Title="ReportChecker Studio">
 
-    <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <vm:MainWindowViewModel/>
-    </Design.DataContext>
-
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <Grid RowDefinitions="Auto *" ColumnDefinitions="300 *">
+        <ContentControl Content="{Binding ProjectSelectorViewModel}" Grid.Row="0" Grid.Column="0" />
+        <ContentControl Content="{Binding FileSystemViewModel}" Grid.Row="1" Grid.Column="0" />
+        <ContentControl Content="{Binding EditorViewModel}" Grid.Row="1" Grid.Column="1" />
+        </Grid>
 
 </Window>

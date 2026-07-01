@@ -12,7 +12,7 @@ namespace ReportChecker.Studio;
 [RequiresUnreferencedCode(
     "Default implementation of ViewLocator involves reflection which may be trimmed away.",
     Url = "https://docs.avaloniaui.net/docs/concepts/view-locator")]
-public class ViewLocator : IDataTemplate
+public class ViewLocator(IServiceProvider serviceProvider) : IDataTemplate
 {
     public Control? Build(object? param)
     {
@@ -24,7 +24,7 @@ public class ViewLocator : IDataTemplate
 
         if (type != null)
         {
-            return (Control)Activator.CreateInstance(type)!;
+            return serviceProvider.GetService(type) as Control ?? new TextBlock { Text = "Not Registered in DI: " + name };
         }
 
         return new TextBlock { Text = "Not Found: " + name };
