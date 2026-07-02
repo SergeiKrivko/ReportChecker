@@ -4,10 +4,11 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using ReactiveUI;
+using ReportChecker.Studio.Abstractions;
 
 namespace ReportChecker.Studio.ViewModels;
 
-public class EditorViewModel : ViewModelBase
+public class EditorViewModel(ILanguageService languageService) : ViewModelBase
 {
     public IReadOnlyList<string> Files
     {
@@ -34,7 +35,7 @@ public class EditorViewModel : ViewModelBase
     {
         Files = Files.Concat([path]).ToList();
         UpdateEditorTabs();
-        _fileViewModels[path] = new EditorFileViewModel(path);
+        _fileViewModels[path] = new EditorFileViewModel(path, languageService);
         SelectFile(path);
     }
 

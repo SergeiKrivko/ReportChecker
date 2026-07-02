@@ -43,6 +43,9 @@
     <Project Path="Studio/Studio.Services/Studio.Services.csproj" />
     <Project Path="Studio/Studio/Studio.csproj" />
   </Folder>
+  <Folder Name="/Studio/LanguageProviders/">
+    <Project Path="Studio/LanguageProviders/Studio.LanguageProviders.Latex/Studio.LanguageProviders.Latex.csproj" />
+  </Folder>
   <Folder Name="/Workflows/">
     <File Path=".github/workflows/cli.yml" />
     <File Path=".github/workflows/main.yml" />

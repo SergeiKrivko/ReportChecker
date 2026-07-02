@@ -8,6 +8,7 @@ using ReactiveUI.Avalonia.Splat;
 using ReportChecker.Studio.Abstractions;
 using ReportChecker.Studio.ViewModels;
 using ReportChecker.Studio.Views;
+using Studio.LanguageProviders.Latex;
 using Studio.Services;
 
 namespace ReportChecker.Studio;
@@ -37,6 +38,8 @@ sealed class Program
                 {
                     // Services
                     services.AddSingleton<IProjectService, ProjectService>();
+                    services.AddSingleton<ILanguageService, LanguageService>();
+                    services.AddSingleton<ILanguageProviderFactory, LatexLanguageProviderFactory>();
                     services.AddSingleton<ISettingsSection>(_ =>
                         SettingsFile.Open(Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                             "SergeiKrivko", "ReportChecker", "settings.xml")));

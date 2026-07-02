@@ -1,0 +1,387 @@
+﻿{
+  "core": {
+    "commands": [
+      {
+        "name": "textbf",
+        "args": [
+          { "type": "text", "description": "Текст для выделения жирным" }
+        ],
+        "description": "Выделяет текст жирным шрифтом"
+      },
+      {
+        "name": "textit",
+        "args": [
+          { "type": "text", "description": "Текст для выделения курсивом" }
+        ],
+        "description": "Выделяет текст курсивом"
+      },
+      {
+        "name": "underline",
+        "args": [
+          { "type": "text", "description": "Текст для подчеркивания" }
+        ],
+        "description": "Подчеркивает текст"
+      },
+      {
+        "name": "emph",
+        "args": [
+          { "type": "text", "description": "Текст для эмфазы" }
+        ],
+        "description": "Выделяет текст эмфазой (обычно курсив)"
+      },
+      {
+        "name": "sqrt",
+        "args": [
+          { "type": "number", "description": "Степень корня", "optional": true },
+          { "type": "text", "description": "Подкоренное выражение" }
+        ],
+        "description": "Квадратный корень (или корень n-й степени)"
+      },
+      {
+        "name": "frac",
+        "args": [
+          { "type": "text", "description": "Числитель" },
+          { "type": "text", "description": "Знаменатель" }
+        ],
+        "description": "Создает дробь"
+      },
+      {
+        "name": "includegraphics",
+        "args": [
+          {
+            "type": "keyvalue",
+            "options": [
+              { "key": "width", "type": "dimension", "description": "Ширина изображения" },
+              { "key": "height", "type": "dimension", "description": "Высота изображения" },
+              { "key": "scale", "type": "number", "description": "Масштаб (0.5 = 50%)" },
+              { "key": "angle", "type": "number", "description": "Угол поворота в градусах" },
+              { "key": "keepaspectratio", "type": "boolean", "description": "Сохранять пропорции" }
+            ],
+            "optional": true,
+            "description": "Опции изображения"
+          },
+          {
+            "type": "file",
+            "extensions": [".png", ".jpg", ".jpeg", ".pdf", ".eps"],
+            "description": "Путь к изображению"
+          }
+        ],
+        "description": "Вставляет изображение"
+      },
+      {
+        "name": "cite",
+        "args": [
+          { "type": "bibtex", "description": "BibTeX-ключ" }
+        ],
+        "description": "Создает ссылку на источник"
+      },
+      {
+        "name": "citep",
+        "args": [
+          { "type": "bibtex", "description": "BibTeX-ключ" }
+        ],
+        "description": "Создает ссылку на источник в круглых скобках (пакет natbib)"
+      },
+      {
+        "name": "citet",
+        "args": [
+          { "type": "bibtex", "description": "BibTeX-ключ" }
+        ],
+        "description": "Создает ссылку на источник с автором (пакет natbib)"
+      },
+      {
+        "name": "ref",
+        "args": [
+          { "type": "label", "description": "Имя метки" }
+        ],
+        "description": "Ссылается на метку"
+      },
+      {
+        "name": "pageref",
+        "args": [
+          { "type": "label", "description": "Имя метки" }
+        ],
+        "description": "Ссылается на номер страницы метки"
+      },
+      {
+        "name": "label",
+        "args": [
+          { "type": "text", "description": "Имя метки" }
+        ],
+        "description": "Создает метку для ссылок"
+      },
+      {
+        "name": "input",
+        "args": [
+          { "type": "file", "extensions": [".tex"], "description": "Имя файла" }
+        ],
+        "description": "Вставляет содержимое другого TeX-файла"
+      },
+      {
+        "name": "include",
+        "args": [
+          { "type": "file", "extensions": [".tex"], "description": "Имя файла" }
+        ],
+        "description": "Вставляет содержимое другого TeX-файла с новой страницей"
+      },
+      {
+        "name": "section",
+        "args": [
+          { "type": "text", "description": "Заголовок раздела" },
+          { "type": "text", "description": "Короткий заголовок (для оглавления)", "optional": true }
+        ],
+        "description": "Создает раздел"
+      },
+      {
+        "name": "subsection",
+        "args": [
+          { "type": "text", "description": "Заголовок подраздела" },
+          { "type": "text", "description": "Короткий заголовок (для оглавления)", "optional": true }
+        ],
+        "description": "Создает подраздел"
+      },
+      {
+        "name": "chapter",
+        "args": [
+          { "type": "text", "description": "Заголовок главы" },
+          { "type": "text", "description": "Короткий заголовок (для оглавления)", "optional": true }
+        ],
+        "description": "Создает главу (для классов book, report)"
+      }
+    ],
+    "environments": [
+      {
+        "name": "document",
+        "args": [],
+        "description": "Основное окружение документа"
+      },
+      {
+        "name": "itemize",
+        "args": [],
+        "description": "Маркированный список"
+      },
+      {
+        "name": "enumerate",
+        "args": [],
+        "description": "Нумерованный список"
+      },
+      {
+        "name": "description",
+        "args": [],
+        "description": "Список с описаниями"
+      },
+      {
+        "name": "figure",
+        "args": [
+          {
+            "type": "keyvalue",
+            "options": [
+              { "key": "htbp", "type": "flag", "description": "Параметры размещения" },
+              { "key": "H", "type": "flag", "description": "Точно здесь" },
+              { "key": "!ht", "type": "flag", "description": "Попытаться разместить здесь" }
+            ],
+            "optional": true,
+            "description": "Параметры размещения"
+          }
+        ],
+        "description": "Окружение для рисунка"
+      },
+      {
+        "name": "table",
+        "args": [
+          {
+            "type": "keyvalue",
+            "options": [
+              { "key": "htbp", "type": "flag", "description": "Параметры размещения" },
+              { "key": "H", "type": "flag", "description": "Точно здесь" }
+            ],
+            "optional": true,
+            "description": "Параметры размещения"
+          }
+        ],
+        "description": "Окружение для таблицы"
+      },
+      {
+        "name": "tabular",
+        "args": [
+          { "type": "columnspec", "description": "Спецификация столбцов" }
+        ],
+        "description": "Создает таблицу"
+      },
+      {
+        "name": "equation",
+        "args": [],
+        "description": "Нумерованная математическая формула"
+      },
+      {
+        "name": "align",
+        "args": [],
+        "description": "Нумерованная многострочная формула (пакет amsmath)"
+      },
+      {
+        "name": "gather",
+        "args": [],
+        "description": "Нумерованная многострочная формула с центрированием (пакет amsmath)"
+      }
+    ]
+  },
+  "packages": {
+    "graphicx": {
+      "commands": [
+        {
+          "name": "scalebox",
+          "args": [
+            { "type": "number", "description": "Масштаб по горизонтали" },
+            { "type": "number", "description": "Масштаб по вертикали", "optional": true },
+            { "type": "text", "description": "Содержимое" }
+          ],
+          "description": "Масштабирует содержимое"
+        },
+        {
+          "name": "rotatebox",
+          "args": [
+            { "type": "number", "description": "Угол поворота в градусах" },
+            { "type": "text", "description": "Содержимое" }
+          ],
+          "description": "Поворачивает содержимое"
+        },
+        {
+          "name": "resizebox",
+          "args": [
+            { "type": "text", "description": "Ширина (например, 10cm или \\textwidth)" },
+            { "type": "text", "description": "Высота (например, 10cm или ! для сохранения пропорций)" },
+            { "type": "text", "description": "Содержимое" }
+          ],
+          "description": "Изменяет размер содержимого"
+        }
+      ]
+    },
+    "amsmath": {
+      "commands": [
+        {
+          "name": "text",
+          "args": [
+            { "type": "text", "description": "Текст в математической формуле" }
+          ],
+          "description": "Вставляет текст в математическом режиме"
+        },
+        {
+          "name": "binom",
+          "args": [
+            { "type": "text", "description": "Верхний аргумент" },
+            { "type": "text", "description": "Нижний аргумент" }
+          ],
+          "description": "Биномиальный коэффициент"
+        },
+        {
+          "name": "dfrac",
+          "args": [
+            { "type": "text", "description": "Числитель" },
+            { "type": "text", "description": "Знаменатель" }
+          ],
+          "description": "Дробь в displaystyle"
+        },
+        {
+          "name": "tfrac",
+          "args": [
+            { "type": "text", "description": "Числитель" },
+            { "type": "text", "description": "Знаменатель" }
+          ],
+          "description": "Дробь в textstyle"
+        }
+      ],
+      "environments": [
+        {
+          "name": "align*",
+          "args": [],
+          "description": "Многострочная формула без нумерации"
+        },
+        {
+          "name": "gather*",
+          "args": [],
+          "description": "Многострочная формула с центрированием без нумерации"
+        },
+        {
+          "name": "matrix",
+          "args": [],
+          "description": "Матрица без скобок"
+        },
+        {
+          "name": "pmatrix",
+          "args": [],
+          "description": "Матрица в круглых скобках"
+        },
+        {
+          "name": "bmatrix",
+          "args": [],
+          "description": "Матрица в квадратных скобках"
+        },
+        {
+          "name": "vmatrix",
+          "args": [],
+          "description": "Матрица в вертикальных чертах (определитель)"
+        }
+      ]
+    },
+    "hyperref": {
+      "commands": [
+        {
+          "name": "href",
+          "args": [
+            { "type": "url", "description": "URL-адрес" },
+            { "type": "text", "description": "Отображаемый текст" }
+          ],
+          "description": "Создает гиперссылку"
+        },
+        {
+          "name": "url",
+          "args": [
+            { "type": "url", "description": "URL-адрес" }
+          ],
+          "description": "Вставляет URL-адрес моноширинным шрифтом"
+        },
+        {
+          "name": "hyperref",
+          "args": [
+            { "type": "label", "description": "Имя метки" },
+            { "type": "text", "description": "Отображаемый текст" }
+          ],
+          "description": "Создает гиперссылку на метку внутри документа"
+        }
+      ]
+    },
+    "babel": {
+      "commands": [
+        {
+          "name": "selectlanguage",
+          "args": [
+            { "type": "text", "description": "Код языка (например, english, russian)" }
+          ],
+          "description": "Выбирает язык для последующего текста"
+        }
+      ]
+    },
+    "geometry": {
+      "commands": [
+        {
+          "name": "geometry",
+          "args": [
+            {
+              "type": "keyvalue",
+              "options": [
+                { "key": "a4paper", "type": "boolean", "description": "Формат A4" },
+                { "key": "left", "type": "dimension", "description": "Левое поле" },
+                { "key": "right", "type": "dimension", "description": "Правое поле" },
+                { "key": "top", "type": "dimension", "description": "Верхнее поле" },
+                { "key": "bottom", "type": "dimension", "description": "Нижнее поле" },
+                { "key": "landscape", "type": "boolean", "description": "Альбомная ориентация" }
+              ],
+              "description": "Настройки полей страницы"
+            }
+          ],
+          "description": "Устанавливает поля страницы"
+        }
+      ]
+    }
+  }
+}
