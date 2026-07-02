@@ -17,6 +17,7 @@
     <Application.Styles>
         <FluentTheme />
 
+        <StyleInclude Source="Styles/CompletionWindowStyles.axaml" />
         <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
         <avaluxUi:AvaluxUIStyles />
 

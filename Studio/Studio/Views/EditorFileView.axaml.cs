@@ -95,15 +95,13 @@ internal class CompletionData(ILanguageCompletion completion) : ICompletionData
 
     public void Complete(TextArea textArea, ISegment completionSegment, EventArgs insertionRequestEventArgs)
     {
+        var startOffset = completionSegment.Offset + completion.SelectFrom;
+        var endOffset = startOffset + completion.SelectLength;
+
         // Вставляет текст в редактор
         textArea.Document.Replace(completionSegment, completion.Text);
         if (completion.SelectLength > 0)
-        {
-            var startOffset = completionSegment.Offset + completion.SelectFrom;
-            var endOffset = startOffset + completion.SelectLength;
-
             textArea.Selection = Selection.Create(textArea, startOffset, endOffset);
-            textArea.Caret.Offset = endOffset;
-        }
+        textArea.Caret.Offset = endOffset;
     }
 }
