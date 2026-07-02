@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AvaloniaEdit.Document;
 using ReactiveUI;
 using ReportChecker.Studio.Abstractions;
+using ReportChecker.Studio.Models;
 
 namespace ReportChecker.Studio.ViewModels;
 
@@ -34,8 +35,8 @@ public class EditorFileViewModel(string path, ILanguageService languageService) 
         Document = new TextDocument(Source);
     }
 
-    public IReadOnlyList<ILanguageCompletion> GetCompletions(string triggerText)
+    public LanguageCompletions GetCompletions(string triggerText, string fileText, int offset)
     {
-        return languageService.GetCompletions(triggerText);
+        return languageService.GetCompletions(triggerText, fileText, offset);
     }
 }

@@ -1,10 +1,10 @@
-﻿namespace ReportChecker.Studio.Abstractions;
+﻿namespace ReportChecker.Studio.Models;
 
 public interface ILanguageCompletion
 {
     public string Name { get; }
     public string Text { get; }
     public string? Description { get; }
-    public int SelectFrom => 0;
+    public int SelectFrom => Text.Length;
     public int SelectLength => 0;
 }

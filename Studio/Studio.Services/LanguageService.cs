@@ -34,8 +34,10 @@ public class LanguageService : ILanguageService
         }
     }
 
-    public IReadOnlyList<ILanguageCompletion> GetCompletions(string triggerText)
+    public LanguageCompletions GetCompletions(string triggerText, string fileText, int offset)
     {
-        return _currentProvider?.GetCompletions(triggerText) ?? [];
+        if (_currentProvider == null)
+            return LanguageCompletions.Empty();
+        return _currentProvider.GetCompletions(triggerText, fileText, offset);
     }
 }

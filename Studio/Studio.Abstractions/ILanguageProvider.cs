@@ -1,6 +1,8 @@
-﻿namespace ReportChecker.Studio.Abstractions;
+﻿using ReportChecker.Studio.Models;
+
+namespace ReportChecker.Studio.Abstractions;
 
 public interface ILanguageProvider
 {
-    public IReadOnlyList<ILanguageCompletion> GetCompletions(string triggerText);
+    public LanguageCompletions GetCompletions(string triggerText, string fileText, int offset);
 }

@@ -4,14 +4,13 @@ using System.IO;
 using System.Linq;
 using Avalonia.Input;
 using Avalonia.Media;
-using AvaloniaEdit;
 using AvaloniaEdit.CodeCompletion;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Editing;
 using AvaloniaEdit.TextMate;
 using DynamicData;
 using ReactiveUI.Avalonia;
-using ReportChecker.Studio.Abstractions;
+using ReportChecker.Studio.Models;
 using ReportChecker.Studio.ViewModels;
 using TextMateSharp.Grammars;
 
@@ -65,7 +64,9 @@ public partial class EditorFileView : ReactiveUserControl<EditorFileViewModel>
 
     private void Editor_OnTextInput(object? sender, TextInputEventArgs e)
     {
-        var completions = ViewModel?.GetCompletions(e.Text ?? "");
+        if (_completionWindow != null)
+            return;
+        var completions = ViewModel?.GetCompletions(e.Text ?? "", Editor.Text, Editor.TextArea.Caret.Offset);
         if (completions == null || completions.Count == 0)
             return;
 
@@ -73,7 +74,15 @@ public partial class EditorFileView : ReactiveUserControl<EditorFileViewModel>
         IList<ICompletionData> data = _completionWindow.CompletionList.CompletionData;
 
         // Добавляем элементы автодополнения
-        data.AddRange(completions.Select(c => new CompletionData(c)));
+        data.AddRange(completions.Completions.Select(c => new CompletionData(c)));
+        if (completions.StartOffset >= 0)
+        {
+            var startOffset = completions.StartOffset;
+            var endOffset = completions.EndOffset == -1 ? Editor.TextArea.Caret.Offset : completions.EndOffset;
+            _completionWindow.CompletionList.SelectItem(Editor.Text[startOffset..endOffset]);
+            _completionWindow.StartOffset = startOffset;
+            _completionWindow.EndOffset = endOffset;
+        }
 
         _completionWindow.Show();
         _completionWindow.Closed += delegate { _completionWindow = null; };
