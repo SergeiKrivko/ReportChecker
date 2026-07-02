@@ -1,6 +1,5 @@
 ﻿using System.IO.Compression;
 using System.Text;
-using ReportChecker.Shared.Abstractions;
 using ReportChecker.Shared.Models;
 using IFormatProvider = ReportChecker.Shared.Abstractions.IFormatProvider;
 

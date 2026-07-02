@@ -14,5 +14,3 @@ public interface IFormatProvider
     public Task<SourcePack> PackSourcesAsync(string path);
     public Task<DateTime> GetUpdateTimeAsync(string path);
 }
-
-public record SourcePack(Stream Stream, string FileName, string? EntryFilePath);
