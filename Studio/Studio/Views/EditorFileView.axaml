@@ -8,8 +8,8 @@
              x:Class="ReportChecker.Studio.Views.EditorFileView"
              x:DataType="vm:EditorFileViewModel">
 
-    <avaloniaEdit:TextEditor Name="Editor" Document="{Binding Document}"
-                             ShowLineNumbers="True"
+    <avaloniaEdit:TextEditor Name="Editor" Document="{Binding Document, Mode=TwoWay}"
+                             ShowLineNumbers="True" KeyDown="Editor_OnKeyDown"
                              FontFamily="Cascadia Code,Consolas,Menlo,Monospace,Ubuntu Mono" />
 
 </UserControl>

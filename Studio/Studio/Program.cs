@@ -41,8 +41,7 @@ sealed class Program
                     services.AddSingleton<ILanguageService, LanguageService>();
                     services.AddSingleton<ILanguageProviderFactory, LatexLanguageProviderFactory>();
                     services.AddSingleton<ISettingsSection>(_ =>
-                        SettingsFile.Open(Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                            "SergeiKrivko", "ReportChecker", "settings.xml")));
+                        SettingsFile.Open(Path.Join(Config.DataPath, "settings.xml")));
 
                     // ViewModels
                     services.AddSingleton<MainWindowViewModel>();

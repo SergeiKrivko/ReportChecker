@@ -9,7 +9,7 @@ namespace Studio.Services;
 
 public class ProjectService(ISettingsSection settings) : IProjectService
 {
-    private readonly Subject<Project?> _currentProject = new();
+    private readonly BehaviorSubject<Project?> _currentProject = new(null);
     public IObservable<Project?> CurrentProject => _currentProject;
 
     private async Task<IReadOnlyList<Project>> GetAllProjects(CancellationToken ct = default)

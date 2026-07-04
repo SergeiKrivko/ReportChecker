@@ -41,11 +41,7 @@ public partial class EditorFileView : ReactiveUserControl<EditorFileViewModel>
         if (string.IsNullOrEmpty(ViewModel?.Path))
             return;
 
-        // Получаем расширение файла
         var extension = Path.GetExtension(ViewModel?.Path);
-
-        // TextMate использует расширение с точкой или без неё,
-        // но RegistryOptions.GetLanguageByExtension ожидает расширение с точкой
         var language = _registryOptions.GetLanguageByExtension(extension);
 
         if (language != null)
@@ -86,6 +82,19 @@ public partial class EditorFileView : ReactiveUserControl<EditorFileViewModel>
 
         _completionWindow.Show();
         _completionWindow.Closed += delegate { _completionWindow = null; };
+    }
+
+    private async void Editor_OnKeyDown(object? sender, KeyEventArgs e)
+    {
+        try
+        {
+            if (e.Key == Key.S && (e.KeyModifiers & KeyModifiers.Control) != 0)
+                await ViewModel!.Save();
+        }
+        catch (Exception exception)
+        {
+            Console.WriteLine(exception);
+        }
     }
 }
 

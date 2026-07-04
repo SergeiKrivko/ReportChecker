@@ -10,6 +10,7 @@
     <ToggleButton IsChecked="{Binding IsSelected}" CornerRadius="0" Command="{Binding SelectFile}">
         <StackPanel Orientation="Horizontal" Spacing="3">
             <TextBlock Text="{Binding Name}" />
+            <Border Background="Gray" IsVisible="{Binding IsModified}" Width="12" Height="12" CornerRadius="6" />
             <Button Width="20" Height="20" CornerRadius="10" Command="{Binding Close}">
                 <PathIcon Width="10" Height="10" Data="{StaticResource IconClose}" />
             </Button>
