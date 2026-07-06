@@ -46,6 +46,7 @@ sealed class Program
                     services.AddSingleton<MainWindowViewModel>();
                     services.AddSingleton<RightPanelViewModel>();
                     services.AddSingleton<ProjectSelectorViewModel>();
+                    services.AddSingleton<AuthButtonViewModel>();
                     services.AddSingleton<FileSystemViewModel>();
                     services.AddSingleton<EditorViewModel>();
                     services.AddSingleton<IssueListViewModel>();
@@ -55,6 +56,7 @@ sealed class Program
                     services.AddSingleton<MainWindow>();
                     services.AddSingleton<RightPanelView>();
                     services.AddSingleton<ProjectSelectorView>();
+                    services.AddSingleton<AuthButtonView>();
                     services.AddSingleton<FileSystemView>();
                     services.AddSingleton<EditorView>();
                     services.AddTransient<EditorTabView>();

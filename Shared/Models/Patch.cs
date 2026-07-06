@@ -4,7 +4,9 @@ public class Patch
 {
     public required Guid Id { get; init; }
     public required Guid CommentId { get; init; }
+    public Guid IssueId { get; init; }
     public required PatchStatus Status { get; init; }
+    public string? Chapter { get; init; }
     public required IReadOnlyCollection<PatchLine> Lines { get; init; }
 }
 

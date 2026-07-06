@@ -11,7 +11,10 @@
 
     <Grid RowDefinitions="Auto *" ColumnDefinitions="Auto *">
         <Border Grid.ColumnSpan="2" BorderBrush="Gray" BorderThickness="0 0 0 1">
-            <ContentControl Content="{Binding ProjectSelectorViewModel}" />
+            <Grid ColumnDefinitions="Auto * Auto">
+                <ContentControl Grid.Column="0" Content="{Binding ProjectSelectorViewModel}" />
+                <ContentControl Grid.Column="2" Content="{Binding AuthButtonViewModel}" />
+            </Grid>
         </Border>
         <Border Grid.Row="1" Grid.Column="0" BorderBrush="Gray" BorderThickness="0 0 1 0">
             <ContentControl Content="{Binding RightPanelViewModel}" />

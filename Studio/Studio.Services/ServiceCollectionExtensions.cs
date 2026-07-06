@@ -19,6 +19,8 @@ public static class ServiceCollectionExtensions
             services.AddScoped<IReportService, ReportService>();
             services.AddScoped<IIssueService, IssueService>();
             services.AddSingleton<ILanguageService, LanguageService>();
+            services.AddSingleton<ISubscriptionService, SubscriptionService>();
+            services.AddSingleton<IWebLinksService, WebLinksService>();
 
             return services;
         }

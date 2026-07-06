@@ -3,9 +3,11 @@
 public class MainWindowViewModel(
     ProjectSelectorViewModel projectSelectorViewModel,
     EditorViewModel editorViewModel,
-    ViewModels.RightPanelViewModel rightPanelViewModel) : ViewModelBase
+    RightPanelViewModel rightPanelViewModel,
+    AuthButtonViewModel authButtonViewModel) : ViewModelBase
 {
     public ProjectSelectorViewModel ProjectSelectorViewModel => projectSelectorViewModel;
+    public AuthButtonViewModel AuthButtonViewModel => authButtonViewModel;
     public RightPanelViewModel RightPanelViewModel => rightPanelViewModel;
     public EditorViewModel EditorViewModel => editorViewModel;
 }
