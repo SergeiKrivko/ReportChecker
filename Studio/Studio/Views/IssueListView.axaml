@@ -10,18 +10,13 @@
 
     <Panel>
         <ScrollViewer IsVisible="{Binding !HasSelectedIssue}">
-            <StackPanel>
-                <TextBlock>Ошибки:</TextBlock>
-                <ItemsControl ItemsSource="{Binding IssueViewModels}">
-                    <ItemsControl.DataTemplates>
-                        <DataTemplate DataType="vm:IssueViewModel">
-                            <!-- <Button Content="{Binding Issue.Title}"></Button> -->
-                            <!-- <ContentControl Content="{Binding .}" /> -->
-                            <views:IssueView DataContext="{Binding .}" />
-                        </DataTemplate>
-                    </ItemsControl.DataTemplates>
-                </ItemsControl>
-            </StackPanel>
+            <ItemsControl ItemsSource="{Binding IssueViewModels}">
+                <ItemsControl.DataTemplates>
+                    <DataTemplate DataType="vm:IssueViewModel">
+                        <views:IssueView DataContext="{Binding .}" />
+                    </DataTemplate>
+                </ItemsControl.DataTemplates>
+            </ItemsControl>
         </ScrollViewer>
         <ContentControl Content="{Binding CommentsViewModel}" IsVisible="{Binding HasSelectedIssue}" />
     </Panel>

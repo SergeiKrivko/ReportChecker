@@ -24,7 +24,7 @@ public class IssueColorConverter : IValueConverter
                 5 => "WarningColor",
                 _ => "PrimaryColor",
             },
-            IssueStatus.Closed => "",
+            IssueStatus.Closed => "BorderColor",
             IssueStatus.Fixed => "SuccessColor",
             _ => ""
         };

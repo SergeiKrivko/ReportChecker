@@ -1,0 +1,63 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ReportChecker.Studio.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:converters="clr-namespace:ReportChecker.Studio.Converters"
+             xmlns:models="clr-namespace:ReportChecker.Shared.Models;assembly=Models"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ReportChecker.Studio.Views.CommentView"
+             x:DataType="vm:CommentViewModel">
+
+    <UserControl.Resources>
+        <converters:HtmlBodyConverter x:Key="HtmlBodyConverter" />
+    </UserControl.Resources>
+
+    <Grid ColumnDefinitions="Auto *">
+        <Panel Margin="5" VerticalAlignment="Top">
+            <PathIcon Data="{StaticResource IconBot}" Width="24" Height="24"
+                      IsVisible="{Binding IsBot}" />
+            <PathIcon Data="{StaticResource IconUser}" Width="24" Height="24"
+                      IsVisible="{Binding !IsBot}" />
+        </Panel>
+        <StackPanel Grid.Column="1" Spacing="5" Margin="0 0 5 0">
+            <HtmlPanel Text="{Binding Content, Converter={StaticResource HtmlBodyConverter}}"
+                       BaseStylesheet="{DynamicResource BaseStyleSheet}" />
+            <Border IsVisible="{Binding HasPatch}" BorderBrush="Gray" BorderThickness="1" CornerRadius="6">
+                <StackPanel Orientation="Vertical" Spacing="5" Margin="5">
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Hidden">
+                        <ItemsControl ItemsSource="{Binding PatchLines}">
+                            <ItemsControl.DataTemplates>
+                                <DataTemplate DataType="models:PatchLine">
+                                    <Grid ColumnDefinitions="32 *">
+                                        <TextBlock Grid.Column="0" Text="{Binding Number}" />
+                                        <SelectableTextBlock Grid.Column="1" Text="{Binding Content}"
+                                                             FontFamily="Cascadia Code,Consolas,Menlo,Monospace,Ubuntu Mono" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.DataTemplates>
+                        </ItemsControl>
+                    </ScrollViewer>
+                    <StackPanel Orientation="Horizontal" Spacing="5">
+                        <Button Classes="Success">Применить</Button>
+                        <Button Classes="Danger">Отклонить</Button>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+            <StackPanel Orientation="Horizontal" Spacing="5" IsVisible="{Binding IsClose}">
+                <PathIcon Data="{StaticResource IconClose}" Foreground="{DynamicResource DangerColor}" />
+                <TextBlock>Ошибка закрыта</TextBlock>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="5" IsVisible="{Binding IsFixed}">
+                <PathIcon Data="{StaticResource IconCheckmark}" Foreground="{DynamicResource SuccessColor}" />
+                <TextBlock>Ошибка отмечена как исправленная</TextBlock>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="5" IsVisible="{Binding IsReopen}">
+                <PathIcon Data="{StaticResource IconPlay}" Foreground="{DynamicResource PrimaryColor}" />
+                <TextBlock>Ошибка переоткрыта</TextBlock>
+            </StackPanel>
+        </StackPanel>
+
+    </Grid>
+
+</UserControl>

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
@@ -17,9 +19,18 @@ public class CommentsViewModel(IIssueService issueService) : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
+    public IReadOnlyList<CommentViewModel> CommentViewModels
+    {
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    } = [];
+
     protected override Task OnActivateAsync(CompositeDisposable disposable)
     {
         issueService.SelectedIssue
+            .Do(e => CommentViewModels = e?.Comments
+                .Select((c, i) => new CommentViewModel(c) { IsFirstComment = i == 0 })
+                .ToList() ?? [])
             .Subscribe(e => SelectedIssue = e)
             .DisposeWith(disposable);
 

@@ -22,6 +22,12 @@ public class RightPanelViewModel(FileSystemViewModel fileSystemViewModel, IssueL
         set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
+    public bool IsOpen
+    {
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    }
+
     public double PanelWidth
     {
         get;
@@ -31,12 +37,14 @@ public class RightPanelViewModel(FileSystemViewModel fileSystemViewModel, IssueL
     public void ActivateFileSystem()
     {
         ActiveViewModel = IsFileSystemActive ? fileSystemViewModel : null;
+        IsOpen = ActiveViewModel != null;
         IsIssuesActive = false;
     }
 
     public void ActivateIssues()
     {
         ActiveViewModel = IsIssuesActive ? issueListViewModel : null;
+        IsOpen = ActiveViewModel != null;
         IsFileSystemActive = false;
     }
 }

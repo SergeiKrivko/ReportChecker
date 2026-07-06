@@ -17,7 +17,8 @@ public static class CommentConverter
             DeletedAt = dto.DeletedAt,
             ModifiedAt = dto.ModifiedAt,
             ProgressStatus = dto.ProgressStatus?.ToDomain(),
-            Status = dto.Status?.ToDomain()
+            Status = dto.Status?.ToDomain(),
+            Patch = dto.Patch?.ToDomain(),
         };
     }
 }
