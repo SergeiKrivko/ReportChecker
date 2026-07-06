@@ -1,4 +1,4 @@
-﻿namespace Studio.Services.Dtos;
+﻿namespace ReportChecker.Studio.Services.Dtos;
 
 internal class ProjectSettings
 {

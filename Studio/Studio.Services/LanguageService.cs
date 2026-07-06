@@ -1,7 +1,7 @@
 ﻿using ReportChecker.Studio.Abstractions;
 using ReportChecker.Studio.Models;
 
-namespace Studio.Services;
+namespace ReportChecker.Studio.Services;
 
 public class LanguageService : ILanguageService
 {

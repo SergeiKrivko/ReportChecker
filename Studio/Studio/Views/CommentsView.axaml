@@ -1,0 +1,62 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ReportChecker.Studio.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:models="clr-namespace:ReportChecker.Shared.Models;assembly=Models"
+             xmlns:converters="clr-namespace:ReportChecker.Studio.Converters"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ReportChecker.Studio.Views.CommentsView"
+             x:DataType="vm:CommentsViewModel">
+
+    <UserControl.Resources>
+        <converters:HtmlBodyConverter x:Key="HtmlBodyConverter" />
+    </UserControl.Resources>
+
+    <Grid RowDefinitions="Auto * Auto">
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="5" Spacing="5">
+            <Button Command="{Binding DeselectIssue}">
+                <StackPanel Orientation="Horizontal" Spacing="3">
+                    <PathIcon Data="{StaticResource IconChevronLeft}" />
+                    <TextBlock>Назад</TextBlock>
+                </StackPanel>
+            </Button>
+            <Button Command="{Binding DeselectIssue}" Classes="Success">
+                <StackPanel Orientation="Horizontal" Spacing="3">
+                    <PathIcon Data="{StaticResource IconCheckmark}" />
+                    <TextBlock>Исправлена</TextBlock>
+                </StackPanel>
+            </Button>
+            <Button Command="{Binding DeselectIssue}" Classes="Danger">
+                <StackPanel Orientation="Horizontal" Spacing="3">
+                    <PathIcon Data="{StaticResource IconClose}" />
+                    <TextBlock>Закрыть</TextBlock>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+        <ScrollViewer Grid.Row="1">
+            <ItemsControl ItemsSource="{Binding SelectedIssue.Comments}">
+                <ItemsControl.DataTemplates>
+                    <DataTemplate DataType="models:Comment">
+                        <Grid ColumnDefinitions="Auto *">
+                            <TextBlock Margin="5">A</TextBlock>
+                            <HtmlPanel Grid.Column="1" Margin="5"
+                                       Text="{Binding Content, Converter={StaticResource HtmlBodyConverter}}"
+                                       BaseStylesheet="{DynamicResource BaseStyleSheet}" />
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.DataTemplates>
+            </ItemsControl>
+        </ScrollViewer>
+        <Border Grid.Row="2" Background="{DynamicResource CanvasColor}" CornerRadius="6" Margin="5">
+            <Grid ColumnDefinitions="* Auto" Margin="5">
+                <TextBox AcceptsReturn="True" />
+                <Button Grid.Column="1" Classes="Accent" Margin="5 0 0 0"
+                        Width="32" Height="32" CornerRadius="16">
+                    <PathIcon Data="{StaticResource IconSend}" VerticalAlignment="Center" />
+                </Button>
+            </Grid>
+        </Border>
+    </Grid>
+
+</UserControl>

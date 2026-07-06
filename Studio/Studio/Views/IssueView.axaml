@@ -1,0 +1,28 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ReportChecker.Studio.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:converters="clr-namespace:ReportChecker.Studio.Converters"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ReportChecker.Studio.Views.IssueView"
+             x:DataType="vm:IssueViewModel"
+             HorizontalAlignment="Stretch">
+
+    <UserControl.Resources>
+        <converters:ResourceKeyToGeometryConverter x:Key="ResourceKeyToGeometryConverter" />
+        <converters:IssueColorConverter x:Key="IssueColorConverter" />
+    </UserControl.Resources>
+
+    <Button Command="{Binding SelectIssue}" CornerRadius="0" HorizontalAlignment="Stretch">
+        <Grid RowDefinitions="Auto Auto" ColumnDefinitions="Auto * Auto">
+            <PathIcon Grid.RowSpan="2"
+                      Data="{Binding IconKey, Converter={StaticResource ResourceKeyToGeometryConverter}}"
+                      Foreground="{Binding Issue, Converter={StaticResource IssueColorConverter}}" 
+                      Margin="0 0 5 0" />
+            <TextBlock Grid.Column="1" Grid.Row="0" Text="{Binding Issue.Title}" Margin="2" />
+            <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding Issue.Chapter}" Margin="2" FontSize="12" />
+        </Grid>
+    </Button>
+
+</UserControl>

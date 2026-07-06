@@ -13,5 +13,7 @@ public enum ProgressStatus
     Pending,
     InProgress,
     Completed,
-    Failed
+    Failed,
+    Cancelled,
+    CancellationRequested,
 }

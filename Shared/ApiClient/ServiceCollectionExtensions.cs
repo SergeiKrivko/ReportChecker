@@ -8,7 +8,7 @@ public static class ServiceCollectionExtensions
 {
     extension(IServiceCollection services)
     {
-        public IServiceCollection AddServices()
+        public IServiceCollection AddApiClient()
         {
             services.AddHttpClient("AvaluxAuth",
                 client => { client.BaseAddress = new Uri("https://auth.nachert.art"); });
@@ -25,7 +25,7 @@ public static class ServiceCollectionExtensions
             services.AddTransient<ApiHttpMessageHandler>();
             services.AddHttpClient("ReportCheckerApi")
                 .AddHttpMessageHandler<ApiHttpMessageHandler>()
-                .ConfigureHttpClient(client => { client.BaseAddress = new Uri("https://reportchecker.ru"); });
+                .ConfigureHttpClient(client => { client.BaseAddress = new Uri("https://api.reportchecker.ru"); });
             services.AddScoped<IApiClient, ApiClient>(provider =>
             {
                 var clientFactory = provider.GetRequiredService<IHttpClientFactory>();

@@ -2,10 +2,10 @@
 using AvaluxUI.Utils;
 using ReportChecker.Studio.Abstractions;
 using ReportChecker.Studio.Models;
-using Studio.Services.Converters;
-using Studio.Services.Dtos;
+using ReportChecker.Studio.Services.Converters;
+using ReportChecker.Studio.Services.Dtos;
 
-namespace Studio.Services;
+namespace ReportChecker.Studio.Services;
 
 public class ProjectService(ISettingsSection settings) : IProjectService
 {

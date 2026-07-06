@@ -2,11 +2,10 @@
 
 public class MainWindowViewModel(
     ProjectSelectorViewModel projectSelectorViewModel,
-    ViewModels.FileSystemViewModel fileSystemViewModel,
-    ViewModels.EditorViewModel editorViewModel) : ViewModelBase
+    EditorViewModel editorViewModel,
+    ViewModels.RightPanelViewModel rightPanelViewModel) : ViewModelBase
 {
-    public string Greeting { get; } = "Welcome to Avalonia!";
     public ProjectSelectorViewModel ProjectSelectorViewModel => projectSelectorViewModel;
-    public FileSystemViewModel FileSystemViewModel => fileSystemViewModel;
+    public RightPanelViewModel RightPanelViewModel => rightPanelViewModel;
     public EditorViewModel EditorViewModel => editorViewModel;
 }

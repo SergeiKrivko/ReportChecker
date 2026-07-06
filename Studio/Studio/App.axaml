@@ -3,14 +3,22 @@
              xmlns:avaluxUi="clr-namespace:AvaluxUI;assembly=AvaluxUI.Avalonia"
              x:Class="ReportChecker.Studio.App"
              RequestedThemeVariant="Default">
-  
+
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceInclude Source="avares://AvaluxUI.Avalonia/Colors.axaml"></ResourceInclude>
                 <ResourceInclude Source="avares://AvaluxUI.Avalonia/Icons.axaml"></ResourceInclude>
-                <!-- <ResourceInclude Source="Styles/Icons.axaml"></ResourceInclude> -->
+                <ResourceInclude Source="Styles/Icons.axaml"></ResourceInclude>
             </ResourceDictionary.MergedDictionaries>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Default">
+                    <x:String x:Key="BaseStyleSheet">* {color: #202020;}</x:String>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <x:String x:Key="BaseStyleSheet">* {color: #F0F0F0;}</x:String>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>
     </Application.Resources>
 

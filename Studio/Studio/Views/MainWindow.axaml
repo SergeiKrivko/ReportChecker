@@ -9,12 +9,12 @@
         Icon="/Assets/avalonia-logo.ico"
         Title="ReportChecker Studio">
 
-    <Grid RowDefinitions="Auto *" ColumnDefinitions="300 *">
+    <Grid RowDefinitions="Auto *" ColumnDefinitions="Auto *">
         <Border Grid.ColumnSpan="2" BorderBrush="Gray" BorderThickness="0 0 0 1">
             <ContentControl Content="{Binding ProjectSelectorViewModel}" />
         </Border>
         <Border Grid.Row="1" Grid.Column="0" BorderBrush="Gray" BorderThickness="0 0 1 0">
-            <ContentControl Content="{Binding FileSystemViewModel}" />
+            <ContentControl Content="{Binding RightPanelViewModel}" />
         </Border>
         <ContentControl Content="{Binding EditorViewModel}" Grid.Row="1" Grid.Column="1" />
     </Grid>

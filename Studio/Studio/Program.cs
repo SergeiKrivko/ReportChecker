@@ -9,7 +9,7 @@ using ReportChecker.Studio.Abstractions;
 using ReportChecker.Studio.ViewModels;
 using ReportChecker.Studio.Views;
 using Studio.LanguageProviders.Latex;
-using Studio.Services;
+using ReportChecker.Studio.Services;
 
 namespace ReportChecker.Studio;
 
@@ -37,25 +37,31 @@ sealed class Program
                 services =>
                 {
                     // Services
-                    services.AddSingleton<IProjectService, ProjectService>();
-                    services.AddSingleton<ILanguageService, LanguageService>();
+                    services.AddServices();
                     services.AddSingleton<ILanguageProviderFactory, LatexLanguageProviderFactory>();
                     services.AddSingleton<ISettingsSection>(_ =>
                         SettingsFile.Open(Path.Join(Config.DataPath, "settings.xml")));
 
                     // ViewModels
                     services.AddSingleton<MainWindowViewModel>();
+                    services.AddSingleton<RightPanelViewModel>();
                     services.AddSingleton<ProjectSelectorViewModel>();
                     services.AddSingleton<FileSystemViewModel>();
                     services.AddSingleton<EditorViewModel>();
+                    services.AddSingleton<IssueListViewModel>();
+                    services.AddSingleton<CommentsViewModel>();
 
                     //Views
                     services.AddSingleton<MainWindow>();
+                    services.AddSingleton<RightPanelView>();
                     services.AddSingleton<ProjectSelectorView>();
                     services.AddSingleton<FileSystemView>();
                     services.AddSingleton<EditorView>();
                     services.AddTransient<EditorTabView>();
                     services.AddTransient<EditorFileView>();
+                    services.AddSingleton<IssueListView>();
+                    services.AddTransient<IssueView>();
+                    services.AddSingleton<CommentsView>();
                 },
                 withResolver: sp => { ServiceProvider = sp; }
             );

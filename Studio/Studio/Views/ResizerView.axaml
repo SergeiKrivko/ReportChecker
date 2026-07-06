@@ -1,0 +1,14 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:views="clr-namespace:ReportChecker.Studio.Views"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ReportChecker.Studio.Views.ResizerView" x:DataType="views:ResizerView">
+    <Panel Name="Panel">
+        <Border Width="{Binding BorderWidth}" VerticalAlignment="Stretch" IsVisible="{Binding IsVertical}" Background="Transparent"
+                PointerPressed="OnPointerPressed" PointerReleased="OnPointerReleased" PointerMoved="OnPointerMoved" />
+        <Border Height="{Binding BorderWidth}" HorizontalAlignment="Stretch" IsVisible="{Binding !IsVertical}" Background="Transparent"
+                PointerPressed="OnPointerPressed" PointerReleased="OnPointerReleased" PointerMoved="OnPointerMoved" />
+    </Panel>
+</UserControl>

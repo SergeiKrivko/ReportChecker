@@ -1,0 +1,42 @@
+﻿using ReactiveUI;
+
+namespace ReportChecker.Studio.ViewModels;
+
+public class RightPanelViewModel(FileSystemViewModel fileSystemViewModel, IssueListViewModel issueListViewModel) : ViewModelBase
+{
+    public bool IsFileSystemActive
+    {
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    }
+
+    public bool IsIssuesActive
+    {
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    }
+
+    public ViewModelBase? ActiveViewModel
+    {
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    }
+
+    public double PanelWidth
+    {
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    } = 350;
+
+    public void ActivateFileSystem()
+    {
+        ActiveViewModel = IsFileSystemActive ? fileSystemViewModel : null;
+        IsIssuesActive = false;
+    }
+
+    public void ActivateIssues()
+    {
+        ActiveViewModel = IsIssuesActive ? issueListViewModel : null;
+        IsFileSystemActive = false;
+    }
+}

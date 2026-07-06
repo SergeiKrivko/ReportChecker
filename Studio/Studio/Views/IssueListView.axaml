@@ -1,0 +1,29 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ReportChecker.Studio.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:views="clr-namespace:ReportChecker.Studio.Views"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ReportChecker.Studio.Views.IssueListView"
+             x:DataType="vm:IssueListViewModel">
+
+    <Panel>
+        <ScrollViewer IsVisible="{Binding !HasSelectedIssue}">
+            <StackPanel>
+                <TextBlock>Ошибки:</TextBlock>
+                <ItemsControl ItemsSource="{Binding IssueViewModels}">
+                    <ItemsControl.DataTemplates>
+                        <DataTemplate DataType="vm:IssueViewModel">
+                            <!-- <Button Content="{Binding Issue.Title}"></Button> -->
+                            <!-- <ContentControl Content="{Binding .}" /> -->
+                            <views:IssueView DataContext="{Binding .}" />
+                        </DataTemplate>
+                    </ItemsControl.DataTemplates>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+        <ContentControl Content="{Binding CommentsViewModel}" IsVisible="{Binding HasSelectedIssue}" />
+    </Panel>
+
+</UserControl>

@@ -1,8 +1,8 @@
 ﻿using ReportChecker.Shared.Models;
 using ReportChecker.Studio.Models;
-using Studio.Services.Dtos;
+using ReportChecker.Studio.Services.Dtos;
 
-namespace Studio.Services.Converters;
+namespace ReportChecker.Studio.Services.Converters;
 
 internal static class ProjectSettingsConverter
 {
