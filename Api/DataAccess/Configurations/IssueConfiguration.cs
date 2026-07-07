@@ -14,7 +14,6 @@ public class IssueConfiguration : IEntityTypeConfiguration<IssueEntity>
         builder.Property(x => x.CheckId).IsRequired();
         builder.Property(x => x.Title).IsRequired();
         builder.Property(x => x.Priority).IsRequired();
-        builder.Property(x => x.Chapter).IsRequired();
 
         builder.HasMany(x => x.Comments)
             .WithOne(x => x.Issue)

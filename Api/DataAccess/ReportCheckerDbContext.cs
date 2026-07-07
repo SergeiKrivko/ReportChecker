@@ -9,6 +9,7 @@ public class ReportCheckerDbContext : DbContext
     public DbSet<CommentEntity> Comments { get; init; }
     public DbSet<ReportEntity> Reports { get; init; }
     public DbSet<IssueEntity> Issues { get; init; }
+    public DbSet<IssueLocationEntity> IssueLocations { get; init; }
     public DbSet<InstructionEntity> Instructions { get; init; }
     public DbSet<InstructionTaskEntity> InstructionTasks { get; init; }
     public DbSet<CommentReadEntity> CommentReads { get; init; }

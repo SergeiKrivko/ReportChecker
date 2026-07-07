@@ -32,6 +32,7 @@ public class CommentReadAgent
 public class IssueCreateAgent
 {
     public required string Chapter { get; init; }
+    public int Line { get; init; }
 
     public required string Title { get; init; }
 
@@ -49,6 +50,7 @@ public class CommentCreateAgent
     public string? Content { get; init; }
 
     public string? Status { get; init; }
+    public int? Line { get; init; }
 }
 
 public class ChapterAgent

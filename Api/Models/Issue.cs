@@ -8,6 +8,7 @@ public class Issue
     public IssueStatus Status { get; init; }
     public int Priority { get; init; } = 1;
     public required string Chapter { get; init; }
+    public int? Line { get; init; }
 
     public Comment[] Comments { get; init; } = [];
 }

@@ -19,4 +19,5 @@ public class CheckEntity
     public virtual GitHubCheckSourceEntity? GitHubSource { get; init; }
     public virtual FileCheckSourceEntity? FileSource { get; init; }
     public virtual LocalCheckSourceEntity? LocalSource { get; init; }
+    public virtual ICollection<IssueLocationEntity> IssueLocations { get; init; } = null!;
 }

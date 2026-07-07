@@ -41,8 +41,16 @@ public class AiService(
         {
             foreach (var comment in comments ?? [])
             {
-                await commentRepository.CreateCommentAsync(comment.IssueId, Guid.Empty, comment.Content,
-                    comment.Status is null ? null : Enum.Parse<IssueStatus>(comment.Status));
+                if (!string.IsNullOrWhiteSpace(comment.Content) || comment.Status != null)
+                    await commentRepository.CreateCommentAsync(comment.IssueId, Guid.Empty, comment.Content,
+                        comment.Status is null ? null : Enum.Parse<IssueStatus>(comment.Status));
+                if (comment.Line != null)
+                {
+                    var issue = context.Issues.FirstOrDefault(e => e.Id == comment.IssueId);
+                    if (issue != null)
+                        await issueRepository.UpdateIssueLocationAsync(comment.IssueId, context.Check.Id,
+                            issue.Chapter, comment.Line, ct);
+                }
             }
         }
 
@@ -75,7 +83,8 @@ public class AiService(
         {
             var chapter = chapters.First(e => e.Name == issue.Chapter);
             var issueId =
-                await issueRepository.CreateIssueAsync(checkId, issue.Chapter, issue.Title, issue.Priority);
+                await issueRepository.CreateIssueAsync(checkId, issue.Chapter, issue.Line, issue.Title, issue.Priority,
+                    ct);
             if (logger.IsEnabled(LogLevel.Debug))
                 logger.LogDebug("Adding issue '{title}'", issue.Title);
             var commentId =
