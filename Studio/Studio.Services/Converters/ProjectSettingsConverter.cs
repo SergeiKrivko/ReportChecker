@@ -6,7 +6,7 @@ namespace ReportChecker.Studio.Services.Converters;
 
 internal static class ProjectSettingsConverter
 {
-    public static Project ToDomain(this ProjectSettings dto, Report? report)
+    public static Project ToDomain(this ProjectSettings dto)
     {
         return new Project
         {
@@ -14,7 +14,7 @@ internal static class ProjectSettingsConverter
             Name = dto.Name,
             Path = dto.Path,
             Format = dto.Format,
-            Report = report?.Id == dto.ReportId ? report : null,
+            ReportId = dto.ReportId,
         };
     }
 
@@ -26,7 +26,7 @@ internal static class ProjectSettingsConverter
             Name = dto.Name,
             Path = dto.Path,
             Format = dto.Format,
-            ReportId = dto.Report?.Id,
+            ReportId = dto.ReportId,
         };
     }
 }

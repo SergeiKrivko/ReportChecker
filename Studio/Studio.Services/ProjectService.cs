@@ -7,7 +7,7 @@ using ReportChecker.Studio.Services.Dtos;
 
 namespace ReportChecker.Studio.Services;
 
-public class ProjectService(ISettingsSection settings) : IProjectService
+public class ProjectService(ISettingsSection settings, IReportService reportService) : IProjectService
 {
     private readonly BehaviorSubject<Project?> _currentProject = new(null);
     public IObservable<Project?> CurrentProject => _currentProject;
@@ -15,7 +15,7 @@ public class ProjectService(ISettingsSection settings) : IProjectService
     private async Task<IReadOnlyList<Project>> GetAllProjects(CancellationToken ct = default)
     {
         var projects = await settings.Get<ProjectSettings[]>("projects");
-        return projects?.Select(e => e.ToDomain(null)).ToList() ?? [];
+        return projects?.Select(e => e.ToDomain()).ToList() ?? [];
     }
 
     public async Task<IReadOnlyList<Project>> GetRecentProjects(CancellationToken ct = default)
@@ -30,6 +30,7 @@ public class ProjectService(ISettingsSection settings) : IProjectService
         await settings.Set("currentProject", project.Id);
         var newProjects = allProjects.Where(e => e.Id != project.Id).Prepend(project);
         await settings.Set("projects", newProjects);
+        await reportService.SelectReport(project.ReportId);
     }
 
     public async Task OpenProject(Project project, CancellationToken ct = default)
@@ -47,7 +48,6 @@ public class ProjectService(ISettingsSection settings) : IProjectService
             Path = path,
             Name = Path.GetFileName(path),
             Format = "Latex",
-            Report = null,
         };
         await SelectProject(project, allProjects);
     }
@@ -60,5 +60,21 @@ public class ProjectService(ISettingsSection settings) : IProjectService
         if (project == null)
             return;
         await SelectProject(project, allProjects);
+    }
+
+    public async Task SetReportId(Guid projectId, Guid reportId, CancellationToken ct = default)
+    {
+        var allProjects = await GetAllProjects(ct);
+        var newProjects = allProjects.Select(e => e.Id == projectId
+            ? new Project
+            {
+                Id = e.Id,
+                Name = e.Name,
+                Path = e.Path,
+                Format = e.Format,
+                ReportId = reportId
+            }
+            : e).ToList();
+        await settings.Set("projects", newProjects);
     }
 }
