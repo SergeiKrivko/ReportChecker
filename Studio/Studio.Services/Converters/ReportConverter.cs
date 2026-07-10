@@ -10,6 +10,7 @@ public static class ReportConverter
         {
             Id = dto.Id,
             Name = dto.Name,
+            IssueCount = dto.IssueCount?.ToDictionary() ?? [],
         };
     }
 

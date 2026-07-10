@@ -1,4 +1,5 @@
-﻿using ReportChecker.Studio.Models;
+﻿using ReportChecker.Shared.Models;
+using ReportChecker.Studio.Models;
 
 namespace ReportChecker.Studio.Abstractions;
 
@@ -10,4 +11,5 @@ public interface IProjectService
     public Task OpenProject(string path, CancellationToken ct = default);
     public Task OpenLastProject(CancellationToken ct = default);
     public Task SetReportId(Guid projectId, Guid reportId, CancellationToken ct = default);
+    public Task<SourcePack> PackCurrentProjectAsync(CancellationToken ct = default);
 }

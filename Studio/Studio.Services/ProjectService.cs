@@ -1,13 +1,19 @@
-﻿using System.Reactive.Subjects;
+﻿using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using AvaluxUI.Utils;
+using ReportChecker.Shared.Models;
 using ReportChecker.Studio.Abstractions;
 using ReportChecker.Studio.Models;
 using ReportChecker.Studio.Services.Converters;
 using ReportChecker.Studio.Services.Dtos;
+using IFormatProvider = ReportChecker.Shared.Abstractions.IFormatProvider;
 
 namespace ReportChecker.Studio.Services;
 
-public class ProjectService(ISettingsSection settings, IReportService reportService) : IProjectService
+public class ProjectService(
+    ISettingsSection settings,
+    IEnumerable<IFormatProvider> formatProviders,
+    IReportService reportService) : IProjectService
 {
     private readonly BehaviorSubject<Project?> _currentProject = new(null);
     public IObservable<Project?> CurrentProject => _currentProject;
@@ -46,7 +52,7 @@ public class ProjectService(ISettingsSection settings, IReportService reportServ
         {
             Id = Guid.NewGuid(),
             Path = path,
-            Name = Path.GetFileName(path),
+            Name = Path.GetFileName(Path.GetDirectoryName(path) ?? path),
             Format = "Latex",
         };
         await SelectProject(project, allProjects);
@@ -76,5 +82,12 @@ public class ProjectService(ISettingsSection settings, IReportService reportServ
             }
             : e).ToList();
         await settings.Set("projects", newProjects);
+    }
+
+    public async Task<SourcePack> PackCurrentProjectAsync(CancellationToken ct = default)
+    {
+        var project = await CurrentProject.FirstAsync() ?? throw new Exception("Project not selected");
+        var sourceProvider = formatProviders.First(e => e.Key == project.Format);
+        return await sourceProvider.PackSourcesAsync(project.Path);
     }
 }

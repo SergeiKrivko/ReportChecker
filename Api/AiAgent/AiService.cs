@@ -41,15 +41,22 @@ public class AiService(
         {
             foreach (var comment in comments ?? [])
             {
-                if (!string.IsNullOrWhiteSpace(comment.Content) || comment.Status != null)
-                    await commentRepository.CreateCommentAsync(comment.IssueId, Guid.Empty, comment.Content,
-                        comment.Status is null ? null : Enum.Parse<IssueStatus>(comment.Status));
-                if (comment.Line != null)
+                try
                 {
-                    var issue = context.Issues.FirstOrDefault(e => e.Id == comment.IssueId);
-                    if (issue != null)
-                        await issueRepository.UpdateIssueLocationAsync(comment.IssueId, context.Check.Id,
-                            issue.Chapter, comment.Line, ct);
+                    if (!string.IsNullOrWhiteSpace(comment.Content) || comment.Status != null)
+                        await commentRepository.CreateCommentAsync(comment.IssueId, Guid.Empty, comment.Content,
+                            comment.Status is null ? null : Enum.Parse<IssueStatus>(comment.Status));
+                    if (comment.Line != null)
+                    {
+                        var issue = context.Issues.FirstOrDefault(e => e.Id == comment.IssueId);
+                        if (issue != null)
+                            await issueRepository.UpdateIssueLocationAsync(comment.IssueId, context.Check.Id,
+                                issue.Chapter, comment.Line, ct);
+                    }
+                }
+                catch (Exception e)
+                {
+                    logger.LogError("Error when processing comment in the AI response: {message}", e.Message);
                 }
             }
         }
@@ -81,19 +88,27 @@ public class AiService(
     {
         foreach (var issue in issues)
         {
-            var chapter = chapters.First(e => e.Name == issue.Chapter);
-            var issueId =
-                await issueRepository.CreateIssueAsync(checkId, issue.Chapter, issue.Line, issue.Title, issue.Priority,
-                    ct);
-            if (logger.IsEnabled(LogLevel.Debug))
-                logger.LogDebug("Adding issue '{title}'", issue.Title);
-            var commentId =
-                await commentRepository.CreateCommentAsync(issueId, Guid.Empty, issue.Comment, IssueStatus.Open);
-            if (issue.Patch != null)
+            try
             {
-                var oldLines = chapter.Content.ToAgentLines();
-                await patchRepository.CreatePatchAsync(commentId, issue.Patch.Select(e => e.ToDomain(oldLines)),
-                    PatchStatus.Completed, ct);
+                var chapter = chapters.First(e => e.Name == issue.Chapter);
+                var issueId =
+                    await issueRepository.CreateIssueAsync(checkId, issue.Chapter, issue.Line, issue.Title,
+                        issue.Priority,
+                        ct);
+                if (logger.IsEnabled(LogLevel.Debug))
+                    logger.LogDebug("Adding issue '{title}'", issue.Title);
+                var commentId =
+                    await commentRepository.CreateCommentAsync(issueId, Guid.Empty, issue.Comment, IssueStatus.Open);
+                if (issue.Patch != null)
+                {
+                    var oldLines = chapter.Content.ToAgentLines();
+                    await patchRepository.CreatePatchAsync(commentId, issue.Patch.Select(e => e.ToDomain(oldLines)),
+                        PatchStatus.Completed, ct);
+                }
+            }
+            catch (Exception e)
+            {
+                logger.LogError("Error when processing issue in the AI response: {message}", e.Message);
             }
         }
     }

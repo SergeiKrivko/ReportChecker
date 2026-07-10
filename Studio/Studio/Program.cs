@@ -5,11 +5,13 @@ using AvaluxUI.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI.Avalonia;
 using ReactiveUI.Avalonia.Splat;
+using ReportChecker.Shared.FormatProviders.Latex;
 using ReportChecker.Studio.Abstractions;
 using ReportChecker.Studio.ViewModels;
 using ReportChecker.Studio.Views;
 using Studio.LanguageProviders.Latex;
 using ReportChecker.Studio.Services;
+using IFormatProvider = ReportChecker.Shared.Abstractions.IFormatProvider;
 
 namespace ReportChecker.Studio;
 
@@ -38,6 +40,7 @@ sealed class Program
                 {
                     // Services
                     services.AddServices();
+                    services.AddSingleton<IFormatProvider, LatexFormatProvider>();
                     services.AddSingleton<ILanguageProviderFactory, LatexLanguageProviderFactory>();
                     services.AddSingleton<ISettingsSection>(_ =>
                         SettingsFile.Open(Path.Join(Config.DataPath, "settings.xml")));
@@ -51,6 +54,7 @@ sealed class Program
                     services.AddSingleton<EditorViewModel>();
                     services.AddSingleton<IssueListViewModel>();
                     services.AddSingleton<CommentsViewModel>();
+                    services.AddSingleton<ReportPanelViewModel>();
 
                     //Views
                     services.AddSingleton<MainWindow>();
@@ -64,6 +68,7 @@ sealed class Program
                     services.AddSingleton<IssueListView>();
                     services.AddTransient<IssueView>();
                     services.AddSingleton<CommentsView>();
+                    services.AddSingleton<ReportPanelView>();
                 },
                 withResolver: sp => { ServiceProvider = sp; }
             );

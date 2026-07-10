@@ -10,6 +10,9 @@ public class WebLinksService : IWebLinksService
     public void GoToSubscriptions() => OpenUrl($"{CiteUrl}/subscriptions");
     public void GoToAccounts() => OpenUrl($"{CiteUrl}/auth");
     public void GoToStatistics() => OpenUrl($"{CiteUrl}/statistics");
+    public void GoToReport(Guid reportId) => OpenUrl($"{CiteUrl}/reports/{reportId}");
+
+    public void GoToReportSettings(Guid reportId) => OpenUrl($"{CiteUrl}/reports/{reportId}/settings");
 
     private static void OpenUrl(string url)
     {

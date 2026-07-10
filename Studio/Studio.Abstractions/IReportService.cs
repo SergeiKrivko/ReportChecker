@@ -11,4 +11,5 @@ public interface IReportService
     public void SelectReport(Report? report);
     public Task SelectReport(Guid reportId);
     public Task SelectReport(Guid? reportId);
+    public Task<Guid> CreateAsync(SourcePack pack, string name, CancellationToken ct = default);
 }

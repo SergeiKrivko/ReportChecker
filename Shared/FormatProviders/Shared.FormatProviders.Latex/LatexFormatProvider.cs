@@ -29,7 +29,7 @@ public class LatexFormatProvider : IFormatProvider
         }
 
         memoryStream.Seek(0, SeekOrigin.Begin);
-        return new SourcePack(memoryStream, Path.GetFileName(Path.ChangeExtension(path, ".zip")),
+        return new SourcePack(Key, memoryStream, Path.GetFileName(Path.ChangeExtension(path, ".zip")),
             Path.GetFileName(path));
     }
 

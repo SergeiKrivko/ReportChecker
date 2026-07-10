@@ -25,7 +25,7 @@ public static class ServiceCollectionExtensions
             services.AddTransient<ApiHttpMessageHandler>();
             services.AddHttpClient("ReportCheckerApi")
                 .AddHttpMessageHandler<ApiHttpMessageHandler>()
-                .ConfigureHttpClient(client => { client.BaseAddress = new Uri("https://api.reportchecker.ru"); });
+                .ConfigureHttpClient(client => { client.BaseAddress = new Uri("http://localhost:5000"); });
             services.AddScoped<IApiClient, ApiClient>(provider =>
             {
                 var clientFactory = provider.GetRequiredService<IHttpClientFactory>();

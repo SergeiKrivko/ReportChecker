@@ -8,10 +8,16 @@
              x:Class="ReportChecker.Studio.Views.ProjectSelectorView"
              x:DataType="vm:ProjectSelectorViewModel">
 
-    <Button CornerRadius="0" Height="48">
+    <Button CornerRadius="0" Height="48" MinWidth="250">
         <Panel>
-            <TextBlock Text="{Binding CurrentProject^.Name}" IsVisible="{Binding IsProjectSelected^}"></TextBlock>
-            <TextBlock IsVisible="{Binding !IsProjectSelected^}">Проект не выбран</TextBlock>
+            <StackPanel Orientation="Horizontal" Spacing="5" IsVisible="{Binding IsProjectSelected^}">
+                <PathIcon Data="{StaticResource IconBot}" />
+                <TextBlock Text="{Binding CurrentProject^.Name}" VerticalAlignment="Center" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="5" IsVisible="{Binding !IsProjectSelected^}">
+                <PathIcon Data="{StaticResource IconHelp}" />
+                <TextBlock VerticalAlignment="Center">Проект не выбран</TextBlock>
+            </StackPanel>
         </Panel>
         <Button.Flyout>
             <Flyout>
