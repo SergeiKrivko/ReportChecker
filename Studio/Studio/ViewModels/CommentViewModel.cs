@@ -13,6 +13,7 @@ public class CommentViewModel(Comment comment) : ViewModelBase
     public bool IsClose => comment.Status == IssueStatus.Closed;
     public bool IsFixed => comment.Status == IssueStatus.Fixed;
     public bool IsBot => comment.UserId == Guid.Empty;
+    public bool IsProgress => comment.ProgressStatus == ProgressStatus.InProgress;
 
     public bool HasPatch => comment.Patch != null;
     public bool IsPatchApplied => comment.Patch?.Status == PatchStatus.Applied;

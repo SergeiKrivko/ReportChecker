@@ -8,12 +8,12 @@ public static class CommentConverter
     {
         return new Comment
         {
-            Id = dto.Id,
-            IssueId = dto.IssueId,
+            Id = dto.Id ?? throw new Exception(),
+            IssueId = dto.IssueId ?? throw new Exception(),
             IsRead = dto.IsRead,
-            UserId = dto.UserId,
+            UserId = dto.UserId ?? throw new Exception(),
             Content = dto.Content,
-            CreatedAt = dto.CreatedAt,
+            CreatedAt = dto.CreatedAt ?? throw new Exception(),
             DeletedAt = dto.DeletedAt,
             ModifiedAt = dto.ModifiedAt,
             ProgressStatus = dto.ProgressStatus?.ToDomain(),

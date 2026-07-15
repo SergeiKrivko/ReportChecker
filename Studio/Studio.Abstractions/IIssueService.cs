@@ -8,6 +8,7 @@ public interface IIssueService
     public IObservable<Issue?> SelectedIssue { get; }
 
     public IObservable<object> Load();
+    public Task ReloadIssues();
 
     public void SelectIssue(Issue? issue);
 }

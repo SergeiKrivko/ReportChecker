@@ -28,4 +28,15 @@ public static class IssueConverter
             _ => IssueStatus.Open,
         };
     }
+
+    public static ReportChecker.Shared.ApiClient.IssueStatus ToDto(this IssueStatus dtoStatus)
+    {
+        return dtoStatus switch
+        {
+            IssueStatus.Open => Shared.ApiClient.IssueStatus.Open,
+            IssueStatus.Closed => Shared.ApiClient.IssueStatus.Closed,
+            IssueStatus.Fixed => Shared.ApiClient.IssueStatus.Fixed,
+            _ => Shared.ApiClient.IssueStatus.Open,
+        };
+    }
 }

@@ -18,6 +18,7 @@ public class IssueListViewModel(
 {
     public IObservable<Report?> CurrentReport => reportService.CurrentReport;
 
+    private IReadOnlyList<Issue> _issues = [];
     private readonly Dictionary<Guid, IssueViewModel> _issueViewModels = [];
 
     public IReadOnlyList<IssueViewModel> IssueViewModels
@@ -32,11 +33,30 @@ public class IssueListViewModel(
         set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
+    public bool IsActiveIssues
+    {
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    } = true;
+
+    public bool IsClosedIssues
+    {
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    }
+
+    public bool IsFixedIssues
+    {
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    }
+
     public CommentsViewModel CommentsViewModel => commentsViewModel;
 
     protected override async Task OnActivateAsync(CompositeDisposable disposable)
     {
         issueService.AllIssues
+            .Do(e => _issues = e)
             .Subscribe(UpdateIssues)
             .DisposeWith(disposable);
         issueService.SelectedIssue
@@ -50,7 +70,11 @@ public class IssueListViewModel(
 
     private void UpdateIssues(IReadOnlyList<Issue> issues)
     {
-        IssueViewModels = issues.Select(issue =>
+        var status = IsActiveIssues ? IssueStatus.Open : IsClosedIssues ? IssueStatus.Closed : IssueStatus.Fixed;
+        IssueViewModels = issues
+            .Where(issue => issue.Status == status)
+            .OrderBy(issue => issue.Priority)
+            .Select(issue =>
         {
             if (_issueViewModels.TryGetValue(issue.Id, out var viewModel))
                 return viewModel;
@@ -58,5 +82,34 @@ public class IssueListViewModel(
             _issueViewModels[issue.Id] = viewModel;
             return viewModel;
         }).ToList();
+    }
+
+    public void ShowActiveIssues()
+    {
+        IsActiveIssues = true;
+        IsClosedIssues = false;
+        IsFixedIssues = false;
+        UpdateIssues(_issues);
+    }
+
+    public void ShowClosedIssues()
+    {
+        IsActiveIssues = false;
+        IsClosedIssues = true;
+        IsFixedIssues = false;
+        UpdateIssues(_issues);
+    }
+
+    public void ShowFixedIssues()
+    {
+        IsActiveIssues = false;
+        IsClosedIssues = false;
+        IsFixedIssues = true;
+        UpdateIssues(_issues);
+    }
+
+    public async Task ReloadIssues()
+    {
+        await issueService.ReloadIssues();
     }
 }

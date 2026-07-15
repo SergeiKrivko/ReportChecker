@@ -9,15 +9,47 @@
              x:DataType="vm:IssueListViewModel">
 
     <Panel>
-        <ScrollViewer IsVisible="{Binding !HasSelectedIssue}">
-            <ItemsControl ItemsSource="{Binding IssueViewModels}">
-                <ItemsControl.DataTemplates>
-                    <DataTemplate DataType="vm:IssueViewModel">
-                        <views:IssueView DataContext="{Binding .}" />
-                    </DataTemplate>
-                </ItemsControl.DataTemplates>
-            </ItemsControl>
-        </ScrollViewer>
+        <Grid RowDefinitions="Auto *" IsVisible="{Binding !HasSelectedIssue}">
+            <Border Grid.Row="0" BorderBrush="{DynamicResource BorderColor}" BorderThickness="0 0 0 1">
+                <StackPanel Orientation="Horizontal" Spacing="5">
+                    <Button CornerRadius="0" Command="{Binding ReloadIssues}">
+                        ↻
+                    </Button>
+                    <StackPanel Orientation="Horizontal" Spacing="0">
+                        <ToggleButton CornerRadius="0" VerticalAlignment="Stretch" IsChecked="{Binding IsActiveIssues}"
+                                      Command="{Binding ShowActiveIssues}">
+                            <StackPanel Orientation="Horizontal" Spacing="3">
+                                <PathIcon Data="{StaticResource IconShieldAlert}" />
+                                <TextBlock VerticalAlignment="Center">Активные</TextBlock>
+                            </StackPanel>
+                        </ToggleButton>
+                        <ToggleButton CornerRadius="0" VerticalAlignment="Stretch" IsChecked="{Binding IsClosedIssues}"
+                                      Command="{Binding ShowClosedIssues}">
+                            <StackPanel Orientation="Horizontal" Spacing="3">
+                                <PathIcon Data="{StaticResource IconClose}" />
+                                <TextBlock VerticalAlignment="Center">Закрытые</TextBlock>
+                            </StackPanel>
+                        </ToggleButton>
+                        <ToggleButton CornerRadius="0" VerticalAlignment="Stretch" IsChecked="{Binding IsFixedIssues}"
+                                      Command="{Binding ShowFixedIssues}">
+                            <StackPanel Orientation="Horizontal" Spacing="3">
+                                <PathIcon Data="{StaticResource IconCheckmark}" />
+                                <TextBlock VerticalAlignment="Center">Исправленные</TextBlock>
+                            </StackPanel>
+                        </ToggleButton>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+            <ScrollViewer Grid.Row="1">
+                <ItemsControl ItemsSource="{Binding IssueViewModels}">
+                    <ItemsControl.DataTemplates>
+                        <DataTemplate DataType="vm:IssueViewModel">
+                            <views:IssueView DataContext="{Binding .}" />
+                        </DataTemplate>
+                    </ItemsControl.DataTemplates>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
         <ContentControl Content="{Binding CommentsViewModel}" IsVisible="{Binding HasSelectedIssue}" />
     </Panel>
 

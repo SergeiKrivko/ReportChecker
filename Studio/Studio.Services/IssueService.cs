@@ -24,6 +24,18 @@ public class IssueService(IReportService reportService, IApiClient apiClient) : 
             .Do(e => _allIssues.OnNext(e.Select(i => i.ToDomain()).ToList()));
     }
 
+    public async Task ReloadIssues()
+    {
+        var report = await reportService.CurrentReport.FirstAsync();
+        if (report == null)
+        {
+            _allIssues.OnNext([]);
+            return;
+        }
+        var resp = await apiClient.IssuesAllAsync(report.Id);
+        _allIssues.OnNext(resp.Select(e => e.ToDomain()).ToList());
+    }
+
     public void SelectIssue(Issue? issue)
     {
         _selectedIssue.OnNext(issue);

@@ -134,7 +134,6 @@ public class AiService(
             }, ct);
             await commentRepository.FinishCommentAsync(commentId, resp?.Comment.Content,
                 resp?.Comment.Status is null ? null : Enum.Parse<IssueStatus>(resp.Comment.Status));
-            await commentRepository.SetProgressStatusAsync(commentId, ProgressStatus.Completed);
             if (resp?.Patch != null)
             {
                 var oldLines = chapter.Content.ToAgentLines();

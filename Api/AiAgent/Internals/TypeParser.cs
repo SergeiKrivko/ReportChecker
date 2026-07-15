@@ -83,6 +83,22 @@ internal static class TypeParser
             };
         }
 
+        Type[] nullableTypes =
+        [
+            typeof(Nullable<>),
+            typeof(int?),
+            typeof(bool?),
+            typeof(Guid?),
+            typeof(DateTime?),
+            typeof(double?),
+            typeof(float?),
+            typeof(Nullable),
+        ];
+        if (nullableTypes.Any(type.IsAssignableTo))
+        {
+            return type.GenericTypeArguments[0].ToSchema();
+        }
+
         if (type.IsClass)
         {
             return new TypeSchema
@@ -94,7 +110,7 @@ internal static class TypeParser
             };
         }
 
-        throw new InvalidOperationException("This type is not allowed");
+        throw new InvalidOperationException($"Type '{type}' is not allowed");
     }
 
     private static TypeSchema ToSchema(this PropertyInfo property)

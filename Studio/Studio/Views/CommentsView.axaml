@@ -16,16 +16,25 @@
                     <TextBlock>Назад</TextBlock>
                 </StackPanel>
             </Button>
-            <Button Command="{Binding DeselectIssue}" Classes="Success">
+            <Button Command="{Binding MarkIssueAsFixed}" Classes="Success"
+                    IsVisible="{Binding IsOpened}">
                 <StackPanel Orientation="Horizontal" Spacing="3">
                     <PathIcon Data="{StaticResource IconCheckmark}" />
                     <TextBlock>Исправлена</TextBlock>
                 </StackPanel>
             </Button>
-            <Button Command="{Binding DeselectIssue}" Classes="Danger">
+            <Button Command="{Binding CloseIssue}" Classes="Danger"
+                    IsVisible="{Binding IsOpened}">
                 <StackPanel Orientation="Horizontal" Spacing="3">
                     <PathIcon Data="{StaticResource IconClose}" />
                     <TextBlock>Закрыть</TextBlock>
+                </StackPanel>
+            </Button>
+            <Button Command="{Binding ReopenIssue}" Classes="Accent"
+                    IsVisible="{Binding !IsOpened}">
+                <StackPanel Orientation="Horizontal" Spacing="3">
+                    <PathIcon Data="{StaticResource IconCircleAlert}" />
+                    <TextBlock>Переоткрыть</TextBlock>
                 </StackPanel>
             </Button>
         </StackPanel>
@@ -33,16 +42,16 @@
             <ItemsControl ItemsSource="{Binding CommentViewModels}">
                 <ItemsControl.DataTemplates>
                     <DataTemplate DataType="vm:CommentViewModel">
-                        <views:CommentView DataContext="{Binding .}"/>
+                        <views:CommentView DataContext="{Binding .}" />
                     </DataTemplate>
                 </ItemsControl.DataTemplates>
             </ItemsControl>
         </ScrollViewer>
         <Border Grid.Row="2" Background="{DynamicResource CanvasColor}" CornerRadius="6" Margin="5">
             <Grid ColumnDefinitions="* Auto" Margin="5">
-                <TextBox AcceptsReturn="True" MaxHeight="300" />
+                <TextBox AcceptsReturn="True" MaxHeight="300" Text="{Binding CommentContent, Mode=TwoWay}" />
                 <Button Grid.Column="1" Classes="Accent" Margin="5 0 0 0"
-                        Width="32" Height="32" CornerRadius="16">
+                        Width="32" Height="32" CornerRadius="16" Command="{Binding SendComment}">
                     <PathIcon Data="{StaticResource IconSend}" VerticalAlignment="Center" />
                 </Button>
             </Grid>

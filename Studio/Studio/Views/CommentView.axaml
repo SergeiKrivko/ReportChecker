@@ -21,12 +21,16 @@
                       IsVisible="{Binding !IsBot}" />
         </Panel>
         <StackPanel Grid.Column="1" Spacing="5" Margin="0 0 5 0">
+            <StackPanel Orientation="Horizontal" Spacing="5" IsVisible="{Binding IsProgress}">
+                <Arc Width="24" Height="24" Classes="Spinner"/>
+                <TextBlock VerticalAlignment="Center">Агент печатает…</TextBlock>
+            </StackPanel>
             <HtmlPanel Text="{Binding Content, Converter={StaticResource HtmlBodyConverter}}"
                        BaseStylesheet="{DynamicResource BaseStyleSheet}" />
             <Border IsVisible="{Binding HasPatch}" BorderBrush="Gray" BorderThickness="1" CornerRadius="6">
                 <StackPanel Orientation="Vertical" Spacing="5" Margin="5">
                     <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Hidden">
-                        <ItemsControl ItemsSource="{Binding PatchLines}">
+                        <ItemsControl ItemsSource="{Binding PatchLines}" Margin="0 0 0 5">
                             <ItemsControl.DataTemplates>
                                 <DataTemplate DataType="models:PatchLine">
                                     <Grid ColumnDefinitions="32 *">
@@ -53,7 +57,7 @@
                 <TextBlock>Ошибка отмечена как исправленная</TextBlock>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Spacing="5" IsVisible="{Binding IsReopen}">
-                <PathIcon Data="{StaticResource IconPlay}" Foreground="{DynamicResource PrimaryColor}" />
+                <PathIcon Data="{StaticResource IconCircleAlert}" Foreground="{DynamicResource PrimaryColor}" />
                 <TextBlock>Ошибка переоткрыта</TextBlock>
             </StackPanel>
         </StackPanel>
