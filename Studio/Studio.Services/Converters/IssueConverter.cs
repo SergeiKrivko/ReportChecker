@@ -12,6 +12,7 @@ public static class IssueConverter
             CheckId = dto.Id,
             Title = dto.Title,
             Status = dto.Status?.ToDomain(),
+            Line = dto.Line,
             Priority = dto.Priority,
             Chapter = dto.Chapter,
             Comments = dto.Comments?.Select(e => e.ToDomain()).ToList() ?? [],

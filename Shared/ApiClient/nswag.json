@@ -9,7 +9,7 @@
   },
   "codeGenerators": {
     "openApiToCSharpClient": {
-      "namespace": "ReportChecker.Cli.Services",
+      "namespace": "ReportChecker.Shared.ApiClient",
       "className": "ApiClient",
       "output": "ApiClient.cs",
       "httpClientType": "System.Net.Http.HttpClient",

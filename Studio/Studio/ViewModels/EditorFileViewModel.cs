@@ -11,7 +11,7 @@ using ReportChecker.Studio.Models;
 
 namespace ReportChecker.Studio.ViewModels;
 
-public class EditorFileViewModel(OpenedFile file, ILanguageService languageService)
+public class EditorFileViewModel(OpenedFile file, ILanguageService languageService, IFileService fileService)
     : ViewModelBase
 {
     public Guid Id => file.Id;
@@ -31,6 +31,7 @@ public class EditorFileViewModel(OpenedFile file, ILanguageService languageServi
     private string? _text;
 
     public string Path => file.Path;
+    public IObservable<FileJump> Jumps => fileService.FileJumps.Where(e => e.Path == Path);
 
     private bool _isInitialized;
 

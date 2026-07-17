@@ -2,6 +2,7 @@
 using System.Reactive.Subjects;
 using System.Reactive.Threading.Tasks;
 using AvaluxUI.Utils;
+using ReportChecker.Shared.Models;
 using ReportChecker.Studio.Abstractions;
 using ReportChecker.Studio.Models;
 using ReportChecker.Studio.Services.Settings;
@@ -14,6 +15,8 @@ public class FileService(IProjectService projectService, ISettingsSection settin
     public IObservable<IReadOnlyList<OpenedFile>> OpenedFiles => _openedFiles;
     private readonly BehaviorSubject<OpenedFile?> _currentFile = new(null);
     public IObservable<OpenedFile?> CurrentFile => _currentFile;
+    private readonly BehaviorSubject<FileJump> _fileJumps = new(new FileJump(""){IsHandled = true});
+    public IObservable<FileJump> FileJumps => _fileJumps.Where(e => !e.IsHandled);
 
     public Task OpenFile(string path) => OpenFile(path, Guid.NewGuid());
 
@@ -103,5 +106,17 @@ public class FileService(IProjectService projectService, ISettingsSection settin
         {
             await SelectFile(newFiles.Count > 0 ? newFiles[0].Path : null);
         }
+    }
+
+    public async Task JumpToFile(string path, int line)
+    {
+        await OpenFile(path);
+        _fileJumps.OnNext(new FileJump(path, line));
+    }
+
+    public async Task JumpToFile(FilePosition position)
+    {
+        await OpenFile(position.Path);
+        _fileJumps.OnNext(new FileJump(position.Path, position.Line));
     }
 }

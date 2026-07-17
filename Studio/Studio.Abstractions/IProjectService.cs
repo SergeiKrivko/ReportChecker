@@ -1,5 +1,6 @@
 ﻿using ReportChecker.Shared.Models;
 using ReportChecker.Studio.Models;
+using IFormatProvider = ReportChecker.Shared.Abstractions.IFormatProvider;
 
 namespace ReportChecker.Studio.Abstractions;
 
@@ -12,4 +13,5 @@ public interface IProjectService
     public Task OpenLastProject(CancellationToken ct = default);
     public Task SetReportId(Guid projectId, Guid reportId, CancellationToken ct = default);
     public Task<SourcePack> PackCurrentProjectAsync(CancellationToken ct = default);
+    public Task<IFormatProvider> GetFormatProviderAsync();
 }

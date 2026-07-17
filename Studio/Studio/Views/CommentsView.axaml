@@ -37,6 +37,9 @@
                     <TextBlock>Переоткрыть</TextBlock>
                 </StackPanel>
             </Button>
+            <Button Command="{Binding GoToCode}" Classes="Accent">
+                <PathIcon Data="{StaticResource IconSend}" />
+            </Button>
         </StackPanel>
         <ScrollViewer Grid.Row="1">
             <ItemsControl ItemsSource="{Binding CommentViewModels}">

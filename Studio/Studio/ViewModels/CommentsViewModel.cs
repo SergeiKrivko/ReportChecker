@@ -11,7 +11,11 @@ using ReportChecker.Studio.Abstractions;
 
 namespace ReportChecker.Studio.ViewModels;
 
-public class CommentsViewModel(ICommentsService commentsService, IIssueService issueService) : ViewModelBase
+public class CommentsViewModel(
+    ICommentsService commentsService,
+    IIssueService issueService,
+    IProjectService projectService,
+    IFileService fileService) : ViewModelBase
 {
     public Issue? SelectedIssue
     {
@@ -41,7 +45,9 @@ public class CommentsViewModel(ICommentsService commentsService, IIssueService i
     {
         commentsService.Load().Subscribe().DisposeWith(disposable);
         issueService.SelectedIssue
-            .Subscribe(e => { SelectedIssue = e;
+            .Subscribe(e =>
+            {
+                SelectedIssue = e;
                 IsOpened = e?.Status == IssueStatus.Open;
             })
             .DisposeWith(disposable);
@@ -84,5 +90,20 @@ public class CommentsViewModel(ICommentsService commentsService, IIssueService i
         if (string.IsNullOrWhiteSpace(CommentContent))
             return;
         await commentsService.CreateComment(CommentContent);
+    }
+
+    public async Task GoToCode()
+    {
+        if (SelectedIssue == null || SelectedIssue.Line == null || SelectedIssue.Chapter == null)
+            return;
+        var project = await projectService.CurrentProject.FirstAsync();
+        if (project == null)
+            return;
+        var formatProvider = await projectService.GetFormatProviderAsync();
+        var position = await formatProvider.FilePositionByChapterPosition(project.Path, SelectedIssue.Chapter,
+            SelectedIssue.Line.Value);
+        if (position == null)
+            return;
+        await fileService.JumpToFile(position.Value);
     }
 }

@@ -51,7 +51,7 @@ public class EditorViewModel(
         foreach (var path in files.Select(f => f.Path).Except(_fileViewModels.Keys).ToList())
         {
             var file = files.First(e => e.Path == path);
-            _fileViewModels.Add(path, new EditorFileViewModel(file, languageService));
+            _fileViewModels.Add(path, new EditorFileViewModel(file, languageService, fileService));
         }
         TabViewModels = files
             .Select(e => new EditorTabViewModel(e.Path, fileService, _fileViewModels[e.Path]))

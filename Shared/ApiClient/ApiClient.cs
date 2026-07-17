@@ -5938,6 +5938,9 @@ namespace ReportChecker.Shared.ApiClient
         [System.Text.Json.Serialization.JsonPropertyName("chapter")]
         public string? Chapter { get; set; } = default!;
 
+        [System.Text.Json.Serialization.JsonPropertyName("line")]
+        public int? Line { get; set; } = default!;
+
         [System.Text.Json.Serialization.JsonPropertyName("comments")]
         public System.Collections.Generic.ICollection<Comment>? Comments { get; set; } = default!;
 

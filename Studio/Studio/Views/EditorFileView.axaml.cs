@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Media;
 using AvaloniaEdit.CodeCompletion;
@@ -30,10 +31,14 @@ public partial class EditorFileView : ReactiveUserControl<EditorFileViewModel>
         Editor.TextArea.TextEntered += Editor_OnTextInput;
     }
 
+    private IDisposable? _subscription;
+
     protected override void OnDataContextChanged(EventArgs e)
     {
         base.OnDataContextChanged(e);
         ApplyHighlightingForCurrentFile();
+        _subscription?.Dispose();
+        _subscription = ViewModel?.Jumps.Subscribe(jump => NavigateToLine(jump.Line ?? 0));
     }
 
     private void ApplyHighlightingForCurrentFile()
@@ -50,10 +55,7 @@ public partial class EditorFileView : ReactiveUserControl<EditorFileViewModel>
             _textMateInstallation.SetGrammar(scope);
         }
         else
-        {
-            // Если язык не найден — отключаем подсветку
             _textMateInstallation.SetGrammar(null);
-        }
     }
 
     private CompletionWindow? _completionWindow;
@@ -94,6 +96,26 @@ public partial class EditorFileView : ReactiveUserControl<EditorFileViewModel>
         catch (Exception exception)
         {
             Console.WriteLine(exception);
+        }
+    }
+
+    private async void NavigateToLine(int lineNumber)
+    {
+        try
+        {
+            if (Editor.Document == null)
+                await Task.Delay(300);
+            if (Editor.Document == null)
+                return;
+            if (lineNumber < 1 || lineNumber > Editor.Document.LineCount)
+                return;
+            var line = Editor.Document.GetLineByNumber(lineNumber);
+            Editor.TextArea.Caret.Offset = line.Offset;
+            Editor.TextArea.Caret.BringCaretToView();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
         }
     }
 }

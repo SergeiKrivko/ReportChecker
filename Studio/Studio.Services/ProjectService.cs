@@ -90,4 +90,10 @@ public class ProjectService(
         var sourceProvider = formatProviders.First(e => e.Key == project.Format);
         return await sourceProvider.PackSourcesAsync(project.Path);
     }
+
+    public async Task<IFormatProvider> GetFormatProviderAsync()
+    {
+        var project = await CurrentProject.FirstAsync() ?? throw new Exception("Project not selected");
+        return formatProviders.First(e => e.Key == project.Format);
+    }
 }

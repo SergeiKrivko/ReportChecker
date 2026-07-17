@@ -42,42 +42,23 @@ public class LatexFormatProvider : IFormatProvider
         return Task.FromResult(time);
     }
 
-    private static int LineLevel(string line, out string title)
+    private static int LineLevel(LatexCommand command, out string title)
     {
-        line = line.Trim();
-        if (line.StartsWith("\\chapter{") && line.EndsWith('}'))
+        title = command.Argument ?? "";
+        return command.Command switch
         {
-            title = line.Substring("\\chapter{".Length).TrimEnd('}');
-            return 0;
-        }
-
-        if (line.StartsWith("\\section{") && line.EndsWith('}'))
-        {
-            title = line.Substring("\\section{".Length).TrimEnd('}');
-            return 1;
-        }
-
-        if (line.StartsWith("\\subsection{") && line.EndsWith('}'))
-        {
-            title = line.Substring("\\subsection{".Length).TrimEnd('}');
-            return 2;
-        }
-
-        if (line.StartsWith("\\subsubsection{") && line.EndsWith('}'))
-        {
-            title = line.Substring("\\subsubsection{".Length).TrimEnd('}');
-            return 3;
-        }
-
-        title = line;
-        return int.MaxValue;
+            "chapter" => 0,
+            "section" => 1,
+            "subsection" => 2,
+            "subsubsection" => 3,
+            _ => int.MaxValue,
+        };
     }
 
     private const string ChapterSeparator = "//";
-    private const string IncludePrefix = "\\include{";
-    private const string IncludeSuffix = "}";
 
-    public async Task ApplyPatchAsync(string path, string chapter, IEnumerable<PatchLine> lines, CancellationToken ct = default)
+    public async Task ApplyPatchAsync(string path, string chapter, IEnumerable<PatchLine> lines,
+        CancellationToken ct = default)
     {
         await _ApplyPatchAsync(path, chapter, lines, ct);
     }
@@ -104,19 +85,27 @@ public class LatexFormatProvider : IFormatProvider
         var path = new List<string> { fileName?.TrimStart('/') ?? "<root>" };
         var isPatchChapter = chapter == string.Join(ChapterSeparator, path.Where(e => !string.IsNullOrWhiteSpace(e)));
         var lineNumber = 0;
+        var includedFiles = new List<string>();
         var builder = new StringBuilder();
         foreach (var line in lst)
         {
-            var level = LineLevel(line, out var title);
-            if (level <= 3)
+            if (line.TryParseCommand(out var command))
             {
-                while (level < path.Count)
-                    path.RemoveAt(path.Count - 1);
-                while (level > path.Count)
-                    path.Add("");
-                path.Add(title);
-                isPatchChapter =
-                    chapter == string.Join(ChapterSeparator, path.Where(e => !string.IsNullOrWhiteSpace(e)));
+                var level = LineLevel(command, out var title);
+                if (level <= 3)
+                {
+                    while (level < path.Count)
+                        path.RemoveAt(path.Count - 1);
+                    while (level > path.Count)
+                        path.Add("");
+                    path.Add(title);
+                    isPatchChapter =
+                        chapter == string.Join(ChapterSeparator, path.Where(e => !string.IsNullOrWhiteSpace(e)));
+                }
+                else if (command is { Command: "include", Argument: not null })
+                {
+                    includedFiles.Add(command.Argument);
+                }
             }
 
             if (isPatchChapter)
@@ -155,17 +144,70 @@ public class LatexFormatProvider : IFormatProvider
             await File.WriteAllTextAsync(filePath, span.ToString(), ct);
         }
 
-        foreach (var line in text.Split('\n').Select(e => e.Trim()))
-            if (line.StartsWith(IncludePrefix) && line.EndsWith(IncludeSuffix))
+        return await includedFiles.ToAsyncEnumerable()
+            .Select(async (f, _, t) =>
+                await _ApplyPatchAsync($"{directoryName}/{f}.tex".TrimStart('/'), chapter, lines, t))
+            .AnyAsync(ct);
+    }
+
+    public async Task<FilePosition?> FilePositionByChapterPosition(string filePath, string chapter,
+        int issueChapterLine,
+        CancellationToken ct = default)
+    {
+        var fileName = Path.GetFileName(filePath);
+        var directoryName = Path.GetDirectoryName(filePath) ?? ".";
+        var lines = await File.ReadAllLinesAsync(filePath, ct);
+
+        FilePosition? result = null;
+        var path = new List<string> { fileName?.TrimStart('/') ?? "<root>" };
+        var isPatchChapter = chapter == string.Join(ChapterSeparator, path.Where(e => !string.IsNullOrWhiteSpace(e)));
+        var lineNumber = 0;
+        var fileLineNumber = 0;
+        var includedFiles = new List<string>();
+        var builder = new StringBuilder();
+        foreach (var line in lines)
+        {
+            fileLineNumber++;
+            if (line.TryParseCommand(out var command))
             {
-                var includeFileName = line.Substring(IncludePrefix.Length,
-                    line.Length - IncludePrefix.Length - IncludeSuffix.Length);
-                var flag = await _ApplyPatchAsync(
-                    $"{directoryName}/{includeFileName}.tex".TrimStart('/'), chapter, lines, ct);
-                if (flag)
-                    return flag;
+                var level = LineLevel(command, out var title);
+                if (level <= 3)
+                {
+                    while (level < path.Count)
+                        path.RemoveAt(path.Count - 1);
+                    while (level > path.Count)
+                        path.Add("");
+                    path.Add(title);
+                    isPatchChapter =
+                        chapter == string.Join(ChapterSeparator, path.Where(e => !string.IsNullOrWhiteSpace(e)));
+                }
+                else if (command is { Command: "include", Argument: not null })
+                {
+                    includedFiles.Add(command.Argument);
+                }
             }
 
-        return false;
+            if (isPatchChapter)
+            {
+                lineNumber++;
+                if (lineNumber == issueChapterLine)
+                    return new FilePosition
+                    {
+                        Path = filePath,
+                        Line = fileLineNumber,
+                    };
+            }
+            else
+            {
+                builder.AppendLine(line);
+            }
+        }
+
+        return await includedFiles.ToAsyncEnumerable()
+            .Select(async (f, _, t) =>
+                await FilePositionByChapterPosition($"{directoryName}/{f}.tex".TrimStart('/'), chapter,
+                    issueChapterLine, t))
+            .Where(e => e.HasValue)
+            .FirstOrDefaultAsync(ct);
     }
 }
