@@ -52,7 +52,8 @@
         </ScrollViewer>
         <Border Grid.Row="2" Background="{DynamicResource CanvasColor}" CornerRadius="6" Margin="5">
             <Grid ColumnDefinitions="* Auto" Margin="5">
-                <TextBox AcceptsReturn="True" MaxHeight="300" Text="{Binding CommentContent, Mode=TwoWay}" />
+                <TextBox AcceptsReturn="True" MaxHeight="300" TextWrapping="Wrap"
+                         Text="{Binding CommentContent, Mode=TwoWay}" />
                 <Button Grid.Column="1" Classes="Accent" Margin="5 0 0 0"
                         Width="32" Height="32" CornerRadius="16" Command="{Binding SendComment}">
                     <PathIcon Data="{StaticResource IconSend}" VerticalAlignment="Center" />

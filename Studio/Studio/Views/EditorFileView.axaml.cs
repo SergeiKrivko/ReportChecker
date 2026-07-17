@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
 using AvaloniaEdit.CodeCompletion;
@@ -29,6 +30,9 @@ public partial class EditorFileView : ReactiveUserControl<EditorFileViewModel>
         _registryOptions = new RegistryOptions(ThemeName.DarkPlus);
         _textMateInstallation = Editor.InstallTextMate(_registryOptions);
         Editor.TextArea.TextEntered += Editor_OnTextInput;
+        Editor.Options.HighlightCurrentLine = true;
+        Editor.TextArea.TextView.CurrentLineBackground = new SolidColorBrush(Color.FromArgb(40, 255, 255, 255));
+        Editor.TextArea.TextView.CurrentLineBorder = new Pen(0, 0);
     }
 
     private IDisposable? _subscription;
