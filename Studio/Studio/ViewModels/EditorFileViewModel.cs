@@ -11,10 +11,10 @@ using ReportChecker.Studio.Models;
 
 namespace ReportChecker.Studio.ViewModels;
 
-public class EditorFileViewModel(string path, Guid id, ILanguageService languageService)
+public class EditorFileViewModel(OpenedFile file, ILanguageService languageService)
     : ViewModelBase
 {
-    public Guid Id => id;
+    public Guid Id => file.Id;
 
     public TextDocument? Document
     {
@@ -30,7 +30,7 @@ public class EditorFileViewModel(string path, Guid id, ILanguageService language
 
     private string? _text;
 
-    public string Path => path;
+    public string Path => file.Path;
 
     private bool _isInitialized;
 
@@ -92,7 +92,7 @@ public class EditorFileViewModel(string path, Guid id, ILanguageService language
         }
         else
         {
-            Document = new TextDocument(await File.ReadAllTextAsync(path));
+            Document = new TextDocument(await File.ReadAllTextAsync(file.Path));
         }
     }
 }

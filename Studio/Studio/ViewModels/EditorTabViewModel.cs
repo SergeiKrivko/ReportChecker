@@ -4,10 +4,11 @@ using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using AvaluxUI.Controls;
 using ReactiveUI;
+using ReportChecker.Studio.Abstractions;
 
 namespace ReportChecker.Studio.ViewModels;
 
-public class EditorTabViewModel(string path, EditorViewModel editorViewModel, EditorFileViewModel fileViewModel)
+public class EditorTabViewModel(string path, IFileService fileService, EditorFileViewModel fileViewModel)
     : ViewModelBase
 {
     public string Name { get; } = System.IO.Path.GetFileName(path);
@@ -26,9 +27,8 @@ public class EditorTabViewModel(string path, EditorViewModel editorViewModel, Ed
 
     protected override void OnActivate(CompositeDisposable disposable)
     {
-        editorViewModel.SelectedFileObservable
-            .Prepend(editorViewModel.SelectedFile)
-            .Subscribe(f => IsSelected = f == path)
+        fileService.CurrentFile
+            .Subscribe(f => IsSelected = f?.Path == path)
             .DisposeWith(disposable);
         fileViewModel.ObservableForProperty(e => e.IsModified)
             .Select(e => e.Value)
@@ -60,7 +60,7 @@ public class EditorTabViewModel(string path, EditorViewModel editorViewModel, Ed
                 }
             }
 
-            editorViewModel.CloseFile(path);
+            await fileService.CloseFile(path);
         }
         catch (Exception e)
         {
@@ -70,6 +70,6 @@ public class EditorTabViewModel(string path, EditorViewModel editorViewModel, Ed
 
     public void SelectFile()
     {
-        editorViewModel.SelectFile(path);
+        fileService.SelectFile(path);
     }
 }

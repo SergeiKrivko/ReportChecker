@@ -15,6 +15,7 @@ public static class ServiceCollectionExtensions
             services.AddApiClient();
 
             services.AddScoped<IProjectService, ProjectService>();
+            services.AddScoped<IFileService, FileService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IReportService, ReportService>();
             services.AddScoped<IIssueService, IssueService>();
