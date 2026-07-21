@@ -18,7 +18,8 @@ public class IssueMargin : AbstractMargin
     private readonly IIssueService _issueService;
     private IReadOnlyList<FileIssue> _issues = [];
 
-    public IssueMargin(TextEditor editor, IObservable<IReadOnlyList<FileIssue>> issuesObservable, IIssueService issueService)
+    public IssueMargin(TextEditor editor, IObservable<IReadOnlyList<FileIssue>> issuesObservable,
+        IIssueService issueService)
     {
         _editor = editor;
         _issueService = issueService;
@@ -44,8 +45,12 @@ public class IssueMargin : AbstractMargin
         base.Render(drawingContext);
 
         var textView = _editor.TextArea.TextView;
+        Width = _editor.FontSize;
         if (_editor.Document == null)
             return;
+
+        Application.Current!.TryGetResource("SurfaceColor", ActualThemeVariant, out var backgroundColor);
+        IBrush backgroundBrush = backgroundColor is Color c ? new SolidColorBrush(c) : Brushes.Gray;
 
         foreach (var issue in _issues)
         {
@@ -59,10 +64,69 @@ public class IssueMargin : AbstractMargin
                 continue;
 
             // Рисуем маркер
-            Rect rect = new Rect(2, linePosition.Y - 5, 10, 10);
-            drawingContext.DrawEllipse(Brushes.Red, new Pen(Brushes.DarkRed, 1), rect.Position + new Vector(5, 5), 5,
-                5);
+            Rect rect = new Rect(0, linePosition.Y - Width / 2, Width, Width);
+            drawingContext.DrawRectangle(backgroundBrush, null, rect);
+            var icon = GetIssueIcon(issue.Issue)?.Clone();
+            var brush = GetIssueIconBrush(issue.Issue);
+            icon?.Transform = CreateIconTransform(icon, rect);
+            if (icon != null)
+                drawingContext.DrawGeometry(brush, null, icon);
         }
+    }
+
+    private Geometry? GetIssueIcon(Issue issue)
+    {
+        var key = GetIconKey(issue);
+        if (Application.Current?.Resources.TryGetResource(key, Application.Current.ActualThemeVariant,
+                out var resource) ?? false)
+            return resource as Geometry;
+        return null;
+    }
+
+    private static string GetIconKey(Issue issue)
+    {
+        switch (issue.Status)
+        {
+            case IssueStatus.Open:
+                if (issue.Priority >= 1 && issue.Priority <= 2)
+                    return "IconShieldAlert";
+                if (issue.Priority >= 3 && issue.Priority <= 5)
+                    return "IconTriangleAlert";
+                return "IconCircleAlert";
+            case IssueStatus.Closed:
+                return "IconClose";
+            case IssueStatus.Fixed:
+                return "IconCheckmark";
+        }
+
+        return "IconHelp";
+    }
+
+    private IBrush? GetIssueIconBrush(Issue issue)
+    {
+        var key = issue.Status switch
+        {
+            IssueStatus.Open => issue.Priority switch
+            {
+                1 => "DangerColor",
+                2 => "DangerColor",
+                3 => "WarningColor",
+                4 => "WarningColor",
+                5 => "WarningColor",
+                _ => "PrimaryColor",
+            },
+            IssueStatus.Closed => "BorderColor",
+            IssueStatus.Fixed => "SuccessColor",
+            _ => ""
+        };
+        if (Application.Current?.Resources.TryGetResource(key, Application.Current.ActualThemeVariant,
+                out var resource) == true && resource is Color color)
+        {
+            IBrush brush = new SolidColorBrush(color);
+            return brush;
+        }
+
+        return null;
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
@@ -80,5 +144,18 @@ public class IssueMargin : AbstractMargin
         var textView = _editor.TextArea.TextView;
         var line = textView.GetDocumentLineByVisualTop(y + textView.ScrollOffset.Y);
         return line.LineNumber;
+    }
+
+    private Transform CreateIconTransform(Geometry icon, Rect rect)
+    {
+        var scale = rect.Width / icon.Bounds.Width;
+        return new TransformGroup()
+        {
+            Children =
+            [
+                new ScaleTransform(scale, scale),
+                new TranslateTransform(rect.X - icon.Bounds.X, rect.Y - icon.Bounds.Y)
+            ]
+        };
     }
 }
