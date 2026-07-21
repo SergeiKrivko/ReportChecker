@@ -20,7 +20,7 @@ public class CommentsService(IIssueService issueService, IApiClient apiClient, I
     public IObservable<object?> Load()
     {
         return issueService.SelectedIssue
-            .Select(issue => Observable.FromAsync(ct => LoadComments(issue, ct)))
+            .Select(issue => Observable.FromAsync(ct => LoadComments(issue?.Issue, ct)))
             .Concat()
             .Do(e => _allComments.OnNext(e));
     }
@@ -50,13 +50,13 @@ public class CommentsService(IIssueService issueService, IApiClient apiClient, I
         var issue = await issueService.SelectedIssue.FirstAsync();
         if (report == null || issue == null)
             return;
-        await apiClient.CommentsPOSTAsync(report.Id, issue.Id, new CreateCommentSchema
+        await apiClient.CommentsPOSTAsync(report.Id, issue.Issue.Id, new CreateCommentSchema
         {
             Content = content
         }, ct);
-        var comments = await LoadComments(report, issue, ct);
+        var comments = await LoadComments(report, issue.Issue, ct);
         _allComments.OnNext(comments);
-        await StartPolling(report.Id, issue.Id);
+        await StartPolling(report.Id, issue.Issue.Id);
     }
 
     public async Task CreateComment(IssueStatus status, CancellationToken ct = default)
@@ -65,13 +65,13 @@ public class CommentsService(IIssueService issueService, IApiClient apiClient, I
         var issue = await issueService.SelectedIssue.FirstAsync();
         if (report == null || issue == null)
             return;
-        await apiClient.CommentsPOSTAsync(report.Id, issue.Id, new CreateCommentSchema
+        await apiClient.CommentsPOSTAsync(report.Id, issue.Issue.Id, new CreateCommentSchema
         {
             Status = status.ToDto(),
         }, ct);
-        var comments = await LoadComments(report, issue, ct);
+        var comments = await LoadComments(report, issue.Issue, ct);
         _allComments.OnNext(comments);
-        await StartPolling(report.Id, issue.Id);
+        await StartPolling(report.Id, issue.Issue.Id);
     }
 
     private CancellationTokenSource? _pollingCtSource;
@@ -93,8 +93,6 @@ public class CommentsService(IIssueService issueService, IApiClient apiClient, I
             var comment = comments
                 .Where(e => e.UserId == Guid.Empty)
                 .MaxBy(e => e.CreatedAt)?.ToDomain();
-            Console.WriteLine(comment?.Content);
-            Console.WriteLine(comment?.ProgressStatus);
             if (comment == null)
                 return;
             while(comment.ProgressStatus != ProgressStatus.Completed &&
@@ -103,7 +101,6 @@ public class CommentsService(IIssueService issueService, IApiClient apiClient, I
             {
                 await Task.Delay(1000, ct);
                 var resp = await apiClient.CommentsGETAsync(reportId, issueId, comment.Id, ct);
-                Console.WriteLine(resp.ProgressStatus);
                 comment = resp.ToDomain();
             };
 

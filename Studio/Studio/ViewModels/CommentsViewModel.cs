@@ -17,7 +17,7 @@ public class CommentsViewModel(
     IProjectService projectService,
     IFileService fileService) : ViewModelBase
 {
-    public Issue? SelectedIssue
+    public FileIssue? SelectedIssue
     {
         get;
         set => this.RaiseAndSetIfChanged(ref field, value);
@@ -48,7 +48,7 @@ public class CommentsViewModel(
             .Subscribe(e =>
             {
                 SelectedIssue = e;
-                IsOpened = e?.Status == IssueStatus.Open;
+                IsOpened = e?.Issue.Status == IssueStatus.Open;
             })
             .DisposeWith(disposable);
         commentsService.AllComments
@@ -94,16 +94,8 @@ public class CommentsViewModel(
 
     public async Task GoToCode()
     {
-        if (SelectedIssue == null || SelectedIssue.Line == null || SelectedIssue.Chapter == null)
+        if (SelectedIssue == null || SelectedIssue.Position == null)
             return;
-        var project = await projectService.CurrentProject.FirstAsync();
-        if (project == null)
-            return;
-        var formatProvider = await projectService.GetFormatProviderAsync();
-        var position = await formatProvider.FilePositionByChapterPosition(project.Path, SelectedIssue.Chapter,
-            SelectedIssue.Line.Value);
-        if (position == null)
-            return;
-        await fileService.JumpToFile(position.Value);
+        await fileService.JumpToFile(SelectedIssue.Position.Value);
     }
 }

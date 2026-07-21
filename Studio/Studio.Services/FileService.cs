@@ -23,14 +23,17 @@ public class FileService(IProjectService projectService, ISettingsSection settin
     private async Task OpenFile(string path, Guid id)
     {
         var oldFiles = await _openedFiles.FirstAsync();
-        var newFiles = oldFiles.Concat<OpenedFile>([
-            new OpenedFile
-            {
-                Id = id,
-                Path = path,
-            }
-        ]).ToList();
-        _openedFiles.OnNext(newFiles);
+        if (oldFiles.All(e => e.Path != path))
+        {
+            var newFiles = oldFiles.Concat<OpenedFile>([
+                new OpenedFile
+                {
+                    Id = id,
+                    Path = path,
+                }
+            ]).ToList();
+            _openedFiles.OnNext(newFiles);
+        }
         await SelectFile(path);
     }
 

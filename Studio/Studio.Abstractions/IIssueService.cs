@@ -4,11 +4,11 @@ namespace ReportChecker.Studio.Abstractions;
 
 public interface IIssueService
 {
-    public IObservable<IReadOnlyList<Issue>> AllIssues { get; }
-    public IObservable<Issue?> SelectedIssue { get; }
+    public IObservable<IReadOnlyList<FileIssue>> AllIssues { get; }
+    public IObservable<FileIssue?> SelectedIssue { get; }
 
     public IObservable<object> Load();
     public Task ReloadIssues();
 
-    public void SelectIssue(Issue? issue);
+    public void SelectIssue(FileIssue? issue);
 }

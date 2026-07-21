@@ -20,24 +20,24 @@
                     IsVisible="{Binding IsOpened}">
                 <StackPanel Orientation="Horizontal" Spacing="3">
                     <PathIcon Data="{StaticResource IconCheckmark}" />
-                    <TextBlock>Исправлена</TextBlock>
+                    <!-- <TextBlock>Исправлена</TextBlock> -->
                 </StackPanel>
             </Button>
             <Button Command="{Binding CloseIssue}" Classes="Danger"
                     IsVisible="{Binding IsOpened}">
                 <StackPanel Orientation="Horizontal" Spacing="3">
                     <PathIcon Data="{StaticResource IconClose}" />
-                    <TextBlock>Закрыть</TextBlock>
+                    <!-- <TextBlock>Закрыть</TextBlock> -->
                 </StackPanel>
             </Button>
             <Button Command="{Binding ReopenIssue}" Classes="Accent"
                     IsVisible="{Binding !IsOpened}">
                 <StackPanel Orientation="Horizontal" Spacing="3">
                     <PathIcon Data="{StaticResource IconCircleAlert}" />
-                    <TextBlock>Переоткрыть</TextBlock>
+                    <!-- <TextBlock>Переоткрыть</TextBlock> -->
                 </StackPanel>
             </Button>
-            <Button Command="{Binding GoToCode}" Classes="Accent">
+            <Button Command="{Binding GoToCode}">
                 <PathIcon Data="{StaticResource IconSend}" />
             </Button>
         </StackPanel>

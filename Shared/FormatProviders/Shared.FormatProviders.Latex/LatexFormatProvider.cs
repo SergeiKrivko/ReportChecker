@@ -158,13 +158,11 @@ public class LatexFormatProvider : IFormatProvider
         var directoryName = Path.GetDirectoryName(filePath) ?? ".";
         var lines = await File.ReadAllLinesAsync(filePath, ct);
 
-        FilePosition? result = null;
-        var path = new List<string> { fileName?.TrimStart('/') ?? "<root>" };
+        var path = new List<string> { fileName.TrimStart('/') };
         var isPatchChapter = chapter == string.Join(ChapterSeparator, path.Where(e => !string.IsNullOrWhiteSpace(e)));
         var lineNumber = 0;
         var fileLineNumber = 0;
         var includedFiles = new List<string>();
-        var builder = new StringBuilder();
         foreach (var line in lines)
         {
             fileLineNumber++;
@@ -197,10 +195,6 @@ public class LatexFormatProvider : IFormatProvider
                         Line = fileLineNumber,
                     };
             }
-            else
-            {
-                builder.AppendLine(line);
-            }
         }
 
         return await includedFiles.ToAsyncEnumerable()
@@ -209,5 +203,70 @@ public class LatexFormatProvider : IFormatProvider
                     issueChapterLine, t))
             .Where(e => e.HasValue)
             .FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<FileIssue>> IssuesToFileIssuesAsync(string filePath,
+        IReadOnlyCollection<Issue> issues, CancellationToken ct = default)
+    {
+        var fileName = Path.GetFileName(filePath);
+        var directoryName = Path.GetDirectoryName(filePath) ?? ".";
+        var lines = await File.ReadAllLinesAsync(filePath, ct);
+
+        var result = new List<FileIssue>();
+        var path = new List<string> { fileName.TrimStart('/') };
+        var currentChapter = string.Join(ChapterSeparator, path.Where(e => !string.IsNullOrWhiteSpace(e)));
+        var chapterIssues = issues
+            .Where(e => e.Chapter == currentChapter)
+            .OrderBy(e => e.Line)
+            .ToList();
+        var chapterLineNumber = 0;
+        var fileLineNumber = 0;
+        var includedFiles = new List<string>();
+        foreach (var line in lines)
+        {
+            fileLineNumber++;
+            chapterLineNumber++;
+            if (line.TryParseCommand(out var command))
+            {
+                var level = LineLevel(command, out var title);
+                if (level <= 3)
+                {
+                    result.AddRange(chapterIssues.Select(e => new FileIssue(e, null)));
+
+                    while (level < path.Count)
+                        path.RemoveAt(path.Count - 1);
+                    while (level > path.Count)
+                        path.Add("");
+                    path.Add(title);
+
+                    currentChapter = string.Join(ChapterSeparator, path.Where(e => !string.IsNullOrWhiteSpace(e)));
+                    chapterIssues = issues
+                        .Where(e => e.Chapter == currentChapter)
+                        .OrderBy(e => e.Line)
+                        .ToList();
+                    chapterLineNumber = 1;
+                }
+                else if (command is { Command: "include", Argument: not null })
+                {
+                    includedFiles.Add(command.Argument);
+                }
+            }
+
+            while (chapterIssues.Count > 0 && chapterIssues[0].Line == chapterLineNumber)
+            {
+                result.Add(new FileIssue(chapterIssues[0], new FilePosition
+                {
+                    Path = filePath,
+                    Line = fileLineNumber
+                }));
+                chapterIssues.RemoveAt(0);
+            }
+        }
+
+        return await includedFiles.ToAsyncEnumerable()
+            .SelectMany<string, FileIssue>(async (f, _, t) =>
+                await IssuesToFileIssuesAsync($"{directoryName}/{f}.tex".TrimStart('/'), issues, t))
+            .Concat(result.ToAsyncEnumerable())
+            .ToListAsync(ct);
     }
 }

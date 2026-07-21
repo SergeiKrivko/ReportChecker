@@ -18,7 +18,7 @@ public class IssueListViewModel(
 {
     public IObservable<Report?> CurrentReport => reportService.CurrentReport;
 
-    private IReadOnlyList<Issue> _issues = [];
+    private IReadOnlyList<FileIssue> _issues = [];
     private readonly Dictionary<Guid, IssueViewModel> _issueViewModels = [];
 
     public IReadOnlyList<IssueViewModel> IssueViewModels
@@ -68,18 +68,18 @@ public class IssueListViewModel(
         await reportService.GetAllReports();
     }
 
-    private void UpdateIssues(IReadOnlyList<Issue> issues)
+    private void UpdateIssues(IReadOnlyList<FileIssue> issues)
     {
         var status = IsActiveIssues ? IssueStatus.Open : IsClosedIssues ? IssueStatus.Closed : IssueStatus.Fixed;
         IssueViewModels = issues
-            .Where(issue => issue.Status == status)
-            .OrderBy(issue => issue.Priority)
+            .Where(issue => issue.Issue.Status == status)
+            .OrderBy(issue => issue.Issue.Priority)
             .Select(issue =>
         {
-            if (_issueViewModels.TryGetValue(issue.Id, out var viewModel))
+            if (_issueViewModels.TryGetValue(issue.Issue.Id, out var viewModel))
                 return viewModel;
             viewModel = new IssueViewModel(issue, issueService);
-            _issueViewModels[issue.Id] = viewModel;
+            _issueViewModels[issue.Issue.Id] = viewModel;
             return viewModel;
         }).ToList();
     }

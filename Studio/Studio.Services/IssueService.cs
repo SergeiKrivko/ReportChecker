@@ -1,42 +1,60 @@
 ﻿using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using ReportChecker.Shared.ApiClient;
+using ReportChecker.Shared.Models;
 using ReportChecker.Studio.Abstractions;
 using ReportChecker.Studio.Services.Converters;
 using Issue = ReportChecker.Shared.Models.Issue;
+using Report = ReportChecker.Shared.Models.Report;
 
 namespace ReportChecker.Studio.Services;
 
-public class IssueService(IReportService reportService, IApiClient apiClient) : IIssueService
+public class IssueService(IReportService reportService, IApiClient apiClient, IProjectService projectService) : IIssueService
 {
-    private readonly BehaviorSubject<IReadOnlyList<Issue>> _allIssues = new([]);
-    public IObservable<IReadOnlyList<Issue>> AllIssues => _allIssues;
-    private readonly BehaviorSubject<Issue?> _selectedIssue = new(null);
-    public IObservable<Issue?> SelectedIssue => _selectedIssue;
+    private readonly BehaviorSubject<IReadOnlyList<FileIssue>> _allIssues = new([]);
+    public IObservable<IReadOnlyList<FileIssue>> AllIssues => _allIssues;
+    private readonly BehaviorSubject<FileIssue?> _selectedIssue = new(null);
+    public IObservable<FileIssue?> SelectedIssue => _selectedIssue;
 
     public IObservable<object> Load()
     {
         return reportService.CurrentReport
-            .Select(report => Observable.FromAsync(ct => report == null
-                ? Task.FromResult<ICollection<ReportChecker.Shared.ApiClient.Issue>>([])
-                : apiClient.IssuesAllAsync(report.Id, ct)))
+            .Select<Report?, Task<int>>(report => ReloadIssues(report))
             .Concat()
-            .Do(e => _allIssues.OnNext(e.Select(i => i.ToDomain()).ToList()));
+            .Select<int, object>(e => e);
     }
 
     public async Task ReloadIssues()
     {
         var report = await reportService.CurrentReport.FirstAsync();
+        await ReloadIssues(report);
+    }
+
+    private async Task<int> ReloadIssues(Report? report, CancellationToken ct = default)
+    {
         if (report == null)
         {
             _allIssues.OnNext([]);
-            return;
+            return 0;
         }
-        var resp = await apiClient.IssuesAllAsync(report.Id);
-        _allIssues.OnNext(resp.Select(e => e.ToDomain()).ToList());
+
+        var resp = await apiClient.IssuesAllAsync(report.Id, ct);
+        var fileIssues = await IssuesToFileIssuesAsync(resp.Select(e => e.ToDomain()).ToList(), ct);
+        _allIssues.OnNext(fileIssues);
+        return fileIssues.Count;
     }
 
-    public void SelectIssue(Issue? issue)
+    private async Task<IReadOnlyList<FileIssue>> IssuesToFileIssuesAsync(IReadOnlyCollection<Issue> issues,
+        CancellationToken ct = default)
+    {
+        var project = await projectService.CurrentProject.FirstAsync();
+        if (project == null)
+            return [];
+        var provider = await projectService.GetFormatProviderAsync();
+        return await provider.IssuesToFileIssuesAsync(project.Path, issues, ct);
+    }
+
+    public void SelectIssue(FileIssue? issue)
     {
         _selectedIssue.OnNext(issue);
     }

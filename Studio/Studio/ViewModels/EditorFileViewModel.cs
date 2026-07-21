@@ -1,17 +1,20 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using AvaloniaEdit.Document;
 using ReactiveUI;
+using ReportChecker.Shared.Models;
 using ReportChecker.Studio.Abstractions;
 using ReportChecker.Studio.Models;
 
 namespace ReportChecker.Studio.ViewModels;
 
-public class EditorFileViewModel(OpenedFile file, ILanguageService languageService, IFileService fileService)
+public class EditorFileViewModel(OpenedFile file, ILanguageService languageService, IFileService fileService, IIssueService issueService)
     : ViewModelBase
 {
     public Guid Id => file.Id;
@@ -27,6 +30,11 @@ public class EditorFileViewModel(OpenedFile file, ILanguageService languageServi
         get;
         set => this.RaiseAndSetIfChanged(ref field, value);
     }
+
+    public IObservable<IReadOnlyList<FileIssue>> Issues => issueService.AllIssues
+        .Select(l => l.Where(e => e.Position?.Path == file.Path).ToList());
+
+    public IIssueService IssueService => issueService;
 
     private string? _text;
 

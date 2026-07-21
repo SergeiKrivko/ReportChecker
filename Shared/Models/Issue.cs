@@ -2,8 +2,8 @@
 
 public class Issue
 {
-    public System.Guid Id { get; set; }
-    public System.Guid CheckId { get; set; }
+    public Guid Id { get; set; }
+    public Guid CheckId { get; set; }
     public string? Title { get; set; }
     public IssueStatus? Status { get; set; }
     public int? Line { get; set; }

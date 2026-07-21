@@ -1,14 +1,13 @@
-﻿using Avalonia.Controls;
-using ReportChecker.Shared.Models;
+﻿using ReportChecker.Shared.Models;
 using ReportChecker.Studio.Abstractions;
 
 namespace ReportChecker.Studio.ViewModels;
 
-public class IssueViewModel(Issue issue, IIssueService issueService) : ViewModelBase
+public class IssueViewModel(FileIssue issue, IIssueService issueService) : ViewModelBase
 {
-    public Issue Issue => issue;
+    public FileIssue Issue => issue;
 
-    public string IconKey { get; } = GetIconKey(issue);
+    public string IconKey { get; } = GetIconKey(issue.Issue);
 
     private static string GetIconKey(Issue issue)
     {

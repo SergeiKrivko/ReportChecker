@@ -14,7 +14,8 @@ namespace ReportChecker.Studio.ViewModels;
 
 public class EditorViewModel(
     ILanguageService languageService,
-    IFileService fileService) : ViewModelBase
+    IFileService fileService,
+    IIssueService issueService) : ViewModelBase
 {
     public IReadOnlyList<EditorTabViewModel> TabViewModels
     {
@@ -51,7 +52,7 @@ public class EditorViewModel(
         foreach (var path in files.Select(f => f.Path).Except(_fileViewModels.Keys).ToList())
         {
             var file = files.First(e => e.Path == path);
-            _fileViewModels.Add(path, new EditorFileViewModel(file, languageService, fileService));
+            _fileViewModels.Add(path, new EditorFileViewModel(file, languageService, fileService, issueService));
         }
         TabViewModels = files
             .Select(e => new EditorTabViewModel(e.Path, fileService, _fileViewModels[e.Path]))

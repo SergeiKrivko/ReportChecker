@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
 using AvaloniaEdit.CodeCompletion;
@@ -42,7 +41,11 @@ public partial class EditorFileView : ReactiveUserControl<EditorFileViewModel>
         base.OnDataContextChanged(e);
         ApplyHighlightingForCurrentFile();
         _subscription?.Dispose();
-        _subscription = ViewModel?.Jumps.Subscribe(jump => NavigateToLine(jump.Line ?? 0));
+        if (ViewModel != null)
+        {
+            _subscription = ViewModel.Jumps.Subscribe(jump => NavigateToLine(jump.Line ?? 0));
+            Editor.TextArea.LeftMargins.Insert(1, new IssueMargin(Editor, ViewModel.Issues, ViewModel.IssueService));
+        }
     }
 
     private void ApplyHighlightingForCurrentFile()
