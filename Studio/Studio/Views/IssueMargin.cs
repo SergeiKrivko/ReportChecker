@@ -24,7 +24,7 @@ public class IssueMargin : AbstractMargin
         _editor = editor;
         _issueService = issueService;
         IsHitTestVisible = true;
-        Width = _editor.FontSize;
+        Width = _editor.FontSize + 4;
 
         // Подписка на события
         editor.TextArea.TextView.VisualLinesChanged += TextViewOnVisualLinesChanged;
@@ -45,7 +45,7 @@ public class IssueMargin : AbstractMargin
         base.Render(drawingContext);
 
         var textView = _editor.TextArea.TextView;
-        Width = _editor.FontSize;
+        var width = _editor.FontSize;
         if (_editor.Document == null)
             return;
 
@@ -64,7 +64,7 @@ public class IssueMargin : AbstractMargin
                 continue;
 
             // Рисуем маркер
-            Rect rect = new Rect(0, linePosition.Y - Width / 2, Width, Width);
+            Rect rect = new Rect(2, linePosition.Y - width / 2, width, width);
             drawingContext.DrawRectangle(backgroundBrush, null, rect);
             var icon = GetIssueIcon(issue.Issue)?.Clone();
             var brush = GetIssueIconBrush(issue.Issue);

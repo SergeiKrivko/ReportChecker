@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
@@ -26,7 +27,7 @@ public class EditorViewModel(
     private readonly Dictionary<string, EditorFileViewModel> _fileViewModels = [];
 
     public IObservable<EditorFileViewModel?> FileViewModel => fileService.CurrentFile
-        .Select(p => p == null ? null : _fileViewModels.GetValueOrDefault(p.Path));
+        .Select(p => p == null ? null : GetEditorFileViewModel(p));
 
     protected override async Task OnActivateAsync(CompositeDisposable disposable)
     {
@@ -49,13 +50,17 @@ public class EditorViewModel(
         {
             _fileViewModels.Remove(path);
         }
-        foreach (var path in files.Select(f => f.Path).Except(_fileViewModels.Keys).ToList())
-        {
-            var file = files.First(e => e.Path == path);
-            _fileViewModels.Add(path, new EditorFileViewModel(file, languageService, fileService, issueService));
-        }
         TabViewModels = files
-            .Select(e => new EditorTabViewModel(e.Path, fileService, _fileViewModels[e.Path]))
+            .Select(e => new EditorTabViewModel(e.Path, fileService, GetEditorFileViewModel(e)))
             .ToList();
+    }
+
+    private EditorFileViewModel GetEditorFileViewModel(OpenedFile file)
+    {
+        if (_fileViewModels.TryGetValue(file.Path, out var res))
+            return res;
+        var vm = new EditorFileViewModel(file, languageService, fileService, issueService);
+        _fileViewModels.Add(file.Path, vm);
+        return vm;
     }
 }
