@@ -8,14 +8,16 @@
              x:DataType="vm:EditorViewModel">
 
     <Grid RowDefinitions="Auto *">
-        <ItemsControl Grid.Row="0" ItemsSource="{Binding TabViewModels}">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <StackPanel Orientation="Horizontal" Spacing="0"/>
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-        </ItemsControl>
-        <ContentControl Grid.Row="1" Content="{Binding FileViewModel^}"/>
+        <Border BorderThickness="0 0 0 1" BorderBrush="{DynamicResource BorderColor}">
+            <ItemsControl ItemsSource="{Binding TabViewModels}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="0"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+        </Border>
+        <ContentControl Grid.Row="1" Content="{Binding FileViewModel^}" Background="{DynamicResource CanvasColor}"/>
     </Grid>
 
 </UserControl>

@@ -1,12 +1,14 @@
 ﻿using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using AvaluxUI.Utils;
+using ReportChecker.Shared.Abstractions;
 using ReportChecker.Shared.Models;
 using ReportChecker.Studio.Abstractions;
 using ReportChecker.Studio.Models;
 using ReportChecker.Studio.Services.Converters;
 using ReportChecker.Studio.Services.Dtos;
 using IFormatProvider = ReportChecker.Shared.Abstractions.IFormatProvider;
+using IReportService = ReportChecker.Studio.Abstractions.IReportService;
 
 namespace ReportChecker.Studio.Services;
 

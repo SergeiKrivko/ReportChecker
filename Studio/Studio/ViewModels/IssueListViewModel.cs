@@ -62,9 +62,6 @@ public class IssueListViewModel(
         issueService.SelectedIssue
             .Subscribe(issue => HasSelectedIssue = issue != null)
             .DisposeWith(disposable);
-        issueService.Load()
-            .Subscribe()
-            .DisposeWith(disposable);
         await reportService.GetAllReports();
     }
 

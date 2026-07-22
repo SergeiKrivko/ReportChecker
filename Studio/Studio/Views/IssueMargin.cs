@@ -49,7 +49,7 @@ public class IssueMargin : AbstractMargin
         if (_editor.Document == null)
             return;
 
-        Application.Current!.TryGetResource("SurfaceColor", ActualThemeVariant, out var backgroundColor);
+        Application.Current!.TryGetResource("CanvasColor", ActualThemeVariant, out var backgroundColor);
         IBrush backgroundBrush = backgroundColor is Color c ? new SolidColorBrush(c) : Brushes.Gray;
 
         foreach (var issue in _issues)

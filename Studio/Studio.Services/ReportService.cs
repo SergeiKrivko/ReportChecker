@@ -110,7 +110,6 @@ public class ReportService(
             do
             {
                 latestCheck = await apiClient.LatestAsync(reportId, ct);
-                Console.WriteLine(latestCheck.Status);
                 _status.OnNext(latestCheck.Status?.ToDomain() ?? ProgressStatus.Failed);
                 await Task.Delay(5000, ct);
             } while (latestCheck.Status == Shared.ApiClient.ProgressStatus.InProgress);

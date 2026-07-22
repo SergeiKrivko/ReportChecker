@@ -1,9 +1,11 @@
 ﻿using ReportChecker.Shared.Models;
+using ReportChecker.Studio.Models;
 
 namespace ReportChecker.Studio.Abstractions;
 
 public interface IIssueService
 {
+    public IObservable<LoadingStatus> Loading { get; }
     public IObservable<IReadOnlyList<FileIssue>> AllIssues { get; }
     public IObservable<FileIssue?> SelectedIssue { get; }
 
