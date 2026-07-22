@@ -13,4 +13,5 @@ public interface IIssueService
     public Task ReloadIssues();
 
     public void SelectIssue(FileIssue? issue);
+    public IReadOnlyList<FileIssue> UpdateIssuePositions(IEnumerable<FileIssue> source, string oldText, string newText);
 }

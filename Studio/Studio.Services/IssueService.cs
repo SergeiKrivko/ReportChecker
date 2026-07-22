@@ -1,5 +1,7 @@
 ﻿using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using DiffPlex.DiffBuilder;
+using DiffPlex.DiffBuilder.Model;
 using ReportChecker.Shared.ApiClient;
 using ReportChecker.Shared.Models;
 using ReportChecker.Studio.Abstractions;
@@ -10,7 +12,8 @@ using Report = ReportChecker.Shared.Models.Report;
 
 namespace ReportChecker.Studio.Services;
 
-public class IssueService(IReportService reportService, IApiClient apiClient, IProjectService projectService) : IIssueService
+public class IssueService(IReportService reportService, IApiClient apiClient, IProjectService projectService)
+    : IIssueService
 {
     private readonly BehaviorSubject<LoadingStatus> _loading = new(LoadingStatus.NotLoaded);
     public IObservable<LoadingStatus> Loading => _loading;
@@ -76,5 +79,46 @@ public class IssueService(IReportService reportService, IApiClient apiClient, IP
     public void SelectIssue(FileIssue? issue)
     {
         _selectedIssue.OnNext(issue);
+    }
+
+    public IReadOnlyList<FileIssue> UpdateIssuePositions(IEnumerable<FileIssue> source, string oldText, string newText)
+    {
+        var issues = source.OrderBy(e => e.Position?.Line ?? int.MaxValue).ToList();
+        var result = new List<FileIssue>();
+        var differ = new InlineDiffBuilder();
+        var diff = differ.BuildDiffModel(oldText, newText);
+        var oldIndex = 0;
+        var newIndex = 0;
+        foreach (var diffLine in diff.Lines)
+        {
+            Console.WriteLine(diffLine.Type switch
+            {
+                ChangeType.Inserted => "+",
+                ChangeType.Modified => "*",
+                ChangeType.Deleted => "-",
+                ChangeType.Unchanged => " ",
+                ChangeType.Imaginary => "?",
+                _ => "?",
+            } + " " + diffLine.Text);
+            if (diffLine.Type != ChangeType.Inserted)
+                oldIndex++;
+            if (diffLine.Type != ChangeType.Deleted)
+            {
+                newIndex++;
+                while (issues.Count > 0 && issues[0].Position?.Line == oldIndex)
+                {
+                    Console.WriteLine($"{oldIndex} --> {newIndex}");
+                    result.Add(new FileIssue(issues[0].Issue, new FilePosition
+                    {
+                        Path = issues[0].Position?.Path ?? "???",
+                        Line = newIndex
+                    }));
+                    issues.RemoveAt(0);
+                }
+            }
+        }
+
+        result.AddRange(issues.Select(issue => issue with { Position = null }));
+        return result;
     }
 }

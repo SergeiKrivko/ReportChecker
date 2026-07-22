@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using AvaloniaEdit.Document;
 using ReactiveUI;
@@ -14,7 +15,11 @@ using ReportChecker.Studio.Models;
 
 namespace ReportChecker.Studio.ViewModels;
 
-public class EditorFileViewModel(OpenedFile file, ILanguageService languageService, IFileService fileService, IIssueService issueService)
+public class EditorFileViewModel(
+    OpenedFile file,
+    ILanguageService languageService,
+    IFileService fileService,
+    IIssueService issueService)
     : ViewModelBase
 {
     public Guid Id => file.Id;
@@ -28,11 +33,22 @@ public class EditorFileViewModel(OpenedFile file, ILanguageService languageServi
     public bool IsModified
     {
         get;
-        set => this.RaiseAndSetIfChanged(ref field, value);
+        private set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
+    private string InitialText
+    {
+        get => field ??= File.ReadAllText(Path);
+        set;
+    }
+
+    private readonly Subject<int> _lineCount = new();
     public IObservable<IReadOnlyList<FileIssue>> Issues => issueService.AllIssues
-        .Select(l => l.Where(e => e.Position?.Path == file.Path).ToList());
+        .CombineLatest(_lineCount
+            .DistinctUntilChanged()
+            .Select(_ => Document?.Text ?? ""))
+        .Select(c =>
+            issueService.UpdateIssuePositions(c.First.Where(e => e.Position?.Path == file.Path), InitialText, c.Second));
 
     public IIssueService IssueService => issueService;
 
@@ -50,11 +66,13 @@ public class EditorFileViewModel(OpenedFile file, ILanguageService languageServi
         _isInitialized = true;
         await Load();
 
+        _lineCount.OnNext(Document?.LineCount ?? 0);
         Document.ObservableForProperty(e => e.Text)
             .Do(t =>
             {
                 IsModified = true;
                 _text = t.Value;
+                _lineCount.OnNext(Document?.LineCount ?? 0);
             })
             .Select(e => e.Value)
             .Sample(TimeSpan.FromSeconds(3))
@@ -84,6 +102,7 @@ public class EditorFileViewModel(OpenedFile file, ILanguageService languageServi
             return;
         await File.WriteAllTextAsync(Path, Document.Text);
         IsModified = false;
+        InitialText = Document.Text;
         DeleteBackup();
     }
 
