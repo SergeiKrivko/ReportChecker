@@ -13,6 +13,7 @@ public class WebLinksService : IWebLinksService
     public void GoToReport(Guid reportId) => OpenUrl($"{CiteUrl}/reports/{reportId}");
 
     public void GoToReportSettings(Guid reportId) => OpenUrl($"{CiteUrl}/reports/{reportId}/settings");
+    public void GoToIssue(Guid reportId, Guid issueId) => OpenUrl($"{CiteUrl}/reports/{reportId}/issues/{issueId}");
 
     private static void OpenUrl(string url)
     {

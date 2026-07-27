@@ -15,7 +15,9 @@ public class CommentsViewModel(
     ICommentsService commentsService,
     IIssueService issueService,
     IProjectService projectService,
-    IFileService fileService) : ViewModelBase
+    IFileService fileService,
+    IWebLinksService webLinksService,
+    IReportService reportService) : ViewModelBase
 {
     public FileIssue? SelectedIssue
     {
@@ -97,5 +99,13 @@ public class CommentsViewModel(
         if (SelectedIssue == null || SelectedIssue.Position == null)
             return;
         await fileService.JumpToFile(SelectedIssue.Position.Value);
+    }
+
+    public async Task OpenInBrowser()
+    {
+        var report = await reportService.CurrentReport.FirstAsync();
+        if (report == null || SelectedIssue == null)
+            return;
+        webLinksService.GoToIssue(report.Id, SelectedIssue.Issue.Id);
     }
 }

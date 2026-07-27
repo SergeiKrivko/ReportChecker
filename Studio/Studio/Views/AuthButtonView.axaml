@@ -72,10 +72,28 @@
                             </StackPanel>
                         </Grid>
                         <Separator />
-                        <Button HorizontalAlignment="Stretch" Command="{Binding GoToStatistics}">Использование</Button>
-                        <Button HorizontalAlignment="Stretch" Command="{Binding GoToSubscriptions}">Продлить / улучшить</Button>
+                        <Button HorizontalAlignment="Stretch" Command="{Binding GoToStatistics}">
+                            <Grid ColumnDefinitions="* Auto">
+                                <TextBlock>Использование</TextBlock>
+                                <PathIcon Grid.Column="1" Data="{StaticResource IconExternalLink}"
+                                          Width="16" Height="16" />
+                            </Grid>
+                        </Button>
+                        <Button HorizontalAlignment="Stretch" Command="{Binding GoToSubscriptions}">
+                            <Grid ColumnDefinitions="* Auto">
+                                <TextBlock>Продлить / улучшить</TextBlock>
+                                <PathIcon Grid.Column="1" Data="{StaticResource IconExternalLink}"
+                                          Width="16" Height="16" />
+                            </Grid>
+                        </Button>
                         <Separator />
-                        <Button HorizontalAlignment="Stretch" Command="{Binding GoToAccounts}">Добавить аккаунт</Button>
+                        <Button HorizontalAlignment="Stretch" Command="{Binding GoToAccounts}">
+                            <Grid ColumnDefinitions="* Auto">
+                                <TextBlock>Добавить аккаунт</TextBlock>
+                                <PathIcon Grid.Column="1" Data="{StaticResource IconExternalLink}"
+                                          Width="16" Height="16" />
+                            </Grid>
+                        </Button>
                         <Button HorizontalAlignment="Stretch" Foreground="{DynamicResource DangerColor}"
                                 Command="{Binding LogOutAsync}">
                             Выйти

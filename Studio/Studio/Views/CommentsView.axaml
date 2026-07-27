@@ -37,8 +37,11 @@
                     <!-- <TextBlock>Переоткрыть</TextBlock> -->
                 </StackPanel>
             </Button>
+            <Button Command="{Binding OpenInBrowser}">
+                <PathIcon Data="{StaticResource IconExternalLink}" />
+            </Button>
             <Button Command="{Binding GoToCode}">
-                <PathIcon Data="{StaticResource IconSend}" />
+                <PathIcon Data="{StaticResource IconChevronRight}" />
             </Button>
         </StackPanel>
         <ScrollViewer Grid.Row="1">

@@ -38,7 +38,7 @@
                     </MenuItem>
                     <MenuItem Header="Открыть в браузере" Command="{Binding OpenWebReport}">
                         <MenuItem.Icon>
-                            <PathIcon Data="{StaticResource IconCheckmark}"/>
+                            <PathIcon Data="{StaticResource IconExternalLink}" Classes="LineIcon"/>
                         </MenuItem.Icon>
                     </MenuItem>
                 </MenuFlyout>
