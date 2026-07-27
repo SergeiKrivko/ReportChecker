@@ -91,15 +91,6 @@ public class IssueService(IReportService reportService, IApiClient apiClient, IP
         var newIndex = 0;
         foreach (var diffLine in diff.Lines)
         {
-            Console.WriteLine(diffLine.Type switch
-            {
-                ChangeType.Inserted => "+",
-                ChangeType.Modified => "*",
-                ChangeType.Deleted => "-",
-                ChangeType.Unchanged => " ",
-                ChangeType.Imaginary => "?",
-                _ => "?",
-            } + " " + diffLine.Text);
             if (diffLine.Type != ChangeType.Inserted)
                 oldIndex++;
             if (diffLine.Type != ChangeType.Deleted)
@@ -107,7 +98,6 @@ public class IssueService(IReportService reportService, IApiClient apiClient, IP
                 newIndex++;
                 while (issues.Count > 0 && issues[0].Position?.Line == oldIndex)
                 {
-                    Console.WriteLine($"{oldIndex} --> {newIndex}");
                     result.Add(new FileIssue(issues[0].Issue, new FilePosition
                     {
                         Path = issues[0].Position?.Path ?? "???",

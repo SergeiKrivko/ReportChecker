@@ -15,7 +15,8 @@ namespace ReportChecker.Studio.ViewModels;
 public class ReportPanelViewModel(
     IReportService reportService,
     IProjectService projectService,
-    IWebLinksService webLinksService) : ViewModelBase
+    IWebLinksService webLinksService,
+    IIssueService issueService) : ViewModelBase
 {
     public Report? CurrentReport
     {
@@ -68,6 +69,14 @@ public class ReportPanelViewModel(
                 LowIssuesCount = CountIssues(e, 5, 10);
             })
             .DisposeWith(disposable);
+        issueService.AllIssues
+            .Subscribe(e =>
+            {
+                CriticalIssuesCount = CountIssues(e, 1, 2);
+                MediumIssuesCount = CountIssues(e, 3, 5);
+                LowIssuesCount = CountIssues(e, 5, 10);
+            })
+            .DisposeWith(disposable);
         reportService.Status
             .Subscribe(e => { IsProgress = e == ProgressStatus.InProgress; })
             .DisposeWith(disposable);
@@ -81,6 +90,12 @@ public class ReportPanelViewModel(
         for (var i = minPriority; i <= maxPriority; i++)
             result += report.IssueCount.GetValueOrDefault(i.ToString(), 0);
         return result;
+    }
+
+    private static int CountIssues(IReadOnlyList<FileIssue> issues, int minPriority, int maxPriority)
+    {
+        return issues
+            .Count(e => e.Issue.Priority >= minPriority && e.Issue.Priority <= maxPriority);
     }
 
     public async Task PushReportAsync()

@@ -2,6 +2,7 @@
 using ReportChecker.Shared.Abstractions;
 using ReportChecker.Shared.ApiClient;
 using ReportChecker.Studio.Abstractions;
+using IAuthService = ReportChecker.Studio.Abstractions.IAuthService;
 using IReportService = ReportChecker.Studio.Abstractions.IReportService;
 
 namespace ReportChecker.Studio.Services;

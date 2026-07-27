@@ -1,13 +1,17 @@
-﻿using System.Runtime.Versioning;
+﻿using System.Reactive.Subjects;
+using System.Runtime.Versioning;
 using Avalux.Auth.UserClient;
-using ReportChecker.Shared.Abstractions;
 using ReportChecker.Shared.Models;
+using ReportChecker.Studio.Abstractions;
 
 namespace ReportChecker.Studio.Services;
 
 internal class AuthService(IAuthClient authClient) : IAuthService
 {
     private const string CallbackUrl = "http://localhost:14872";
+
+    private readonly BehaviorSubject<bool> _isAuthorized = new(false);
+    public IObservable<bool> IsAuthorized => _isAuthorized;
 
     public IReadOnlyList<AuthProvider> GetProviders()
     {
@@ -30,8 +34,10 @@ internal class AuthService(IAuthClient authClient) : IAuthService
         }
         catch (Exception)
         {
+            _isAuthorized.OnNext(false);
             return false;
         }
+        _isAuthorized.OnNext(authClient.IsAuthenticated);
         return authClient.IsAuthenticated;
     }
 
@@ -41,6 +47,7 @@ internal class AuthService(IAuthClient authClient) : IAuthService
     public async Task AuthenticateAsync(AuthProvider provider, CancellationToken ct = default)
     {
         await authClient.AuthorizeInstalledAsync(provider.Key, CallbackUrl, ct);
+        _isAuthorized.OnNext(authClient.IsAuthenticated);
     }
 
     public async Task<User> GetUserAsync(CancellationToken ct = default)
@@ -63,5 +70,6 @@ internal class AuthService(IAuthClient authClient) : IAuthService
     public async Task LogOutAsync(CancellationToken ct = default)
     {
         await authClient.RevokeTokenAsync(ct);
+        _isAuthorized.OnNext(authClient.IsAuthenticated);
     }
 }

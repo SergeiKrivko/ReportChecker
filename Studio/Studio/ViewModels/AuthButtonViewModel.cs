@@ -1,8 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
+using System.Reactive.Linq;
 using System.Runtime.Versioning;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -12,6 +16,7 @@ using ReportChecker.Shared.Abstractions;
 using ReportChecker.Shared.Models;
 using ReportChecker.Studio.Abstractions;
 using ReportChecker.Studio.Models;
+using IAuthService = ReportChecker.Studio.Abstractions.IAuthService;
 
 namespace ReportChecker.Studio.ViewModels;
 
@@ -65,12 +70,30 @@ public class AuthButtonViewModel(
     protected override async Task OnActivateAsync(CompositeDisposable disposable)
     {
         await base.OnActivateAsync(disposable);
-        await Refresh();
+        authService.IsAuthorized.DistinctUntilChanged()
+            .Select(Refresh)
+            .Concat()
+            .Subscribe()
+            .DisposeWith(disposable);
+
+        try
+        {
+            await authService.IsAuthenticatedAsync();
+        }
+        catch (HttpRequestException)
+        {
+            Observable.Interval(TimeSpan.FromSeconds(30))
+                .Select(_ => authService.IsAuthenticatedAsync())
+                .Concat()
+                .TakeWhile(e => !e)
+                .Subscribe()
+                .DisposeWith(disposable);
+        }
     }
 
-    private async Task Refresh()
+    private async Task<bool> Refresh(bool isAuthenticated)
     {
-        IsAuthenticated = await authService.IsAuthenticatedAsync();
+        IsAuthenticated = isAuthenticated;
         UserInfo = (await authService.GetUserAsync()).Accounts.FirstOrDefault();
         if (UserInfo != null)
         {
@@ -96,6 +119,8 @@ public class AuthButtonViewModel(
             Avatar = null;
             Subscription = null;
         }
+
+        return UserInfo != null;
     }
 
     [SupportedOSPlatform("Windows")]
@@ -104,7 +129,7 @@ public class AuthButtonViewModel(
     public async Task AuthenticateAsync(AuthProvider provider)
     {
         await authService.AuthenticateAsync(provider);
-        await Refresh();
+        // await Refresh();
     }
 
     public async Task LogOutAsync()
