@@ -82,7 +82,7 @@ public class LatexFormatProvider : IFormatProvider
         }
 
         var patchApplied = false;
-        var path = new List<string> { fileName?.TrimStart('/') ?? "<root>" };
+        var path = new List<string> { fileName.TrimStart('/') };
         var isPatchChapter = chapter == string.Join(ChapterSeparator, path.Where(e => !string.IsNullOrWhiteSpace(e)));
         var lineNumber = 0;
         var includedFiles = new List<string>();
@@ -148,6 +148,66 @@ public class LatexFormatProvider : IFormatProvider
             .Select(async (f, _, t) =>
                 await _ApplyPatchAsync($"{directoryName}/{f}.tex".TrimStart('/'), chapter, lines, t))
             .AnyAsync(ct);
+    }
+
+    public async Task<FilePatch?> PatchToFilePatchAsync(string filePath, string chapter, IEnumerable<PatchLine> patchLines, CancellationToken ct = default)
+    {
+        var fileName = Path.GetFileName(filePath);
+        var directoryName = Path.GetDirectoryName(filePath) ?? ".";
+        var text = await File.ReadAllTextAsync(filePath, ct);
+
+        var lst = new List<string>();
+        using (var reader = new StringReader(text))
+        {
+            string? line;
+            while ((line = await reader.ReadLineAsync(ct)) != null)
+            {
+                lst.Add(line);
+            }
+        }
+
+        var path = new List<string> { fileName.TrimStart('/') };
+        var lineNumber = 0;
+        var includedFiles = new List<string>();
+        foreach (var line in lst)
+        {
+            if (line.TryParseCommand(out var command))
+            {
+                var level = LineLevel(command, out var title);
+                if (level <= 3)
+                {
+                    while (level < path.Count)
+                        path.RemoveAt(path.Count - 1);
+                    while (level > path.Count)
+                        path.Add("");
+                    path.Add(title);
+                    if (chapter == string.Join(ChapterSeparator, path.Where(e => !string.IsNullOrWhiteSpace(e))))
+                    {
+                        return new FilePatch
+                        {
+                            Path = filePath,
+                            Lines = patchLines.Select(e => new PatchLine
+                            {
+                                Number = e.Number + lineNumber,
+                                Content = e.Content,
+                                PreviousContent = e.PreviousContent,
+                                Type = e.Type,
+                            }).ToList()
+                        };
+                    }
+                }
+                else if (command is { Command: "include", Argument: not null })
+                {
+                    includedFiles.Add(command.Argument);
+                }
+            }
+            lineNumber++;
+        }
+
+        return await includedFiles.ToAsyncEnumerable()
+            .Select(async (f, _, t) =>
+                await PatchToFilePatchAsync($"{directoryName}/{f}.tex".TrimStart('/'), chapter, patchLines, t))
+            .FirstOrDefaultAsync(e => e != null,ct);
     }
 
     public async Task<FilePosition?> FilePositionByChapterPosition(string filePath, string chapter,

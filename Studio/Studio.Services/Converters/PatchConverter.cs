@@ -30,6 +30,21 @@ public static class PatchConverter
         };
     }
 
+    public static Shared.ApiClient.PatchStatus ToDto(this PatchStatus dto)
+    {
+        return dto switch
+        {
+            PatchStatus.Pending => Shared.ApiClient.PatchStatus.Pending,
+            PatchStatus.InProgress => Shared.ApiClient.PatchStatus.InProgress,
+            PatchStatus.Failed => Shared.ApiClient.PatchStatus.Failed,
+            PatchStatus.Completed => Shared.ApiClient.PatchStatus.Completed,
+            PatchStatus.Accepted => Shared.ApiClient.PatchStatus.Accepted,
+            PatchStatus.Rejected => Shared.ApiClient.PatchStatus.Rejected,
+            PatchStatus.Applied => Shared.ApiClient.PatchStatus.Applied,
+            _ => Shared.ApiClient.PatchStatus.Failed
+        };
+    }
+
     public static PatchLine ToDomain(this Shared.ApiClient.PatchLine dto)
     {
         return new PatchLine

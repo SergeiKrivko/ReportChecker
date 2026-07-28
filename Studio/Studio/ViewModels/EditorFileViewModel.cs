@@ -6,6 +6,8 @@ using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using AvaloniaEdit.Document;
 using ReactiveUI;
@@ -43,12 +45,14 @@ public class EditorFileViewModel(
     }
 
     private readonly Subject<int> _lineCount = new();
+
     public IObservable<IReadOnlyList<FileIssue>> Issues => issueService.AllIssues
         .CombineLatest(_lineCount
             .DistinctUntilChanged()
             .Select(_ => Document?.Text ?? ""))
         .Select(c =>
-            issueService.UpdateIssuePositions(c.First.Where(e => e.Position?.Path == file.Path), InitialText, c.Second));
+            issueService.UpdateIssuePositions(c.First.Where(e => e.Position?.Path == file.Path), InitialText,
+                c.Second));
 
     public IIssueService IssueService => issueService;
 
@@ -77,6 +81,11 @@ public class EditorFileViewModel(
             .Select(e => e.Value)
             .Sample(TimeSpan.FromSeconds(3))
             .Subscribe(_ => SaveBackup())
+            .DisposeWith(disposable);
+        fileService.FilePatches
+            .Where(e => e.Path == Path)
+            .Do(ApplyPatch)
+            .Subscribe()
             .DisposeWith(disposable);
     }
 
@@ -121,6 +130,44 @@ public class EditorFileViewModel(
         else
         {
             Document = new TextDocument(await File.ReadAllTextAsync(file.Path));
+        }
+    }
+
+    private void ApplyPatch(FilePatch patch)
+    {
+        try
+        {
+            if (patch.Path != Path)
+                return;
+
+            var builder = new StringBuilder();
+            var lines = Document?.Text?.Replace("\r\n", "\n").Split('\n') ?? [];
+            for (var i = 0; i < lines.Length; i++)
+            {
+                var line = lines[i];
+                var patchLines = patch.Lines.Where(e => e.Number == i + 1).ToList();
+                if (patchLines.All(e => e.Type == PatchLineType.Add))
+                    builder.AppendLine(line);
+                else
+                {
+                    var singleLine = patchLines.SingleOrDefault(e => e.Type != PatchLineType.Add);
+                    if (singleLine != null && singleLine.PreviousContent != line)
+                        throw new Exception($"Conflict when trying to apply patch: '{singleLine.PreviousContent}' --- '{line}'");
+                    if (singleLine?.Type == PatchLineType.Modify)
+                        builder.AppendLine(singleLine.Content);
+                }
+
+                foreach (var l in patchLines.Where(e => e.Type == PatchLineType.Add))
+                    builder.AppendLine(l.Content);
+            }
+
+            Document?.Text = builder.ToString();
+            patch.IsHandled = true;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
         }
     }
 }

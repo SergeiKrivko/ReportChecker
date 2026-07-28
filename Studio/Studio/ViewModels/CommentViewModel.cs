@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reactive.Linq;
+using System.Threading.Tasks;
 using ReportChecker.Shared.Models;
+using ReportChecker.Studio.Abstractions;
 
 namespace ReportChecker.Studio.ViewModels;
 
-public class CommentViewModel(Comment comment) : ViewModelBase
+public class CommentViewModel(Comment comment, IProjectService projectService, IFileService fileService, ICommentsService commentsService, IIssueService issueService) : ViewModelBase
 {
     public string? Content => comment.Content;
     public IssueStatus? Status => comment.Status;
@@ -20,4 +23,25 @@ public class CommentViewModel(Comment comment) : ViewModelBase
     public bool IsPatchRejected => comment.Patch?.Status == PatchStatus.Rejected;
     public bool IsPatchReadyToApply => comment.Patch?.Status == PatchStatus.Completed;
     public IReadOnlyCollection<PatchLine> PatchLines => comment.Patch?.Lines ?? [];
+
+    public async Task ApplyPatchAsync()
+    {
+        if (comment.Patch == null)
+            return;
+        var project = await projectService.CurrentProject.FirstAsync();
+        var issue = await issueService.SelectedIssue.FirstAsync();
+        if (project == null || issue?.Issue.Chapter == null)
+            return;
+        var formatProvider = await projectService.GetFormatProviderAsync();
+        var filePatch = await formatProvider.PatchToFilePatchAsync(project.Path, issue.Issue.Chapter, comment.Patch.Lines);
+        if (filePatch == null)
+            return;
+        await fileService.ApplyPatch(filePatch);
+        await commentsService.SetPatchStatusAsync(comment.Id, PatchStatus.Applied);
+    }
+
+    public async Task RejectPatchAsync()
+    {
+        await commentsService.SetPatchStatusAsync(comment.Id, PatchStatus.Rejected);
+    }
 }

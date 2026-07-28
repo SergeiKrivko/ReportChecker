@@ -42,9 +42,17 @@
                             </ItemsControl.DataTemplates>
                         </ItemsControl>
                     </ScrollViewer>
-                    <StackPanel Orientation="Horizontal" Spacing="5">
-                        <Button Classes="Success">Применить</Button>
-                        <Button Classes="Danger">Отклонить</Button>
+                    <StackPanel Orientation="Horizontal" Spacing="5" IsVisible="{Binding IsPatchReadyToApply}">
+                        <Button Classes="Success" Command="{Binding ApplyPatchAsync}">Применить</Button>
+                        <Button Classes="Danger" Command="{Binding RejectPatchAsync}">Отклонить</Button>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="5" IsVisible="{Binding IsPatchApplied}">
+                        <PathIcon Data="{StaticResource IconCheckmark}" Foreground="{DynamicResource SuccessColor}" Width="24" Height="24" />
+                        <TextBlock>Исправления внесены</TextBlock>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="5" IsVisible="{Binding IsPatchRejected}">
+                        <PathIcon Data="{StaticResource IconClose}" Foreground="{DynamicResource DangerColor}" Width="24" Height="24" />
+                        <TextBlock>Исправления отклонены</TextBlock>
                     </StackPanel>
                 </StackPanel>
             </Border>

@@ -17,6 +17,8 @@ public class FileService(IProjectService projectService, ISettingsSection settin
     public IObservable<OpenedFile?> CurrentFile => _currentFile;
     private readonly BehaviorSubject<FileJump> _fileJumps = new(new FileJump(""){IsHandled = true});
     public IObservable<FileJump> FileJumps => _fileJumps.Where(e => !e.IsHandled);
+    private readonly BehaviorSubject<FilePatch> _filePatches = new(new FilePatch{Path = "", IsHandled = true});
+    public IObservable<FilePatch> FilePatches => _filePatches.Where(e => !e.IsHandled);
 
     public Task OpenFile(string path) => OpenFile(path, Guid.NewGuid());
 
@@ -121,5 +123,11 @@ public class FileService(IProjectService projectService, ISettingsSection settin
     {
         await OpenFile(position.Path);
         _fileJumps.OnNext(new FileJump(position.Path, position.Line));
+    }
+
+    public async Task ApplyPatch(FilePatch patch)
+    {
+        await OpenFile(patch.Path);
+        _filePatches.OnNext(patch);
     }
 }

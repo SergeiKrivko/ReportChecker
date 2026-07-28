@@ -6,6 +6,7 @@ using ReportChecker.Studio.Services.Converters;
 using Comment = ReportChecker.Shared.Models.Comment;
 using Issue = ReportChecker.Shared.Models.Issue;
 using IssueStatus = ReportChecker.Shared.Models.IssueStatus;
+using PatchStatus = ReportChecker.Shared.Models.PatchStatus;
 using ProgressStatus = ReportChecker.Shared.Models.ProgressStatus;
 using Report = ReportChecker.Shared.Models.Report;
 
@@ -102,7 +103,7 @@ public class CommentsService(IIssueService issueService, IApiClient apiClient, I
                 await Task.Delay(1000, ct);
                 var resp = await apiClient.CommentsGETAsync(reportId, issueId, comment.Id, ct);
                 comment = resp.ToDomain();
-            };
+            }
 
             var newComments = (await _allComments.FirstAsync())
                 .Select(e => e.Id == comment.Id ? comment : e)
@@ -113,5 +114,19 @@ public class CommentsService(IIssueService issueService, IApiClient apiClient, I
         {
             Console.WriteLine(e);
         }
+    }
+
+    public async Task SetPatchStatusAsync(Guid commentId, PatchStatus status, CancellationToken ct = default)
+    {
+        var report = await reportService.CurrentReport.FirstAsync();
+        var issue = await issueService.SelectedIssue.FirstAsync();
+        if (report == null || issue == null)
+            return;
+        await apiClient.PatchAsync(report.Id, issue.Issue.Id, commentId, new UpdatePatchSchema
+        {
+            Status = status.ToDto(),
+        }, ct);
+        var comments = await LoadComments(report, issue.Issue, ct);
+        _allComments.OnNext(comments);
     }
 }

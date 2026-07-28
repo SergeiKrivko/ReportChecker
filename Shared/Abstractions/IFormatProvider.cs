@@ -19,4 +19,7 @@ public interface IFormatProvider
 
     public Task<IReadOnlyList<FileIssue>> IssuesToFileIssuesAsync(string path, IReadOnlyCollection<Issue> issues,
         CancellationToken ct = default);
+
+    public Task<FilePatch?> PatchToFilePatchAsync(string path, string chapter, IEnumerable<PatchLine> patchLines,
+        CancellationToken ct = default);
 }

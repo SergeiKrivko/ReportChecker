@@ -57,9 +57,10 @@ public class CommentsViewModel(
             .Do(e =>
             {
                 CommentViewModels = e
-                    .Select((c, i) => new CommentViewModel(c) { IsFirstComment = i == 0 })
+                    .Select((c, i) => new CommentViewModel(c, projectService, fileService, commentsService, issueService)
+                        { IsFirstComment = i == 0 })
                     .ToList();
-                IsOpened = e.Last(c => c.Status != null).Status == IssueStatus.Open;
+                IsOpened = e.LastOrDefault(c => c.Status != null)?.Status == IssueStatus.Open;
             })
             .Subscribe()
             .DisposeWith(disposable);
