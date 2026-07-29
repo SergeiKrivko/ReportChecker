@@ -1,0 +1,42 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ReportChecker.Studio.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:converters="clr-namespace:ReportChecker.Studio.Converters"
+             xmlns:models="clr-namespace:ReportChecker.Studio.Models;assembly=Studio.Models"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ReportChecker.Studio.Views.AlertsView"
+             x:DataType="vm:AlertsViewModel"
+             Name="Root">
+
+    <UserControl.Resources>
+        <converters:AlertIconConverter x:Key="AlertIconConverter" />
+        <converters:AlertColorConverter x:Key="AlertColorConverter" />
+    </UserControl.Resources>
+
+    <ItemsControl ItemsSource="{Binding Alerts}" Margin="10" Width="300">
+        <ItemsControl.DataTemplates>
+            <DataTemplate DataType="models:Alert">
+                <Border BorderThickness="1" BorderBrush="{DynamicResource BorderColor}" CornerRadius="10"
+                        Background="{DynamicResource SurfaceColor}">
+                    <Grid ColumnDefinitions="Auto * Auto" Margin="8">
+                        <PathIcon VerticalAlignment="Top" Width="48" Height="48" Margin="5"
+                                  Data="{Binding Type, Converter={StaticResource AlertIconConverter}}"
+                                  Foreground="{Binding Type, Converter={StaticResource AlertColorConverter}}" />
+                        <TextBlock Grid.Column="1" TextWrapping="Wrap" Text="{Binding Text}" />
+                        <!-- <Button Grid.Column="2" Width="24" Height="24" VerticalAlignment="Top"> -->
+                        <!--     <PathIcon Data="{StaticResource IconClose}" /> -->
+                        <!-- </Button> -->
+                    </Grid>
+                </Border>
+            </DataTemplate>
+        </ItemsControl.DataTemplates>
+        <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+                <StackPanel Orientation="Vertical" Spacing="5"></StackPanel>
+            </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+    </ItemsControl>
+
+</UserControl>

@@ -24,6 +24,7 @@ public static class ServiceCollectionExtensions
             services.AddSingleton<ILanguageService, LanguageService>();
             services.AddSingleton<ISubscriptionService, SubscriptionService>();
             services.AddSingleton<IWebLinksService, WebLinksService>();
+            services.AddSingleton<IAlertService, AlertService>();
 
             return services;
         }

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using ReactiveUI;
 using ReportChecker.Shared.Models;
 using ReportChecker.Studio.Abstractions;
+using ReportChecker.Studio.Models;
 
 namespace ReportChecker.Studio.ViewModels;
 
@@ -17,7 +18,8 @@ public class CommentsViewModel(
     IProjectService projectService,
     IFileService fileService,
     IWebLinksService webLinksService,
-    IReportService reportService) : ViewModelBase
+    IReportService reportService,
+    IAlertService alertService) : ViewModelBase
 {
     public FileIssue? SelectedIssue
     {
@@ -57,7 +59,7 @@ public class CommentsViewModel(
             .Do(e =>
             {
                 CommentViewModels = e
-                    .Select((c, i) => new CommentViewModel(c, projectService, fileService, commentsService, issueService)
+                    .Select((c, i) => new CommentViewModel(c, projectService, fileService, commentsService, issueService, alertService)
                         { IsFirstComment = i == 0 })
                     .ToList();
                 IsOpened = e.LastOrDefault(c => c.Status != null)?.Status == IssueStatus.Open;
@@ -92,7 +94,14 @@ public class CommentsViewModel(
     {
         if (string.IsNullOrWhiteSpace(CommentContent))
             return;
-        await commentsService.CreateComment(CommentContent);
+        try
+        {
+            await commentsService.CreateComment(CommentContent);
+        }
+        catch (Exception e)
+        {
+            alertService.SendAlert(AlertType.Error, $"Не удалось отправить комментарий: {e.Message}");
+        }
     }
 
     public async Task GoToCode()

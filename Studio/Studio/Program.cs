@@ -55,6 +55,7 @@ sealed class Program
                     services.AddSingleton<IssueListViewModel>();
                     services.AddSingleton<CommentsViewModel>();
                     services.AddSingleton<ReportPanelViewModel>();
+                    services.AddSingleton<AlertsViewModel>();
 
                     //Views
                     services.AddSingleton<MainWindow>();
@@ -69,6 +70,7 @@ sealed class Program
                     services.AddTransient<IssueView>();
                     services.AddSingleton<CommentsView>();
                     services.AddSingleton<ReportPanelView>();
+                    services.AddSingleton<AlertsView>();
                 },
                 withResolver: sp => { ServiceProvider = sp; }
             );
