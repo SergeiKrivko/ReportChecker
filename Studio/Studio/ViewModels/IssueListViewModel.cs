@@ -72,13 +72,14 @@ public class IssueListViewModel(
             .Where(issue => issue.Issue.Status == status)
             .OrderBy(issue => issue.Issue.Priority)
             .Select(issue =>
-        {
-            if (_issueViewModels.TryGetValue(issue.Issue.Id, out var viewModel))
+            {
+                if (_issueViewModels.TryGetValue(issue.Issue.Id, out var viewModel) &&
+                    viewModel.Issue.Issue.IsRead == issue.Issue.IsRead)
+                    return viewModel;
+                viewModel = new IssueViewModel(issue, issueService);
+                _issueViewModels[issue.Issue.Id] = viewModel;
                 return viewModel;
-            viewModel = new IssueViewModel(issue, issueService);
-            _issueViewModels[issue.Issue.Id] = viewModel;
-            return viewModel;
-        }).ToList();
+            }).ToList();
     }
 
     public void ShowActiveIssues()

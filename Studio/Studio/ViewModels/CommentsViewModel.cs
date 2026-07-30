@@ -59,7 +59,7 @@ public class CommentsViewModel(
             .Select(async issue =>
             {
                 if (issue != null)
-                    await issueService.MarkRead(issue.Issue.Id);
+                    await issueService.MarkRead(issue.Issue);
                 return 0;
             })
             .Subscribe()

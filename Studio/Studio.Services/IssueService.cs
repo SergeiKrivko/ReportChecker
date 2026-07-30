@@ -12,7 +12,7 @@ using Report = ReportChecker.Shared.Models.Report;
 
 namespace ReportChecker.Studio.Services;
 
-public class IssueService(IReportService reportService, IApiClient apiClient, IProjectService projectService)
+public class IssueService(IReportService reportService, IApiClient apiClient, IProjectService projectService, IAlertService alertService)
     : IIssueService
 {
     private readonly BehaviorSubject<LoadingStatus> _loading = new(LoadingStatus.NotLoaded);
@@ -57,11 +57,13 @@ public class IssueService(IReportService reportService, IApiClient apiClient, IP
         catch (HttpRequestException e)
         {
             _loading.OnNext(LoadingStatus.FromCache);
+            alertService.SendAlert(AlertType.Warning, $"Не удалось загрузить список ошибок: {e.Message}");
             return 0;
         }
-        catch (Exception)
+        catch (Exception e)
         {
             _loading.OnNext(LoadingStatus.Failed);
+            alertService.SendAlert(AlertType.Warning, $"Не удалось загрузить список ошибок: {e.Message}");
             return 0;
         }
     }
@@ -112,13 +114,25 @@ public class IssueService(IReportService reportService, IApiClient apiClient, IP
         return result;
     }
 
-    public async Task MarkRead(Guid issueId, CancellationToken ct = default)
+    public async Task MarkRead(Issue issue, CancellationToken ct = default)
     {
-        Console.WriteLine($"Mark read {issueId}");
-        var report = await reportService.CurrentReport;
+        var report = await reportService.CurrentReport.FirstAsync();
         if (report == null)
             return;
-        await apiClient.ReadAsync(report.Id, issueId, new MarkReadSchema { IsRead = true }, ct);
-        await ReloadIssues(report, ct);
+        try
+        {
+            await apiClient.ReadAsync(report.Id, issue.Id,
+                new MarkReadSchema
+                {
+                    IsRead = true,
+                    CommentIds = issue.Comments.Where(e => e.IsRead == false).Select(e => e.Id).ToList()
+                },
+                ct);
+            await ReloadIssues(report, ct);
+        }
+        catch (Exception e)
+        {
+            alertService.SendAlert(AlertType.Warning, $"Не удалось пометить комментарии как прочитанные: {e.Message}");
+        }
     }
 }

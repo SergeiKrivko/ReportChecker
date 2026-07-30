@@ -14,5 +14,5 @@ public interface IIssueService
 
     public void SelectIssue(FileIssue? issue);
     public IReadOnlyList<FileIssue> UpdateIssuePositions(IEnumerable<FileIssue> source, string oldText, string newText);
-    public Task MarkRead(Guid issueId, CancellationToken ct = default);
+    public Task MarkRead(Issue issue, CancellationToken ct = default);
 }
