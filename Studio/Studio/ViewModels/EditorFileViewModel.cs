@@ -21,7 +21,10 @@ public class EditorFileViewModel(
     OpenedFile file,
     ILanguageService languageService,
     IFileService fileService,
-    IIssueService issueService)
+    IIssueService issueService,
+    IReportService reportService,
+    IAlertService alertService,
+    IProjectService projectService)
     : ViewModelBase
 {
     public Guid Id => file.Id;
@@ -113,6 +116,7 @@ public class EditorFileViewModel(
         IsModified = false;
         InitialText = Document.Text;
         DeleteBackup();
+        await PushCheckAsync();
     }
 
     public LanguageCompletions GetCompletions(string triggerText, string fileText, int offset)
@@ -152,7 +156,8 @@ public class EditorFileViewModel(
                 {
                     var singleLine = patchLines.SingleOrDefault(e => e.Type != PatchLineType.Add);
                     if (singleLine != null && singleLine.PreviousContent != line)
-                        throw new Exception($"Conflict when trying to apply patch: '{singleLine.PreviousContent}' --- '{line}'");
+                        throw new Exception(
+                            $"Conflict when trying to apply patch: '{singleLine.PreviousContent}' --- '{line}'");
                     if (singleLine?.Type == PatchLineType.Modify)
                         builder.AppendLine(singleLine.Content);
                 }
@@ -168,6 +173,27 @@ public class EditorFileViewModel(
         {
             Console.WriteLine(e);
             throw;
+        }
+    }
+
+    private async Task PushCheckAsync()
+    {
+        var status = await reportService.Status.FirstAsync();
+        if (status == ProgressStatus.InProgress)
+        {
+            alertService.SendAlert(AlertType.Warning, "Невозможно отправить новую версию, пока идет проверка предыдущей");
+            return;
+        }
+
+        try
+        {
+            var pack = await projectService.PackCurrentProjectAsync();
+            await reportService.CheckAsync(pack);
+            alertService.SendAlert(AlertType.Success, "Новая версия отправлена на проверку");
+        }
+        catch (Exception e)
+        {
+            alertService.SendAlert(AlertType.Error, $"Не удалось отравить новую версию на проверку: {e}");
         }
     }
 }

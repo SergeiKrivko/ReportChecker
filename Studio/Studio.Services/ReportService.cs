@@ -1,8 +1,10 @@
-﻿using System.Reactive.Subjects;
+﻿using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using AvaluxUI.Utils;
 using ReportChecker.Shared.ApiClient;
 using ReportChecker.Shared.Models;
 using ReportChecker.Studio.Abstractions;
+using ReportChecker.Studio.Models;
 using ReportChecker.Studio.Services.Converters;
 using Check = ReportChecker.Shared.ApiClient.Check;
 using Report = ReportChecker.Shared.Models.Report;
@@ -12,7 +14,8 @@ namespace ReportChecker.Studio.Services;
 
 public class ReportService(
     IApiClient apiClient,
-    ISettingsSection globalSettings) : IReportService
+    ISettingsSection globalSettings,
+    IAlertService alertService) : IReportService
 {
     private readonly BehaviorSubject<Report?> _currentReport = new(null);
     public IObservable<Report?> CurrentReport => _currentReport;
@@ -77,6 +80,22 @@ public class ReportService(
         return reportId;
     }
 
+    public async Task<Guid> CheckAsync(SourcePack pack, CancellationToken ct = default)
+    {
+        var file = await apiClient.FilesPOSTAsync(FileBucketDto.Local,
+            new FileParameter(pack.Stream, pack.FileName), ct);
+        var report = await CurrentReport.FirstAsync() ?? throw new Exception("Report not selected");
+        var checkId = await apiClient.ChecksPOSTAsync(report.Id, new CreateCheckSchema
+        {
+            Source = new CheckSourceUnion
+            {
+                Id = file.Id
+            },
+        }, ct);
+        await StartPolling(report.Id);
+        return checkId;
+    }
+
     private const string SettingsClientIdKey = "clientId";
 
     private async Task<Guid> GetClientIdAsync()
@@ -113,10 +132,20 @@ public class ReportService(
                 _status.OnNext(latestCheck.Status?.ToDomain() ?? ProgressStatus.Failed);
                 await Task.Delay(5000, ct);
             } while (latestCheck.Status == Shared.ApiClient.ProgressStatus.InProgress);
+
+            switch (latestCheck.Status)
+            {
+                case Shared.ApiClient.ProgressStatus.Completed:
+                    alertService.SendAlert(AlertType.Success, "Поиск ошибок успешно завершен");
+                    break;
+                case Shared.ApiClient.ProgressStatus.Failed:
+                    alertService.SendAlert(AlertType.Error, "Ошибка при поиске ошибок");
+                    break;
+            }
         }
         catch (Exception e)
         {
-            Console.WriteLine(e.Message);
+            alertService.SendAlert(AlertType.Warning, $"Не удалось получить статус проверки: {e.Message}");
         }
     }
 }

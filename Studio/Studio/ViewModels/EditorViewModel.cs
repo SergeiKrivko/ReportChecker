@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-using AvaluxUI.Utils;
 using ReactiveUI;
 using ReportChecker.Studio.Abstractions;
 using ReportChecker.Studio.Models;
@@ -16,7 +14,10 @@ namespace ReportChecker.Studio.ViewModels;
 public class EditorViewModel(
     ILanguageService languageService,
     IFileService fileService,
-    IIssueService issueService) : ViewModelBase
+    IIssueService issueService,
+    IReportService reportService,
+    IAlertService alertService,
+    IProjectService projectService) : ViewModelBase
 {
     public IReadOnlyList<EditorTabViewModel> TabViewModels
     {
@@ -50,6 +51,7 @@ public class EditorViewModel(
         {
             _fileViewModels.Remove(path);
         }
+
         TabViewModels = files
             .Select(e => new EditorTabViewModel(e.Path, fileService, GetEditorFileViewModel(e)))
             .ToList();
@@ -59,7 +61,8 @@ public class EditorViewModel(
     {
         if (_fileViewModels.TryGetValue(file.Path, out var res))
             return res;
-        var vm = new EditorFileViewModel(file, languageService, fileService, issueService);
+        var vm = new EditorFileViewModel(file, languageService, fileService, issueService, reportService, alertService,
+            projectService);
         _fileViewModels.Add(file.Path, vm);
         return vm;
     }

@@ -9,6 +9,7 @@ using AvaluxUI.Controls;
 using ReactiveUI;
 using ReportChecker.Shared.Models;
 using ReportChecker.Studio.Abstractions;
+using ReportChecker.Studio.Models;
 
 namespace ReportChecker.Studio.ViewModels;
 
@@ -16,7 +17,8 @@ public class ReportPanelViewModel(
     IReportService reportService,
     IProjectService projectService,
     IWebLinksService webLinksService,
-    IIssueService issueService) : ViewModelBase
+    IIssueService issueService,
+    IAlertService alertService) : ViewModelBase
 {
     public Report? CurrentReport
     {
@@ -113,6 +115,26 @@ public class ReportPanelViewModel(
         catch (Exception e)
         {
             Console.WriteLine(e.Message);
+        }
+    }
+
+    public async Task PushCheckAsync()
+    {
+        var status = await reportService.Status.FirstAsync();
+        if (status == ProgressStatus.InProgress)
+        {
+            alertService.SendAlert(AlertType.Error, "Невозможно отправить новую версию, пока идет проверка предыдущей");
+            return;
+        }
+        try
+        {
+            var pack = await projectService.PackCurrentProjectAsync();
+            await reportService.CheckAsync(pack);
+            alertService.SendAlert(AlertType.Success, "Новая версия отправлена на проверку");
+        }
+        catch (Exception e)
+        {
+            alertService.SendAlert(AlertType.Error, $"Не удалось отравить новую версию на проверку: {e}");
         }
     }
 
