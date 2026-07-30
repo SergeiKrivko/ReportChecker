@@ -15,6 +15,7 @@ public static class IssueConverter
             Line = dto.Line,
             Priority = dto.Priority,
             Chapter = dto.Chapter,
+            IsRead = dto.Comments?.All(c => c.IsRead ?? true) ?? true,
             Comments = dto.Comments?.Select(e => e.ToDomain()).ToList() ?? [],
         };
     }

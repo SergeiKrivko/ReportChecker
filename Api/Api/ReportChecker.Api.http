@@ -1,5 +1,74 @@
+@token =eyJhbGciOiJSUzI1NiIsImtpZCI6IjA2OTNjMjU0OWJiMzQwMWJiZjIxMjlhMjdmMGFkOGRlIiwidHlwIjoiSldUIn0.eyJVc2VySWQiOiJiMTNmYTI2Yi0wYTMwLTQ1NTgtYTJjZC1kYTJkNjgwMjJiYWIiLCJTdWJzY3JpcHRpb25zIjoicGx1cy0xO3VubGltaXRlZCIsImV4cCI6MTc4NDIxNjY3NCwiaXNzIjoiaHR0cHM6Ly9hdXRoLm5hY2hlcnQuYXJ0L2FwaS92MSIsImF1ZCI6IjdjNGExMjcyMzk2OTc5NDUxZDJhMmQzMTFmMDg3MDUwIn0.cULtRBVg_IAFIbLrY9UaT_MzARMAsZUfbAv0dNncn9in7l4KOPliaUiuXM-Wg85Tl_oarE0NeuYsdTWkzU4l-24p3eoQXpl2F1dh66AbCd3IU-DOjsExuDxXwzYkmW-txiSroIQdegMms3iCEkyXSq_o0waHknO0bFSRAZC9V16bx8vx7srO5dz8J6iuY-xA9hvyvRxtBnp5HXnrlCdJo_Vu6cEy7duftaSfKvV6Ak3ywfPK5fhF_Mu51luo0SOIU47G8v1tNEyv3PoBZ3kMeQXHRu3LHxrDLIQMYDHY_wF4VrlzoRKDiyOXgvAbWKLHM_chbD7NHC7UF_kAnQt_rw
 
-POST https://reportchecker.nachert.art/api/v1/migrate
+@apiUrl =https://api.reportchecker.ru
+#@apiUrl =http://localhost:5000
+
+###
+
+POST {{apiUrl}}/api/v1/migrate
 Accept: application/json
 
 ###
+
+POST {{apiUrl}}/api/v1/subscriptions/plans
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6IjA2OTNjMjU0OWJiMzQwMWJiZjIxMjlhMjdmMGFkOGRlIiwidHlwIjoiSldUIn0.eyJVc2VySWQiOiJiMTNmYTI2Yi0wYTMwLTQ1NTgtYTJjZC1kYTJkNjgwMjJiYWIiLCJTdWJzY3JpcHRpb25zIjoicGx1cy0xO3VubGltaXRlZCIsImV4cCI6MTc3NzA3MTEzNSwiaXNzIjoiaHR0cHM6Ly9hdXRoLm5hY2hlcnQuYXJ0L2FwaS92MSIsImF1ZCI6IjdjNGExMjcyMzk2OTc5NDUxZDJhMmQzMTFmMDg3MDUwIn0.aNpikjnM5iSX2btJGm1p5LMxSI58piVc_0HMrV1Gzt1r4BuGa8ulWFYuQXXOOCLXeFyI41M3NLjVDOdSSBo2p4qJeGJzkCGxCyvqiCWh9DAw-FFuQflC5nn8sWpv8SZNr6MVmrPMedD2Dlv_WWIFlQkuA47mSIW3nFSsfXvBIaliBn70xY3URxG8qrufb7q6KrFeTfxn5mnV6231Fu0sSuFu8vKutsMgqNt12eSeGY4snO_s0lQuREHY2uXzuzePkuV2NxIy7GKRa82LkfB7P-tf9NtKdivp2wYOVDJBTifJEz9rX70u7_cNl6q9enBWAZffHysPLs1jz1R9JNdokw
+
+{
+  "name": "Pro",
+  "tokensLimit": 10000000,
+  "reportsLimit": 100
+}
+
+###
+
+POST {{apiUrl}}/api/v1/subscriptions/plans/306bc191-8c31-462e-b192-fd2874ac3512/offers
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6IjA2OTNjMjU0OWJiMzQwMWJiZjIxMjlhMjdmMGFkOGRlIiwidHlwIjoiSldUIn0.eyJVc2VySWQiOiJiMTNmYTI2Yi0wYTMwLTQ1NTgtYTJjZC1kYTJkNjgwMjJiYWIiLCJTdWJzY3JpcHRpb25zIjoicGx1cy0xO3VubGltaXRlZCIsImV4cCI6MTc3NzA3MTEzNSwiaXNzIjoiaHR0cHM6Ly9hdXRoLm5hY2hlcnQuYXJ0L2FwaS92MSIsImF1ZCI6IjdjNGExMjcyMzk2OTc5NDUxZDJhMmQzMTFmMDg3MDUwIn0.aNpikjnM5iSX2btJGm1p5LMxSI58piVc_0HMrV1Gzt1r4BuGa8ulWFYuQXXOOCLXeFyI41M3NLjVDOdSSBo2p4qJeGJzkCGxCyvqiCWh9DAw-FFuQflC5nn8sWpv8SZNr6MVmrPMedD2Dlv_WWIFlQkuA47mSIW3nFSsfXvBIaliBn70xY3URxG8qrufb7q6KrFeTfxn5mnV6231Fu0sSuFu8vKutsMgqNt12eSeGY4snO_s0lQuREHY2uXzuzePkuV2NxIy7GKRa82LkfB7P-tf9NtKdivp2wYOVDJBTifJEz9rX70u7_cNl6q9enBWAZffHysPLs1jz1R9JNdokw
+
+{
+  "price": 400,
+  "months": 12
+}
+
+
+###
+
+POST {{apiUrl}}/api/v1/subscriptions/5821b1de-199e-4dd1-ac40-c7999c070f32/confirm
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "price": 50
+}
+
+###
+
+PUT {{apiUrl}}/api/v1/reports/f0793703-0c60-488a-a49a-5bf890f75e1b/issues/f15b40d7-8705-42ac-abfa-57c67c456bde/comments/45a1ecdd-d15f-4b99-b15a-7a288e08d073/patch
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "status": "Completed"
+}
+
+
+### 
+#@reportId =d99aaac4-44ee-4c6c-bae1-9b61a7ce7bde
+
+GET http://localhost:5000/api/v1/reports/{{reportId}}/checks/latest/chapters
+Accept: application/json
+Authorization: Bearer {{token}}
+
+###
+@reportId =dab02f3d-7504-4af4-bba8-8449654c14a8
+@issueId =7c7fe48e-b97b-45f7-a073-5abe9e799824
+@commentId =0ba4b979-a12f-4d13-a5ec-ca61930177fc
+
+GET {{apiUrl}}/api/v1/reports/{{reportId}}/issues/{{issueId}}/comments/{{commentId}}
+Accept: application/json
+Authorization: Bearer {{token}}

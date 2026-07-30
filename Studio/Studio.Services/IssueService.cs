@@ -111,4 +111,14 @@ public class IssueService(IReportService reportService, IApiClient apiClient, IP
         result.AddRange(issues.Select(issue => issue with { Position = null }));
         return result;
     }
+
+    public async Task MarkRead(Guid issueId, CancellationToken ct = default)
+    {
+        Console.WriteLine($"Mark read {issueId}");
+        var report = await reportService.CurrentReport;
+        if (report == null)
+            return;
+        await apiClient.ReadAsync(report.Id, issueId, new MarkReadSchema { IsRead = true }, ct);
+        await ReloadIssues(report, ct);
+    }
 }

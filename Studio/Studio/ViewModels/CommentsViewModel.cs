@@ -45,29 +45,38 @@ public class CommentsViewModel(
         set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
-    protected override Task OnActivateAsync(CompositeDisposable disposable)
+    protected override async Task OnActivateAsync(CompositeDisposable disposable)
     {
+        await base.OnActivateAsync(disposable);
+
         commentsService.Load().Subscribe().DisposeWith(disposable);
         issueService.SelectedIssue
-            .Subscribe(e =>
+            .Do(e =>
             {
                 SelectedIssue = e;
                 IsOpened = e?.Issue.Status == IssueStatus.Open;
             })
+            .Select(async issue =>
+            {
+                if (issue != null)
+                    await issueService.MarkRead(issue.Issue.Id);
+                return 0;
+            })
+            .Subscribe()
             .DisposeWith(disposable);
         commentsService.AllComments
             .Do(e =>
             {
                 CommentViewModels = e
-                    .Select((c, i) => new CommentViewModel(c, projectService, fileService, commentsService, issueService, alertService)
-                        { IsFirstComment = i == 0 })
+                    .Select((c, i) =>
+                        new CommentViewModel(c, projectService, fileService, commentsService, issueService,
+                                alertService)
+                            { IsFirstComment = i == 0 })
                     .ToList();
                 IsOpened = e.LastOrDefault(c => c.Status != null)?.Status == IssueStatus.Open;
             })
             .Subscribe()
             .DisposeWith(disposable);
-
-        return base.OnActivateAsync(disposable);
     }
 
     public void DeselectIssue()

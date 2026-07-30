@@ -10,4 +10,5 @@ public class Issue
     public int? Priority { get; set; }
     public string? Chapter { get; set; }
     public IReadOnlyList<Comment> Comments { get; set; } = [];
+    public bool IsRead { get; init; }
 }

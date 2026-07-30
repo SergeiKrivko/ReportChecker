@@ -111,7 +111,7 @@ public class IssueRepository(ReportCheckerDbContext dbContext) : IIssueRepositor
     {
         var location = entity.Locations
             .OrderByDescending(e => e.CreatedAt)
-            .First();
+            .FirstOrDefault();
         return new Issue
         {
             Id = entity.IssueId,
@@ -128,8 +128,8 @@ public class IssueRepository(ReportCheckerDbContext dbContext) : IIssueRepositor
                 .OrderBy(e => e.CreatedAt)
                 .Select(x => CommentRepository.FromEntity(x, userId))
                 .ToArray(),
-            Chapter = location.Chapter,
-            Line = location.Line,
+            Chapter = location?.Chapter ?? "???",
+            Line = location?.Line,
         };
     }
 }
