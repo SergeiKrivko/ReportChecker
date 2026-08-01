@@ -1,0 +1,39 @@
+﻿<avalonia:ReactiveUserControl x:TypeArguments="vm:BuildProblemsViewModel"
+                              xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:vm="using:ReportChecker.Studio.ViewModels"
+                              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                              xmlns:converters="clr-namespace:ReportChecker.Studio.Converters"
+                              xmlns:models="clr-namespace:ReportChecker.Studio.Models;assembly=Studio.Models"
+                              xmlns:avalonia="http://reactiveui.net"
+                              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                              x:Class="ReportChecker.Studio.Views.BuildProblemsView"
+                              x:DataType="vm:BuildProblemsViewModel"
+                              Name="Root">
+
+    <UserControl.Resources>
+        <converters:BuildProblemIconConverter x:Key="BuildProblemIconConverter" />
+        <converters:BuildProblemColorConverter x:Key="BuildProblemColorConverter" />
+    </UserControl.Resources>
+
+    <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Auto">
+        <ItemsControl ItemsSource="{Binding Problems^}">
+            <ItemsControl.DataTemplates>
+                <DataTemplate DataType="models:BuildProblem">
+                    <Button CornerRadius="0" HorizontalAlignment="Stretch"
+                            Command="{Binding ViewModel.JumpToCode, ElementName=Root}"
+                            CommandParameter="{Binding .}">
+                        <Grid ColumnDefinitions="Auto *">
+                            <PathIcon Width="32" Height="32" Margin="0 0 5 0"
+                                      Foreground="{Binding Type, Converter={StaticResource BuildProblemColorConverter}}"
+                                      Data="{Binding Type, Converter={StaticResource BuildProblemIconConverter}}" />
+                            <SelectableTextBlock Grid.Column="1" Text="{Binding Message}" TextWrapping="Wrap" />
+                        </Grid>
+                    </Button>
+                </DataTemplate>
+            </ItemsControl.DataTemplates>
+        </ItemsControl>
+    </ScrollViewer>
+
+</avalonia:ReactiveUserControl>

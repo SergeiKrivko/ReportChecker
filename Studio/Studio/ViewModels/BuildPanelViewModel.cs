@@ -44,6 +44,10 @@ public class BuildPanelViewModel(ILanguageService languageService, IAlertService
             _ctSource = null;
             IsProgress = false;
         }
+        catch (TaskCanceledException)
+        {
+            alertService.SendAlert(AlertType.Info, "Сборка отменена");
+        }
         catch (Exception e)
         {
             Console.WriteLine(e);

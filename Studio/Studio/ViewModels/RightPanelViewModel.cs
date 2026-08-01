@@ -10,7 +10,8 @@ namespace ReportChecker.Studio.ViewModels;
 public class RightPanelViewModel(
     FileSystemViewModel fileSystemViewModel,
     IssueListViewModel issueListViewModel,
-    IIssueService issueService) : ViewModelBase
+    IIssueService issueService,
+    BuildProblemsViewModel buildProblemsViewModel) : ViewModelBase
 {
     public bool IsFileSystemActive
     {
@@ -19,6 +20,12 @@ public class RightPanelViewModel(
     }
 
     public bool IsIssuesActive
+    {
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    }
+
+    public bool IsBuildProblemsActive
     {
         get;
         set => this.RaiseAndSetIfChanged(ref field, value);
@@ -47,6 +54,7 @@ public class RightPanelViewModel(
         ActiveViewModel = IsFileSystemActive ? fileSystemViewModel : null;
         IsOpen = ActiveViewModel != null;
         IsIssuesActive = false;
+        IsBuildProblemsActive = false;
     }
 
     public void ActivateIssues()
@@ -54,6 +62,15 @@ public class RightPanelViewModel(
         ActiveViewModel = IsIssuesActive ? issueListViewModel : null;
         IsOpen = ActiveViewModel != null;
         IsFileSystemActive = false;
+        IsBuildProblemsActive = false;
+    }
+
+    public void ActivateBuildProblems()
+    {
+        ActiveViewModel = IsBuildProblemsActive ? buildProblemsViewModel : null;
+        IsOpen = ActiveViewModel != null;
+        IsFileSystemActive = false;
+        IsIssuesActive = false;
     }
 
     protected override void OnActivate(CompositeDisposable disposable)

@@ -57,6 +57,7 @@ sealed class Program
                     services.AddSingleton<ReportPanelViewModel>();
                     services.AddSingleton<AlertsViewModel>();
                     services.AddSingleton<BuildPanelViewModel>();
+                    services.AddSingleton<BuildProblemsViewModel>();
 
                     //Views
                     services.AddSingleton<MainWindow>();
@@ -73,6 +74,7 @@ sealed class Program
                     services.AddSingleton<ReportPanelView>();
                     services.AddSingleton<AlertsView>();
                     services.AddSingleton<BuildPanelView>();
+                    services.AddSingleton<BuildProblemsView>();
                 },
                 withResolver: sp => { ServiceProvider = sp; }
             );

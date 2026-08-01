@@ -1,4 +1,5 @@
-﻿using ReportChecker.Studio.Abstractions;
+﻿using System.Reactive.Subjects;
+using ReportChecker.Studio.Abstractions;
 using ReportChecker.Studio.Models;
 
 namespace ReportChecker.Studio.Services;
@@ -7,6 +8,9 @@ public class LanguageService : ILanguageService
 {
     private readonly IReadOnlyList<ILanguageProviderFactory> _factories;
     private ILanguageProvider? _currentProvider;
+
+    private readonly BehaviorSubject<IReadOnlyList<BuildProblem>> _buildProblems = new([]);
+    public IObservable<IReadOnlyList<BuildProblem>> BuildProblems => _buildProblems;
 
     public LanguageService(IProjectService projectService,
         IEnumerable<ILanguageProviderFactory> languageProviderFactories)
@@ -45,6 +49,8 @@ public class LanguageService : ILanguageService
     {
         if (_currentProvider == null)
             return BuildResult.Failure();
-        return await _currentProvider.BuildAsync(ct);
+        var result = await _currentProvider.BuildAsync(ct);
+        _buildProblems.OnNext(result.Problems);
+        return result;
     }
 }
