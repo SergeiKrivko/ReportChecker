@@ -19,7 +19,7 @@ public class AlertColorConverter : IValueConverter
             AlertType.Info => "PrimaryColor",
             AlertType.Success => "SuccessColor",
             AlertType.Warning => "WarningColor",
-            AlertType.Error => "ErrorColor",
+            AlertType.Error => "DangerColor",
             _ => ""
         };
         if (Application.Current?.Resources.TryGetResource(key, Application.Current.ActualThemeVariant,

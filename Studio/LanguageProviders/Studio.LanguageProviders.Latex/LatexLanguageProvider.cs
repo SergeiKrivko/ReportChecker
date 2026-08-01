@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics;
 using System.Reflection;
 using System.Text.Json;
 using ReportChecker.Studio.Abstractions;
@@ -9,7 +9,7 @@ using Studio.LanguageProviders.Latex.Models;
 
 namespace Studio.LanguageProviders.Latex;
 
-public class LatexLanguageProvider(string path) : ILanguageProvider
+public class LatexLanguageProvider(string path, IAlertService alertService) : ILanguageProvider
 {
     private Dictionary<string, LatexLibrary> _libraries = [];
 
@@ -56,5 +56,44 @@ public class LatexLanguageProvider(string path) : ILanguageProvider
         if (command == null || match.ArgumentIndex >= command.Arguments.Length)
             return null;
         return command.Arguments[match.ArgumentIndex];
+    }
+
+    public async Task<BuildResult> BuildAsync(CancellationToken ct = default)
+    {
+        var stopwatch = Stopwatch.StartNew();
+        var workingDirectory = Path.GetDirectoryName(path) ?? Directory.GetCurrentDirectory();
+        var process = Process.Start(new ProcessStartInfo
+        {
+            FileName = "pdflatex",
+            ArgumentList = { "-interaction=nonstopmode", "-synctex=1", path },
+            RedirectStandardOutput = false,
+            RedirectStandardError = false,
+            WorkingDirectory = workingDirectory,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+        });
+        Console.WriteLine($"pdflatex {string.Join(' ', process?.StartInfo.ArgumentList ?? [])}");
+        if (process == null)
+        {
+            alertService.SendAlert(AlertType.Error, "Не удалось запустить pdflatex");
+            return BuildResult.Failure();
+        }
+
+        await process.WaitForExitAsync(ct);
+        alertService.SendAlert(AlertType.Info, $"pdflatex завершился с кодом {process.ExitCode}");
+
+        var logParser = new PdfLatexLogParser();
+        var logFilePath = Path.Combine(workingDirectory, Path.GetFileNameWithoutExtension(path) + ".log");
+        var logData = await File.ReadAllTextAsync(logFilePath, ct);
+        var problems = logParser.ParseLog(logData, workingDirectory);
+
+        stopwatch.Stop();
+        return new BuildResult
+        {
+            IsSuccess = process.ExitCode == 0,
+            Problems = problems,
+            Artifacts = process.ExitCode == 0 ? [Path.ChangeExtension(path, "pdf")] : [],
+            Duration = stopwatch.Elapsed,
+        };
     }
 }

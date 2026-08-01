@@ -111,7 +111,7 @@ public class AuthButtonViewModel(
             TokensPercent = Subscription == null
                 ? 0
                 : int.Min(100, Subscription.TokensLimit.Current * 100 / Subscription.TokensLimit.Maximum);
-            if (Subscription?.Active?.PlanId != CurrentPlan?.Id)
+            if (Subscription?.Active?.PlanId != CurrentPlan.Id)
                 CurrentPlan = await subscriptionService.GetSubscriptionPlanAsync(Subscription?.Active?.Id);
         }
         else

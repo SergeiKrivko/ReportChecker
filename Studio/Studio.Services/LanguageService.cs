@@ -40,4 +40,11 @@ public class LanguageService : ILanguageService
             return LanguageCompletions.Empty();
         return _currentProvider.GetCompletions(triggerText, fileText, offset);
     }
+
+    public async Task<BuildResult> BuildProjectAsync(CancellationToken ct = default)
+    {
+        if (_currentProvider == null)
+            return BuildResult.Failure();
+        return await _currentProvider.BuildAsync(ct);
+    }
 }

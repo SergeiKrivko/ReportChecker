@@ -14,7 +14,8 @@ public class MainWindowViewModel(
     ReportPanelViewModel reportPanelViewModel,
     IIssueService issueService,
     ViewModels.AlertsViewModel alertsViewModel,
-    IAlertService alertService) : ViewModelBase
+    IAlertService alertService,
+    BuildPanelViewModel buildPanelViewModel) : ViewModelBase
 {
     public ProjectSelectorViewModel ProjectSelectorViewModel => projectSelectorViewModel;
     public AuthButtonViewModel AuthButtonViewModel => authButtonViewModel;
@@ -22,6 +23,7 @@ public class MainWindowViewModel(
     public RightPanelViewModel RightPanelViewModel => rightPanelViewModel;
     public EditorViewModel EditorViewModel => editorViewModel;
     public AlertsViewModel AlertsViewModel => alertsViewModel;
+    public BuildPanelViewModel BuildPanelViewModel => buildPanelViewModel;
 
     protected override void OnActivate(CompositeDisposable disposable)
     {
