@@ -8,13 +8,13 @@
              x:DataType="vm:BuildPanelViewModel">
 
     <Panel>
-        <Button Command="{Binding RunBuild}"
+        <Button Command="{Binding RunBuild}" Width="32" Height="32"
                 IsVisible="{Binding !IsProgress}">
-            Собрать
+            <PathIcon Data="{StaticResource IconBuild}" />
         </Button>
-        <Button Command="{Binding CancelBuild}" Classes="Danger"
+        <Button Command="{Binding CancelBuild}" Classes="Danger" Width="32" Height="32"
                 IsVisible="{Binding IsProgress}">
-            Отменить
+            <PathIcon Data="{StaticResource IconCancelBuild}" />
         </Button>
     </Panel>
 

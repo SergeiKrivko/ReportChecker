@@ -20,7 +20,7 @@
             </ToggleButton>
             <ToggleButton Command="{Binding ActivateBuildProblems}"
                           IsChecked="{Binding IsBuildProblemsActive}">
-                <PathIcon Data="{StaticResource IconCircleAlert}" />
+                <PathIcon Data="{StaticResource IconBuild}" />
             </ToggleButton>
             <StackPanel.Styles>
                 <Style Selector="ToggleButton">
