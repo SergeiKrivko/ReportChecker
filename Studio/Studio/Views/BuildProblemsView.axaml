@@ -17,23 +17,31 @@
         <converters:BuildProblemColorConverter x:Key="BuildProblemColorConverter" />
     </UserControl.Resources>
 
-    <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Auto">
-        <ItemsControl ItemsSource="{Binding Problems^}">
-            <ItemsControl.DataTemplates>
-                <DataTemplate DataType="models:BuildProblem">
-                    <Button CornerRadius="0" HorizontalAlignment="Stretch"
-                            Command="{Binding ViewModel.JumpToCode, ElementName=Root}"
-                            CommandParameter="{Binding .}">
-                        <Grid ColumnDefinitions="Auto *">
-                            <PathIcon Width="32" Height="32" Margin="0 0 5 0"
-                                      Foreground="{Binding Type, Converter={StaticResource BuildProblemColorConverter}}"
-                                      Data="{Binding Type, Converter={StaticResource BuildProblemIconConverter}}" />
-                            <SelectableTextBlock Grid.Column="1" Text="{Binding Message}" TextWrapping="Wrap" />
-                        </Grid>
-                    </Button>
-                </DataTemplate>
-            </ItemsControl.DataTemplates>
-        </ItemsControl>
-    </ScrollViewer>
+    <Panel>
+        <StackPanel VerticalAlignment="Center" IsVisible="{Binding !HasProblems^}" Spacing="10">
+            <PathIcon Foreground="{DynamicResource SuccessColor}" Data="{StaticResource IconCheckmark}" 
+                      Width="64" Height="64" HorizontalAlignment="Center" />
+            <TextBlock HorizontalAlignment="Center">Ошибок нет!</TextBlock>
+        </StackPanel>
+        <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Auto"
+                      IsVisible="{Binding HasProblems^}">
+            <ItemsControl ItemsSource="{Binding Problems^}">
+                <ItemsControl.DataTemplates>
+                    <DataTemplate DataType="models:BuildProblem">
+                        <Button CornerRadius="0" HorizontalAlignment="Stretch"
+                                Command="{Binding ViewModel.JumpToCode, ElementName=Root}"
+                                CommandParameter="{Binding .}">
+                            <Grid ColumnDefinitions="Auto *">
+                                <PathIcon Width="32" Height="32" Margin="0 0 5 0"
+                                          Foreground="{Binding Type, Converter={StaticResource BuildProblemColorConverter}}"
+                                          Data="{Binding Type, Converter={StaticResource BuildProblemIconConverter}}" />
+                                <SelectableTextBlock Grid.Column="1" Text="{Binding Message}" TextWrapping="Wrap" />
+                            </Grid>
+                        </Button>
+                    </DataTemplate>
+                </ItemsControl.DataTemplates>
+            </ItemsControl>
+        </ScrollViewer>
+    </Panel>
 
 </avalonia:ReactiveUserControl>
