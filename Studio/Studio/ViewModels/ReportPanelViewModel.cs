@@ -97,7 +97,8 @@ public class ReportPanelViewModel(
     private static int CountIssues(IReadOnlyList<FileIssue> issues, int minPriority, int maxPriority)
     {
         return issues
-            .Count(e => e.Issue.Priority >= minPriority && e.Issue.Priority <= maxPriority);
+            .Count(e => e.Issue.Priority >= minPriority && e.Issue.Priority <= maxPriority &&
+                        e.Issue.Status == IssueStatus.Open);
     }
 
     public async Task PushReportAsync()
@@ -114,7 +115,7 @@ public class ReportPanelViewModel(
         }
         catch (Exception e)
         {
-            Console.WriteLine(e.Message);
+            alertService.SendAlert(AlertType.Error, e.Message);
         }
     }
 
@@ -126,6 +127,7 @@ public class ReportPanelViewModel(
             alertService.SendAlert(AlertType.Error, "Невозможно отправить новую версию, пока идет проверка предыдущей");
             return;
         }
+
         try
         {
             var pack = await projectService.PackCurrentProjectAsync();
@@ -134,7 +136,7 @@ public class ReportPanelViewModel(
         }
         catch (Exception e)
         {
-            alertService.SendAlert(AlertType.Error, $"Не удалось отравить новую версию на проверку: {e}");
+            alertService.SendAlert(AlertType.Error, $"Не удалось отправить новую версию на проверку: {e}");
         }
     }
 
