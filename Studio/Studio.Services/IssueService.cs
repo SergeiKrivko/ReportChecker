@@ -12,7 +12,12 @@ using Report = ReportChecker.Shared.Models.Report;
 
 namespace ReportChecker.Studio.Services;
 
-public class IssueService(IReportService reportService, IApiClient apiClient, IProjectService projectService, IAlertService alertService)
+public class IssueService(
+    IReportService reportService,
+    IApiClient apiClient,
+    IProjectService projectService,
+    IAlertService alertService,
+    ICacheService cacheService)
     : IIssueService
 {
     private readonly BehaviorSubject<LoadingStatus> _loading = new(LoadingStatus.NotLoaded);
@@ -25,9 +30,9 @@ public class IssueService(IReportService reportService, IApiClient apiClient, IP
     public IObservable<object> Load()
     {
         return reportService.CurrentReport
-            .Select<Report?, Task<int>>(report => ReloadIssues(report))
+            .Select<Report?, Task<LoadingStatus>>(report => ReloadIssuesWhileFromCache(report))
             .Switch()
-            .Select<int, object>(e => e);
+            .Select<LoadingStatus, object>(e => e);
     }
 
     public async Task ReloadIssues()
@@ -36,35 +41,58 @@ public class IssueService(IReportService reportService, IApiClient apiClient, IP
         await ReloadIssues(report);
     }
 
-    private async Task<int> ReloadIssues(Report? report, CancellationToken ct = default)
+    private async Task<LoadingStatus> ReloadIssuesWhileFromCache(Report? report, CancellationToken ct = default)
+    {
+        var status = await ReloadIssues(report, ct);
+        while (status == LoadingStatus.FromCache)
+        {
+            await Task.Delay(5000, ct);
+            status = await ReloadIssues(report, ct);
+            Console.WriteLine(status);
+        }
+
+        return status;
+    }
+
+    private async Task<LoadingStatus> ReloadIssues(Report? report, CancellationToken ct = default)
     {
         _loading.OnNext(LoadingStatus.InProgress);
         if (report == null)
         {
             _allIssues.OnNext([]);
             _loading.OnNext(LoadingStatus.Loaded);
-            return 0;
+            return LoadingStatus.Loaded;
         }
 
         try
         {
             var resp = await apiClient.IssuesAllAsync(report.Id, ct);
             var fileIssues = await IssuesToFileIssuesAsync(resp.Select(e => e.ToDomain()).ToList(), ct);
+            await cacheService.SaveCacheAsync(report.Id, "issues", fileIssues, ct);
             _allIssues.OnNext(fileIssues);
             _loading.OnNext(LoadingStatus.Loaded);
-            return fileIssues.Count;
+            return LoadingStatus.Loaded;
         }
         catch (HttpRequestException e)
         {
-            _loading.OnNext(LoadingStatus.FromCache);
+            var cache = await cacheService.LoadCacheAsync<FileIssue[]>(report.Id, "issues", ct);
+            _loading.OnNext(cache == null ? LoadingStatus.Failed : LoadingStatus.FromCache);
+            if (cache != null)
+            {
+                _allIssues.OnNext(cache);
+                _loading.OnNext(LoadingStatus.FromCache);
+                return LoadingStatus.FromCache;
+            }
+
             alertService.SendAlert(AlertType.Warning, $"Не удалось загрузить список ошибок: {e.Message}");
-            return 0;
+            _loading.OnNext(LoadingStatus.Failed);
+            return LoadingStatus.Failed;
         }
         catch (Exception e)
         {
             _loading.OnNext(LoadingStatus.Failed);
             alertService.SendAlert(AlertType.Warning, $"Не удалось загрузить список ошибок: {e.Message}");
-            return 0;
+            return LoadingStatus.Failed;
         }
     }
 

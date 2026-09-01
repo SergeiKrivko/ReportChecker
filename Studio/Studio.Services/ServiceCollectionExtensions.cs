@@ -25,6 +25,7 @@ public static class ServiceCollectionExtensions
             services.AddSingleton<ISubscriptionService, SubscriptionService>();
             services.AddSingleton<IWebLinksService, WebLinksService>();
             services.AddSingleton<IAlertService, AlertService>();
+            services.AddSingleton<ICacheService, CacheService>();
 
             return services;
         }

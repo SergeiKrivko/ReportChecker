@@ -15,7 +15,8 @@ namespace ReportChecker.Studio.Services;
 public class ReportService(
     IApiClient apiClient,
     ISettingsSection globalSettings,
-    IAlertService alertService) : IReportService
+    IAlertService alertService,
+    ICacheService cacheService) : IReportService
 {
     private readonly BehaviorSubject<Report?> _currentReport = new(null);
     public IObservable<Report?> CurrentReport => _currentReport;
@@ -24,15 +25,34 @@ public class ReportService(
 
     public async Task<IReadOnlyList<Report>> GetAllReports(CancellationToken ct = default)
     {
-        var resp = await apiClient.ReportsAllAsync(ct);
-        // SelectReport(resp.FirstOrDefault()?.ToDomain());
-        return resp.Select(e => e.ToDomain()).ToList();
+        try
+        {
+            var resp = await apiClient.ReportsAllAsync(ct);
+            var res = resp.Select(e => e.ToDomain()).ToList();
+            await cacheService.SaveCacheAsync("allReports", res, ct);
+            return res;
+        }
+        catch (HttpRequestException e)
+        {
+            var cache = await cacheService.LoadCacheAsync<List<Report>>("allReports", ct);
+            return cache ?? throw new Exception($"Http request exception: {e.Message}", e);
+        }
     }
 
     public async Task<Report> GetReportById(Guid id, CancellationToken ct = default)
     {
-        var resp = await apiClient.ReportsAllAsync(ct);
-        return resp.First(e => e.Id == id).ToDomain();
+        try
+        {
+            var resp = await apiClient.ReportsGETAsync(id, ct);
+            var res = resp.ToDomain();
+            await cacheService.SaveCacheAsync(id, "report", res, ct);
+            return res;
+        }
+        catch (HttpRequestException e)
+        {
+            var cache = await cacheService.LoadCacheAsync<Report>(id, "report", ct);
+            return cache ?? throw new Exception($"Http request exception: {e.Message}", e);
+        }
     }
 
     public void SelectReport(Report? report)
