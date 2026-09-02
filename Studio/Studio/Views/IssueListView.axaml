@@ -19,21 +19,21 @@
                         <ToggleButton CornerRadius="0" VerticalAlignment="Stretch" IsChecked="{Binding IsActiveIssues}"
                                       Command="{Binding ShowActiveIssues}">
                             <StackPanel Orientation="Horizontal" Spacing="3">
-                                <PathIcon Data="{StaticResource IconShieldAlert}" />
+                                <LucideIcon Kind="ShieldAlert" />
                                 <TextBlock VerticalAlignment="Center">Активные</TextBlock>
                             </StackPanel>
                         </ToggleButton>
                         <ToggleButton CornerRadius="0" VerticalAlignment="Stretch" IsChecked="{Binding IsClosedIssues}"
                                       Command="{Binding ShowClosedIssues}">
                             <StackPanel Orientation="Horizontal" Spacing="3">
-                                <PathIcon Data="{StaticResource IconClose}" />
+                                <LucideIcon Kind="X" />
                                 <TextBlock VerticalAlignment="Center">Закрытые</TextBlock>
                             </StackPanel>
                         </ToggleButton>
                         <ToggleButton CornerRadius="0" VerticalAlignment="Stretch" IsChecked="{Binding IsFixedIssues}"
                                       Command="{Binding ShowFixedIssues}">
                             <StackPanel Orientation="Horizontal" Spacing="3">
-                                <PathIcon Data="{StaticResource IconCheckmark}" />
+                                <LucideIcon Kind="Check" />
                                 <TextBlock VerticalAlignment="Center">Исправленные</TextBlock>
                             </StackPanel>
                         </ToggleButton>

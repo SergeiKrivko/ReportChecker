@@ -48,9 +48,8 @@
             <Arc Classes="Spinner" Width="32" Height="32" />
             <TextBlock VerticalAlignment="Center">Поиск ошибок…</TextBlock>
         </StackPanel>
-        <PathIcon IsVisible="{Binding IsConnectionError}"
-                  Data="{StaticResource IconConnectionError}"
-                  Width="24" Height="24" />
+        <LucideIcon IsVisible="{Binding IsConnectionError}"
+                  Kind="GlobeOff" Size="24" />
     </StackPanel>
 
 </UserControl>

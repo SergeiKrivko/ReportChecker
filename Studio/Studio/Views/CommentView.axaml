@@ -15,10 +15,8 @@
 
     <Grid ColumnDefinitions="Auto *">
         <Panel Margin="5" VerticalAlignment="Top">
-            <PathIcon Data="{StaticResource IconBot}" Width="24" Height="24"
-                      IsVisible="{Binding IsBot}" />
-            <PathIcon Data="{StaticResource IconUser}" Width="24" Height="24"
-                      IsVisible="{Binding !IsBot}" />
+            <LucideIcon Kind="Bot" Size="24" IsVisible="{Binding IsBot}" />
+            <LucideIcon Kind="User" Size="24" IsVisible="{Binding !IsBot}" />
         </Panel>
         <StackPanel Grid.Column="1" Spacing="5" Margin="0 0 5 0">
             <StackPanel Orientation="Horizontal" Spacing="5" IsVisible="{Binding IsProgress}">
@@ -47,25 +45,25 @@
                         <Button Classes="Danger" Command="{Binding RejectPatchAsync}">Отклонить</Button>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Spacing="5" IsVisible="{Binding IsPatchApplied}">
-                        <PathIcon Data="{StaticResource IconCheckmark}" Foreground="{DynamicResource SuccessColor}" Width="24" Height="24" />
+                        <LucideIcon Kind="Check" Foreground="{DynamicResource SuccessColor}" Width="24" Height="24" />
                         <TextBlock>Исправления внесены</TextBlock>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Spacing="5" IsVisible="{Binding IsPatchRejected}">
-                        <PathIcon Data="{StaticResource IconClose}" Foreground="{DynamicResource DangerColor}" Width="24" Height="24" />
+                        <LucideIcon Kind="X" Foreground="{DynamicResource DangerColor}" Width="24" Height="24" />
                         <TextBlock>Исправления отклонены</TextBlock>
                     </StackPanel>
                 </StackPanel>
             </Border>
             <StackPanel Orientation="Horizontal" Spacing="5" IsVisible="{Binding IsClose}">
-                <PathIcon Data="{StaticResource IconClose}" Foreground="{DynamicResource DangerColor}" />
+                <LucideIcon Kind="X" Foreground="{DynamicResource DangerColor}" />
                 <TextBlock>Ошибка закрыта</TextBlock>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Spacing="5" IsVisible="{Binding IsFixed}">
-                <PathIcon Data="{StaticResource IconCheckmark}" Foreground="{DynamicResource SuccessColor}" />
+                <LucideIcon Kind="Check" Foreground="{DynamicResource SuccessColor}" />
                 <TextBlock>Ошибка отмечена как исправленная</TextBlock>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Spacing="5" IsVisible="{Binding IsReopen}">
-                <PathIcon Data="{StaticResource IconCircleAlert}" Foreground="{DynamicResource PrimaryColor}" />
+                <LucideIcon Kind="CircleAlert" Foreground="{DynamicResource PrimaryColor}" />
                 <TextBlock>Ошибка переоткрыта</TextBlock>
             </StackPanel>
         </StackPanel>

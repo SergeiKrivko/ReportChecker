@@ -12,36 +12,36 @@
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="5" Spacing="5">
             <Button Command="{Binding DeselectIssue}">
                 <StackPanel Orientation="Horizontal" Spacing="3">
-                    <PathIcon Data="{StaticResource IconChevronLeft}" />
+                    <LucideIcon Kind="ChevronLeft" />
                     <TextBlock>Назад</TextBlock>
                 </StackPanel>
             </Button>
             <Button Command="{Binding MarkIssueAsFixed}" Classes="Success"
                     IsVisible="{Binding IsOpened}">
                 <StackPanel Orientation="Horizontal" Spacing="3">
-                    <PathIcon Data="{StaticResource IconCheckmark}" />
+                    <LucideIcon Kind="Check" />
                     <!-- <TextBlock>Исправлена</TextBlock> -->
                 </StackPanel>
             </Button>
             <Button Command="{Binding CloseIssue}" Classes="Danger"
                     IsVisible="{Binding IsOpened}">
                 <StackPanel Orientation="Horizontal" Spacing="3">
-                    <PathIcon Data="{StaticResource IconClose}" />
+                    <LucideIcon Kind="X" />
                     <!-- <TextBlock>Закрыть</TextBlock> -->
                 </StackPanel>
             </Button>
             <Button Command="{Binding ReopenIssue}" Classes="Accent"
                     IsVisible="{Binding !IsOpened}">
                 <StackPanel Orientation="Horizontal" Spacing="3">
-                    <PathIcon Data="{StaticResource IconCircleAlert}" />
+                    <LucideIcon Kind="CircleAlert" />
                     <!-- <TextBlock>Переоткрыть</TextBlock> -->
                 </StackPanel>
             </Button>
             <Button Command="{Binding OpenInBrowser}">
-                <PathIcon Data="{StaticResource IconExternalLink}" />
+                <LucideIcon Kind="ExternalLink" />
             </Button>
             <Button Command="{Binding GoToCode}">
-                <PathIcon Data="{StaticResource IconChevronRight}" />
+                <LucideIcon Kind="FileSymlink" />
             </Button>
         </StackPanel>
         <ScrollViewer Grid.Row="1">
@@ -58,8 +58,8 @@
                 <TextBox AcceptsReturn="True" MaxHeight="300" TextWrapping="Wrap"
                          Text="{Binding CommentContent, Mode=TwoWay}" />
                 <Button Grid.Column="1" Classes="Accent" Margin="5 0 0 0"
-                        Width="32" Height="32" CornerRadius="16" Command="{Binding SendComment}">
-                    <PathIcon Data="{StaticResource IconSend}" VerticalAlignment="Center" />
+                        Width="32" Height="32" Padding="6" CornerRadius="16" Command="{Binding SendComment}">
+                    <LucideIcon Kind="Send" Size="20" VerticalAlignment="Center" />
                 </Button>
             </Grid>
         </Border>

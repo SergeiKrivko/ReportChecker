@@ -11,11 +11,11 @@
     <Button CornerRadius="0" Height="48" MinWidth="250">
         <Panel>
             <StackPanel Orientation="Horizontal" Spacing="5" IsVisible="{Binding IsProjectSelected^}">
-                <PathIcon Data="{StaticResource IconBot}" />
+                <LucideIcon Kind="Bot" />
                 <TextBlock Text="{Binding CurrentProject^.Name}" VerticalAlignment="Center" />
             </StackPanel>
             <StackPanel Orientation="Horizontal" Spacing="5" IsVisible="{Binding !IsProjectSelected^}">
-                <PathIcon Data="{StaticResource IconHelp}" />
+                <LucideIcon Kind="CircleQuestionMark" />
                 <TextBlock VerticalAlignment="Center">Проект не выбран</TextBlock>
             </StackPanel>
         </Panel>

@@ -9,4 +9,5 @@ public interface ILanguageProvider
     public Task ParseAllAsync(CancellationToken ct = default);
     public Task ParseFileAsync(string path, CancellationToken ct = default);
     public Task ParseFileAsync(string path, string data, CancellationToken ct = default);
+    public IReadOnlyList<LanguageDirectory> GetDirectories();
 }

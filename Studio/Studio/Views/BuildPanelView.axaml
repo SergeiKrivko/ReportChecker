@@ -10,7 +10,7 @@
     <Panel>
         <Button Command="{Binding RunBuild}" Width="32" Height="32"
                 IsVisible="{Binding !IsProgress}">
-            <PathIcon Data="{StaticResource IconBuild}" />
+            <LucideIcon Kind="Hammer" />
         </Button>
         <Button Command="{Binding CancelBuild}" Classes="Danger" Width="32" Height="32"
                 IsVisible="{Binding IsProgress}">

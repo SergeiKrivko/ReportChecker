@@ -21,12 +21,12 @@
                 <Border BorderThickness="1" BorderBrush="{DynamicResource BorderColor}" CornerRadius="10"
                         Background="{DynamicResource SurfaceColor}">
                     <Grid ColumnDefinitions="Auto * Auto" Margin="8">
-                        <PathIcon VerticalAlignment="Top" Width="48" Height="48" Margin="5"
-                                  Data="{Binding Type, Converter={StaticResource AlertIconConverter}}"
+                        <LucideIcon VerticalAlignment="Top" Width="48" Height="48" Margin="5"
+                                  Kind="{Binding Type, Converter={StaticResource AlertIconConverter}}"
                                   Foreground="{Binding Type, Converter={StaticResource AlertColorConverter}}" />
                         <TextBlock Grid.Column="1" TextWrapping="Wrap" Text="{Binding Text}" />
                         <!-- <Button Grid.Column="2" Width="24" Height="24" VerticalAlignment="Top"> -->
-                        <!--     <PathIcon Data="{StaticResource IconClose}" /> -->
+                        <!--     <LucideIcon Kind="X" /> -->
                         <!-- </Button> -->
                     </Grid>
                 </Border>

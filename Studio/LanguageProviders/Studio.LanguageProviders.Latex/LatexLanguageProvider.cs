@@ -128,4 +128,48 @@ public class LatexLanguageProvider(string path, IAlertService alertService) : IL
             return;
         await _fileParser.ParseFileAsync(p, data, ct);
     }
+
+    public IReadOnlyList<LanguageDirectory> GetDirectories()
+    {
+        var root = Path.GetDirectoryName(path) ?? ".";
+        return
+        [
+            new LanguageDirectory
+            {
+                Name = "Исходники",
+                Files = Directory.EnumerateFiles(root, "*.tex", SearchOption.AllDirectories)
+                    .Select(e => new LanguageFile
+                    {
+                        Name = Path.GetFileName(e),
+                        Path = e,
+                    })
+                    .ToList()
+            },
+            new LanguageDirectory
+            {
+                Name = "Вспомогательные файлы",
+                Files = Directory.EnumerateFiles(root, "*.aux", SearchOption.AllDirectories)
+                    .Concat(Directory.EnumerateFiles(root, "*.toc", SearchOption.AllDirectories))
+                    .Concat(Directory.EnumerateFiles(root, "*.log", SearchOption.AllDirectories))
+                    .Concat(Directory.EnumerateFiles(root, "*.out", SearchOption.AllDirectories))
+                    .Select(e => new LanguageFile
+                    {
+                        Name = Path.GetFileName(e),
+                        Path = e,
+                    })
+                    .ToList()
+            },
+            new LanguageDirectory
+            {
+                Name = "Сборки",
+                Files = Directory.EnumerateFiles(root, "*.pdf", SearchOption.AllDirectories)
+                    .Select(e => new LanguageFile
+                    {
+                        Name = Path.GetFileName(e),
+                        Path = e,
+                    })
+                    .ToList()
+            },
+        ];
+    }
 }

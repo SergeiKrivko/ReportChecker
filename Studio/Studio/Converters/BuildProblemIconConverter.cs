@@ -3,6 +3,7 @@ using System.Globalization;
 using Avalonia;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
+using Lucide.Avalonia;
 using ReportChecker.Studio.Models;
 
 namespace ReportChecker.Studio.Converters;
@@ -13,18 +14,13 @@ public class BuildProblemIconConverter : IValueConverter
     {
         if (value is not BuildProblemType type)
             return null;
-        var key = type switch
+        return type switch
         {
-            BuildProblemType.Error => "IconShieldAlert",
-            BuildProblemType.Warning => "IconTriangleAlert",
-            BuildProblemType.Hint => "IconTriangleAlert",
-            _ => "IconEmpty",
+            BuildProblemType.Error => LucideIconKind.ShieldAlert,
+            BuildProblemType.Warning => LucideIconKind.TriangleAlert,
+            BuildProblemType.Hint => LucideIconKind.CircleAlert,
+            _ => LucideIconKind.OctagonAlert,
         };
-        if (Application.Current?.Resources.TryGetResource(key, Application.Current.ActualThemeVariant,
-                out var resource) == true)
-            return resource as StreamGeometry;
-
-        return null;
     }
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)

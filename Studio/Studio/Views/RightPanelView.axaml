@@ -12,20 +12,24 @@
         <StackPanel Orientation="Vertical" Spacing="5" Margin="2">
             <ToggleButton Command="{Binding ActivateFileSystem}"
                           IsChecked="{Binding IsFileSystemActive}">
-                <PathIcon Data="{StaticResource IconDirectory}" />
+                <LucideIcon Kind="Folder" />
             </ToggleButton>
             <ToggleButton Command="{Binding ActivateIssues}"
                           IsChecked="{Binding IsIssuesActive}">
-                <PathIcon Data="{StaticResource IconShieldAlert}" />
+                <LucideIcon Kind="ShieldAlert" />
             </ToggleButton>
             <ToggleButton Command="{Binding ActivateBuildProblems}"
                           IsChecked="{Binding IsBuildProblemsActive}">
-                <PathIcon Data="{StaticResource IconBuild}" />
+                <LucideIcon Kind="Hammer" />
             </ToggleButton>
             <StackPanel.Styles>
                 <Style Selector="ToggleButton">
                     <Setter Property="Width" Value="32" />
                     <Setter Property="Height" Value="32" />
+                    <Setter Property="Padding" Value="4" />
+                </Style>
+                <Style Selector="LucideIcon">
+                    <Setter Property="Size" Value="24" />
                 </Style>
             </StackPanel.Styles>
         </StackPanel>
