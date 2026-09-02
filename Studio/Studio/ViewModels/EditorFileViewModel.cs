@@ -47,7 +47,7 @@ public class EditorFileViewModel(
         set;
     }
 
-    private readonly Subject<int> _lineCount = new();
+    private readonly BehaviorSubject<int> _lineCount = new(0);
 
     public IObservable<IReadOnlyList<FileIssue>> Issues => issueService.AllIssues
         .CombineLatest(_lineCount

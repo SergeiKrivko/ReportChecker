@@ -41,9 +41,13 @@ public class LatexLanguageProvider(string path, IAlertService alertService) : IL
                 .Select(c => new LatexCommandCompletion(c)));
         var currentArgument = FindCurrentArgument(fileText, offset, out var match);
         if (currentArgument != null && match != null)
-            return new LanguageCompletions(_libraries
-                .SelectMany(l => l.Value.Environments)
-                .Select(e => new LatexEnvironmentCompletion(e)), match.ArgumentStartOffset, match.ArgumentEndOffset);
+            switch (currentArgument.Type)
+            {
+                case "environment":
+                    return new LanguageCompletions(_libraries
+                        .SelectMany(l => l.Value.Environments)
+                        .Select(e => new LatexEnvironmentCompletion(e)), match.ArgumentStartOffset, match.ArgumentEndOffset);
+            }
         return LanguageCompletions.Empty();
     }
 

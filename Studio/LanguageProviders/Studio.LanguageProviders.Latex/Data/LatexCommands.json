@@ -2,6 +2,20 @@
   "core": {
     "commands": [
       {
+        "name": "begin",
+        "args": [
+          { "type": "environment", "description": "Название окружения" }
+        ],
+        "description": "Начало окружения"
+      },
+      {
+        "name": "end",
+        "args": [
+          { "type": "environment", "description": "Название окружения" }
+        ],
+        "description": "Конец окружения"
+      },
+      {
         "name": "textbf",
         "args": [
           { "type": "text", "description": "Текст для выделения жирным" }

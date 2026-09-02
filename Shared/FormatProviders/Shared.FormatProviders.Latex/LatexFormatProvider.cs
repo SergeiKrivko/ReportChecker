@@ -251,7 +251,7 @@ public class LatexFormatProvider : IFormatProvider
                 if (lineNumber == issueChapterLine)
                     return new FilePosition
                     {
-                        Path = filePath,
+                        Path = Path.GetFullPath(filePath),
                         Line = fileLineNumber,
                     };
             }
@@ -316,7 +316,7 @@ public class LatexFormatProvider : IFormatProvider
             {
                 result.Add(new FileIssue(chapterIssues[0], new FilePosition
                 {
-                    Path = filePath,
+                    Path = Path.GetFullPath(filePath),
                     Line = fileLineNumber
                 }));
                 chapterIssues.RemoveAt(0);
