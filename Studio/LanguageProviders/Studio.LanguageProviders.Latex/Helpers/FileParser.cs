@@ -24,6 +24,7 @@ internal class FileParser(string rootPath)
 
     public Task ParseFileAsync(string path, string data, CancellationToken ct = default)
     {
+        Console.WriteLine($"Parse {path}");
         var lines = data.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
         var parsedFile = new ParsedFile
         {

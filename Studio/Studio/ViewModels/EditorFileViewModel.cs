@@ -67,10 +67,11 @@ public class EditorFileViewModel(
 
     protected override async Task OnActivateAsync(CompositeDisposable disposable)
     {
-        if (_isInitialized)
-            return;
-        _isInitialized = true;
-        await Load();
+        if (!_isInitialized)
+        {
+            _isInitialized = true;
+            await Load();
+        }
 
         _lineCount.OnNext(Document?.LineCount ?? 0);
         Document.ObservableForProperty(e => e.Text)
@@ -85,7 +86,7 @@ public class EditorFileViewModel(
             .Subscribe(_ => SaveBackup())
             .DisposeWith(disposable);
         Document.ObservableForProperty(e => e.Text)
-            .Throttle(TimeSpan.FromSeconds(1))
+            .Throttle(TimeSpan.FromMilliseconds(500))
             .Select(async e =>
             {
                 await languageService.ParseFileAsync(Path, e.Value);
