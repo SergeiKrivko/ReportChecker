@@ -8,4 +8,5 @@ public interface ILanguageService
 
     public LanguageCompletions GetCompletions(string triggerText, string fileText, int offset);
     public Task<BuildResult> BuildProjectAsync(CancellationToken ct = default);
+    public Task ParseFileAsync(string path, string data, CancellationToken ct = default);
 }

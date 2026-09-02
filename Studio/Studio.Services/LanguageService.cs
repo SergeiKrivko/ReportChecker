@@ -31,6 +31,7 @@ public class LanguageService : ILanguageService
 
             var factory = _factories.Single(e => e.Key == project.Format);
             _currentProvider = await factory.CreateProviderAsync(project);
+            await _currentProvider.ParseAllAsync();
         }
         catch (Exception e)
         {
@@ -52,5 +53,12 @@ public class LanguageService : ILanguageService
         var result = await _currentProvider.BuildAsync(ct);
         _buildProblems.OnNext(result.Problems);
         return result;
+    }
+
+    public async Task ParseFileAsync(string path, string data, CancellationToken ct = default)
+    {
+        if (_currentProvider == null)
+            return;
+        await _currentProvider.ParseFileAsync(path, data, ct);
     }
 }

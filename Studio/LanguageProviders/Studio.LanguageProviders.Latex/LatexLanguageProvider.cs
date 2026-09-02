@@ -18,6 +18,8 @@ public class LatexLanguageProvider(string path, IAlertService alertService) : IL
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
     };
 
+    private readonly FileParser _fileParser = new(path);
+
     public async Task InitializeAsync(CancellationToken ct = default)
     {
         await using var stream =
@@ -45,9 +47,17 @@ public class LatexLanguageProvider(string path, IAlertService alertService) : IL
             {
                 case "environment":
                     return new LanguageCompletions(_libraries
-                        .SelectMany(l => l.Value.Environments)
-                        .Select(e => new LatexEnvironmentCompletion(e)), match.ArgumentStartOffset, match.ArgumentEndOffset);
+                            .SelectMany(l => l.Value.Environments)
+                            .Select(e => new LatexEnvironmentCompletion(e)), match.ArgumentStartOffset,
+                        match.ArgumentEndOffset);
+                case "label":
+                    return new LanguageCompletions(_fileParser.Labels.Select(e => new LatexLabelCompletion(e)),
+                        match.ArgumentStartOffset, match.ArgumentEndOffset);
+                case "bibtex":
+                    return new LanguageCompletions(_fileParser.Bibliography.Select(e => new LatexBibtexCompletion(e)),
+                        match.ArgumentStartOffset, match.ArgumentEndOffset);
             }
+
         return LanguageCompletions.Empty();
     }
 
@@ -76,7 +86,6 @@ public class LatexLanguageProvider(string path, IAlertService alertService) : IL
             UseShellExecute = false,
             CreateNoWindow = true,
         });
-        Console.WriteLine($"pdflatex {string.Join(' ', process?.StartInfo.ArgumentList ?? [])}");
         if (process == null)
         {
             alertService.SendAlert(AlertType.Error, "Не удалось запустить pdflatex");
@@ -99,5 +108,24 @@ public class LatexLanguageProvider(string path, IAlertService alertService) : IL
             Artifacts = process.ExitCode == 0 ? [Path.ChangeExtension(path, "pdf")] : [],
             Duration = stopwatch.Elapsed,
         };
+    }
+
+    public async Task ParseAllAsync(CancellationToken ct = default)
+    {
+        await _fileParser.ParseAllAsync(ct);
+    }
+
+    public async Task ParseFileAsync(string p, CancellationToken ct = default)
+    {
+        if (!_fileParser.IsFileInProject(p))
+            return;
+        await _fileParser.ParseFileAsync(p, await File.ReadAllTextAsync(p, ct), ct);
+    }
+
+    public async Task ParseFileAsync(string p, string data, CancellationToken ct = default)
+    {
+        if (!_fileParser.IsFileInProject(p))
+            return;
+        await _fileParser.ParseFileAsync(p, data, ct);
     }
 }

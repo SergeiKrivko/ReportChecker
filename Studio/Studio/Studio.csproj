@@ -28,6 +28,7 @@
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
         <PackageReference Include="ReactiveUI.Avalonia" Version="11.3.8"/>
         <PackageReference Include="ReactiveUI.Avalonia.Microsoft.Extensions.DependencyInjection" Version="11.3.8"/>
+        <PackageReference Include="Rx.Net.Plus" Version="1.1.15" />
     </ItemGroup>
 
     <ItemGroup>

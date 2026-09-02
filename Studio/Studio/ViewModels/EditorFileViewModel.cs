@@ -7,7 +7,6 @@ using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 using AvaloniaEdit.Document;
 using ReactiveUI;
@@ -84,6 +83,16 @@ public class EditorFileViewModel(
             .Select(e => e.Value)
             .Sample(TimeSpan.FromSeconds(3))
             .Subscribe(_ => SaveBackup())
+            .DisposeWith(disposable);
+        Document.ObservableForProperty(e => e.Text)
+            .Throttle(TimeSpan.FromSeconds(1))
+            .Select(async e =>
+            {
+                await languageService.ParseFileAsync(Path, e.Value);
+                return true;
+            })
+            .Switch()
+            .Subscribe()
             .DisposeWith(disposable);
         fileService.FilePatches
             .Where(e => e.Path == Path)
