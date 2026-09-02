@@ -27,27 +27,30 @@
                 <MenuFlyout>
                     <MenuItem Header="Отправить на проверку" Command="{Binding PushCheckAsync}">
                         <MenuItem.Icon>
-                            <PathIcon Data="{StaticResource IconCheckmark}"/>
+                            <PathIcon Data="{StaticResource IconCheckmark}" />
                         </MenuItem.Icon>
                     </MenuItem>
-                    <Separator/>
+                    <Separator />
                     <MenuItem Header="Настройки отчета" Command="{Binding OpenReportSettings}">
                         <MenuItem.Icon>
-                            <PathIcon Data="{StaticResource IconSettings}"/>
+                            <PathIcon Data="{StaticResource IconSettings}" />
                         </MenuItem.Icon>
                     </MenuItem>
                     <MenuItem Header="Открыть в браузере" Command="{Binding OpenWebReport}">
                         <MenuItem.Icon>
-                            <PathIcon Data="{StaticResource IconExternalLink}" Classes="LineIcon"/>
+                            <PathIcon Data="{StaticResource IconExternalLink}" Classes="LineIcon" />
                         </MenuItem.Icon>
                     </MenuItem>
                 </MenuFlyout>
             </Button.Flyout>
         </Button>
         <StackPanel Orientation="Horizontal" Spacing="5" IsVisible="{Binding IsProgress}">
-            <Arc Classes="Spinner" Width="32" Height="32"/>
+            <Arc Classes="Spinner" Width="32" Height="32" />
             <TextBlock VerticalAlignment="Center">Поиск ошибок…</TextBlock>
         </StackPanel>
+        <PathIcon IsVisible="{Binding IsConnectionError}"
+                  Data="{StaticResource IconConnectionError}"
+                  Width="24" Height="24" />
     </StackPanel>
 
 </UserControl>

@@ -32,7 +32,8 @@ public class ReportService(
             await cacheService.SaveCacheAsync("allReports", res, ct);
             return res;
         }
-        catch (HttpRequestException e)
+        catch (HttpRequestException e) when (e.HttpRequestError == HttpRequestError.ConnectionError ||
+                                             e.HttpRequestError == HttpRequestError.NameResolutionError)
         {
             var cache = await cacheService.LoadCacheAsync<List<Report>>("allReports", ct);
             return cache ?? throw new Exception($"Http request exception: {e.Message}", e);
@@ -48,7 +49,8 @@ public class ReportService(
             await cacheService.SaveCacheAsync(id, "report", res, ct);
             return res;
         }
-        catch (HttpRequestException e)
+        catch (HttpRequestException e) when (e.HttpRequestError == HttpRequestError.ConnectionError ||
+                                             e.HttpRequestError == HttpRequestError.NameResolutionError)
         {
             var cache = await cacheService.LoadCacheAsync<Report>(id, "report", ct);
             return cache ?? throw new Exception($"Http request exception: {e.Message}", e);

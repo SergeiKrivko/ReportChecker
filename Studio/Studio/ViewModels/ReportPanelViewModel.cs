@@ -56,6 +56,12 @@ public class ReportPanelViewModel(
         set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
+    public bool IsConnectionError
+    {
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    }
+
     protected override async Task OnActivateAsync(CompositeDisposable disposable)
     {
         await base.OnActivateAsync(disposable);
@@ -77,6 +83,12 @@ public class ReportPanelViewModel(
                 CriticalIssuesCount = CountIssues(e, 1, 2);
                 MediumIssuesCount = CountIssues(e, 3, 5);
                 LowIssuesCount = CountIssues(e, 5, 10);
+            })
+            .DisposeWith(disposable);
+        issueService.Loading
+            .Subscribe(e =>
+            {
+                IsConnectionError = e == LoadingStatus.FromCache;
             })
             .DisposeWith(disposable);
         reportService.Status

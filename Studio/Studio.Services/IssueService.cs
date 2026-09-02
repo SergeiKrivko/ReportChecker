@@ -48,7 +48,6 @@ public class IssueService(
         {
             await Task.Delay(5000, ct);
             status = await ReloadIssues(report, ct);
-            Console.WriteLine(status);
         }
 
         return status;
@@ -73,7 +72,8 @@ public class IssueService(
             _loading.OnNext(LoadingStatus.Loaded);
             return LoadingStatus.Loaded;
         }
-        catch (HttpRequestException e)
+        catch (HttpRequestException e) when (e.HttpRequestError == HttpRequestError.ConnectionError ||
+                                             e.HttpRequestError == HttpRequestError.NameResolutionError)
         {
             var cache = await cacheService.LoadCacheAsync<FileIssue[]>(report.Id, "issues", ct);
             _loading.OnNext(cache == null ? LoadingStatus.Failed : LoadingStatus.FromCache);
