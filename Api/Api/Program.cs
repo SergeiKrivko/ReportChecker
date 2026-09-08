@@ -76,6 +76,7 @@ builder.Services.AddAvaluxAuthApiClient(
     builder.Configuration["Security.ApiToken"] ?? "");
 builder.Services.AddScoped<IUserRepository, AvaluxAuthUserRepository>();
 builder.Services.AddSingleton<ITaskCancellationService, TaskCancellationService>();
+builder.Services.AddSingleton<IPositionsUpdater, PositionsUpdater>();
 
 builder.Services.AddScoped<ISourceProvider, FileSourceProvider>();
 builder.Services.AddScoped<ISourceProvider, GitHubSourceProvider>();

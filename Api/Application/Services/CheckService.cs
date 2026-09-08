@@ -55,9 +55,14 @@ public class CheckService(
             taskCancellationService.AddCheckCancellationToken(context.Check.Id, ctSource);
 
             var scope = serviceProvider.CreateScope();
+            await scope.ServiceProvider.GetRequiredService<IPositionsUpdater>().UpdatePositionsAsync(context, ctSource.Token);
             await scope.ServiceProvider.GetRequiredService<ICheckService>().RunCheckAsync(context, ctSource.Token);
 
             taskCancellationService.DeleteCheckCancellationToken(context.Check.Id);
+        }
+        catch (TaskCanceledException)
+        {
+            logger.LogWarning("Check {id} cancelled", context.Check.Id);
         }
         catch (Exception e)
         {
