@@ -8,8 +8,8 @@ public class AiHelperService(IHttpClientFactory httpClientFactory) : IAiHelperSe
 {
     public async Task<IReadOnlyList<ModelPrice>> GetModelsPricingAsync(CancellationToken ct = default)
     {
-        var client = httpClientFactory.CreateClient("polzaAi");
-        var resp = await client.GetFromJsonAsync<PricingResponseSchema>("api/v1/models", ct) ??
+        var client = httpClientFactory.CreateClient("PolzaAi");
+        var resp = await client.GetFromJsonAsync<PricingResponseSchema>("https://polza.ai/api/v1/models", ct) ??
                    throw new Exception("Empty response");
         return resp.Data.Select(e => new ModelPrice
         {

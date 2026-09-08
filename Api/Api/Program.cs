@@ -94,6 +94,8 @@ builder.Services.AddHttpClient("Auth",
     });
 builder.Services.AddHttpClient("YooMoney");
 builder.Services.AddScoped<IPaymentClient, YooMoneyService>();
+builder.Services.AddHttpClient("PolzaAi");
+builder.Services.AddScoped<IAiHelperService, AiHelperService>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options => { options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); });
