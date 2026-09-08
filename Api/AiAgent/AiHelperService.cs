@@ -1,4 +1,5 @@
 ﻿using System.Net.Http.Json;
+using System.Text.Json.Serialization;
 using ReportChecker.Abstractions;
 using ReportChecker.Models;
 
@@ -28,7 +29,7 @@ public class AiHelperService(IHttpClientFactory httpClientFactory) : IAiHelperSe
     {
         public required string Id { get; init; }
         public required string Name { get; init; }
-        public PricingResponseProviderSchema? TopProvider { get; init; }
+        [JsonPropertyName("top_provider")] public PricingResponseProviderSchema? TopProvider { get; init; }
     }
 
     private class PricingResponseProviderSchema
