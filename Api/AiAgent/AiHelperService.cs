@@ -15,8 +15,8 @@ public class AiHelperService(IHttpClientFactory httpClientFactory) : IAiHelperSe
         return resp.Data.Select(e => new ModelPrice
         {
             ModelId = e.Id,
-            InputRubPerMillion = Convert.ToDecimal(e.TopProvider?.PromptPerMillion),
-            OutputRubPerMillion = Convert.ToDecimal(e.TopProvider?.CompletionPerMillion),
+            InputRubPerMillion = Convert.ToDecimal(e.TopProvider?.Pricing.PromptPerMillion),
+            OutputRubPerMillion = Convert.ToDecimal(e.TopProvider?.Pricing.CompletionPerMillion),
         }).ToList();
     }
 
@@ -33,6 +33,11 @@ public class AiHelperService(IHttpClientFactory httpClientFactory) : IAiHelperSe
     }
 
     private class PricingResponseProviderSchema
+    {
+        public required PricingResponseProviderPricingSchema Pricing { get; init; }
+    }
+
+    private class PricingResponseProviderPricingSchema
     {
         [JsonPropertyName("prompt_per_million")] public required string PromptPerMillion { get; init; }
         [JsonPropertyName("completion_per_million")] public required string CompletionPerMillion { get; init; }
