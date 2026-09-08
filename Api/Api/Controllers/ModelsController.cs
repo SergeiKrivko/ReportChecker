@@ -9,14 +9,15 @@ namespace ReportChecker.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/models")]
-public class ModelsController(ILlmModelRepository llmModelRepository) : ControllerBase
+public class ModelsController(ILlmModelRepository llmModelRepository, IAiHelperService aiHelperService) : ControllerBase
 {
     [HttpGet]
     [AllowAnonymous]
     public async Task<ActionResult<IEnumerable<LlmModel>>> GetAllModelsAsync(CancellationToken ct = default)
     {
         var models = await llmModelRepository.GetAllModelsAsync(ct);
-        return Ok(models);
+        var pricing = await aiHelperService.GetModelsPricingAsync(ct);
+        return Ok(models.Join(pricing, e => e.ModelKey, e => e.ModelId, AddPrice));
     }
 
     [HttpGet("{modelId:guid}")]
@@ -26,7 +27,8 @@ public class ModelsController(ILlmModelRepository llmModelRepository) : Controll
     {
         var model = await llmModelRepository.GetModelByIdAsync(modelId, ct) ??
                     throw new NotFoundException($"Модель '{modelId}' не найдена");
-        return Ok(model);
+        var pricing = await aiHelperService.GetModelsPricingAsync(ct);
+        return Ok(AddPrice(model, pricing.First(e => e.ModelId == model.ModelKey)));
     }
 
     [HttpPost]
@@ -59,5 +61,20 @@ public class ModelsController(ILlmModelRepository llmModelRepository) : Controll
         if (!res)
             throw new NotFoundException($"Модель '{modelId}' не найдена");
         return Ok();
+    }
+
+    private static LlmModel AddPrice(LlmModel m, ModelPrice p)
+    {
+        return new LlmModel
+        {
+            Id = m.Id,
+            DisplayName = m.DisplayName,
+            ModelKey = m.ModelKey,
+            CreatedAt = m.CreatedAt,
+            DeletedAt = m.DeletedAt,
+            IsDefault = m.IsDefault,
+            InputCoefficient = (double)p.InputCoefficient,
+            OutputCoefficient = (double)p.OutputCoefficient,
+        };
     }
 }
