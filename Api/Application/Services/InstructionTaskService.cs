@@ -84,12 +84,13 @@ public class InstructionTaskService(
                 default:
                     throw new ArgumentOutOfRangeException(nameof(mode), mode, null);
             }
-
-            taskCancellationService.DeleteInstructionCancellationToken(taskId);
         }
         catch (Exception e)
         {
             logger.LogError("Error during comment processing: {e}", e);
+        }
+        finally
+        {
             taskCancellationService.DeleteInstructionCancellationToken(taskId);
         }
     }

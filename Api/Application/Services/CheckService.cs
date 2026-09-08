@@ -55,10 +55,9 @@ public class CheckService(
             taskCancellationService.AddCheckCancellationToken(context.Check.Id, ctSource);
 
             var scope = serviceProvider.CreateScope();
-            await scope.ServiceProvider.GetRequiredService<IPositionsUpdater>().UpdatePositionsAsync(context, ctSource.Token);
+            await scope.ServiceProvider.GetRequiredService<IPositionsUpdater>()
+                .UpdatePositionsAsync(context, ctSource.Token);
             await scope.ServiceProvider.GetRequiredService<ICheckService>().RunCheckAsync(context, ctSource.Token);
-
-            taskCancellationService.DeleteCheckCancellationToken(context.Check.Id);
         }
         catch (TaskCanceledException)
         {
@@ -67,6 +66,10 @@ public class CheckService(
         catch (Exception e)
         {
             logger.LogError("Error during check processing: {e}", e);
+        }
+        finally
+        {
+            taskCancellationService.DeleteCheckCancellationToken(context.Check.Id);
         }
     }
 
