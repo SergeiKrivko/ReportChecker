@@ -14,10 +14,10 @@
   </div>
   <div class="grid-container">
     <label tuiLabel>Модель:</label>
-    <tui-textfield [stringify]="stringifyModel">
+    <tui-textfield [content]="modelContent">
       <input placeholder="По умолчанию" tuiSelect formControlName="llmModel"/>
       @let models = models$ | async;
-      <tui-data-list-wrapper *tuiTextfieldDropdown new [items]="models"/>
+      <tui-data-list-wrapper *tuiTextfieldDropdown new [items]="models" [itemContent]="modelContent"/>
     </tui-textfield>
     <label tuiLabel>Обработка изображений:</label>
     <tui-textfield [stringify]="stringifyImageProcessingMode">
@@ -42,3 +42,13 @@
   </button>
 
 </form>
+
+<ng-template #modelContent let-model>
+  <div class="model-container">
+    <span>{{ model.displayName }}</span>
+
+    <tui-badge>
+      {{ model.inputCoefficient | round }} / {{ model.outputCoefficient | round }}
+    </tui-badge>
+  </div>
+</ng-template>

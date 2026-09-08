@@ -4,7 +4,7 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {AsyncPipe} from '@angular/common';
 import {TuiButton, TuiTextfield} from '@taiga-ui/core';
 import {InstructionInput} from '../../components/instruction-input/instruction-input';
-import {TUI_CONFIRM, TuiConfirmData, TuiDataListWrapperComponent, TuiSelectDirective} from '@taiga-ui/kit';
+import {TUI_CONFIRM, TuiBadge, TuiConfirmData, TuiDataListWrapperComponent, TuiSelectDirective} from '@taiga-ui/kit';
 import {combineLatest, debounceTime, EMPTY, from, map, NEVER, switchMap, tap} from 'rxjs';
 import {Router, RouterLink} from '@angular/router';
 import {TuiResponsiveDialogService} from '@taiga-ui/addon-mobile';
@@ -13,6 +13,7 @@ import {FormControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {PathService} from '../../services/path.service';
 import {LlmModelEntity} from '../../entities/llm-model-entity';
 import {ImageProcessingModeEntity} from '../../entities/report-entity';
+import {RoundPipe} from '../../pipes/round-pipe';
 
 @Component({
   selector: 'app-instructions.page',
@@ -24,7 +25,9 @@ import {ImageProcessingModeEntity} from '../../entities/report-entity';
     ReactiveFormsModule,
     TuiDataListWrapperComponent,
     TuiSelectDirective,
-    RouterLink
+    RouterLink,
+    TuiBadge,
+    RoundPipe
   ],
   templateUrl: './settings-page.component.html',
   styleUrl: './settings-page.component.scss',

@@ -199,6 +199,8 @@ const sourceInfoToEntity = (info: SourceInfo): SourceInfoEntity => ({
 const llmModelToEntity = (info: LlmModel): LlmModelEntity => ({
   id: info.id,
   displayName: info.displayName,
+  inputCoefficient: info.inputCoefficient,
+  outputCoefficient: info.outputCoefficient,
 });
 
 const imageProcessingModeMap: Record<ImageProcessingMode, ImageProcessingModeEntity> = {
