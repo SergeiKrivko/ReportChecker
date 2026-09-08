@@ -8,5 +8,5 @@ public class LLmModelPrice
     public required decimal OutputRubPerMillion { get; init; }
 
     public decimal InputCoefficient => InputRubPerMillion / 100;
-    public decimal OutputCoefficient => InputRubPerMillion / 100;
+    public decimal OutputCoefficient => OutputRubPerMillion / 100;
 }
