@@ -34,7 +34,7 @@ public class AiHelperService(IHttpClientFactory httpClientFactory) : IAiHelperSe
 
     private class PricingResponseProviderSchema
     {
-        public required string PromptPerMillion { get; init; }
-        public required string CompletionPerMillion { get; init; }
+        [JsonPropertyName("prompt_per_million")] public required string PromptPerMillion { get; init; }
+        [JsonPropertyName("completion_per_million")] public required string CompletionPerMillion { get; init; }
     }
 }
