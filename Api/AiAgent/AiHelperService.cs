@@ -7,12 +7,12 @@ namespace AiAgent;
 
 public class AiHelperService(IHttpClientFactory httpClientFactory) : IAiHelperService
 {
-    public async Task<IReadOnlyList<ModelPrice>> GetModelsPricingAsync(CancellationToken ct = default)
+    public async Task<IReadOnlyList<LLmModelPrice>> GetModelsPricingAsync(CancellationToken ct = default)
     {
         var client = httpClientFactory.CreateClient("PolzaAi");
         var resp = await client.GetFromJsonAsync<PricingResponseSchema>("https://polza.ai/api/v1/models?type=chat", ct) ??
                    throw new Exception("Empty response");
-        return resp.Data.Select(e => new ModelPrice
+        return resp.Data.Select(e => new LLmModelPrice
         {
             ModelId = e.Id,
             InputRubPerMillion = Convert.ToDecimal(e.TopProvider?.Pricing.PromptPerMillion),

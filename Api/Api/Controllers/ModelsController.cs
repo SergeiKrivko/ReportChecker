@@ -63,7 +63,7 @@ public class ModelsController(ILlmModelRepository llmModelRepository, IAiHelperS
         return Ok();
     }
 
-    private static LlmModel AddPrice(LlmModel m, ModelPrice p)
+    private static LlmModel AddPrice(LlmModel m, LLmModelPrice p)
     {
         return new LlmModel
         {
