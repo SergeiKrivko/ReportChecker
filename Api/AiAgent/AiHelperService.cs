@@ -9,13 +9,13 @@ public class AiHelperService(IHttpClientFactory httpClientFactory) : IAiHelperSe
     public async Task<IReadOnlyList<ModelPrice>> GetModelsPricingAsync(CancellationToken ct = default)
     {
         var client = httpClientFactory.CreateClient("PolzaAi");
-        var resp = await client.GetFromJsonAsync<PricingResponseSchema>("https://polza.ai/api/v1/models", ct) ??
+        var resp = await client.GetFromJsonAsync<PricingResponseSchema>("https://polza.ai/api/v1/models?type=chat", ct) ??
                    throw new Exception("Empty response");
         return resp.Data.Select(e => new ModelPrice
         {
             ModelId = e.Id,
-            InputRubPerMillion = Convert.ToDecimal(e.TopProvider.PromptPerMillion),
-            OutputRubPerMillion = Convert.ToDecimal(e.TopProvider.CompletionPerMillion),
+            InputRubPerMillion = Convert.ToDecimal(e.TopProvider?.PromptPerMillion),
+            OutputRubPerMillion = Convert.ToDecimal(e.TopProvider?.CompletionPerMillion),
         }).ToList();
     }
 
@@ -28,7 +28,7 @@ public class AiHelperService(IHttpClientFactory httpClientFactory) : IAiHelperSe
     {
         public required string Id { get; init; }
         public required string Name { get; init; }
-        public required PricingResponseProviderSchema TopProvider { get; init; }
+        public PricingResponseProviderSchema? TopProvider { get; init; }
     }
 
     private class PricingResponseProviderSchema
