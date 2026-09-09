@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using ReportChecker.Abstractions;
 using ReportChecker.Exceptions;
@@ -261,7 +261,7 @@ public class SubscriptionService(
             {
                 isSuccessful = true;
             }
-            else if (await paymentClient.IsPaymentSuccessfulAsync(payment.Id, ct))
+            else if (await paymentClient.IsPaymentSuccessfulAsync(payment.Id, payment.Amount, ct))
             {
                 await paymentRepository.SetPaymentStatusAsync(payment.Id, PaymentStatus.Succeeded, ct);
                 isSuccessful = true;

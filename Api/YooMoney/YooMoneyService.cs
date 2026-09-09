@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Microsoft.Extensions.Configuration;
@@ -87,7 +87,8 @@ public class YooMoneyService(IHttpClientFactory httpClientFactory, IConfiguratio
 
     private const string HistoryUrl = "https://yoomoney.ru/api/operation-history";
 
-    public async Task<bool> IsPaymentSuccessfulAsync(Guid paymentId, CancellationToken ct = default)
+    public async Task<bool> IsPaymentSuccessfulAsync(Guid paymentId, decimal expectedAmount,
+        CancellationToken ct = default)
     {
         var label = paymentId.ToString();
         var request = new HttpRequestMessage(HttpMethod.Post, HistoryUrl);
@@ -107,6 +108,8 @@ public class YooMoneyService(IHttpClientFactory httpClientFactory, IConfiguratio
         var operation = history.Operations.SingleOrDefault(e => e.Label == label);
         if (operation == null)
             return false;
-        return operation.Status == "success";
+        // Сумма операции должна совпадать с суммой платежа: параметр sum в QuickPay-ссылке
+        // контролируется плательщиком и может быть занижен.
+        return operation.Status == "success" && operation.Amount == expectedAmount;
     }
 }
