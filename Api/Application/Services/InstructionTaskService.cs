@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ReportChecker.Abstractions;
 using ReportChecker.Exceptions;
@@ -27,7 +27,7 @@ public class InstructionTaskService(
         CancellationToken ct = default)
     {
         var instruction = await instructionRepository.GetInstructionByIdAsync(instructionId, ct);
-        if (instruction == null)
+        if (instruction == null || instruction.ReportId != reportId)
             throw new NotFoundException("Instruction not found");
         return await CreateInstructionTaskAsync(reportId, instruction.Content, mode, ct);
     }

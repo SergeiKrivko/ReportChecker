@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReportChecker.Abstractions;
 using ReportChecker.Api.Extensions;
@@ -70,6 +70,7 @@ public class InstructionController(
     }
 
     [HttpGet("tasks")]
+    [Authorize]
     public async Task<ActionResult<IEnumerable<InstructionTask>>> GetInstructionTasks(Guid reportId)
     {
         var userId = User.UserId;
@@ -81,9 +82,14 @@ public class InstructionController(
     }
 
     [HttpPost("tasks")]
+    [Authorize]
     public async Task<ActionResult<Guid>> CreateInstructionTaskAsync(Guid reportId,
         [FromBody] CreateInstructionTaskSchema schema, CancellationToken ct)
     {
+        var report = await reportRepository.GetReportByIdAsync(reportId);
+        if (report == null || report.OwnerId != User.UserId)
+            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
+
         if (schema.InstructionId != null)
         {
             var id = await instructionTaskService.CreateInstructionTaskAsync(reportId, schema.InstructionId.Value,
@@ -103,6 +109,7 @@ public class InstructionController(
     }
 
     [HttpDelete("tasks/{taskId:guid}")]
+    [Authorize]
     public async Task<ActionResult> CancelInstructionTask(Guid reportId, Guid taskId, CancellationToken ct)
     {
         var report = await reportRepository.GetReportByIdAsync(reportId);

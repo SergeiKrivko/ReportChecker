@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReportChecker.Abstractions;
 using ReportChecker.Api.Extensions;
@@ -48,6 +48,11 @@ public class CheckController(
     [Authorize]
     public async Task<ActionResult> RestartLatestCheck(Guid reportId, CancellationToken ct)
     {
+        var userId = User.UserId;
+        var report = await reportRepository.GetReportByIdAsync(reportId);
+        if (report == null || report.OwnerId != userId)
+            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
+
         await checkService.RestartLatestCheckAsync(reportId, ct);
         return Ok();
     }
@@ -87,6 +92,15 @@ public class CheckController(
     [Authorize]
     public async Task<ActionResult> CancelCheckAsync(Guid reportId, Guid checkId, CancellationToken ct)
     {
+        var userId = User.UserId;
+        var report = await reportRepository.GetReportByIdAsync(reportId);
+        if (report == null || report.OwnerId != userId)
+            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
+
+        var check = await checkRepository.GetCheckByIdAsync(checkId, ct);
+        if (check == null || check.ReportId != report.Id)
+            throw new NotFoundException("Проверка не найдена");
+
         var res = await taskCancellationService.CancelCheckAsync(checkId);
         if (!res)
             throw new NotFoundException("Проверка не найдена");
