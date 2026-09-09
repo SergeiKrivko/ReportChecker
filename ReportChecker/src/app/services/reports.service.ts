@@ -62,7 +62,7 @@ export class ReportsService {
   }
 
   loadModels() {
-    return this.apiClient.modelsAll().pipe(
+    return this.apiClient.modelsAll(false).pipe(
       map(e => e
         .map(llmModelToEntity)
         .sort((a, b) => ((a.displayName ?? "") > (b.displayName ?? "") ? 1 : -1))

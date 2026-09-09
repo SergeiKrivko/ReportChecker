@@ -37,14 +37,14 @@ export class AdminModelsPage implements OnInit, OnDestroy {
   }
 
   private loadModels() {
-    return this.apiClient.modelsAll().pipe(
-      tap((models: LlmModel[]) => this.store$$.next(models)),
+    return this.apiClient.modelsAll(true).pipe(
+      tap((models: LlmModel[]) => this.store$$.next(models.sort((a, b) => (a.displayName ?? "") > (b.displayName ?? "") ? 1 : -1))),
     );
   }
 
   protected addModel() {
     this.apiClient.modelsPOST(CreateLlmModelSchema.fromJS({
-      displayName: "New model",
+      displayName: "Новая модель",
       modelKey: "model-key",
       inputCoefficient: 1,
       outputCoefficient: 1

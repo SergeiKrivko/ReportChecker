@@ -1802,10 +1802,15 @@ export class ApiClient extends ApiClientBase {
     }
 
     /**
+     * @param source (optional)
      * @return OK
      */
-    modelsAll(): Observable<LlmModel[]> {
-        let url_ = this.baseUrl + "/api/v1/models";
+    modelsAll(source: boolean | undefined): Observable<LlmModel[]> {
+        let url_ = this.baseUrl + "/api/v1/models?";
+        if (source === null)
+            throw new Error("The parameter 'source' cannot be null.");
+        else if (source !== undefined)
+            url_ += "source=" + encodeURIComponent("" + source) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
@@ -4579,6 +4584,7 @@ export class Issue implements IIssue {
     status?: IssueStatus;
     priority?: number;
     chapter!: string | undefined;
+    line?: number | undefined;
     comments?: Comment[] | undefined;
 
     constructor(data?: IIssue) {
@@ -4598,6 +4604,7 @@ export class Issue implements IIssue {
             this.status = _data["status"];
             this.priority = _data["priority"];
             this.chapter = _data["chapter"];
+            this.line = _data["line"];
             if (Array.isArray(_data["comments"])) {
                 this.comments = [] as any;
                 for (let item of _data["comments"])
@@ -4621,6 +4628,7 @@ export class Issue implements IIssue {
         data["status"] = this.status;
         data["priority"] = this.priority;
         data["chapter"] = this.chapter;
+        data["line"] = this.line;
         if (Array.isArray(this.comments)) {
             data["comments"] = [];
             for (let item of this.comments)
@@ -4637,6 +4645,7 @@ export interface IIssue {
     status?: IssueStatus;
     priority?: number;
     chapter: string | undefined;
+    line?: number | undefined;
     comments?: Comment[] | undefined;
 }
 
