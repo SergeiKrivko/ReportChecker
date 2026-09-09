@@ -13,9 +13,11 @@ public class ModelsController(ILlmModelRepository llmModelRepository, IAiHelperS
 {
     [HttpGet]
     [AllowAnonymous]
-    public async Task<ActionResult<IEnumerable<LlmModel>>> GetAllModelsAsync(CancellationToken ct = default)
+    public async Task<ActionResult<IEnumerable<LlmModel>>> GetAllModelsAsync(bool source = false, CancellationToken ct = default)
     {
         var models = await llmModelRepository.GetAllModelsAsync(ct);
+        if (source)
+            return Ok(models);
         var pricing = await aiHelperService.GetModelsPricingAsync(ct);
         return Ok(models.Join(pricing, e => e.ModelKey, e => e.ModelId, AddPrice));
     }
