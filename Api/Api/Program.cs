@@ -146,7 +146,10 @@ app.UseCors(policy => policy
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapGitHubWebhooks("api/v1/github/webhooks");
+var webhookSecret = builder.Configuration["GitHub.WebhookSecret"]?.Trim();
+if (string.IsNullOrEmpty(webhookSecret))
+    throw new Exception("GitHub.WebhookSecret not set");
+app.MapGitHubWebhooks("api/v1/github/webhooks", webhookSecret);
 app.UseExceptionHandler("/Error");
 app.UseHsts();
 
