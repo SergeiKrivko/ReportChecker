@@ -1,0 +1,410 @@
+{
+  "name": "reportchecker-vscode",
+  "displayName": "ReportChecker",
+  "description": "Интеграция с ReportChecker: отправка отчетов на проверку, список ошибок, комментарии и исправления прямо в редакторе",
+  "version": "0.1.6",
+  "repository": {
+    "type": "github",
+    "url": "https://github.com/SergeiKrivko/ReportChecker"
+  },
+  "publisher": "SergeiKrivko",
+  "private": true,
+  "license": "MIT",
+  "icon": "media/logo.png",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "reportchecker",
+          "title": "ReportChecker",
+          "icon": "media/logo-line.svg"
+        }
+      ]
+    },
+    "views": {
+      "reportchecker": [
+        {
+          "id": "reportchecker.issues",
+          "name": "Ошибки",
+          "contextualTitle": "ReportChecker",
+          "icon": "media/logo-line.svg"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "reportchecker.issues",
+        "contents": "Войдите в аккаунт ReportChecker, чтобы отправлять отчеты на проверку и видеть найденные ошибки.\n[Войти](command:reportchecker.login)",
+        "when": "!reportchecker.loggedIn"
+      },
+      {
+        "view": "reportchecker.issues",
+        "contents": "Этот проект пока не связан с отчетом на сервере.\n[Отправить на проверку](command:reportchecker.sendForCheck)\n[Привязать существующий отчет](command:reportchecker.linkReport)",
+        "when": "reportchecker.loggedIn && !reportchecker.linked"
+      }
+    ],
+    "commands": [
+      {
+        "command": "reportchecker.login",
+        "title": "Войти",
+        "category": "ReportChecker"
+      },
+      {
+        "command": "reportchecker.logout",
+        "title": "Выйти",
+        "category": "ReportChecker"
+      },
+      {
+        "command": "reportchecker.sendForCheck",
+        "title": "Отправить на проверку",
+        "category": "ReportChecker",
+        "icon": "$(cloud-upload)"
+      },
+      {
+        "command": "reportchecker.sendVersion",
+        "title": "Отправить новую версию",
+        "category": "ReportChecker",
+        "icon": "$(repo-push)"
+      },
+      {
+        "command": "reportchecker.linkReport",
+        "title": "Привязать существующий отчет",
+        "category": "ReportChecker"
+      },
+      {
+        "command": "reportchecker.unlink",
+        "title": "Отвязать отчет",
+        "category": "ReportChecker"
+      },
+      {
+        "command": "reportchecker.refreshIssues",
+        "title": "Обновить ошибки",
+        "category": "ReportChecker",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "reportchecker.showLog",
+        "title": "Показать журнал диагностики",
+        "category": "ReportChecker"
+      },
+      {
+        "command": "reportchecker.openInWeb",
+        "title": "Открыть в браузере",
+        "category": "ReportChecker",
+        "icon": "$(globe)"
+      },
+      {
+        "command": "reportchecker.toggleAutoUpload",
+        "title": "Автоотправка версий",
+        "category": "ReportChecker",
+        "icon": "$(eye)"
+      },
+      {
+        "command": "reportchecker.openIssue",
+        "title": "Открыть ошибку",
+        "category": "ReportChecker"
+      },
+      {
+        "command": "reportchecker.replyToThread",
+        "title": "Ответить",
+        "category": "ReportChecker",
+        "enablement": "!commentIsEmpty"
+      },
+      {
+        "command": "reportchecker.markThreadRead",
+        "title": "Отметить прочитанным",
+        "category": "ReportChecker"
+      },
+      {
+        "command": "reportchecker.issueFixed",
+        "title": "Исправлено",
+        "category": "ReportChecker",
+        "icon": "$(check)"
+      },
+      {
+        "command": "reportchecker.issueClosed",
+        "title": "Закрыть",
+        "category": "ReportChecker",
+        "icon": "$(circle-slash)"
+      },
+      {
+        "command": "reportchecker.issueReopen",
+        "title": "Открыть заново",
+        "category": "ReportChecker"
+      },
+      {
+        "command": "reportchecker.acceptPatch",
+        "title": "Принять исправление",
+        "category": "ReportChecker",
+        "icon": "$(git-pull-request)"
+      },
+      {
+        "command": "reportchecker.rejectPatch",
+        "title": "Отклонить исправление",
+        "category": "ReportChecker",
+        "icon": "$(close)"
+      },
+      {
+        "command": "reportchecker.applyPatch",
+        "title": "Применить исправление к файлу",
+        "category": "ReportChecker",
+        "icon": "$(wand)"
+      },
+      {
+        "command": "reportchecker.editComment",
+        "title": "Изменить",
+        "category": "ReportChecker",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "reportchecker.deleteComment",
+        "title": "Удалить",
+        "category": "ReportChecker",
+        "icon": "$(trash)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "reportchecker.refreshIssues",
+          "when": "view == reportchecker.issues && reportchecker.linked",
+          "group": "navigation@1"
+        },
+        {
+          "command": "reportchecker.sendVersion",
+          "when": "view == reportchecker.issues && reportchecker.linked",
+          "group": "navigation@2"
+        },
+        {
+          "command": "reportchecker.openInWeb",
+          "when": "view == reportchecker.issues && reportchecker.linked",
+          "group": "navigation@3"
+        },
+        {
+          "command": "reportchecker.toggleAutoUpload",
+          "when": "view == reportchecker.issues && reportchecker.linked",
+          "group": "navigation@4"
+        },
+        {
+          "command": "reportchecker.sendForCheck",
+          "when": "view == reportchecker.issues && reportchecker.loggedIn && !reportchecker.linked",
+          "group": "navigation@1"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "reportchecker.openInWeb",
+          "when": "view == reportchecker.issues && viewItem == rc-issue",
+          "group": "inline@1"
+        }
+      ],
+      "comments/commentThread/context": [
+        {
+          "command": "reportchecker.replyToThread",
+          "group": "inline",
+          "when": "commentController == reportchecker && !commentThreadIsEmpty"
+        },
+        {
+          "command": "reportchecker.issueFixed",
+          "group": "inline@2",
+          "when": "commentController == reportchecker && !commentThreadIsEmpty"
+        },
+        {
+          "command": "reportchecker.issueClosed",
+          "group": "inline@3",
+          "when": "commentController == reportchecker && !commentThreadIsEmpty"
+        },
+        {
+          "command": "reportchecker.issueReopen",
+          "group": "2.status",
+          "when": "commentController == reportchecker && !commentThreadIsEmpty"
+        },
+        {
+          "command": "reportchecker.markThreadRead",
+          "group": "2.status",
+          "when": "commentController == reportchecker && !commentThreadIsEmpty"
+        }
+      ],
+      "comments/comment/title": [
+        {
+          "command": "reportchecker.applyPatch",
+          "group": "navigation@1",
+          "when": "commentController == reportchecker && comment == rc-patch"
+        },
+        {
+          "command": "reportchecker.acceptPatch",
+          "group": "navigation@2",
+          "when": "commentController == reportchecker && comment == rc-patch"
+        },
+        {
+          "command": "reportchecker.rejectPatch",
+          "group": "navigation@3",
+          "when": "commentController == reportchecker && comment == rc-patch"
+        },
+        {
+          "command": "reportchecker.editComment",
+          "group": "group@1",
+          "when": "commentController == reportchecker && comment == rc-own"
+        },
+        {
+          "command": "reportchecker.deleteComment",
+          "group": "group@2",
+          "when": "commentController == reportchecker && comment == rc-own"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "reportchecker.openIssue",
+          "when": "false"
+        },
+        {
+          "command": "reportchecker.replyToThread",
+          "when": "false"
+        },
+        {
+          "command": "reportchecker.markThreadRead",
+          "when": "false"
+        },
+        {
+          "command": "reportchecker.issueFixed",
+          "when": "false"
+        },
+        {
+          "command": "reportchecker.issueClosed",
+          "when": "false"
+        },
+        {
+          "command": "reportchecker.issueReopen",
+          "when": "false"
+        },
+        {
+          "command": "reportchecker.acceptPatch",
+          "when": "false"
+        },
+        {
+          "command": "reportchecker.rejectPatch",
+          "when": "false"
+        },
+        {
+          "command": "reportchecker.applyPatch",
+          "when": "false"
+        },
+        {
+          "command": "reportchecker.editComment",
+          "when": "false"
+        },
+        {
+          "command": "reportchecker.deleteComment",
+          "when": "false"
+        },
+        {
+          "command": "reportchecker.sendForCheck",
+          "when": "reportchecker.loggedIn"
+        },
+        {
+          "command": "reportchecker.sendVersion",
+          "when": "reportchecker.linked"
+        },
+        {
+          "command": "reportchecker.unlink",
+          "when": "reportchecker.linked"
+        },
+        {
+          "command": "reportchecker.openInWeb",
+          "when": "reportchecker.linked"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "ReportChecker",
+      "properties": {
+        "reportchecker.apiBaseUrl": {
+          "type": "string",
+          "default": "https://api.reportchecker.ru",
+          "description": "Базовый адрес API ReportChecker"
+        },
+        "reportchecker.webBaseUrl": {
+          "type": "string",
+          "default": "https://report-checker.vercel.app",
+          "description": "Адрес веб-версии ReportChecker"
+        },
+        "reportchecker.authBaseUrl": {
+          "type": "string",
+          "default": "https://auth.nachert.art",
+          "description": "Адрес сервера авторизации Avalux Auth"
+        },
+        "reportchecker.authProvider": {
+          "type": "string",
+          "default": "password",
+          "enum": [
+            "password",
+            "yandex",
+            "google",
+            "github",
+            "gitlab",
+            "microsoft"
+          ],
+          "description": "Провайдер авторизации (как в десктоп-клиентах)"
+        },
+        "reportchecker.callbackPort": {
+          "type": "number",
+          "default": 14872,
+          "description": "Порт локального сервера для приема кода авторизации"
+        },
+        "reportchecker.autoUpload": {
+          "type": "boolean",
+          "default": true,
+          "description": "Автоматически отправлять новую версию при изменении файлов отчета"
+        },
+        "reportchecker.autoUploadDelaySeconds": {
+          "type": "number",
+          "default": 30,
+          "minimum": 5,
+          "description": "Задержка (секунды) после последнего изменения перед автоотправкой"
+        },
+        "reportchecker.pollIntervalSeconds": {
+          "type": "number",
+          "default": 5,
+          "minimum": 2,
+          "description": "Интервал опроса статуса проверки (секунды)"
+        },
+        "reportchecker.entryFile": {
+          "type": "string",
+          "default": "",
+          "description": "Путь к главному файлу отчета относительно папки рабочей области (пусто — определить автоматически)"
+        },
+        "reportchecker.editorDecorations": {
+          "type": "boolean",
+          "default": true,
+          "description": "Отмечать строки с ошибками в редакторе (иконка на полях и метка на обзорной линейке)"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "node esbuild.js",
+    "watch": "node esbuild.js --watch",
+    "typecheck": "tsc -p . --noEmit",
+    "test": "tsc -p tsconfig.test.json && node out-test/test/suite.js",
+    "vscode:prepublish": "npm run compile"
+  },
+  "dependencies": {
+    "fflate": "^0.8.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/vscode": "^1.85.0",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.6.3"
+  }
+}

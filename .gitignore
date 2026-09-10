@@ -480,3 +480,8 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# ReportChecker VS Code extension
+VsCode/out/
+VsCode/out-test/
+*.vsix
