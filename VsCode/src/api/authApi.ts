@@ -1,6 +1,14 @@
 import { HttpClient, NetworkError } from './httpClient';
 import type { UserAccount, UserCredentials } from './types';
 
+/** Сервер авторизации отклонил грант (refresh-токен просрочен или отозван). */
+export class AuthRejectedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'AuthRejectedError';
+  }
+}
+
 /**
  * Клиент Avalux Auth (тот же протокол, что использует Avalux.Auth.UserClient):
  *  - GET  {auth}/api/v1/auth/authorize?provider={p}&client_id={id}&redirect_uri={uri}
@@ -64,7 +72,13 @@ export class AuthApi {
       try {
         detail = (await response.text()).slice(0, 300);
       } catch { /* ignore */ }
-      throw new NetworkError(`Сервер авторизации вернул ${response.status}${detail ? `: ${detail}` : ''}`);
+      const message = `Сервер авторизации вернул ${response.status}${detail ? `: ${detail}` : ''}`;
+      // 400 invalid_grant — refresh-токен просрочен/отозван: это финальный отказ,
+      // а не сетевая проблема; сессию сбрасываем, прочие ошибки — просто ретраятся.
+      if (response.status === 400 || response.status === 401) {
+        throw new AuthRejectedError(message);
+      }
+      throw new NetworkError(message);
     }
 
     // Толерантный парсинг: snake_case и camelCase.

@@ -135,14 +135,16 @@ export class IssuesTreeDataProvider implements vscode.TreeDataProvider<Node> {
   }
 
   private phaseNode(): NoLinkNode {
-    const label =
-      this.checkPhase === 'uploading' ? '$(cloud-upload) Отправка версии…'
-        : this.checkPhase === 'queued' ? '$(watch) Проверка в очереди…'
-          : '$(sync~spin) Проверка выполняется…';
+    // $(...) в label дерева не рендерится (модификатор ~spin не поддерживается),
+    // поэтому иконка задается через iconPath, а анимацию показывает view-прогресс
+    const meta =
+      this.checkPhase === 'uploading' ? { icon: 'cloud-upload', label: 'Отправка версии…' }
+        : this.checkPhase === 'queued' ? { icon: 'watch', label: 'Проверка в очереди…' }
+          : { icon: 'sync', label: 'Проверка выполняется…' };
     return {
       kind: 'nolink',
-      label,
-      iconPath: undefined,
+      label: meta.label,
+      iconPath: new vscode.ThemeIcon(meta.icon, new vscode.ThemeColor('editorInfo.foreground')),
     } as unknown as NoLinkNode;
   }
 

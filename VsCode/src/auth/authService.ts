@@ -1,9 +1,10 @@
 import * as vscode from 'vscode';
-import { AuthApi } from '../api/authApi';
+import { AuthApi, AuthRejectedError } from '../api/authApi';
 import type { UserCredentials } from '../api/types';
 import { CLIENT_ID, CLIENT_SECRET, SECRETS_KEY, Settings } from '../env';
 import { HttpClient } from '../api/httpClient';
 import { LoopbackServer } from './loopbackServer';
+import { log } from '../log';
 
 export interface SessionInfo {
   userName?: string;
@@ -31,9 +32,13 @@ export class AuthService implements vscode.Disposable {
     if (stored) {
       try {
         this.credentials = JSON.parse(stored) as UserCredentials;
+        log('[auth] найдена сохраненная сессия в SecretStorage');
       } catch {
+        log('[auth] сохраненная сессия повреждена, требуется вход');
         this.credentials = undefined;
       }
+    } else {
+      log('[auth] сохраненной сессии нет, требуется вход');
     }
     if (this.credentials?.refreshToken) {
       // Проверяем живучесть сессии в фоне, чтобы не блокировать активацию.
@@ -128,11 +133,18 @@ export class AuthService implements vscode.Disposable {
         const credentials = await this.authApi.refreshToken(refreshToken);
         await this.storeCredentials(credentials);
       } catch (e) {
-        // refresh не удался — сбрасываем сессию
-        this.credentials = undefined;
-        await this.context.secrets.delete(SECRETS_KEY);
-        this.onSessionChanged(false);
-        throw new Error('Сессия истекла. Войдите заново.', { cause: e });
+        // Сессию сбрасываем только при отказе сервера авторизации (invalid_grant:
+        // refresh-токен просрочен или отозван). Сетевые сбои оставляют сохраненную
+        // сессию — следующий запрос повторит попытку, и вход не слетает из-за
+        // временной недоступности сети.
+        if (e instanceof AuthRejectedError) {
+          this.credentials = undefined;
+          await this.context.secrets.delete(SECRETS_KEY);
+          this.onSessionChanged(false);
+          throw new Error('Сессия истекла. Войдите заново.', { cause: e });
+        }
+        log(`[auth] не удалось обновить токен (сессия сохранена): ${e instanceof Error ? e.message : String(e)}`);
+        throw e instanceof Error ? e : new Error(String(e));
       } finally {
         this.refreshPromise = undefined;
       }

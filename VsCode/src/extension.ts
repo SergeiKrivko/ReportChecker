@@ -542,9 +542,24 @@ export function activate(context: vscode.ExtensionContext): void {
   // --- инициализация сервисов ---
 
   statusBar = new StatusBar();
+  // Прогресс на вкладке ReportChecker (спиннер в заголовке view) на время проверки
+  let progressResolve: (() => void) | undefined;
+  const setViewProgress = (running: boolean): void => {
+    if (running && !progressResolve) {
+      void vscode.window.withProgress(
+        { location: { viewId: 'reportchecker.issues' }, title: 'Проверка' },
+        () => new Promise<void>((resolve) => { progressResolve = resolve; }),
+      );
+    } else if (!running && progressResolve) {
+      const resolve = progressResolve;
+      progressResolve = undefined;
+      resolve();
+    }
+  };
   const onPhase = (phase: CheckPhase): void => {
     statusBar!.setPhase(phase);
     tree?.setCheckPhase(phase);
+    setViewProgress(phase === 'uploading' || phase === 'queued' || phase === 'inProgress');
   };
   checkService = new CheckService(api, linkService, () => settings, onPhase);
   issueService = new IssueService(api, linkService);
@@ -590,6 +605,9 @@ export function activate(context: vscode.ExtensionContext): void {
   });
 
   const init = async (): Promise<void> => {
+    // Восстанавливаем сессию из SecretStorage до первого запроса —
+    // иначе сохраненные токены не читаются и вход требуется при каждом запуске
+    await authService.initialize();
     await setContexts();
     statusBar.setLoggedIn(authService!.isLoggedIn());
     if (authService.isLoggedIn()) {

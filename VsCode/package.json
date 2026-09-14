@@ -2,7 +2,7 @@
   "name": "reportchecker-vscode",
   "displayName": "ReportChecker",
   "description": "Интеграция с ReportChecker: отправка отчетов на проверку, список ошибок, комментарии и исправления прямо в редакторе",
-  "version": "0.1.6",
+  "version": "1.0.0",
   "repository": {
     "type": "github",
     "url": "https://github.com/SergeiKrivko/ReportChecker"
