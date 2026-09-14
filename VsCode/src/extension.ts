@@ -305,13 +305,19 @@ export function activate(context: vscode.ExtensionContext): void {
     },
   );
 
-  const markReadCommand = vscode.commands.registerCommand(
-    'reportchecker.markThreadRead',
+  const markUnreadCommand = vscode.commands.registerCommand(
+    'reportchecker.markThreadUnread',
     async (...args: unknown[]) => {
-      const issue = issueFromArgs('markThreadRead', args);
-      if (!issue) return;
-      await issueService!.markIssueRead(issue);
-      threads!.updateIssue(issue);
+      const issue = issueFromArgs('markThreadUnread', args);
+      if (!issue) {
+        void vscode.window.showErrorMessage(
+          'ReportChecker: не найдена ошибка для «Отметить непрочитанным». Аргументы: ' + describeArgs(args),
+        );
+        return;
+      }
+      await issueService!.markIssueUnread(issue);
+      // keepUnread=true: авто-прочитка при обновлении не перезапишет непрочитку
+      threads!.updateIssue(issue, true);
     },
   );
 
@@ -586,7 +592,7 @@ export function activate(context: vscode.ExtensionContext): void {
     loginCommand, logoutCommand, sendForCheckCommand, sendVersionCommand,
     linkReportCommand, unlinkCommand, refreshCommand, openInWebCommand,
     openIssueCommand, toggleAutoUploadCommand,
-    replyCommand, markReadCommand,
+    replyCommand, markUnreadCommand,
     statusCommand('reportchecker.issueFixed', 'Fixed'),
     statusCommand('reportchecker.issueClosed', 'Closed'),
     statusCommand('reportchecker.issueReopen', 'Open'),

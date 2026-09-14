@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReportChecker.Abstractions;
 using ReportChecker.Api.Extensions;
@@ -130,8 +130,7 @@ public class CommentsController(
         }
         else
         {
-            throw new BadRequestException("На данный момент нельзя отметить комментарий как непрочитанный. " +
-                                          "Поле `IsRead` должно быть `true`");
+            await commentReadRepository.DeleteAsync(userId, commentIds, ct);
         }
 
         return Ok();

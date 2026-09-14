@@ -115,6 +115,31 @@ export class IssueService {
     }
   }
 
+  /** Отметить комментарии ошибки непрочитанными (кнопка «Отметить непрочитанным»). */
+  async markIssueUnread(issue: Issue): Promise<void> {
+    const link = await this.linkService.getLink();
+    if (!link) return;
+    // Все комментарии с id, кроме уже непрочитанных
+    const read = (issue.comments ?? [])
+      .filter((c) => c.isRead !== false && c.id)
+      .map((c) => c.id!);
+    if (read.length === 0) return;
+    try {
+      await this.api.markRead(link.reportId, issue.id, { isRead: false, commentIds: read });
+      const local = this.fileIssues.find((fi) => fi.issue.id === issue.id);
+      if (local) {
+        for (const c of local.issue.comments ?? []) {
+          if (c.isRead !== false && c.id) c.isRead = false;
+        }
+        this.emit();
+      }
+    } catch (e) {
+      void vscode.window.showWarningMessage(
+        `Не удалось пометить комментарии непрочитанными: ${e instanceof Error ? e.message : String(e)}`,
+      );
+    }
+  }
+
   private setIssues(issues: FileIssue[]): void {
     this.fileIssues = issues;
     this.emit();

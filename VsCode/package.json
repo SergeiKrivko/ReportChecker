@@ -2,7 +2,7 @@
   "name": "reportchecker-vscode",
   "displayName": "ReportChecker",
   "description": "Интеграция с ReportChecker: отправка отчетов на проверку, список ошибок, комментарии и исправления прямо в редакторе",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "repository": {
     "type": "github",
     "url": "https://github.com/SergeiKrivko/ReportChecker"
@@ -121,8 +121,8 @@
         "enablement": "!commentIsEmpty"
       },
       {
-        "command": "reportchecker.markThreadRead",
-        "title": "Отметить прочитанным",
+        "command": "reportchecker.markThreadUnread",
+        "title": "Отметить непрочитанным",
         "category": "ReportChecker"
       },
       {
@@ -224,7 +224,7 @@
           "when": "commentController == reportchecker && commentThread == rc-thread-resolved"
         },
         {
-          "command": "reportchecker.markThreadRead",
+          "command": "reportchecker.markThreadUnread",
           "group": "inline@5",
           "when": "commentController == reportchecker && !commentThreadIsEmpty"
         }
@@ -261,7 +261,7 @@
           "when": "false"
         },
         {
-          "command": "reportchecker.markThreadRead",
+          "command": "reportchecker.markThreadUnread",
           "when": "false"
         },
         {

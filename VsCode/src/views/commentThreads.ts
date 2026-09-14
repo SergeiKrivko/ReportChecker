@@ -117,15 +117,15 @@ export class CommentThreads implements vscode.Disposable {
       : vscode.CommentThreadState.Resolved;
   }
 
-  /** Обновление комментариев конкретной ошибки (после ответа/статуса/поллинга ИИ). */
-  updateIssue(issue: Issue): void {
+  /** Обновление команды треда; keepUnread — не отмечать прочитанным (кнопка «Отметить непрочитанным»). */
+  updateIssue(issue: Issue, keepUnread = false): void {
     const thread = this.threads.get(issue.id);
     if (thread) {
       thread.contextValue = this.threadContext(issue);
       thread.comments = this.toVsCodeComments(issue);
       thread.state = this.threadState(issue);
     }
-    void this.issueService.markIssueRead(issue);
+    if (!keepUnread) void this.issueService.markIssueRead(issue);
   }
 
   /** Открыть тред ошибки: раскрыть и показать в редакторе. */
@@ -155,7 +155,6 @@ export class CommentThreads implements vscode.Disposable {
       thread.comments = this.toVsCodeComments(fi.issue);
       void comments;
     });
-    void this.issueService.markIssueRead(fi.issue);
   }
 
   /**

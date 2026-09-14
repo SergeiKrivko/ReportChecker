@@ -1,4 +1,5 @@
-﻿using ReportChecker.Abstractions;
+using Microsoft.EntityFrameworkCore;
+using ReportChecker.Abstractions;
 using ReportChecker.DataAccess.Entities;
 
 namespace ReportChecker.DataAccess.Repositories;
@@ -16,5 +17,16 @@ public class CommentReadRepository(ReportCheckerDbContext dbContext) : ICommentR
         });
         await dbContext.CommentReads.AddRangeAsync(entities, ct);
         await dbContext.SaveChangesAsync(ct);
+    }
+
+    public async Task DeleteAsync(Guid userId, IEnumerable<Guid> commentIds, CancellationToken ct = default)
+    {
+        var ids = commentIds.ToArray();
+        if (ids.Length == 0)
+            return;
+
+        await dbContext.CommentReads
+            .Where(e => e.UserId == userId && ids.Contains(e.CommentId))
+            .ExecuteDeleteAsync(ct);
     }
 }
