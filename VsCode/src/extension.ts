@@ -291,11 +291,16 @@ export function activate(context: vscode.ExtensionContext): void {
     'reportchecker.replyToThread',
     async (commentReply: unknown) => {
       const { thread, text } = CommentThreads.extractReply(commentReply);
-      if (!thread || !text) return;
+      if (!thread || !text) {
+        log(`[replyToThread] нет thread/text, аргумент: ${describeArgs([commentReply])}`);
+        return;
+      }
       const issue = threads!.issueForThread(thread);
-      if (!issue) return;
+      if (!issue) {
+        log(`[replyToThread] issue не найден по треду`);
+        return;
+      }
       await commentService!.reply(issue, cleanCommentText(text));
-      thread.comments = threads!.controller.options ? thread.comments : thread.comments;
       threads!.updateIssue(issue);
     },
   );
@@ -303,7 +308,7 @@ export function activate(context: vscode.ExtensionContext): void {
   const markReadCommand = vscode.commands.registerCommand(
     'reportchecker.markThreadRead',
     async (...args: unknown[]) => {
-      const issue = issueFromArgs(args);
+      const issue = issueFromArgs('markThreadRead', args);
       if (!issue) return;
       await issueService!.markIssueRead(issue);
       threads!.updateIssue(issue);
@@ -312,26 +317,61 @@ export function activate(context: vscode.ExtensionContext): void {
 
   const statusCommand = (id: string, status: 'Fixed' | 'Closed' | 'Open') =>
     vscode.commands.registerCommand(id, async (...args: unknown[]) => {
-      const issue = issueFromArgs(args);
-      if (!issue) return;
-      await commentService!.setStatus(issue, status);
-      threads!.updateIssue(issue);
-      await reloadIssues();
+      log(`[${id}] вызвана, аргументы: ${describeArgs(args)}`);
+      let issue: Issue | undefined;
+      try {
+        issue = issueFromArgs(id, args);
+      } catch (e) {
+        log(`[${id}] ошибка разбора аргументов: ${e instanceof Error ? e.message : String(e)}`);
+      }
+      if (!issue) {
+        const msg = `ReportChecker: не найдена ошибка для команды «${id}». Аргументы: ${describeArgs(args)}`;
+        log(`[${id}] ${msg}`);
+        void vscode.window.showErrorMessage(msg);
+        return;
+      }
+      try {
+        await commentService!.setStatus(issue, status);
+        threads!.updateIssue(issue);
+        await reloadIssues();
+      } catch (e) {
+        const msg = `ReportChecker: не удалось сменить статус на ${status}: ${e instanceof Error ? e.message : String(e)}`;
+        log(`[${id}] ${msg}`);
+        void vscode.window.showErrorMessage(msg);
+      }
     });
 
-  const patchStatusCommand = (id: string, status: 'Accepted' | 'Rejected') =>
+  const patchStatusCommand = (id: string, status: 'Rejected') =>
     vscode.commands.registerCommand(id, async (...args: unknown[]) => {
+      log(`[${id}] вызвана, аргументы: ${describeArgs(args)}`);
       const { issue, comment } = issueAndCommentFromArgs(args);
-      if (!issue || !comment) return;
-      await commentService!.setPatchStatus(issue, comment, status);
-      threads!.updateIssue(issue);
+      if (!issue || !comment) {
+        const msg = `ReportChecker: не найден комментарий для «${id}». Аргументы: ${describeArgs(args)}`;
+        log(`[${id}] ${msg}`);
+        void vscode.window.showErrorMessage(msg);
+        return;
+      }
+      try {
+        await commentService!.setPatchStatus(issue, comment, status);
+        threads!.updateIssue(issue);
+      } catch (e) {
+        const msg = `ReportChecker: не удалось отклонить исправление: ${e instanceof Error ? e.message : String(e)}`;
+        log(`[${id}] ${msg}`);
+        void vscode.window.showErrorMessage(msg);
+      }
     });
 
   const applyPatchCommand = vscode.commands.registerCommand(
     'reportchecker.applyPatch',
     async (...args: unknown[]) => {
+      log(`[applyPatch] вызвана, аргументы: ${describeArgs(args)}`);
       const { issue, comment } = issueAndCommentFromArgs(args);
-      if (!issue || !comment?.patch) return;
+      if (!issue || !comment?.patch) {
+        const msg = `ReportChecker: не найден комментарий с патчем для «Применить». Аргументы: ${describeArgs(args)}`;
+        log(`[applyPatch] ${msg}`);
+        void vscode.window.showErrorMessage(msg);
+        return;
+      }
       try {
         const applied = await patchService!.apply(issue.chapter ?? '', comment.patch.lines ?? []);
         if (applied) {
@@ -347,6 +387,7 @@ export function activate(context: vscode.ExtensionContext): void {
           `Не удалось применить исправление: ${e instanceof Error ? e.message : String(e)}`,
         );
       }
+      threads!.updateIssue(issue);
     },
   );
 
@@ -378,7 +419,25 @@ export function activate(context: vscode.ExtensionContext): void {
     },
   );
 
-  function issueFromArgs(args: unknown[]): Issue | undefined {
+  /** Краткое описание аргументов команды для диагностики. */
+  function describeArgs(args: unknown[]): string {
+    if (!args.length) return '<пусто>';
+    return args
+      .map((a) => {
+        if (a === undefined) return 'undefined';
+        if (a === null) return 'null';
+        if (typeof a !== 'object') return `${typeof a}(${JSON.stringify(a)?.slice(0, 60)})`;
+        const o = a as Record<string, unknown>;
+        const keys = Object.keys(o).slice(0, 12).join(',');
+        const mid = typeof o.$mid === 'number' ? ` $mid=${o.$mid}` : '';
+        const uri = o.uri instanceof vscode.Uri ? ` uri=${String(o.uri)}` : '';
+        return `{${keys}${mid}${uri}}`;
+      })
+      .join(' | ');
+  }
+
+  function issueFromArgs(cmdName: string, args: unknown[]): Issue | undefined {
+    log(`[issueFromArgs:${cmdName}] аргументы: ${describeArgs(args)}`);
     for (const arg of args) {
       if (arg && typeof arg === 'object' && 'rcIssue' in (arg as object)) {
         return (arg as { rcIssue?: Issue }).rcIssue;
@@ -387,15 +446,80 @@ export function activate(context: vscode.ExtensionContext): void {
         return (arg as { issue: Issue }).issue;
       }
     }
+    // Меню треда присылает:
+    //  - форма ответа: {thread, text} ($mid: CommentThreadReply — процессор разворачивает
+    //    маршал в реальный vscode.CommentThread внутри поля thread);
+    //  - additional actions: сам vscode.CommentThread ({range, uri, ...}).
+    // Достаем issue по треду через CommentThreads
+    for (const arg of args) {
+      if (!arg || typeof arg !== 'object') continue;
+      const o = arg as Record<string, unknown>;
+      const thread = o.thread && typeof o.thread === 'object'
+        ? (o.thread as unknown as vscode.CommentThread)
+        : ('range' in o || 'uri' in o ? (arg as unknown as vscode.CommentThread) : undefined);
+      if (!thread) continue;
+      const issue = threads!.issueForThread(thread);
+      if (issue) return issue;
+    }
     return undefined;
   }
 
   function issueAndCommentFromArgs(args: unknown[]): { issue?: Issue; comment?: Comment } {
+    // Вариант 1: vscode.Comment из контекстного меню (обернут в rcIssue/rcComment)
     for (const arg of args) {
       if (arg && typeof arg === 'object' && 'rcIssue' in (arg as object)) {
         const c = arg as { rcIssue?: Issue; rcComment?: Comment };
         return { issue: c.rcIssue, comment: c.rcComment };
       }
+    }
+    // Вариант 2: «сырые» объекты из command-ссылки в markdown-теле комментария:
+    // command:…?[issue, comment] распаковывается в отдельные аргументы
+    let issue: Issue | undefined;
+    let comment: Comment | undefined;
+    for (const arg of args) {
+      if (!arg || typeof arg !== 'object') continue;
+      const o = arg as Record<string, unknown>;
+      if (
+        !issue &&
+        (Array.isArray(o.comments) || typeof o.chapter === 'string') &&
+        (typeof o.id === 'string' || typeof o.id === 'number')
+      ) {
+        issue = o as unknown as Issue;
+      } else if (
+        !comment &&
+        (o.patch !== undefined ||
+          (typeof o.userId === 'string' && o.content !== undefined))
+      ) {
+        comment = o as unknown as Comment;
+      }
+    }
+    if (issue || comment) return { issue, comment };
+    // Вариант 3: аргумент из меню треда — {thread, text} или сам тред; берем
+    // последний комментарий треда (наш patch-комментарий)
+    for (const arg of args) {
+      if (!arg || typeof arg !== 'object') continue;
+      const o = arg as Record<string, unknown>;
+      const thread = o.thread && typeof o.thread === 'object'
+        ? (o.thread as unknown as vscode.CommentThread)
+        : ('range' in o || 'uri' in o ? (arg as unknown as vscode.CommentThread) : undefined);
+      if (!thread) continue;
+      log(`[issueAndCommentFromArgs] вариант 3: распознаем тред ${describeArgs([thread])}`);
+      const issue = threads!.issueForThread(thread);
+      if (issue) {
+        const comments = thread.comments ?? [];
+        const last = comments.length ? comments[comments.length - 1] : undefined;
+        // vscode.Comment несет сырые данные в rcComment/rcIssue — разворачиваем
+        const raw = last && typeof last === 'object' && 'rcComment' in (last as object)
+          ? (last as { rcComment?: Comment }).rcComment
+          : (last as unknown as Comment | undefined);
+        if (raw) {
+          log(`[issueAndCommentFromArgs] вариант 3: issue найден, comment из треда`);
+          return { issue, comment: raw };
+        }
+        log(`[issueAndCommentFromArgs] вариант 3: issue найден, комментария в треде нет`);
+        return { issue };
+      }
+      log(`[issueAndCommentFromArgs] вариант 3: issue по треду не найден`);
     }
     return {};
   }
@@ -451,7 +575,6 @@ export function activate(context: vscode.ExtensionContext): void {
     statusCommand('reportchecker.issueFixed', 'Fixed'),
     statusCommand('reportchecker.issueClosed', 'Closed'),
     statusCommand('reportchecker.issueReopen', 'Open'),
-    patchStatusCommand('reportchecker.acceptPatch', 'Accepted'),
     patchStatusCommand('reportchecker.rejectPatch', 'Rejected'),
     applyPatchCommand, editCommentCommand, deleteCommentCommand,
     onDidChangeSettings(() => {

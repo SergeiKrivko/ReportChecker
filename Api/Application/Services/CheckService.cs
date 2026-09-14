@@ -66,6 +66,7 @@ public class CheckService(
         catch (Exception e)
         {
             logger.LogError("Error during check processing: {e}", e);
+            await checkRepository.SetCheckStatusAsync(context.Check.Id, ProgressStatus.Failed);
         }
         finally
         {

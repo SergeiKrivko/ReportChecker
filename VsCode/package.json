@@ -143,12 +143,6 @@
         "category": "ReportChecker"
       },
       {
-        "command": "reportchecker.acceptPatch",
-        "title": "Принять исправление",
-        "category": "ReportChecker",
-        "icon": "$(git-pull-request)"
-      },
-      {
         "command": "reportchecker.rejectPatch",
         "title": "Отклонить исправление",
         "category": "ReportChecker",
@@ -211,27 +205,27 @@
       "comments/commentThread/context": [
         {
           "command": "reportchecker.replyToThread",
-          "group": "inline",
+          "group": "inline@1",
           "when": "commentController == reportchecker && !commentThreadIsEmpty"
         },
         {
           "command": "reportchecker.issueFixed",
           "group": "inline@2",
-          "when": "commentController == reportchecker && !commentThreadIsEmpty"
+          "when": "commentController == reportchecker && commentThread == rc-thread-open"
         },
         {
           "command": "reportchecker.issueClosed",
           "group": "inline@3",
-          "when": "commentController == reportchecker && !commentThreadIsEmpty"
+          "when": "commentController == reportchecker && commentThread == rc-thread-open"
         },
         {
           "command": "reportchecker.issueReopen",
-          "group": "2.status",
-          "when": "commentController == reportchecker && !commentThreadIsEmpty"
+          "group": "inline@4",
+          "when": "commentController == reportchecker && commentThread == rc-thread-resolved"
         },
         {
           "command": "reportchecker.markThreadRead",
-          "group": "2.status",
+          "group": "inline@5",
           "when": "commentController == reportchecker && !commentThreadIsEmpty"
         }
       ],
@@ -242,13 +236,8 @@
           "when": "commentController == reportchecker && comment == rc-patch"
         },
         {
-          "command": "reportchecker.acceptPatch",
-          "group": "navigation@2",
-          "when": "commentController == reportchecker && comment == rc-patch"
-        },
-        {
           "command": "reportchecker.rejectPatch",
-          "group": "navigation@3",
+          "group": "navigation@2",
           "when": "commentController == reportchecker && comment == rc-patch"
         },
         {
@@ -285,10 +274,6 @@
         },
         {
           "command": "reportchecker.issueReopen",
-          "when": "false"
-        },
-        {
-          "command": "reportchecker.acceptPatch",
           "when": "false"
         },
         {
@@ -399,9 +384,11 @@
     "vscode:prepublish": "npm run compile"
   },
   "dependencies": {
+    "diff-match-patch": "^1.0.5",
     "fflate": "^0.8.2"
   },
   "devDependencies": {
+    "@types/diff-match-patch": "^1.0.36",
     "@types/node": "^22.10.0",
     "@types/vscode": "^1.85.0",
     "esbuild": "^0.24.0",

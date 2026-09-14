@@ -91,13 +91,13 @@ export class IssuesService {
       return timer(0, currentInterval).pipe(
         switchMap(() => this.apiClient.latest(report.id)),
         tap(check => patchState(this.store$$, {
-          isProgress: check.status === "InProgress",
+          isProgress: check.status === "InProgress" || check.status === "Queued",
           isFailed: check.status === "Failed",
           isCancelled: check.status === "Cancelled"
         })),
         switchMap(check => {
           // Если InProgress - поллим issues каждые 2 секунды
-          if (check.status === "InProgress") {
+          if (check.status === "InProgress" || check.status === "Queued") {
             return interval(2000).pipe(
               switchMap(() => this.loadIssues(report.id)),
               switchMap(() => this.apiClient.latest(report.id)),

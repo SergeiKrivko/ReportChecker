@@ -24,7 +24,7 @@ public class PositionsUpdater(IDifferenceService differenceService, IIssueReposi
                     oldLine++;
                 if (diffLine.Type != ChapterLineType.Deleted)
                     newLine++;
-                while (issues[0].Line == oldLine)
+                while (issues.Count > 0 && issues[0].Line == oldLine)
                 {
                     if (issues[0].Line != newLine)
                         await issueRepository.UpdateIssueLocationAsync(issues[0].Id, context.Check.Id, newChapter.Name,
