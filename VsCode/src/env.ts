@@ -16,7 +16,7 @@ export function readSettings(): Settings {
   const config = vscode.workspace.getConfiguration('reportchecker');
   return {
     apiBaseUrl: trimSlash(config.get<string>('apiBaseUrl', 'https://api.reportchecker.ru')),
-    webBaseUrl: trimSlash(config.get<string>('webBaseUrl', 'https://report-checker.vercel.app')),
+    webBaseUrl: trimSlash(config.get<string>('webBaseUrl', 'https://reportchecker.ru')),
     authBaseUrl: trimSlash(config.get<string>('authBaseUrl', 'https://auth.nachert.art')),
     authProvider: config.get<string>('authProvider', 'password'),
     callbackPort: config.get<number>('callbackPort', 14872),

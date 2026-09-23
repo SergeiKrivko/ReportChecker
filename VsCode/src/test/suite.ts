@@ -4,3 +4,4 @@
  * в текущем процессе — без спавна дочерних процессов раннера.
  */
 import '../formats/latex/latexProvider.test.js';
+import '../services/webUrls.test.js';

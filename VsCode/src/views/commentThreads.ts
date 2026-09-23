@@ -136,7 +136,7 @@ export class CommentThreads implements vscode.Disposable {
         'Открыть в браузере',
       );
       if (choice === 'Открыть в браузере') {
-        await vscode.commands.executeCommand('reportchecker.openInWeb');
+        await vscode.commands.executeCommand('reportchecker.openInWeb', fi.issue);
       }
       return;
     }

@@ -258,10 +258,13 @@ export function activate(context: vscode.ExtensionContext): void {
   });
   context.subscriptions.push(showLogCommand);
 
-  const openInWebCommand = vscode.commands.registerCommand('reportchecker.openInWeb', async () => {
+  const openInWebCommand = vscode.commands.registerCommand('reportchecker.openInWeb', async (arg?: unknown) => {
     const link = await linkService.getLink();
     if (!link) return;
-    await checkService!.openInWeb(link.reportId);
+    // Команда вызывается и из заголовка панели (без аргументов) — тогда открываем отчет,
+    // и из узла/треда ошибки — тогда ведем сразу на страницу этой ошибки.
+    const issue = arg ? issueFromArgs('openInWeb', [arg]) : undefined;
+    await checkService!.openInWeb(link.reportId, issue?.id);
   });
 
   const openIssueCommand = vscode.commands.registerCommand(
@@ -450,6 +453,16 @@ export function activate(context: vscode.ExtensionContext): void {
       }
       if (arg && typeof arg === 'object' && 'issue' in (arg as object)) {
         return (arg as { issue: Issue }).issue;
+      }
+      // Узел дерева ошибок: { kind: 'issue', fileIssue: { issue, position } }
+      if (arg && typeof arg === 'object' && 'fileIssue' in (arg as object)) {
+        const fi = (arg as { fileIssue?: { issue?: Issue } }).fileIssue;
+        if (fi?.issue) return fi.issue;
+      }
+      // «Сырой» Issue (например, передан из треда при открытии в браузере)
+      const raw = arg as Partial<Issue> | undefined;
+      if (raw && typeof raw === 'object' && typeof raw.id === 'string' && 'checkId' in raw) {
+        return raw as Issue;
       }
     }
     // Меню треда присылает:

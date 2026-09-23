@@ -72,7 +72,7 @@ try
     var report = await reportService.UploadAsync(path, force: arguments.NewReport);
 
     AnsiConsole.MarkupLine($"Ваш отчет загружен в ReportChecker: " +
-                           $"[blue]https://report-checker.vercel.app/reports/{report.Id}[/]");
+                           $"[blue]https://reportchecker.ru/reports/{report.Id}[/]");
 
     var formatProvider = await reportService.GetFormatProviderAsync(path);
     var latestCheck = await reportService.GetCheckAsync(report.Id);

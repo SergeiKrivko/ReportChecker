@@ -8,6 +8,7 @@ import { FormatProvider } from '../formats/formatProvider';
 import { LinkService, WorkspaceLink } from './linkService';
 import { ReportCheckerApi } from '../api/reportCheckerApi';
 import { log } from '../log';
+import { reportWebUrl } from './webUrls';
 
 export type CheckPhase = 'idle' | 'uploading' | 'queued' | 'inProgress' | 'completed' | 'failed';
 
@@ -286,9 +287,10 @@ export class CheckService implements vscode.Disposable {
     return picked?.fsPath;
   }
 
-  async openInWeb(reportId: string): Promise<void> {
+  /** Открыть отчет, а при передаче issueId — страницу конкретной ошибки. */
+  async openInWeb(reportId: string, issueId?: string): Promise<void> {
     const base = this.settingsProvider().webBaseUrl;
-    await vscode.env.openExternal(vscode.Uri.parse(`${base}/reports/${reportId}`));
+    await vscode.env.openExternal(vscode.Uri.parse(reportWebUrl(base, reportId, issueId)));
   }
 
   async getReport(): Promise<Report | undefined> {

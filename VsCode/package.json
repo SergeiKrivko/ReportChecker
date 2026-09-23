@@ -2,7 +2,7 @@
   "name": "reportchecker-vscode",
   "displayName": "ReportChecker",
   "description": "Интеграция с ReportChecker: отправка отчетов на проверку, список ошибок, комментарии и исправления прямо в редакторе",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "repository": {
     "type": "github",
     "url": "https://github.com/SergeiKrivko/ReportChecker"
@@ -320,7 +320,7 @@
         },
         "reportchecker.webBaseUrl": {
           "type": "string",
-          "default": "https://report-checker.vercel.app",
+          "default": "https://reportchecker.ru",
           "description": "Адрес веб-версии ReportChecker"
         },
         "reportchecker.authBaseUrl": {
@@ -339,7 +339,7 @@
             "gitlab",
             "microsoft"
           ],
-          "description": "Провайдер авторизации (как в десктоп-клиентах)"
+          "description": "Провайдер авторизации"
         },
         "reportchecker.callbackPort": {
           "type": "number",
