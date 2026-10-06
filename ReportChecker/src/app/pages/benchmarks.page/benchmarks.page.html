@@ -1,0 +1,144 @@
+<div class="container page-padding">
+  <header class="page-header">
+    <div class="page-title">
+      <h1>Бенчмарки</h1>
+      <button tuiButton appearance="flat" size="s" type="button" (click)="load()">Обновить</button>
+    </div>
+    <p class="subtitle">
+      Главный показатель — доля найденных известных ошибок. Строки — модели, столбцы — тесты.
+      Наведите курсор на ячейку, чтобы увидеть подробности.
+    </p>
+  </header>
+
+  @if (isAdmin$ | async) {
+    <app-benchmark-runner/>
+  }
+
+  @let loaded = loaded$ | async;
+  @if (!loaded) {
+    <div class="center-container">
+      <tui-loader size="xxl"/>
+      <h2>Загрузка результатов...</h2>
+    </div>
+  } @else {
+    @let cases = (cases$ | async) ?? [];
+    @let rows = (rows$ | async) ?? [];
+    @let error = error$ | async;
+
+    @if (error) {
+      <div class="placeholder error">{{ error }}</div>
+    } @else if (rows.length === 0) {
+      <div class="placeholder">
+        Прогонов пока нет. Запустите бенчмарк через <code>POST /api/v1/benchmarks/runs</code>.
+      </div>
+    } @else {
+      <div class="table-scroll">
+        <table class="matrix">
+          <thead>
+          <tr>
+            <th class="model-column">Модель</th>
+            @for (benchmarkCase of cases; track benchmarkCase.id) {
+              <th [class.invalid]="benchmarkCase.validationError"
+                  [tuiHint]="caseHint(benchmarkCase)">
+                <span class="test-name">{{ benchmarkCase.name }}</span>
+                <span class="test-meta">
+                  @if (benchmarkCase.validationError) {
+                    тест не загружен
+                  } @else {
+                    {{ benchmarkCase.expectedCount }} ошибок
+                  }
+                </span>
+              </th>
+            }
+            <th class="total-column">Итого</th>
+          </tr>
+          </thead>
+          <tbody>
+            @for (row of rows; track row.modelId) {
+              <tr>
+                <td class="model-column">
+                  <span class="model-name">{{ row.modelName }}</span>
+                  <span class="model-meta">{{ row.totals.runCount }} прогонов</span>
+                </td>
+                @for (benchmarkCase of cases; track benchmarkCase.id) {
+                  @let cell = row.cells[benchmarkCase.id];
+                  <td class="cell"
+                      [class]="level(cell?.matchedShare, cell?.totalExpected ?? 0)"
+                      [tuiHint]="cellHint"
+                      [tuiHintContext]="{row: row, cell: cell, benchmarkCase: benchmarkCase}">
+                    @if (cell) {
+                      <span class="score">{{ percent(cell.matchedShare) }}%</span>
+                      <span class="fraction">{{ cell.totalMatched }}/{{ cell.totalExpected }}</span>
+                    } @else {
+                      <span class="score muted">—</span>
+                    }
+                  </td>
+                }
+                <td class="cell total-column"
+                    [tuiHint]="totalHint"
+                    [tuiHintContext]="{row: row}">
+                  <span class="score">{{ percent(row.totals.matchedShare) }}%</span>
+                  <span class="fraction">{{ row.totals.totalMatched }}/{{ row.totals.totalExpected }}</span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="legend">
+        <span class="legend-item"><i class="swatch excellent"></i>≥ 90 %</span>
+        <span class="legend-item"><i class="swatch good"></i>75–89 %</span>
+        <span class="legend-item"><i class="swatch fair"></i>50–74 %</span>
+        <span class="legend-item"><i class="swatch poor"></i>&lt; 50 %</span>
+        <span class="legend-item"><i class="swatch empty"></i>нет прогонов</span>
+      </div>
+    }
+  }
+</div>
+
+<ng-template #cellHint let-row="row" let-cell="cell" let-benchmarkCase="benchmarkCase">
+  <div class="hint">
+    <b>{{ benchmarkCase.name }}</b>
+    <span class="hint-model">{{ row.modelName }}</span>
+    @if (cell) {
+      <span>Найдено {{ cell.totalMatched }} из {{ cell.totalExpected }} известных ошибок
+        ({{ percent(cell.matchedShare) }} %)</span>
+      <span>Лишних ошибок: {{ cell.totalExtra }}</span>
+      <span>Прогонов: {{ cell.runCount }}, успешных: {{ cell.completedRunCount }}</span>
+      @if (cell.totalFixChecked > 0) {
+        <span>Исправление совпало: {{ cell.totalFixMatched }} из {{ cell.totalFixChecked }}
+          ({{ percent(cell.fixMatchShare) }} %)</span>
+      }
+      @if (cell.avgDurationMs != null) {
+        <span>Средняя длительность: {{ duration(cell.avgDurationMs) }}</span>
+      }
+      @if (cell.totalTokens > 0) {
+        <span>Токенов: {{ tokens(cell.totalTokens) }}, стоимость: {{ cost(cell.totalCost) }}</span>
+      }
+    } @else {
+      <span>Прогонов нет</span>
+    }
+  </div>
+</ng-template>
+
+<ng-template #totalHint let-row="row">
+  <div class="hint">
+    <b>Итого по всем тестам</b>
+    <span class="hint-model">{{ row.modelName }}</span>
+    <span>Найдено {{ row.totals.totalMatched }} из {{ row.totals.totalExpected }} известных ошибок
+      ({{ percent(row.totals.matchedShare) }} %)</span>
+    <span>Лишних ошибок: {{ row.totals.totalExtra }}</span>
+    <span>Прогонов: {{ row.totals.runCount }}</span>
+    @if (row.totals.totalFixChecked > 0) {
+      <span>Исправление совпало: {{ row.totals.totalFixMatched }} из {{ row.totals.totalFixChecked }}
+        ({{ percent(row.totals.fixMatchShare) }} %)</span>
+    }
+    @if (row.totals.avgDurationMs != null) {
+      <span>Средняя длительность: {{ duration(row.totals.avgDurationMs) }}</span>
+    }
+    @if (row.totals.totalTokens > 0) {
+      <span>Токенов: {{ tokens(row.totals.totalTokens) }}, стоимость: {{ cost(row.totals.totalCost) }}</span>
+    }
+  </div>
+</ng-template>

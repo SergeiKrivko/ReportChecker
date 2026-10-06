@@ -1,0 +1,110 @@
+<section class="runner">
+  <div class="runner-head">
+    <h2>Запуск прогона</h2>
+    <p class="runner-note">Создаётся по одному прогону на каждую пару «тест × модель».</p>
+  </div>
+
+  @if (isLoading()) {
+    <tui-loader/>
+  } @else {
+    <div class="runner-columns">
+      <div class="group">
+        <div class="group-head">
+          <span class="group-title">Тесты</span>
+          <span class="group-count">{{ selectedCaseIds().size }} из {{ runnableCases().length }}</span>
+          <div class="group-actions">
+            <button tuiButton appearance="flat" size="s" type="button" (click)="setAllCases(true)">
+              Все
+            </button>
+            <button tuiButton appearance="flat" size="s" type="button" (click)="setAllCases(false)">
+              Снять
+            </button>
+          </div>
+        </div>
+        <ul class="options">
+          @for (benchmarkCase of cases(); track benchmarkCase.id) {
+            <li class="option" [class.disabled]="benchmarkCase.validationError">
+              <label>
+                <input type="checkbox"
+                       [checked]="isCaseSelected(benchmarkCase.id)"
+                       [disabled]="!!benchmarkCase.validationError"
+                       (change)="toggleCase(benchmarkCase.id, $event)"/>
+                <span class="option-name">{{ benchmarkCase.name }}</span>
+                <span class="option-meta">
+                  @if (benchmarkCase.validationError) {
+                    тест не загружен
+                  } @else if (isHidden(benchmarkCase)) {
+                    скрыт · {{ benchmarkCase.expectedCount }} ошибок
+                  } @else {
+                    {{ benchmarkCase.expectedCount }} ошибок
+                  }
+                </span>
+              </label>
+            </li>
+          }
+        </ul>
+      </div>
+
+      <div class="group">
+        <div class="group-head">
+          <span class="group-title">Модели</span>
+          <span class="group-count">{{ selectedModelIds().size }} из {{ models().length }}</span>
+          <div class="group-actions">
+            <button tuiButton appearance="flat" size="s" type="button" (click)="setAllModels(true)">
+              Все
+            </button>
+            <button tuiButton appearance="flat" size="s" type="button" (click)="setAllModels(false)">
+              Снять
+            </button>
+          </div>
+        </div>
+        <tui-textfield [tuiTextfieldCleaner]="false" class="search">
+          <input tuiTextfield
+                 type="text"
+                 placeholder="Фильтр по названию"
+                 aria-label="Фильтр моделей"
+                 [formControl]="modelFilter"/>
+        </tui-textfield>
+        <ul class="options scrollable">
+          @for (model of visibleModels(); track model.id) {
+            <li class="option">
+              <label>
+                <input type="checkbox"
+                       [checked]="isModelSelected(model.id)"
+                       (change)="toggleModel(model.id, $event)"/>
+                <span class="option-name">{{ model.displayName }}</span>
+              </label>
+            </li>
+          } @empty {
+            <li class="empty-note">Ничего не найдено</li>
+          }
+        </ul>
+      </div>
+    </div>
+
+    <div class="runner-foot">
+      <label class="option matching">
+        <input type="checkbox"
+               [checked]="useLlmMatching()"
+               (change)="toggleMatching($event)"/>
+        <span class="option-name">LLM-сопоставление</span>
+        <span class="option-meta">неоднозначные ошибки сверяет модель-судья</span>
+      </label>
+
+      <div class="start">
+        <span class="planned">Будет создано: {{ plannedRuns() }} </span>
+        <button tuiButton
+                appearance="primary"
+                type="button"
+                [disabled]="!canStart()"
+                (click)="start()">
+          @if (starting()) {
+            Запуск...
+          } @else {
+            Запустить
+          }
+        </button>
+      </div>
+    </div>
+  }
+</section>
