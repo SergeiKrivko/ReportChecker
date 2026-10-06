@@ -82,13 +82,13 @@ public class BenchmarkService(
     private void RunInBackground(Guid runId, string caseId, Guid modelId, bool? useLlmMatching)
     {
         var cancellation = new CancellationTokenSource();
+        var scope = serviceProvider.CreateScope();
         taskCancellationService.AddBenchmarkCancellationToken(runId, cancellation);
         _ = Task.Run(async () =>
         {
             await runLimiter.WaitAsync(CancellationToken.None);
             try
             {
-                using var scope = serviceProvider.CreateScope();
                 var service = scope.ServiceProvider.GetRequiredService<IBenchmarkService>();
                 await service.RunAsync(runId, caseId, modelId, useLlmMatching, cancellation.Token);
             }
@@ -106,6 +106,8 @@ public class BenchmarkService(
                 runLimiter.Release();
                 taskCancellationService.DeleteBenchmarkCancellationToken(runId);
             }
+
+            scope.Dispose();
         }, CancellationToken.None);
     }
 
