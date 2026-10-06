@@ -28,7 +28,7 @@ public class BenchmarkService(
 
     private readonly Guid _judgeModelId = Guid.Parse(configuration["Benchmarks.JudgeModelId"] ??
                                                      configuration["Ai.DefaultModelId"] ??
-                                                     throw new Exception("Model id not set"));
+                                                     "00000000-0000-0000-0000-000000000000");
 
     private readonly double _titleSimilarityThreshold = double.Parse(
         configuration["Benchmarks.TitleSimilarityThreshold"] ?? "0.6", CultureInfo.InvariantCulture);
