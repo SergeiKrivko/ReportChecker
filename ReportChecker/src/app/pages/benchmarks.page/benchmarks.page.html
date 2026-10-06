@@ -4,15 +4,11 @@
       <h1>Бенчмарки</h1>
       <button tuiButton appearance="flat" size="s" type="button" (click)="load()">Обновить</button>
     </div>
-    <p class="subtitle">
-      Главный показатель — доля найденных известных ошибок. Строки — модели, столбцы — тесты.
-      Наведите курсор на ячейку, чтобы увидеть подробности.
-    </p>
+    <!--    <p class="subtitle">-->
+    <!--      Главный показатель — доля найденных известных ошибок. Строки — модели, столбцы — тесты.-->
+    <!--      Наведите курсор на ячейку, чтобы увидеть подробности.-->
+    <!--    </p>-->
   </header>
-
-  @if (isAdmin$ | async) {
-    <app-benchmark-runner/>
-  }
 
   @let loaded = loaded$ | async;
   @if (!loaded) {
@@ -94,6 +90,10 @@
         <span class="legend-item"><i class="swatch empty"></i>нет прогонов</span>
       </div>
     }
+  }
+
+  @if (isAdmin$ | async) {
+    <app-benchmark-runner/>
   }
 </div>
 

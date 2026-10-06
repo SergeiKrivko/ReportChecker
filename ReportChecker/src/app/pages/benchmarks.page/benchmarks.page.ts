@@ -6,7 +6,7 @@ import {BenchmarksService} from '../../services/benchmarks.service';
 import {BenchmarkCaseEntity} from '../../entities/benchmark-entity';
 import {BenchmarkRunner} from '../../components/benchmark-runner/benchmark-runner';
 import {AuthClient} from '../../auth/auth.client';
-import {Observable, of} from 'rxjs';
+import {Observable} from 'rxjs';
 
 @Component({
   selector: 'app-benchmarks.page',
@@ -33,7 +33,7 @@ export class BenchmarksPage implements OnInit {
   protected readonly error$ = this.benchmarksService.error$;
 
   /** Панель запуска показывается только администратору; сервер проверяет права сам. */
-  protected readonly isAdmin$: Observable<boolean> = of(true); // TEMP-VERIFY: вернуть authClient.isAdmin$
+  protected readonly isAdmin$: Observable<boolean> = this.authClient.isAdmin$;
 
   ngOnInit() {
     this.load();
