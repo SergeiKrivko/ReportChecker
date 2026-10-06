@@ -4,7 +4,7 @@
   "description": "Тест второго уровня: проверяются ссылки на несуществующие метки, типографские ошибки и единообразие терминологии между главами.",
   "format": "Latex",
   "entryFile": "report.tex",
-  "displayMode": "Collapsed",
+  "displayMode": "Hidden",
   "expected": [
     {
       "number": 1,
