@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 using ReportChecker.Models;
 
 namespace AiAgent.Models;
@@ -123,4 +123,54 @@ public class PatchReadAgent
     public required string Status { get; init; }
 
     public required PatchLineAgent[] Lines { get; init; }
+}
+
+/// <summary>Известная ошибка, передаваемая модели для сопоставления.</summary>
+public class BenchmarkExpectedAgent
+{
+    public int Number { get; init; }
+
+    public required string Chapter { get; init; }
+
+    public int Line { get; init; }
+
+    public required string Title { get; init; }
+
+    public required string Comment { get; init; }
+}
+
+/// <summary>Найденная ошибка, передаваемая модели для сопоставления.</summary>
+public class BenchmarkFoundAgent
+{
+    public int Index { get; init; }
+
+    public required string Chapter { get; init; }
+
+    public int Line { get; init; }
+
+    public required string Title { get; init; }
+
+    public required string Comment { get; init; }
+}
+
+public class BenchmarkMatchRequestAgent
+{
+    public required BenchmarkExpectedAgent[] Expected { get; init; }
+
+    public required BenchmarkFoundAgent[] Found { get; init; }
+}
+
+/// <summary>Пара «известная ошибка — найденная ошибка», предложенная моделью.</summary>
+public class BenchmarkMatchAgent
+{
+    /// <summary>Номер известной ошибки.</summary>
+    public int ExpectedNumber { get; init; }
+
+    /// <summary>Порядковый номер найденной ошибки.</summary>
+    public int FoundIndex { get; init; }
+
+    /// <summary>Уверенность в сопоставлении, 0–100. 0, если ошибки не соответствуют друг другу.</summary>
+    public int ConfidencePercent { get; init; }
+
+    public string? Reason { get; init; }
 }

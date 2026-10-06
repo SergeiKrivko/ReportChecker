@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using AiAgent.Internals;
 using AiAgent.Models;
 using Microsoft.Extensions.Logging;
@@ -35,6 +35,8 @@ public class AiAgent : IAiAgent
         if (_logger.IsEnabled(LogLevel.Information))
             _logger.LogInformation("Disposing AI agent... Total requests: {totalRequests}",
                 _usage.TotalRequests);
+        if (_reportId == Guid.Empty)
+            return;
         await _llmUsageRepository.CreateUsageAsync(new LlmUsage
         {
             ReportId = _reportId,
@@ -50,6 +52,15 @@ public class AiAgent : IAiAgent
             TotalRequests = _usage.TotalRequests,
         });
     }
+
+    public AiUsageSummary Usage => new()
+    {
+        InputTokens = _usage.InputTokens,
+        OutputTokens = _usage.OutputTokens,
+        TotalTokens = _usage.TotalTokens,
+        TotalRequests = _usage.TotalRequests,
+        TotalMoney = _usage.TotalMoney,
+    };
 
     private static async Task<string> GetSystemPrompt(string name, CancellationToken ct = default)
     {
@@ -196,6 +207,27 @@ public class AiAgent : IAiAgent
         if (_logger.IsEnabled(LogLevel.Information))
             _logger.LogInformation("Agent response: {response}", completion.ReadAsString());
         return completion.ReadAsJson<IssueCreateAgent[]>();
+    }
+
+    public async Task<BenchmarkMatchAgent[]?> MatchBenchmarkIssues(BenchmarkMatchRequestAgent param,
+        CancellationToken ct = default)
+    {
+        List<ChatMessage> messages =
+        [
+            ChatMessage.CreateSystemMessage(await GetSystemPrompt("BenchmarkMatchIssues", ct)),
+            ChatMessage.CreateResponseTypeDefinition<BenchmarkMatchAgent[]>(),
+            ChatMessage.CreateUserMessage(param),
+        ];
+        var options = new ChatCompletionOptions()
+            .SetResponseFormat<BenchmarkMatchAgent[]>()
+            .DisableReasoning();
+
+        var response = await _client.CompleteChatAsync(messages, options, ct);
+        var completion = response.Value;
+        _usage.Add(completion.Usage);
+        if (_logger.IsEnabled(LogLevel.Information))
+            _logger.LogInformation("Agent response: {response}", completion.ReadAsString());
+        return completion.ReadAsJson<BenchmarkMatchAgent[]>();
     }
 
     private static void AddChapters(List<ChatMessage> messages, IEnumerable<ChapterAgent> chapters)

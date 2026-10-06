@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using ReportChecker.Abstractions;
 
 namespace ReportChecker.Application.Services;
@@ -7,6 +7,7 @@ public class TaskCancellationService(ILogger<TaskCancellationService> logger) : 
 {
     private readonly Dictionary<Guid, CancellationTokenSource> _checkCancellationTokens = [];
     private readonly Dictionary<Guid, CancellationTokenSource> _instructionCancellationTokens = [];
+    private readonly Dictionary<Guid, CancellationTokenSource> _benchmarkCancellationTokens = [];
 
     public bool AddCheckCancellationToken(Guid checkId, CancellationTokenSource cancellationToken)
     {
@@ -46,6 +47,27 @@ public class TaskCancellationService(ILogger<TaskCancellationService> logger) : 
         if (!_instructionCancellationTokens.TryGetValue(taskId, out var token))
             return false;
         DeleteInstructionCancellationToken(taskId);
+        await token.CancelAsync();
+        return true;
+    }
+
+    public bool AddBenchmarkCancellationToken(Guid runId, CancellationTokenSource cancellationToken)
+    {
+        return _benchmarkCancellationTokens.TryAdd(runId, cancellationToken);
+    }
+
+    public bool DeleteBenchmarkCancellationToken(Guid runId)
+    {
+        return _benchmarkCancellationTokens.Remove(runId);
+    }
+
+    public async Task<bool> CancelBenchmarkAsync(Guid runId)
+    {
+        if (logger.IsEnabled(LogLevel.Information))
+            logger.LogInformation("Cancelling benchmark run '{runId}'", runId);
+        if (!_benchmarkCancellationTokens.TryGetValue(runId, out var token))
+            return false;
+        DeleteBenchmarkCancellationToken(runId);
         await token.CancelAsync();
         return true;
     }

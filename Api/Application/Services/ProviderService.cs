@@ -1,4 +1,4 @@
-﻿using ReportChecker.Abstractions;
+using ReportChecker.Abstractions;
 using IFormatProvider = ReportChecker.Abstractions.IFormatProvider;
 
 namespace ReportChecker.Application.Services;
@@ -15,5 +15,10 @@ public class ProviderService(
     public IFormatProvider GetFormatProvider(string providerName)
     {
         return formatProviders.First(e => e.Key == providerName);
+    }
+
+    public IFormatProvider? GetFormatProviderOrDefault(string providerName)
+    {
+        return formatProviders.FirstOrDefault(e => e.Key == providerName);
     }
 }

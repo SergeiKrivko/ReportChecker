@@ -1,4 +1,4 @@
-﻿using System.ClientModel;
+using System.ClientModel;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using OpenAI;
@@ -17,20 +17,27 @@ public class AiAgentFactory(
 {
     public async Task<IAiAgent> CreateClientAsync(Report report, LlmUsageType type)
     {
-        LlmModel? model = null;
-        if (report.LlmModelId.HasValue)
-        {
-            model = await llmModelRepository.GetModelByIdAsync(report.LlmModelId.Value);
-            if (model == null)
-                logger.LogWarning("Model '{id}' not found. Use default model instead", report.LlmModelId.Value);
-        }
-
         if (!await subscriptionService.CheckTokensLimitAsync(report.OwnerId))
             throw new Exception("Tokens limit reached");
 
+        // Без активной подписки модель отчёта игнорируется — используется модель по умолчанию.
         var subscription = await subscriptionService.GetActiveSubscription(report.OwnerId);
-        if (subscription == null || model == null)
-            model = await llmModelRepository.GetDefaultModelAsync();
+        var modelId = subscription == null ? null : report.LlmModelId;
+        return await CreateClientAsync(modelId, type, report.Id);
+    }
+
+    public async Task<IAiAgent> CreateClientAsync(Guid? modelId, LlmUsageType type, Guid? reportId = null,
+        CancellationToken ct = default)
+    {
+        LlmModel? model = null;
+        if (modelId.HasValue)
+        {
+            model = await llmModelRepository.GetModelByIdAsync(modelId.Value, ct);
+            if (model == null)
+                logger.LogWarning("Model '{id}' not found. Use default model instead", modelId.Value);
+        }
+
+        model ??= await llmModelRepository.GetDefaultModelAsync(ct);
 
         var apiKey = configuration["Ai.ApiKey"] ?? throw new Exception("API key not found");
         var client = new ChatClient(model.ModelKey, new ApiKeyCredential(apiKey), new OpenAIClientOptions
@@ -38,6 +45,7 @@ public class AiAgentFactory(
             Endpoint = new Uri(configuration["Ai.ApiUrl"] ?? throw new Exception("AI API url not set")),
         });
 
-        return new AiAgent(client, type, model, report.Id, llmUsageRepository, logger);
+        // Guid.Empty означает «без отчёта»: расход не пишется в LlmUsages (например, бенчмарк).
+        return new AiAgent(client, type, model, reportId ?? Guid.Empty, llmUsageRepository, logger);
     }
 }

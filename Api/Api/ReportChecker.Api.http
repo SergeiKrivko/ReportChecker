@@ -1,7 +1,7 @@
-@token =eyJhbGciOiJSUzI1NiIsImtpZCI6IjA2OTNjMjU0OWJiMzQwMWJiZjIxMjlhMjdmMGFkOGRlIiwidHlwIjoiSldUIn0.eyJVc2VySWQiOiJiMTNmYTI2Yi0wYTMwLTQ1NTgtYTJjZC1kYTJkNjgwMjJiYWIiLCJTdWJzY3JpcHRpb25zIjoicGx1cy0xO3VubGltaXRlZCIsImV4cCI6MTc4NDIxNjY3NCwiaXNzIjoiaHR0cHM6Ly9hdXRoLm5hY2hlcnQuYXJ0L2FwaS92MSIsImF1ZCI6IjdjNGExMjcyMzk2OTc5NDUxZDJhMmQzMTFmMDg3MDUwIn0.cULtRBVg_IAFIbLrY9UaT_MzARMAsZUfbAv0dNncn9in7l4KOPliaUiuXM-Wg85Tl_oarE0NeuYsdTWkzU4l-24p3eoQXpl2F1dh66AbCd3IU-DOjsExuDxXwzYkmW-txiSroIQdegMms3iCEkyXSq_o0waHknO0bFSRAZC9V16bx8vx7srO5dz8J6iuY-xA9hvyvRxtBnp5HXnrlCdJo_Vu6cEy7duftaSfKvV6Ak3ywfPK5fhF_Mu51luo0SOIU47G8v1tNEyv3PoBZ3kMeQXHRu3LHxrDLIQMYDHY_wF4VrlzoRKDiyOXgvAbWKLHM_chbD7NHC7UF_kAnQt_rw
+@token =eyJhbGciOiJSUzI1NiIsImtpZCI6IjA2OTNjMjU0OWJiMzQwMWJiZjIxMjlhMjdmMGFkOGRlIiwidHlwIjoiSldUIn0.eyJVc2VySWQiOiJiMTNmYTI2Yi0wYTMwLTQ1NTgtYTJjZC1kYTJkNjgwMjJiYWIiLCJTdWJzY3JpcHRpb25zIjoiIiwiZXhwIjoxNzkxMjQ0ODQxLCJpc3MiOiJodHRwczovL2F1dGgubmFjaGVydC5hcnQvYXBpL3YxIiwiYXVkIjoiN2M0YTEyNzIzOTY5Nzk0NTFkMmEyZDMxMWYwODcwNTAifQ.AqzM_YZnmkbIRDHBIktdIsdL180GSBvvjoxNtIaBV01wv-Txr1PRcEsUAh43pvujMbgVfciJQpjaywOS8rc2yk5r3uqnXdp2POoiA4hKQ2ZWgSqFJ-uohKRJ4PiZFA0NwbkRXRPTRoS7KAoCwLzTfEUOPj2nTw4_O3CVcVlsCLTXQgGSaRR3pkHEDXMARj5ztWeSKeMiqumUy2YtTpWmFBIYw9LRMA8yu-6ehP8BAu9HPcgoY2tMYsmoUmv3HV82zw7FnQRgx4STBJqIrQl5YX_MvkSNhxokCrxG_wu1aFwJGcng4UPablRqKtJVsQRTN9jokh-r0AABJjD0ZVpVAg
 
-@apiUrl =https://api.reportchecker.ru
-#@apiUrl =http://localhost:5000
+#@apiUrl =https://api.reportchecker.ru
+@apiUrl =http://localhost:5000
 
 ###
 
@@ -72,3 +72,19 @@ Authorization: Bearer {{token}}
 GET {{apiUrl}}/api/v1/reports/{{reportId}}/issues/{{issueId}}/comments/{{commentId}}
 Accept: application/json
 Authorization: Bearer {{token}}
+
+###
+POST {{apiUrl}}/api/v1/benchmarks/runs
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "caseIds": [
+    "orthography-basics"
+  ],
+  "modelIds": [
+    "67bec7a7-a6b0-457c-9088-7e3e21aaa58e"
+  ],
+  "useLlmMatching": true
+}

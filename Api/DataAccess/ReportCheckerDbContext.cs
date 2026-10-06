@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using ReportChecker.DataAccess.Entities;
 
 namespace ReportChecker.DataAccess;
@@ -21,6 +21,8 @@ public class ReportCheckerDbContext : DbContext
     public DbSet<SubscriptionOfferEntity> SubscriptionOffers { get; init; }
     public DbSet<UserSubscriptionEntity> UserSubscriptions { get; init; }
     public DbSet<PaymentEntity> Payments { get; init; }
+    public DbSet<BenchmarkRunEntity> BenchmarkRuns { get; init; }
+    public DbSet<BenchmarkResultEntity> BenchmarkResults { get; init; }
 
     public DbSet<FileReportSourceEntity> FileReportSources { get; init; }
     public DbSet<FileCheckSourceEntity> FileCheckSources { get; init; }

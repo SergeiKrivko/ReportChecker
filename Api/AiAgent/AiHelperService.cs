@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Json;
+﻿using System.Globalization;
+using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using ReportChecker.Abstractions;
 using ReportChecker.Models;
@@ -15,8 +16,8 @@ public class AiHelperService(IHttpClientFactory httpClientFactory) : IAiHelperSe
         return resp.Data.Select(e => new LLmModelPrice
         {
             ModelId = e.Id,
-            InputRubPerMillion = Convert.ToDecimal(e.TopProvider?.Pricing.PromptPerMillion),
-            OutputRubPerMillion = Convert.ToDecimal(e.TopProvider?.Pricing.CompletionPerMillion),
+            InputRubPerMillion = Convert.ToDecimal(e.TopProvider?.Pricing.PromptPerMillion, CultureInfo.InvariantCulture),
+            OutputRubPerMillion = Convert.ToDecimal(e.TopProvider?.Pricing.CompletionPerMillion, CultureInfo.InvariantCulture),
         }).ToList();
     }
 

@@ -35,6 +35,11 @@ public class LatexFormatProvider(IConfiguration configuration) : IFormatProvider
             text = await new StreamReader(entryStream).ReadToEndAsync();
         }
 
+        // Нормализуем переводы строк до разбиения по '\n': иначе в каждой строке останется
+        // хвостовой '\r', а AppendLine добавит ещё один перевод строки (на Windows — '\r\r\n'),
+        // что удваивает разрывы и сдвигает нумерацию строк.
+        text = text.Replace("\r\n", "\n").Replace('\r', '\n');
+
         var path = new List<string> { fileName?.TrimStart('/') ?? "<root>" };
         var builder = new StringBuilder();
         var images = new List<ChapterImage>();

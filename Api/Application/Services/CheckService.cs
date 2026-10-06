@@ -172,7 +172,7 @@ public class CheckService(
             await SaveChaptersCache(check.Id, chapters);
         }
 
-        var issues = await issueRepository.GetAllIssuesOfReportAsync(report.Id);
+        var issues = await issueRepository.GetAllIssuesOfReportAsync(report.Id, ct);
 
         IReadOnlyList<Chapter>? previousChapters = [];
         if (includePreviousCheck)

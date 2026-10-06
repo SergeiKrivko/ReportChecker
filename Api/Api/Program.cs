@@ -37,6 +37,9 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
     return ConnectionMultiplexer.Connect(redisConnection ?? "localhost:6381");
 });
 
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
 builder.Services.AddScoped<ICheckRepository, CheckRepository>();
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 builder.Services.AddScoped<IIssueRepository, IssueRepository>();
@@ -77,6 +80,11 @@ builder.Services.AddAvaluxAuthApiClient(
 builder.Services.AddScoped<IUserRepository, AvaluxAuthUserRepository>();
 builder.Services.AddSingleton<ITaskCancellationService, TaskCancellationService>();
 builder.Services.AddScoped<IPositionsUpdater, PositionsUpdater>();
+builder.Services.AddScoped<IBenchmarkRepository, BenchmarkRepository>();
+builder.Services.AddScoped<IBenchmarkCaseProvider, BenchmarkCaseProvider>();
+builder.Services.AddScoped<IBenchmarkService, BenchmarkService>();
+builder.Services.AddScoped<IBenchmarkAiService, BenchmarkAiService>();
+builder.Services.AddSingleton<BenchmarkRunLimiter>();
 
 builder.Services.AddScoped<ISourceProvider, FileSourceProvider>();
 builder.Services.AddScoped<ISourceProvider, GitHubSourceProvider>();

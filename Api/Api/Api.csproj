@@ -21,8 +21,14 @@
     </ItemGroup>
     
     <ItemGroup>
-        <ProjectReference Include="..\FormatProviders\FormatProviders.Docx\FormatProviders.Docx.csproj" />
-        <ProjectReference Include="..\FormatProviders\FormatProviders.Pdf\FormatProviders.Pdf.csproj" />
+        <!-- Тестовые данные бенчмарка: копируются рядом с приложением и читаются во время выполнения.
+             *.json уже включены Web SDK по умолчанию, поэтому для них достаточно Update. -->
+        <Content Include="Benchmarks/**/*" Exclude="Benchmarks/**/*.json" CopyToOutputDirectory="PreserveNewest"/>
+        <Content Update="Benchmarks/**/*.json" CopyToOutputDirectory="PreserveNewest"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\FormatProviders\FormatProviders.Docx\FormatProviders.Docx.csproj" />        <ProjectReference Include="..\FormatProviders\FormatProviders.Pdf\FormatProviders.Pdf.csproj" />
         <ProjectReference Include="..\FormatProviders\FormatProviders.Latex\FormatProviders.Latex.csproj" />
         <ProjectReference Include="..\Abstractions\Abstractions.csproj"/>
         <ProjectReference Include="..\AiAgent\AiAgent.csproj"/>
