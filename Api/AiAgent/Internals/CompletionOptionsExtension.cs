@@ -26,14 +26,15 @@ public static class CompletionOptionsExtension
             return options;
         }
 
-#pragma warning disable SCME0001
+#pragma warning disable SCME0001, OPENAI001
 
         public ChatCompletionOptions DisableReasoning()
         {
-            options.Patch.Set("$.reasoning.enabled"u8, false);
+            options.ReasoningEffortLevel = ChatReasoningEffortLevel.Low;
+            // options.Patch.Set("$.reasoning.enabled"u8, false);
             return options;
         }
 
-#pragma warning restore SCME0001
+#pragma warning restore SCME0001, OPENAI001
     }
 }

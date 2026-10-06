@@ -80,9 +80,7 @@ export class Header {
   );
   protected readonly resetLimitsAt$ = this.currentSubscription$.pipe(map(current => current?.resetLimitsAt));
 
-  protected readonly isAdmin$: Observable<boolean> = this.authClient.userInfo$.pipe(
-    map(userInfo => userInfo?.id === 'b13fa26b-0a30-4558-a2cd-da2d68022bab')
-  );
+  protected readonly isAdmin$: Observable<boolean> = this.authClient.isAdmin$;
 
   protected readonly routerLink$ = this.userInfo$.pipe(
     map(userInfo => userInfo ? '/reports' : '/'),

@@ -35,6 +35,394 @@ export class ApiClient extends ApiClientBase {
     /**
      * @return OK
      */
+    cases(): Observable<BenchmarkCase[]> {
+        let url_ = this.baseUrl + "/api/v1/benchmarks/cases";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("get", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.transformResult(url_, response_, (r) => this.processCases(r as any));
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.transformResult(url_, response_, (r) => this.processCases(r as any));
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<BenchmarkCase[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<BenchmarkCase[]>;
+        }));
+    }
+
+    protected processCases(response: HttpResponseBase): Observable<BenchmarkCase[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(BenchmarkCase.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional)
+     * @return OK
+     */
+    runsAllPOST(body: CreateBenchmarkRunSchema | undefined): Observable<string[]> {
+        let url_ = this.baseUrl + "/api/v1/benchmarks/runs";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("post", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.transformResult(url_, response_, (r) => this.processRunsAllPOST(r as any));
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.transformResult(url_, response_, (r) => this.processRunsAllPOST(r as any));
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<string[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<string[]>;
+        }));
+    }
+
+    protected processRunsAllPOST(response: HttpResponseBase): Observable<string[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(item);
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param caseId (optional)
+     * @param modelId (optional)
+     * @param status (optional)
+     * @param limit (optional)
+     * @param offset (optional)
+     * @return OK
+     */
+    runsAllGET(caseId: string | undefined, modelId: string | undefined, status: ProgressStatus | undefined, limit: number | undefined, offset: number | undefined): Observable<BenchmarkRun[]> {
+        let url_ = this.baseUrl + "/api/v1/benchmarks/runs?";
+        if (caseId === null)
+            throw new Error("The parameter 'caseId' cannot be null.");
+        else if (caseId !== undefined)
+            url_ += "caseId=" + encodeURIComponent("" + caseId) + "&";
+        if (modelId === null)
+            throw new Error("The parameter 'modelId' cannot be null.");
+        else if (modelId !== undefined)
+            url_ += "modelId=" + encodeURIComponent("" + modelId) + "&";
+        if (status === null)
+            throw new Error("The parameter 'status' cannot be null.");
+        else if (status !== undefined)
+            url_ += "status=" + encodeURIComponent("" + status) + "&";
+        if (limit === null)
+            throw new Error("The parameter 'limit' cannot be null.");
+        else if (limit !== undefined)
+            url_ += "limit=" + encodeURIComponent("" + limit) + "&";
+        if (offset === null)
+            throw new Error("The parameter 'offset' cannot be null.");
+        else if (offset !== undefined)
+            url_ += "offset=" + encodeURIComponent("" + offset) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("get", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.transformResult(url_, response_, (r) => this.processRunsAllGET(r as any));
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.transformResult(url_, response_, (r) => this.processRunsAllGET(r as any));
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<BenchmarkRun[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<BenchmarkRun[]>;
+        }));
+    }
+
+    protected processRunsAllGET(response: HttpResponseBase): Observable<BenchmarkRun[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(BenchmarkRun.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    runsGET(runId: string): Observable<BenchmarkRun> {
+        let url_ = this.baseUrl + "/api/v1/benchmarks/runs/{runId}";
+        if (runId === undefined || runId === null)
+            throw new Error("The parameter 'runId' must be defined.");
+        url_ = url_.replace("{runId}", encodeURIComponent("" + runId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("get", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.transformResult(url_, response_, (r) => this.processRunsGET(r as any));
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.transformResult(url_, response_, (r) => this.processRunsGET(r as any));
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<BenchmarkRun>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<BenchmarkRun>;
+        }));
+    }
+
+    protected processRunsGET(response: HttpResponseBase): Observable<BenchmarkRun> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = BenchmarkRun.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    runsDELETE(runId: string): Observable<void> {
+        let url_ = this.baseUrl + "/api/v1/benchmarks/runs/{runId}";
+        if (runId === undefined || runId === null)
+            throw new Error("The parameter 'runId' must be defined.");
+        url_ = url_.replace("{runId}", encodeURIComponent("" + runId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("delete", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.transformResult(url_, response_, (r) => this.processRunsDELETE(r as any));
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.transformResult(url_, response_, (r) => this.processRunsDELETE(r as any));
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<void>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<void>;
+        }));
+    }
+
+    protected processRunsDELETE(response: HttpResponseBase): Observable<void> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return _observableOf(null as any);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param caseId (optional)
+     * @param modelId (optional)
+     * @return OK
+     */
+    summary(caseId: string | undefined, modelId: string | undefined): Observable<BenchmarkSummary[]> {
+        let url_ = this.baseUrl + "/api/v1/benchmarks/summary?";
+        if (caseId === null)
+            throw new Error("The parameter 'caseId' cannot be null.");
+        else if (caseId !== undefined)
+            url_ += "caseId=" + encodeURIComponent("" + caseId) + "&";
+        if (modelId === null)
+            throw new Error("The parameter 'modelId' cannot be null.");
+        else if (modelId !== undefined)
+            url_ += "modelId=" + encodeURIComponent("" + modelId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("get", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.transformResult(url_, response_, (r) => this.processSummary(r as any));
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.transformResult(url_, response_, (r) => this.processSummary(r as any));
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<BenchmarkSummary[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<BenchmarkSummary[]>;
+        }));
+    }
+
+    protected processSummary(response: HttpResponseBase): Observable<BenchmarkSummary[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(BenchmarkSummary.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
     checksAll(reportId: string): Observable<Check[]> {
         let url_ = this.baseUrl + "/api/v1/reports/{reportId}/checks";
         if (reportId === undefined || reportId === null)
@@ -3468,6 +3856,590 @@ export class ApiClient extends ApiClientBase {
     }
 }
 
+export class BenchmarkCase implements IBenchmarkCase {
+    id!: string | undefined;
+    name!: string | undefined;
+    format!: string | undefined;
+    entryFile?: string | undefined;
+    description?: string | undefined;
+    displayMode?: BenchmarkCaseDisplayMode;
+    expected?: BenchmarkExpectedIssue[] | undefined;
+    validationError?: string | undefined;
+
+    constructor(data?: IBenchmarkCase) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.name = _data["name"];
+            this.format = _data["format"];
+            this.entryFile = _data["entryFile"];
+            this.description = _data["description"];
+            this.displayMode = _data["displayMode"];
+            if (Array.isArray(_data["expected"])) {
+                this.expected = [] as any;
+                for (let item of _data["expected"])
+                    this.expected!.push(BenchmarkExpectedIssue.fromJS(item));
+            }
+            this.validationError = _data["validationError"];
+        }
+    }
+
+    static fromJS(data: any): BenchmarkCase {
+        data = typeof data === 'object' ? data : {};
+        let result = new BenchmarkCase();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["name"] = this.name;
+        data["format"] = this.format;
+        data["entryFile"] = this.entryFile;
+        data["description"] = this.description;
+        data["displayMode"] = this.displayMode;
+        if (Array.isArray(this.expected)) {
+            data["expected"] = [];
+            for (let item of this.expected)
+                data["expected"].push(item.toJSON());
+        }
+        data["validationError"] = this.validationError;
+        return data;
+    }
+}
+
+export interface IBenchmarkCase {
+    id: string | undefined;
+    name: string | undefined;
+    format: string | undefined;
+    entryFile?: string | undefined;
+    description?: string | undefined;
+    displayMode?: BenchmarkCaseDisplayMode;
+    expected?: BenchmarkExpectedIssue[] | undefined;
+    validationError?: string | undefined;
+}
+
+export enum BenchmarkCaseDisplayMode {
+    Always = "Always",
+    Collapsed = "Collapsed",
+    Hidden = "Hidden",
+}
+
+export class BenchmarkExpectedIssue implements IBenchmarkExpectedIssue {
+    number!: number;
+    chapter!: string | undefined;
+    line?: number | undefined;
+    title!: string | undefined;
+    comment!: string | undefined;
+    priority?: number;
+    errorClass?: string | undefined;
+    checkFix?: boolean;
+    patch?: PatchLine[] | undefined;
+
+    constructor(data?: IBenchmarkExpectedIssue) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.number = _data["number"];
+            this.chapter = _data["chapter"];
+            this.line = _data["line"];
+            this.title = _data["title"];
+            this.comment = _data["comment"];
+            this.priority = _data["priority"];
+            this.errorClass = _data["errorClass"];
+            this.checkFix = _data["checkFix"];
+            if (Array.isArray(_data["patch"])) {
+                this.patch = [] as any;
+                for (let item of _data["patch"])
+                    this.patch!.push(PatchLine.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): BenchmarkExpectedIssue {
+        data = typeof data === 'object' ? data : {};
+        let result = new BenchmarkExpectedIssue();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["number"] = this.number;
+        data["chapter"] = this.chapter;
+        data["line"] = this.line;
+        data["title"] = this.title;
+        data["comment"] = this.comment;
+        data["priority"] = this.priority;
+        data["errorClass"] = this.errorClass;
+        data["checkFix"] = this.checkFix;
+        if (Array.isArray(this.patch)) {
+            data["patch"] = [];
+            for (let item of this.patch)
+                data["patch"].push(item.toJSON());
+        }
+        return data;
+    }
+}
+
+export interface IBenchmarkExpectedIssue {
+    number: number;
+    chapter: string | undefined;
+    line?: number | undefined;
+    title: string | undefined;
+    comment: string | undefined;
+    priority?: number;
+    errorClass?: string | undefined;
+    checkFix?: boolean;
+    patch?: PatchLine[] | undefined;
+}
+
+export enum BenchmarkFixMatchStatus {
+    NotApplicable = "NotApplicable",
+    Matched = "Matched",
+    Mismatched = "Mismatched",
+    MissingExpectedPatch = "MissingExpectedPatch",
+    MissingFoundPatch = "MissingFoundPatch",
+}
+
+export enum BenchmarkMatchMethod {
+    None = "None",
+    Deterministic = "Deterministic",
+    Llm = "Llm",
+}
+
+export class BenchmarkResult implements IBenchmarkResult {
+    id!: string;
+    runId!: string;
+    createdAt?: moment.Moment;
+    expectedNumber?: number | undefined;
+    errorClass?: string | undefined;
+    chapter?: string | undefined;
+    line?: number | undefined;
+    expectedTitle?: string | undefined;
+    expectedComment?: string | undefined;
+    expectedPriority?: number | undefined;
+    foundIndex?: number | undefined;
+    foundTitle?: string | undefined;
+    foundComment?: string | undefined;
+    foundPriority?: number | undefined;
+    isFound?: boolean;
+    titleMatch?: boolean | undefined;
+    priorityMatch?: boolean | undefined;
+    priorityDelta?: number | undefined;
+    matchingMethod?: BenchmarkMatchMethod;
+    matchScore?: number | undefined;
+    matchingReason?: string | undefined;
+    fixMatchStatus?: BenchmarkFixMatchStatus;
+    expectedFix?: string | undefined;
+    foundFix?: string | undefined;
+
+    constructor(data?: IBenchmarkResult) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.runId = _data["runId"];
+            this.createdAt = _data["createdAt"] ? moment(_data["createdAt"].toString()) : <any>undefined;
+            this.expectedNumber = _data["expectedNumber"];
+            this.errorClass = _data["errorClass"];
+            this.chapter = _data["chapter"];
+            this.line = _data["line"];
+            this.expectedTitle = _data["expectedTitle"];
+            this.expectedComment = _data["expectedComment"];
+            this.expectedPriority = _data["expectedPriority"];
+            this.foundIndex = _data["foundIndex"];
+            this.foundTitle = _data["foundTitle"];
+            this.foundComment = _data["foundComment"];
+            this.foundPriority = _data["foundPriority"];
+            this.isFound = _data["isFound"];
+            this.titleMatch = _data["titleMatch"];
+            this.priorityMatch = _data["priorityMatch"];
+            this.priorityDelta = _data["priorityDelta"];
+            this.matchingMethod = _data["matchingMethod"];
+            this.matchScore = _data["matchScore"];
+            this.matchingReason = _data["matchingReason"];
+            this.fixMatchStatus = _data["fixMatchStatus"];
+            this.expectedFix = _data["expectedFix"];
+            this.foundFix = _data["foundFix"];
+        }
+    }
+
+    static fromJS(data: any): BenchmarkResult {
+        data = typeof data === 'object' ? data : {};
+        let result = new BenchmarkResult();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["runId"] = this.runId;
+        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
+        data["expectedNumber"] = this.expectedNumber;
+        data["errorClass"] = this.errorClass;
+        data["chapter"] = this.chapter;
+        data["line"] = this.line;
+        data["expectedTitle"] = this.expectedTitle;
+        data["expectedComment"] = this.expectedComment;
+        data["expectedPriority"] = this.expectedPriority;
+        data["foundIndex"] = this.foundIndex;
+        data["foundTitle"] = this.foundTitle;
+        data["foundComment"] = this.foundComment;
+        data["foundPriority"] = this.foundPriority;
+        data["isFound"] = this.isFound;
+        data["titleMatch"] = this.titleMatch;
+        data["priorityMatch"] = this.priorityMatch;
+        data["priorityDelta"] = this.priorityDelta;
+        data["matchingMethod"] = this.matchingMethod;
+        data["matchScore"] = this.matchScore;
+        data["matchingReason"] = this.matchingReason;
+        data["fixMatchStatus"] = this.fixMatchStatus;
+        data["expectedFix"] = this.expectedFix;
+        data["foundFix"] = this.foundFix;
+        return data;
+    }
+}
+
+export interface IBenchmarkResult {
+    id: string;
+    runId: string;
+    createdAt?: moment.Moment;
+    expectedNumber?: number | undefined;
+    errorClass?: string | undefined;
+    chapter?: string | undefined;
+    line?: number | undefined;
+    expectedTitle?: string | undefined;
+    expectedComment?: string | undefined;
+    expectedPriority?: number | undefined;
+    foundIndex?: number | undefined;
+    foundTitle?: string | undefined;
+    foundComment?: string | undefined;
+    foundPriority?: number | undefined;
+    isFound?: boolean;
+    titleMatch?: boolean | undefined;
+    priorityMatch?: boolean | undefined;
+    priorityDelta?: number | undefined;
+    matchingMethod?: BenchmarkMatchMethod;
+    matchScore?: number | undefined;
+    matchingReason?: string | undefined;
+    fixMatchStatus?: BenchmarkFixMatchStatus;
+    expectedFix?: string | undefined;
+    foundFix?: string | undefined;
+}
+
+export class BenchmarkRun implements IBenchmarkRun {
+    id!: string;
+    caseId!: string | undefined;
+    caseName!: string | undefined;
+    modelId!: string;
+    modelDisplayName?: string | undefined;
+    status?: ProgressStatus;
+    createdAt?: moment.Moment;
+    startedAt?: moment.Moment | undefined;
+    finishedAt?: moment.Moment | undefined;
+    deletedAt?: moment.Moment | undefined;
+    failureReason?: string | undefined;
+    expectedCount?: number;
+    foundCount?: number;
+    matchedCount?: number;
+    titleMatchCount?: number;
+    priorityMatchCount?: number;
+    fixCheckedCount?: number;
+    fixMatchCount?: number;
+    inputTokens?: number;
+    outputTokens?: number;
+    totalTokens?: number;
+    totalRequests?: number;
+    totalCost?: number;
+    results?: BenchmarkResult[] | undefined;
+    readonly durationMs?: number | undefined;
+
+    constructor(data?: IBenchmarkRun) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.caseId = _data["caseId"];
+            this.caseName = _data["caseName"];
+            this.modelId = _data["modelId"];
+            this.modelDisplayName = _data["modelDisplayName"];
+            this.status = _data["status"];
+            this.createdAt = _data["createdAt"] ? moment(_data["createdAt"].toString()) : <any>undefined;
+            this.startedAt = _data["startedAt"] ? moment(_data["startedAt"].toString()) : <any>undefined;
+            this.finishedAt = _data["finishedAt"] ? moment(_data["finishedAt"].toString()) : <any>undefined;
+            this.deletedAt = _data["deletedAt"] ? moment(_data["deletedAt"].toString()) : <any>undefined;
+            this.failureReason = _data["failureReason"];
+            this.expectedCount = _data["expectedCount"];
+            this.foundCount = _data["foundCount"];
+            this.matchedCount = _data["matchedCount"];
+            this.titleMatchCount = _data["titleMatchCount"];
+            this.priorityMatchCount = _data["priorityMatchCount"];
+            this.fixCheckedCount = _data["fixCheckedCount"];
+            this.fixMatchCount = _data["fixMatchCount"];
+            this.inputTokens = _data["inputTokens"];
+            this.outputTokens = _data["outputTokens"];
+            this.totalTokens = _data["totalTokens"];
+            this.totalRequests = _data["totalRequests"];
+            this.totalCost = _data["totalCost"];
+            if (Array.isArray(_data["results"])) {
+                this.results = [] as any;
+                for (let item of _data["results"])
+                    this.results!.push(BenchmarkResult.fromJS(item));
+            }
+            (<any>this).durationMs = _data["durationMs"];
+        }
+    }
+
+    static fromJS(data: any): BenchmarkRun {
+        data = typeof data === 'object' ? data : {};
+        let result = new BenchmarkRun();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["caseId"] = this.caseId;
+        data["caseName"] = this.caseName;
+        data["modelId"] = this.modelId;
+        data["modelDisplayName"] = this.modelDisplayName;
+        data["status"] = this.status;
+        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
+        data["startedAt"] = this.startedAt ? this.startedAt.toISOString() : <any>undefined;
+        data["finishedAt"] = this.finishedAt ? this.finishedAt.toISOString() : <any>undefined;
+        data["deletedAt"] = this.deletedAt ? this.deletedAt.toISOString() : <any>undefined;
+        data["failureReason"] = this.failureReason;
+        data["expectedCount"] = this.expectedCount;
+        data["foundCount"] = this.foundCount;
+        data["matchedCount"] = this.matchedCount;
+        data["titleMatchCount"] = this.titleMatchCount;
+        data["priorityMatchCount"] = this.priorityMatchCount;
+        data["fixCheckedCount"] = this.fixCheckedCount;
+        data["fixMatchCount"] = this.fixMatchCount;
+        data["inputTokens"] = this.inputTokens;
+        data["outputTokens"] = this.outputTokens;
+        data["totalTokens"] = this.totalTokens;
+        data["totalRequests"] = this.totalRequests;
+        data["totalCost"] = this.totalCost;
+        if (Array.isArray(this.results)) {
+            data["results"] = [];
+            for (let item of this.results)
+                data["results"].push(item.toJSON());
+        }
+        data["durationMs"] = this.durationMs;
+        return data;
+    }
+}
+
+export interface IBenchmarkRun {
+    id: string;
+    caseId: string | undefined;
+    caseName: string | undefined;
+    modelId: string;
+    modelDisplayName?: string | undefined;
+    status?: ProgressStatus;
+    createdAt?: moment.Moment;
+    startedAt?: moment.Moment | undefined;
+    finishedAt?: moment.Moment | undefined;
+    deletedAt?: moment.Moment | undefined;
+    failureReason?: string | undefined;
+    expectedCount?: number;
+    foundCount?: number;
+    matchedCount?: number;
+    titleMatchCount?: number;
+    priorityMatchCount?: number;
+    fixCheckedCount?: number;
+    fixMatchCount?: number;
+    inputTokens?: number;
+    outputTokens?: number;
+    totalTokens?: number;
+    totalRequests?: number;
+    totalCost?: number;
+    results?: BenchmarkResult[] | undefined;
+    durationMs?: number | undefined;
+}
+
+export class BenchmarkSummary implements IBenchmarkSummary {
+    caseId!: string | undefined;
+    modelId!: string;
+    caseName?: string | undefined;
+    modelDisplayName?: string | undefined;
+    runCount?: number;
+    completedRunCount?: number;
+    failedRunCount?: number;
+    cancelledRunCount?: number;
+    avgDurationMs?: number | undefined;
+    minDurationMs?: number | undefined;
+    maxDurationMs?: number | undefined;
+    lastRunAt?: moment.Moment | undefined;
+    totalExpected?: number;
+    totalFound?: number;
+    totalMatched?: number;
+    totalExtra?: number;
+    totalTitleMatched?: number;
+    totalPriorityMatched?: number;
+    totalFixChecked?: number;
+    totalFixMatched?: number;
+    totalInputTokens?: number;
+    totalOutputTokens?: number;
+    totalTokens?: number;
+    totalRequests?: number;
+    totalCost?: number;
+    readonly matchedShare?: number;
+    readonly titleMatchShare?: number;
+    readonly priorityMatchShare?: number;
+    readonly fixMatchShare?: number;
+
+    constructor(data?: IBenchmarkSummary) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.caseId = _data["caseId"];
+            this.modelId = _data["modelId"];
+            this.caseName = _data["caseName"];
+            this.modelDisplayName = _data["modelDisplayName"];
+            this.runCount = _data["runCount"];
+            this.completedRunCount = _data["completedRunCount"];
+            this.failedRunCount = _data["failedRunCount"];
+            this.cancelledRunCount = _data["cancelledRunCount"];
+            this.avgDurationMs = _data["avgDurationMs"];
+            this.minDurationMs = _data["minDurationMs"];
+            this.maxDurationMs = _data["maxDurationMs"];
+            this.lastRunAt = _data["lastRunAt"] ? moment(_data["lastRunAt"].toString()) : <any>undefined;
+            this.totalExpected = _data["totalExpected"];
+            this.totalFound = _data["totalFound"];
+            this.totalMatched = _data["totalMatched"];
+            this.totalExtra = _data["totalExtra"];
+            this.totalTitleMatched = _data["totalTitleMatched"];
+            this.totalPriorityMatched = _data["totalPriorityMatched"];
+            this.totalFixChecked = _data["totalFixChecked"];
+            this.totalFixMatched = _data["totalFixMatched"];
+            this.totalInputTokens = _data["totalInputTokens"];
+            this.totalOutputTokens = _data["totalOutputTokens"];
+            this.totalTokens = _data["totalTokens"];
+            this.totalRequests = _data["totalRequests"];
+            this.totalCost = _data["totalCost"];
+            (<any>this).matchedShare = _data["matchedShare"];
+            (<any>this).titleMatchShare = _data["titleMatchShare"];
+            (<any>this).priorityMatchShare = _data["priorityMatchShare"];
+            (<any>this).fixMatchShare = _data["fixMatchShare"];
+        }
+    }
+
+    static fromJS(data: any): BenchmarkSummary {
+        data = typeof data === 'object' ? data : {};
+        let result = new BenchmarkSummary();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["caseId"] = this.caseId;
+        data["modelId"] = this.modelId;
+        data["caseName"] = this.caseName;
+        data["modelDisplayName"] = this.modelDisplayName;
+        data["runCount"] = this.runCount;
+        data["completedRunCount"] = this.completedRunCount;
+        data["failedRunCount"] = this.failedRunCount;
+        data["cancelledRunCount"] = this.cancelledRunCount;
+        data["avgDurationMs"] = this.avgDurationMs;
+        data["minDurationMs"] = this.minDurationMs;
+        data["maxDurationMs"] = this.maxDurationMs;
+        data["lastRunAt"] = this.lastRunAt ? this.lastRunAt.toISOString() : <any>undefined;
+        data["totalExpected"] = this.totalExpected;
+        data["totalFound"] = this.totalFound;
+        data["totalMatched"] = this.totalMatched;
+        data["totalExtra"] = this.totalExtra;
+        data["totalTitleMatched"] = this.totalTitleMatched;
+        data["totalPriorityMatched"] = this.totalPriorityMatched;
+        data["totalFixChecked"] = this.totalFixChecked;
+        data["totalFixMatched"] = this.totalFixMatched;
+        data["totalInputTokens"] = this.totalInputTokens;
+        data["totalOutputTokens"] = this.totalOutputTokens;
+        data["totalTokens"] = this.totalTokens;
+        data["totalRequests"] = this.totalRequests;
+        data["totalCost"] = this.totalCost;
+        data["matchedShare"] = this.matchedShare;
+        data["titleMatchShare"] = this.titleMatchShare;
+        data["priorityMatchShare"] = this.priorityMatchShare;
+        data["fixMatchShare"] = this.fixMatchShare;
+        return data;
+    }
+}
+
+export interface IBenchmarkSummary {
+    caseId: string | undefined;
+    modelId: string;
+    caseName?: string | undefined;
+    modelDisplayName?: string | undefined;
+    runCount?: number;
+    completedRunCount?: number;
+    failedRunCount?: number;
+    cancelledRunCount?: number;
+    avgDurationMs?: number | undefined;
+    minDurationMs?: number | undefined;
+    maxDurationMs?: number | undefined;
+    lastRunAt?: moment.Moment | undefined;
+    totalExpected?: number;
+    totalFound?: number;
+    totalMatched?: number;
+    totalExtra?: number;
+    totalTitleMatched?: number;
+    totalPriorityMatched?: number;
+    totalFixChecked?: number;
+    totalFixMatched?: number;
+    totalInputTokens?: number;
+    totalOutputTokens?: number;
+    totalTokens?: number;
+    totalRequests?: number;
+    totalCost?: number;
+    matchedShare?: number;
+    titleMatchShare?: number;
+    priorityMatchShare?: number;
+    fixMatchShare?: number;
+}
+
 export class Chapter implements IChapter {
     name!: string | undefined;
     content!: string | undefined;
@@ -3790,6 +4762,66 @@ export class ConfirmSubscriptionSchema implements IConfirmSubscriptionSchema {
 export interface IConfirmSubscriptionSchema {
     price?: number | undefined;
     userId?: string | undefined;
+}
+
+export class CreateBenchmarkRunSchema implements ICreateBenchmarkRunSchema {
+    caseIds?: string[] | undefined;
+    modelIds!: string[] | undefined;
+    useLlmMatching?: boolean | undefined;
+
+    constructor(data?: ICreateBenchmarkRunSchema) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["caseIds"])) {
+                this.caseIds = [] as any;
+                for (let item of _data["caseIds"])
+                    this.caseIds!.push(item);
+            }
+            if (Array.isArray(_data["modelIds"])) {
+                this.modelIds = [] as any;
+                for (let item of _data["modelIds"])
+                    this.modelIds!.push(item);
+            }
+            this.useLlmMatching = _data["useLlmMatching"];
+        }
+    }
+
+    static fromJS(data: any): CreateBenchmarkRunSchema {
+        data = typeof data === 'object' ? data : {};
+        let result = new CreateBenchmarkRunSchema();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.caseIds)) {
+            data["caseIds"] = [];
+            for (let item of this.caseIds)
+                data["caseIds"].push(item);
+        }
+        if (Array.isArray(this.modelIds)) {
+            data["modelIds"] = [];
+            for (let item of this.modelIds)
+                data["modelIds"].push(item);
+        }
+        data["useLlmMatching"] = this.useLlmMatching;
+        return data;
+    }
+}
+
+export interface ICreateBenchmarkRunSchema {
+    caseIds?: string[] | undefined;
+    modelIds: string[] | undefined;
+    useLlmMatching?: boolean | undefined;
 }
 
 export class CreateCheckSchema implements ICreateCheckSchema {
