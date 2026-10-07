@@ -1,0 +1,125 @@
+<div class="container page-padding">
+  <header class="page-header">
+    <div class="page-title">
+      <a tuiButton appearance="flat" size="m" routerLink="/benchmarks" iconStart="@tui.chevron-left">К таблице</a>
+      <h1>Прогоны</h1>
+    </div>
+  </header>
+
+  <div class="filters">
+    <tui-textfield [tuiTextfieldCleaner]="false" [stringify]="stringifyCase">
+      <label tuiLabel>Тест</label>
+      <input tuiSelect [formControl]="caseControl"/>
+      <tui-data-list-wrapper *tuiTextfieldDropdown new [items]="cases()"/>
+    </tui-textfield>
+
+    <tui-textfield [tuiTextfieldCleaner]="false" [stringify]="stringifyModel">
+      <label tuiLabel>Модель</label>
+      <input tuiSelect [formControl]="modelControl"/>
+      <tui-data-list-wrapper *tuiTextfieldDropdown new [items]="models()"/>
+    </tui-textfield>
+
+    @if (hasSelection()) {
+      <button tuiButton appearance="flat" type="button" (click)="reset()">Сбросить</button>
+    }
+  </div>
+
+<!--  <h2 class="heading">{{ heading() }}</h2>-->
+
+  @if (!loaded() || runsLoading()) {
+    <div class="center-container">
+      <tui-loader size="xxl"/>
+      <h2>Загрузка прогонов...</h2>
+    </div>
+  } @else {
+    @let items = runs();
+    @if (items.length === 0) {
+      <div class="placeholder">
+        @if (hasSelection()) {
+          Для этой пары прогонов пока нет.
+        } @else {
+          Прогонов пока нет.
+        }
+      </div>
+    } @else {
+      <ul class="runs">
+        @for (run of items; track run.id) {
+          <li class="run" [class]="level(run)">
+            <div class="run-score">
+              @if (isActive(run)) {
+                <span class="score muted">…</span>
+                <span class="fraction">выполняется</span>
+              } @else if (isFailed(run)) {
+                <span class="score muted">—</span>
+                <span class="fraction">ошибка</span>
+              } @else {
+                <span class="score">{{ percent(run.matchedShare) }}%</span>
+                <span class="fraction">{{ run.matchedCount }}/{{ run.expectedCount }}</span>
+              }
+            </div>
+
+            <div class="run-body">
+              <div class="run-head">
+                <span class="run-case">{{ run.caseName }}</span>
+                <span class="run-model">{{ run.modelName }}</span>
+                <span tuiBadge [appearance]="statusAppearance(run)">{{ statusText(run) }}</span>
+              </div>
+
+              <dl class="run-stats">
+                <div>
+                  <dt>Создан</dt>
+                  <dd>{{ date(run.createdAt) }}</dd>
+                </div>
+                <div>
+                  <dt>Длительность</dt>
+                  <dd>{{ duration(run.durationMs) }}</dd>
+                </div>
+                <div>
+                  <dt>Найдено</dt>
+                  <dd>{{ run.foundCount }}</dd>
+                </div>
+                <div>
+                  <dt>Совпало по названию</dt>
+                  <dd>{{ run.titleMatchCount }}</dd>
+                </div>
+                <div>
+                  <dt>Совпало по приоритету</dt>
+                  <dd>{{ run.priorityMatchCount }}</dd>
+                </div>
+                @if (run.fixCheckedCount > 0) {
+                  <div>
+                    <dt>Исправление</dt>
+                    <dd>{{ run.fixMatchCount }}/{{ run.fixCheckedCount }}
+                      ({{ percent(run.fixMatchShare) }} %)
+                    </dd>
+                  </div>
+                }
+                <div>
+                  <dt>Токены</dt>
+                  <dd>{{ tokens(run.totalTokens) }}</dd>
+                </div>
+                <div>
+                  <dt>Стоимость</dt>
+                  <dd>{{ cost(run.totalCost) }}</dd>
+                </div>
+              </dl>
+
+              @if (run.failureReason) {
+                <p class="run-failure">{{ failureSummary(run) }}</p>
+              }
+            </div>
+
+            <div class="run-actions">
+              <a tuiButton
+                 appearance="flat"
+                 size="m"
+                 [routerLink]="['/benchmarks/runs', run.id]">
+                Подробнее
+              </a>
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  }
+</div>

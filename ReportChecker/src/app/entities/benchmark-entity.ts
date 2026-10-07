@@ -1,5 +1,10 @@
 import {Moment} from 'moment';
-import {BenchmarkCaseDisplayMode} from '../services/api-client';
+import {
+  BenchmarkCaseDisplayMode,
+  BenchmarkFixMatchStatus,
+  BenchmarkMatchMethod,
+  ProgressStatus
+} from '../services/api-client';
 
 /**
  * Тест бенчмарка (колонка таблицы).
@@ -14,6 +19,81 @@ export interface BenchmarkCaseEntity {
   expectedCount: number;
   /** Описание проблемы с загрузкой теста; null, если тест корректен. */
   validationError?: string;
+}
+
+/**
+ * Один прогон бенчмарка: конкретная пара (тест, модель) в конкретный момент времени.
+ */
+export interface BenchmarkRunEntity {
+  id: string;
+  caseId: string;
+  caseName: string;
+  modelId: string;
+  modelName: string;
+  status?: ProgressStatus;
+  createdAt?: Moment;
+  startedAt?: Moment;
+  finishedAt?: Moment;
+  durationMs?: number;
+  failureReason?: string;
+
+  expectedCount: number;
+  foundCount: number;
+  matchedCount: number;
+  titleMatchCount: number;
+  priorityMatchCount: number;
+  fixCheckedCount: number;
+  fixMatchCount: number;
+
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+  totalRequests: number;
+  totalCost: number;
+
+  /** Доля найденных известных ошибок — главный показатель прогона. */
+  matchedShare: number;
+  fixMatchShare: number;
+
+  /** Результаты по каждой ошибке: известные (эталонные) и «лишние», найденные моделью. */
+  results: BenchmarkResultEntity[];
+}
+
+/**
+ * Результат по одной ошибке в рамках прогона.
+ * Строка есть и на каждую известную ошибку, и на каждую «лишнюю», найденную моделью.
+ */
+export interface BenchmarkResultEntity {
+  id: string;
+
+  /** Номер известной ошибки; `undefined` для «лишних» ошибок. */
+  expectedNumber?: number;
+  errorClass?: string;
+  chapter?: string;
+  line?: number;
+
+  expectedTitle?: string;
+  expectedComment?: string;
+  expectedPriority?: number;
+
+  /** Порядковый номер найденной ошибки; `undefined`, если известная не найдена. */
+  foundIndex?: number;
+  foundTitle?: string;
+  foundComment?: string;
+  foundPriority?: number;
+
+  isFound: boolean;
+  titleMatch?: boolean;
+  priorityMatch?: boolean;
+  priorityDelta?: number;
+
+  matchingMethod?: BenchmarkMatchMethod;
+  matchScore?: number;
+  matchingReason?: string;
+
+  fixMatchStatus?: BenchmarkFixMatchStatus;
+  expectedFix?: string;
+  foundFix?: string;
 }
 
 /**

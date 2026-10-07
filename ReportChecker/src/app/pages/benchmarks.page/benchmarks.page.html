@@ -2,7 +2,8 @@
   <header class="page-header">
     <div class="page-title">
       <h1>Бенчмарки</h1>
-      <button tuiButton appearance="flat" size="s" type="button" (click)="load()">Обновить</button>
+      <a tuiButton appearance="flat" size="m" routerLink="/benchmarks/runs">Прогоны</a>
+      <button tuiButton appearance="flat" size="m" type="button" (click)="load()" iconStart="@tui.refresh-cw"></button>
     </div>
     <!--    <p class="subtitle">-->
     <!--      Главный показатель — доля найденных известных ошибок. Строки — модели, столбцы — тесты.-->
@@ -63,8 +64,12 @@
                       [tuiHint]="cellHint"
                       [tuiHintContext]="{row: row, cell: cell, benchmarkCase: benchmarkCase}">
                     @if (cell) {
-                      <span class="score">{{ percent(cell.matchedShare) }}%</span>
-                      <span class="fraction">{{ cell.totalMatched }}/{{ cell.totalExpected }}</span>
+                      <a class="cell-link"
+                         [routerLink]="['/benchmarks/runs']"
+                         [queryParams]="{case: benchmarkCase.id, model: row.modelId}">
+                        <span class="score">{{ percent(cell.matchedShare) }}%</span>
+                        <span class="fraction">{{ cell.totalMatched }}/{{ cell.totalExpected }}</span>
+                      </a>
                     } @else {
                       <span class="score muted">—</span>
                     }

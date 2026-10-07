@@ -1,0 +1,264 @@
+<div class="container page-padding">
+  <header class="page-header">
+    <div class="page-title">
+      <a tuiButton appearance="flat" size="m" routerLink="/benchmarks/runs" iconStart="@tui.chevron-left">Назад</a>
+      <h1>Прогон</h1>
+    </div>
+  </header>
+
+  @let current = run();
+  @if (loading()) {
+    <div class="center-container">
+      <tui-loader size="xxl"/>
+      <h2>Загрузка прогона...</h2>
+    </div>
+  } @else if (!current) {
+    <div class="placeholder">Прогон не найден.</div>
+  } @else {
+    <section class="card summary">
+      <div class="card-head">
+        <span class="run-case">{{ current.caseName }}</span>
+        <span class="run-model">{{ current.modelName }}</span>
+        <span tuiBadge>{{ statusText(current) }}</span>
+      </div>
+
+      @if (isActive(current)) {
+        <p class="status">{{ statusText(current) }} — результаты появятся после завершения.</p>
+      } @else if (isFailed(current)) {
+        <p class="status">Прогон завершился с ошибкой, результатов проверки нет.</p>
+      } @else {
+        <div class="score">
+          <span class="score-value">{{ percent(current.matchedShare) }}%</span>
+          <span class="score-fraction">
+            найдено {{ current.matchedCount }} из {{ current.expectedCount }} известных ошибок
+          </span>
+        </div>
+      }
+
+      @if (current.failureReason) {
+        <details class="failure">
+          <summary>Ошибка выполнения</summary>
+          <pre>{{ current.failureReason }}</pre>
+        </details>
+      }
+
+      <dl class="details">
+        <div>
+          <dt>Статус</dt>
+          <dd>{{ statusText(current) }}</dd>
+        </div>
+        <div>
+          <dt>Создан</dt>
+          <dd>{{ date(current.createdAt) }}</dd>
+        </div>
+        <div>
+          <dt>Длительность</dt>
+          <dd>{{ duration(current.durationMs) }}</dd>
+        </div>
+        <div>
+          <dt>Найдено ошибок</dt>
+          <dd>{{ current.foundCount }}</dd>
+        </div>
+        <div>
+          <dt>Совпало по названию</dt>
+          <dd>{{ current.titleMatchCount }}</dd>
+        </div>
+        <div>
+          <dt>Совпало по приоритету</dt>
+          <dd>{{ current.priorityMatchCount }}</dd>
+        </div>
+        <div>
+          <dt>Проверок исправления</dt>
+          <dd>{{ current.fixCheckedCount }}</dd>
+        </div>
+        <div>
+          <dt>Исправление совпало</dt>
+          <dd>{{ current.fixMatchCount }}</dd>
+        </div>
+        <div>
+          <dt>Токены</dt>
+          <dd>{{ tokens(current.totalTokens) }} ({{ requests(current.totalRequests) }})</dd>
+        </div>
+        <div>
+          <dt>Стоимость</dt>
+          <dd>{{ cost(current.totalCost) }}</dd>
+        </div>
+        <div>
+          <dt>Идентификатор</dt>
+          <dd class="mono">{{ current.id }}</dd>
+        </div>
+      </dl>
+    </section>
+
+    @let expectedItems = expected();
+    @let missedItems = missed();
+    @if (expectedItems.length > 0) {
+      <section class="results">
+        <div class="results-head">
+          <h2>Известные ошибки</h2>
+          <span class="results-meta">
+            найдено {{ expectedItems.length - missedItems }} из {{ expectedItems.length }}
+            @if (missedItems > 0) {
+              · пропущено {{ missedItems }}
+            }
+          </span>
+        </div>
+
+        <div class="cards">
+          @for (result of expectedItems; track result.id) {
+            <article class="error-card" [class.missed]="!result.isFound">
+              <header class="error-head">
+                <span class="error-number">№ {{ result.expectedNumber }}</span>
+                <!--                @if (result.expectedPriority != null) {-->
+                <!--                  <span tuiBadge [appearance]="priorityAppearance(result.expectedPriority)">-->
+                <!--                    приоритет {{ result.expectedPriority }}-->
+                <!--                  </span>-->
+                <!--                }-->
+                <!--                @if (result.errorClass) {-->
+                <!--                  <span class="error-class">{{ result.errorClass }}</span>-->
+                <!--                }-->
+                @if (result.isFound) {
+                  <span tuiBadge appearance="positive">Найдена</span>
+                } @else {
+                  <span tuiBadge appearance="negative">Пропущена</span>
+                }
+                @if (fixStatusText(result.fixMatchStatus)) {
+                  <span tuiBadge [appearance]="fixStatusAppearance(result.fixMatchStatus)">
+                            {{ fixStatusText(result.fixMatchStatus) }}
+                          </span>
+                }
+                @if (result.chapter) {
+                  <span class="error-place">
+                    {{ result.chapter }}@if (result.line != null) {
+                    , строка {{ result.line }}
+                  }
+                  </span>
+                }
+              </header>
+
+              <div class="error-body">
+                <div class="block expected">
+                  <span class="block-label">Эталон</span>
+                  <p class="block-title">{{ result.expectedTitle }}</p>
+                  @if (result.expectedComment) {
+                    <p class="block-comment">{{ result.expectedComment }}</p>
+                  }
+                </div>
+
+                @if (result.isFound) {
+                  <div class="block found">
+                    <span class="block-label">
+                      Ответ модели
+                      @if (result.foundIndex != null) {
+                        <span class="found-index">#{{ result.foundIndex }}</span>
+                      }
+                    </span>
+                    <p class="block-title">{{ result.foundTitle }}</p>
+                    @if (result.foundComment) {
+                      <p class="block-comment">{{ result.foundComment }}</p>
+                    }
+<!--                    <div class="marks">-->
+<!--                      @if (result.foundPriority != null) {-->
+<!--                        <span tuiBadge>{{ result.foundPriority }}</span>-->
+<!--                        @if (result.priorityDelta != null && result.priorityDelta !== 0) {-->
+<!--                          <span class="mark-note">-->
+<!--                            приоритет {{ result.priorityDelta > 0 ? '+' : '' }}{{ result.priorityDelta }}-->
+<!--                          </span>-->
+<!--                        }-->
+<!--                      }-->
+<!--                      @if (result.titleMatch != null) {-->
+<!--                        <span class="mark-note">-->
+<!--                          заголовок {{ result.titleMatch ? 'совпал' : 'отличается' }}-->
+<!--                        </span>-->
+<!--                      }-->
+<!--                      <span class="mark-note">{{ matchMethodText(result) }}</span>-->
+<!--                    </div>-->
+                  </div>
+
+<!--                  @if (result.expectedFix || result.foundFix) {-->
+<!--                    <details class="fix">-->
+<!--                      <summary>-->
+<!--                        Исправление-->
+<!--                        @if (fixStatusText(result.fixMatchStatus)) {-->
+<!--                          <span tuiBadge [appearance]="fixStatusAppearance(result.fixMatchStatus)">-->
+<!--                            {{ fixStatusText(result.fixMatchStatus) }}-->
+<!--                          </span>-->
+<!--                        }-->
+<!--                      </summary>-->
+<!--                      @if (result.expectedFix && result.foundFix) {-->
+<!--                        <pre [innerHTML]="-->
+<!--                          {expected: result.expectedFix, found: result.foundFix} | fixDiff"></pre>-->
+<!--                      } @else {-->
+<!--                        <pre>{{ result.foundFix ?? result.expectedFix }}</pre>-->
+<!--                      }-->
+<!--                    </details>-->
+<!--                  }-->
+                } @else {
+                  <div class="block found empty">
+                    <span class="block-label">Ответ модели</span>
+                    <p class="block-comment">
+                      Модель не нашла эту ошибку.
+                      @if (result.matchingReason) {
+                        {{ result.matchingReason }}
+                      }
+                    </p>
+                  </div>
+                }
+              </div>
+            </article>
+          }
+        </div>
+      </section>
+    }
+
+    @let extraItems = extra();
+    @if (extraItems.length > 0) {
+      <section class="results">
+        <div class="results-head">
+          <h2>Лишние ошибки</h2>
+          <span class="results-meta">
+            {{ extraItems.length }} — модель нашла то, чего в тесте не было
+          </span>
+        </div>
+
+        <div class="cards">
+          @for (result of extraItems; track result.id) {
+            <article class="error-card extra">
+              <header class="error-head">
+                @if (result.foundIndex != null) {
+                  <span class="error-number"># {{ result.foundIndex }}</span>
+                }
+                @if (result.foundPriority != null) {
+                  <span tuiBadge [appearance]="priorityAppearance(result.foundPriority)">
+                    приоритет {{ result.foundPriority }}
+                  </span>
+                }
+                @if (result.chapter) {
+                  <span class="error-place">
+                    {{ result.chapter }}@if (result.line != null) {
+                    , строка {{ result.line }}
+                  }
+                  </span>
+                }
+              </header>
+
+              <div class="error-body">
+                <div class="block found">
+                  <span class="block-label">Ответ модели</span>
+                  <p class="block-title">{{ result.foundTitle }}</p>
+                  @if (result.foundComment) {
+                    <p class="block-comment">{{ result.foundComment }}</p>
+                  }
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      </section>
+    }
+
+    @if (expectedItems.length === 0 && extraItems.length === 0) {
+      <div class="placeholder">Результатов по этому прогону нет.</div>
+    }
+  }
+</div>

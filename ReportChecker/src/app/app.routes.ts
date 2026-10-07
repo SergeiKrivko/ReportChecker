@@ -16,6 +16,8 @@ import {AdminModelsPage} from './pages/admin-models.page/admin-models.page';
 import {AdminSubscriptionsPage} from './pages/admin-subscriptions.page/admin-subscriptions.page';
 import {StatisticsPage} from './pages/statistics.page/statistics.page';
 import {BenchmarksPage} from './pages/benchmarks.page/benchmarks.page';
+import {BenchmarkRunsPage} from './pages/benchmark-runs.page/benchmark-runs.page';
+import {BenchmarkRunPage} from './pages/benchmark-run.page/benchmark-run.page';
 
 export const routes: Routes = [
   {path: '', pathMatch: "full", component: LandingPage},
@@ -42,6 +44,8 @@ export const routes: Routes = [
   {path: "auth/callback", pathMatch: "full", component: AuthRedirectPage},
   {path: "statistics", pathMatch: "full", component: StatisticsPage},
   {path: "benchmarks", pathMatch: "full", component: BenchmarksPage},
+  {path: "benchmarks/runs", pathMatch: "full", component: BenchmarkRunsPage},
+  {path: "benchmarks/runs/:runId", pathMatch: "full", component: BenchmarkRunPage},
   {path: "subscriptions", pathMatch: "full", component: SubscriptionPlansPage},
   {path: "subscriptions/new", pathMatch: "full", component: NewSubscriptionPage},
 ];

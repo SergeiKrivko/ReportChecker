@@ -3,6 +3,8 @@ import {
   ApiClient,
   BenchmarkCase,
   BenchmarkCaseDisplayMode,
+  BenchmarkResult,
+  BenchmarkRun,
   BenchmarkSummary,
   CreateBenchmarkRunSchema,
   LlmModel
@@ -13,11 +15,16 @@ import {toObservable} from '@angular/core/rxjs-interop';
 import {
   BenchmarkCaseEntity,
   BenchmarkModelRowEntity,
+  BenchmarkResultEntity,
+  BenchmarkRunEntity,
   BenchmarkSummaryEntity,
   BenchmarkTotalsEntity
 } from '../entities/benchmark-entity';
 import {LlmModelEntity} from '../entities/llm-model-entity';
 import {Moment} from 'moment';
+
+/** Сколько последних прогонов запрашивать для списка. */
+const RUNS_LIMIT = 200;
 
 interface BenchmarksStore {
   /** Все корректно загруженные тесты, включая скрытые (для запуска прогонов). */
@@ -106,6 +113,36 @@ export class BenchmarksService {
   }
 
   /**
+   * Гарантирует, что справочники тестов и моделей загружены. Нужен страницам,
+   * которые открываются напрямую, минуя общую таблицу.
+   */
+  ensureLoaded() {
+    if (this.store$$.loaded() && this.store$$.allCases().length > 0)
+      return of(undefined);
+    return this.load();
+  }
+
+  /**
+   * Прогоны с фильтром по паре (тест, модель), сначала новые.
+   * Без аргументов возвращает последние прогоны по всем тестам и моделям.
+   */
+  runsFor(caseId?: string, modelId?: string): Observable<BenchmarkRunEntity[]> {
+    return this.apiClient.runsAllGET(caseId, modelId, undefined, RUNS_LIMIT, 0).pipe(
+      map(runs => runs.map(runToEntity)),
+    );
+  }
+
+  /** Один прогон со всеми строками результатов; `null`, если прогон не найден. */
+  runById(runId: string): Observable<BenchmarkRunEntity | null> {
+    if (!runId)
+      return of(null);
+    return this.apiClient.runsGET(runId).pipe(
+      map(run => runToEntity(run)),
+      catchError(() => of(null)),
+    );
+  }
+
+  /**
    * Запускает прогоны (по одному на пару тест–модель) и возвращает их идентификаторы.
    * Пустой список тестов означает «все доступные тесты».
    */
@@ -140,6 +177,74 @@ const modelToEntity = (model: LlmModel): LlmModelEntity => ({
   displayName: model.displayName,
   inputCoefficient: model.inputCoefficient,
   outputCoefficient: model.outputCoefficient,
+});
+
+/** Главный показатель прогона — доля найденных известных ошибок. */
+const matchedShare = (matched?: number, expected?: number): number =>
+  expected ? (matched ?? 0) / expected : 0;
+
+const runToEntity = (run: BenchmarkRun): BenchmarkRunEntity => ({
+  id: run.id,
+  caseId: run.caseId ?? '',
+  caseName: run.caseName ?? run.caseId ?? '',
+  modelId: run.modelId,
+  modelName: run.modelDisplayName ?? run.modelId,
+  status: run.status,
+  createdAt: run.createdAt,
+  startedAt: run.startedAt,
+  finishedAt: run.finishedAt,
+  durationMs: run.durationMs,
+  failureReason: run.failureReason,
+
+  expectedCount: run.expectedCount ?? 0,
+  foundCount: run.foundCount ?? 0,
+  matchedCount: run.matchedCount ?? 0,
+  titleMatchCount: run.titleMatchCount ?? 0,
+  priorityMatchCount: run.priorityMatchCount ?? 0,
+  fixCheckedCount: run.fixCheckedCount ?? 0,
+  fixMatchCount: run.fixMatchCount ?? 0,
+
+  inputTokens: run.inputTokens ?? 0,
+  outputTokens: run.outputTokens ?? 0,
+  totalTokens: run.totalTokens ?? 0,
+  totalRequests: run.totalRequests ?? 0,
+  totalCost: run.totalCost ?? 0,
+
+  matchedShare: matchedShare(run.matchedCount, run.expectedCount),
+  fixMatchShare: matchedShare(run.fixMatchCount, run.fixCheckedCount),
+
+  results: (run.results ?? []).map(resultToEntity),
+});
+
+const resultToEntity = (result: BenchmarkResult): BenchmarkResultEntity => ({
+  id: result.id,
+
+  expectedNumber: result.expectedNumber,
+  errorClass: result.errorClass,
+  chapter: result.chapter,
+  line: result.line,
+
+  expectedTitle: result.expectedTitle,
+  expectedComment: result.expectedComment,
+  expectedPriority: result.expectedPriority,
+
+  foundIndex: result.foundIndex,
+  foundTitle: result.foundTitle,
+  foundComment: result.foundComment,
+  foundPriority: result.foundPriority,
+
+  isFound: result.isFound ?? false,
+  titleMatch: result.titleMatch,
+  priorityMatch: result.priorityMatch,
+  priorityDelta: result.priorityDelta,
+
+  matchingMethod: result.matchingMethod,
+  matchScore: result.matchScore,
+  matchingReason: result.matchingReason,
+
+  fixMatchStatus: result.fixMatchStatus,
+  expectedFix: result.expectedFix,
+  foundFix: result.foundFix,
 });
 
 const summaryToEntity = (summary: BenchmarkSummary): BenchmarkSummaryEntity => ({

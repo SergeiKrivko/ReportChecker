@@ -1,5 +1,6 @@
 import {ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit} from '@angular/core';
 import {AsyncPipe} from '@angular/common';
+import {RouterLink} from '@angular/router';
 import {TuiButton, TuiHint, TuiLoader} from '@taiga-ui/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {BenchmarksService} from '../../services/benchmarks.service';
@@ -13,6 +14,7 @@ import {Observable} from 'rxjs';
   imports: [
     AsyncPipe,
     BenchmarkRunner,
+    RouterLink,
     TuiButton,
     TuiHint,
     TuiLoader,
