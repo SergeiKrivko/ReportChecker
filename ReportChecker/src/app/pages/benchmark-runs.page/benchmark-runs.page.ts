@@ -38,7 +38,7 @@ export class BenchmarkRunsPage {
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
-  protected readonly cases = toSignal(this.benchmarksService.allCases$, {
+  protected readonly cases = toSignal(this.benchmarksService.cases$, {
     initialValue: [] as BenchmarkCaseEntity[],
   });
   protected readonly models = toSignal(this.benchmarksService.models$, {
