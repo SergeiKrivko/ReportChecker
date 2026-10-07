@@ -127,9 +127,9 @@ export class BenchmarkRunPage {
       case BenchmarkFixMatchStatus.Mismatched:
         return 'Исправление отличается';
       case BenchmarkFixMatchStatus.MissingExpectedPatch:
-        return 'Эталон без исправления';
+        return 'Исправление не ожидалось';
       case BenchmarkFixMatchStatus.MissingFoundPatch:
-        return 'Модель без исправления';
+        return 'Исправление не предложено';
       default:
         return '';
     }
@@ -140,10 +140,10 @@ export class BenchmarkRunPage {
       case BenchmarkFixMatchStatus.Matched:
         return 'positive';
       case BenchmarkFixMatchStatus.Mismatched:
-        return 'warning';
+        return 'negative';
       case BenchmarkFixMatchStatus.MissingExpectedPatch:
       case BenchmarkFixMatchStatus.MissingFoundPatch:
-        return 'negative';
+        return 'warning';
       default:
         return 'neutral';
     }

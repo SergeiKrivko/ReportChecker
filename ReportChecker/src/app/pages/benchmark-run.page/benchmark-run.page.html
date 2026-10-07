@@ -122,7 +122,7 @@
                 } @else {
                   <span tuiBadge appearance="negative">Пропущена</span>
                 }
-                @if (fixStatusText(result.fixMatchStatus)) {
+                @if (result.isFound && fixStatusText(result.fixMatchStatus)) {
                   <span tuiBadge [appearance]="fixStatusAppearance(result.fixMatchStatus)">
                             {{ fixStatusText(result.fixMatchStatus) }}
                           </span>
