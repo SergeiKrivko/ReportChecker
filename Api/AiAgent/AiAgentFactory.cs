@@ -43,6 +43,7 @@ public class AiAgentFactory(
         var client = new ChatClient(model.ModelKey, new ApiKeyCredential(apiKey), new OpenAIClientOptions
         {
             Endpoint = new Uri(configuration["Ai.ApiUrl"] ?? throw new Exception("AI API url not set")),
+            NetworkTimeout = TimeSpan.FromMinutes(5),
         });
 
         // Guid.Empty означает «без отчёта»: расход не пишется в LlmUsages (например, бенчмарк).
