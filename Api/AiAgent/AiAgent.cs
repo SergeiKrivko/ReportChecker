@@ -109,7 +109,7 @@ public class AiAgent : IAiAgent
         ];
         var options = new ChatCompletionOptions()
             .SetResponseFormat<CommentResponseAgent>()
-            .SelectProviderByPrice()
+            // .SelectProviderByPrice()
             .SetReasoningEffort(_reasoningEffort);
         if (param.Images.Length > 0 && param.ImageProcessingMode != ImageProcessingMode.Disable)
             messages.Add(ChatMessage.CreateUserMessage(param.Images
@@ -142,7 +142,7 @@ public class AiAgent : IAiAgent
         ];
         var options = new ChatCompletionOptions()
             .SetResponseFormat<CommentCreateAgent[]>()
-            .SelectProviderByPrice()
+            // .SelectProviderByPrice()
             .SetReasoningEffort(_reasoningEffort);
         AddChapters(messages, param.Chapters);
 
@@ -165,7 +165,7 @@ public class AiAgent : IAiAgent
         ];
         var options = new ChatCompletionOptions()
             .SetResponseFormat<CommentCreateAgent[]>()
-            .SelectProviderByPrice()
+            // .SelectProviderByPrice()
             .SetReasoningEffort(_reasoningEffort);
         AddChapters(messages, param.Chapters);
 
@@ -188,7 +188,7 @@ public class AiAgent : IAiAgent
         ];
         var options = new ChatCompletionOptions()
             .SetResponseFormat<IssueCreateAgent[]>()
-            .SelectProviderByPrice()
+            // .SelectProviderByPrice()
             .SetReasoningEffort(_reasoningEffort);
         AddChapters(messages, param.Chapters);
 
@@ -209,7 +209,7 @@ public class AiAgent : IAiAgent
         ];
         var options = new ChatCompletionOptions()
             .SetResponseFormat<IssueCreateAgent[]>()
-            .SelectProviderByPrice()
+            // .SelectProviderByPrice()
             .SetReasoningEffort(_reasoningEffort);
         AddChapters(messages, param);
 
