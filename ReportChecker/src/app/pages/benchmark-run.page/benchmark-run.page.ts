@@ -6,7 +6,7 @@ import {TuiBadge} from '@taiga-ui/kit';
 import {map, switchMap} from 'rxjs';
 import {BenchmarksService} from '../../services/benchmarks.service';
 import {BenchmarkResultEntity, BenchmarkRunEntity} from '../../entities/benchmark-entity';
-import {BenchmarkFixMatchStatus, BenchmarkMatchMethod, ProgressStatus} from '../../services/api-client';
+import {BenchmarkFixMatchStatus, BenchmarkMatchMethod, LlmReasoningEffort, ProgressStatus} from '../../services/api-client';
 import {Moment} from 'moment';
 
 /**
@@ -117,6 +117,30 @@ export class BenchmarkRunPage {
         return 'сопоставлено моделью-судьёй';
       default:
         return 'сопоставление не выполнялось';
+    }
+  }
+
+  /** Человекочитаемое название уровня рассуждений для прогона. */
+  protected reasoningEffortText(effort?: LlmReasoningEffort): string {
+    switch (effort) {
+      case LlmReasoningEffort.Default:
+        return 'По умолчанию';
+      case LlmReasoningEffort.None:
+        return 'Отключены';
+      case LlmReasoningEffort.Minimal:
+        return 'Минимальные';
+      case LlmReasoningEffort.Low:
+        return 'Низкие';
+      case LlmReasoningEffort.Medium:
+        return 'Средние';
+      case LlmReasoningEffort.High:
+        return 'Высокие';
+      case LlmReasoningEffort.XHigh:
+        return 'Очень высокие';
+      case LlmReasoningEffort.Max:
+        return 'Максимальные';
+      default:
+        return '—';
     }
   }
 

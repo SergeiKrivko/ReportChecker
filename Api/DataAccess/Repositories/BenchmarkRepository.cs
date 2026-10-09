@@ -8,7 +8,7 @@ namespace ReportChecker.DataAccess.Repositories;
 public class BenchmarkRepository(ReportCheckerDbContext dbContext) : IBenchmarkRepository
 {
     public async Task<Guid> CreateRunAsync(string caseId, string caseName, Guid modelId,
-        CancellationToken ct = default)
+        LlmReasoningEffort reasoningEffort = LlmReasoningEffort.None, CancellationToken ct = default)
     {
         var id = Guid.NewGuid();
         var entity = new BenchmarkRunEntity
@@ -17,6 +17,7 @@ public class BenchmarkRepository(ReportCheckerDbContext dbContext) : IBenchmarkR
             CaseId = caseId,
             CaseName = caseName,
             ModelId = modelId,
+            ReasoningEffort = reasoningEffort,
             Status = ProgressStatus.Queued,
             CreatedAt = DateTime.UtcNow,
         };
@@ -105,9 +106,10 @@ public class BenchmarkRepository(ReportCheckerDbContext dbContext) : IBenchmarkR
     }
 
     public async Task<IReadOnlyList<BenchmarkRun>> GetRunsAsync(string? caseId = null, Guid? modelId = null,
-        ProgressStatus? status = null, int limit = 50, int offset = 0, CancellationToken ct = default)
+        ProgressStatus? status = null, LlmReasoningEffort? reasoning = null, int limit = 50, int offset = 0,
+        CancellationToken ct = default)
     {
-        var entities = await FilteredRuns(caseId, modelId, status)
+        var entities = await FilteredRuns(caseId, modelId, status, reasoning)
             .Include(e => e.Model)
             .OrderByDescending(e => e.CreatedAt)
             .Skip(offset)
@@ -134,21 +136,22 @@ public class BenchmarkRepository(ReportCheckerDbContext dbContext) : IBenchmarkR
     public async Task<IReadOnlyList<BenchmarkSummary>> GetSummaryAsync(string? caseId = null, Guid? modelId = null,
         CancellationToken ct = default)
     {
-        var runs = await FilteredRuns(caseId, modelId, null)
+        var runs = await FilteredRuns(caseId, modelId, null, null)
             .Include(e => e.Model)
             .ToListAsync(ct);
 
         return runs
-            .GroupBy(e => new { e.CaseId, e.ModelId })
-            .Select(g => BuildSummary(g.Key.CaseId, g.Key.ModelId,
+            .GroupBy(e => new { e.CaseId, e.ModelId, e.ReasoningEffort })
+            .Select(g => BuildSummary(g.Key.CaseId, g.Key.ModelId, g.Key.ReasoningEffort,
                 g.Select(e => e.Model?.DisplayName).FirstOrDefault(e => e != null), g.ToList()))
             .OrderBy(e => e.CaseId)
             .ThenBy(e => e.ModelDisplayName)
+            .ThenBy(e => e.ReasoningEffort)
             .ToList();
     }
 
-    private static BenchmarkSummary BuildSummary(string caseId, Guid modelId, string? modelDisplayName,
-        IReadOnlyList<BenchmarkRunEntity> runs)
+    private static BenchmarkSummary BuildSummary(string caseId, Guid modelId, LlmReasoningEffort reasoningEffort,
+        string? modelDisplayName, IReadOnlyList<BenchmarkRunEntity> runs)
     {
         var durations = runs
             .Where(e => e.StartedAt != null && e.FinishedAt != null)
@@ -159,6 +162,7 @@ public class BenchmarkRepository(ReportCheckerDbContext dbContext) : IBenchmarkR
         {
             CaseId = caseId,
             ModelId = modelId,
+            ReasoningEffort = reasoningEffort,
             CaseName = runs[0].CaseName,
             ModelDisplayName = modelDisplayName,
             RunCount = runs.Count,
@@ -185,7 +189,8 @@ public class BenchmarkRepository(ReportCheckerDbContext dbContext) : IBenchmarkR
         };
     }
 
-    private IQueryable<BenchmarkRunEntity> FilteredRuns(string? caseId, Guid? modelId, ProgressStatus? status)
+    private IQueryable<BenchmarkRunEntity> FilteredRuns(string? caseId, Guid? modelId, ProgressStatus? status,
+        LlmReasoningEffort? reasoning = null)
     {
         var query = dbContext.BenchmarkRuns
             .AsNoTracking()
@@ -196,6 +201,8 @@ public class BenchmarkRepository(ReportCheckerDbContext dbContext) : IBenchmarkR
             query = query.Where(e => e.ModelId == modelId.Value);
         if (status != null)
             query = query.Where(e => e.Status == status.Value);
+        if (reasoning != null)
+            query = query.Where(e => e.ReasoningEffort == reasoning.Value);
         return query;
     }
 
@@ -245,6 +252,7 @@ public class BenchmarkRepository(ReportCheckerDbContext dbContext) : IBenchmarkR
             CaseName = entity.CaseName,
             ModelId = entity.ModelId,
             ModelDisplayName = entity.Model?.DisplayName,
+            ReasoningEffort = entity.ReasoningEffort,
             Status = entity.Status,
             CreatedAt = entity.CreatedAt,
             StartedAt = entity.StartedAt,

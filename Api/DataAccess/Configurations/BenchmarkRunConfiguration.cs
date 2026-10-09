@@ -14,6 +14,7 @@ public class BenchmarkRunConfiguration : IEntityTypeConfiguration<BenchmarkRunEn
         builder.Property(x => x.CaseId).IsRequired();
         builder.Property(x => x.CaseName).IsRequired();
         builder.Property(x => x.ModelId).IsRequired();
+        builder.Property(x => x.ReasoningEffort).IsRequired();
         builder.Property(x => x.Status).IsRequired();
         builder.Property(x => x.CreatedAt).IsRequired();
         builder.Property(x => x.StartedAt);

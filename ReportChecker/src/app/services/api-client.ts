@@ -4158,6 +4158,7 @@ export class BenchmarkRun implements IBenchmarkRun {
     caseName!: string | undefined;
     modelId!: string;
     modelDisplayName?: string | undefined;
+    reasoningEffort?: LlmReasoningEffort;
     status?: ProgressStatus;
     createdAt?: moment.Moment;
     startedAt?: moment.Moment | undefined;
@@ -4195,6 +4196,7 @@ export class BenchmarkRun implements IBenchmarkRun {
             this.caseName = _data["caseName"];
             this.modelId = _data["modelId"];
             this.modelDisplayName = _data["modelDisplayName"];
+            this.reasoningEffort = _data["reasoningEffort"];
             this.status = _data["status"];
             this.createdAt = _data["createdAt"] ? moment(_data["createdAt"].toString()) : <any>undefined;
             this.startedAt = _data["startedAt"] ? moment(_data["startedAt"].toString()) : <any>undefined;
@@ -4236,6 +4238,7 @@ export class BenchmarkRun implements IBenchmarkRun {
         data["caseName"] = this.caseName;
         data["modelId"] = this.modelId;
         data["modelDisplayName"] = this.modelDisplayName;
+        data["reasoningEffort"] = this.reasoningEffort;
         data["status"] = this.status;
         data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
         data["startedAt"] = this.startedAt ? this.startedAt.toISOString() : <any>undefined;
@@ -4270,6 +4273,7 @@ export interface IBenchmarkRun {
     caseName: string | undefined;
     modelId: string;
     modelDisplayName?: string | undefined;
+    reasoningEffort?: LlmReasoningEffort;
     status?: ProgressStatus;
     createdAt?: moment.Moment;
     startedAt?: moment.Moment | undefined;
@@ -4768,6 +4772,7 @@ export class CreateBenchmarkRunSchema implements ICreateBenchmarkRunSchema {
     caseIds?: string[] | undefined;
     modelIds!: string[] | undefined;
     useLlmMatching?: boolean | undefined;
+    reasoningEffort?: LlmReasoningEffort;
 
     constructor(data?: ICreateBenchmarkRunSchema) {
         if (data) {
@@ -4791,6 +4796,7 @@ export class CreateBenchmarkRunSchema implements ICreateBenchmarkRunSchema {
                     this.modelIds!.push(item);
             }
             this.useLlmMatching = _data["useLlmMatching"];
+            this.reasoningEffort = _data["reasoningEffort"];
         }
     }
 
@@ -4814,6 +4820,7 @@ export class CreateBenchmarkRunSchema implements ICreateBenchmarkRunSchema {
                 data["modelIds"].push(item);
         }
         data["useLlmMatching"] = this.useLlmMatching;
+        data["reasoningEffort"] = this.reasoningEffort;
         return data;
     }
 }
@@ -4822,6 +4829,7 @@ export interface ICreateBenchmarkRunSchema {
     caseIds?: string[] | undefined;
     modelIds: string[] | undefined;
     useLlmMatching?: boolean | undefined;
+    reasoningEffort?: LlmReasoningEffort;
 }
 
 export class CreateCheckSchema implements ICreateCheckSchema {
@@ -5686,6 +5694,17 @@ export enum IssueStatus {
     InProgress = "InProgress",
     Closed = "Closed",
     Fixed = "Fixed",
+}
+
+export enum LlmReasoningEffort {
+    Default = "Default",
+    None = "None",
+    Minimal = "Minimal",
+    Low = "Low",
+    Medium = "Medium",
+    High = "High",
+    XHigh = "XHigh",
+    Max = "Max",
 }
 
 export class LlmModel implements ILlmModel {

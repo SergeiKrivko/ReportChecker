@@ -11,10 +11,11 @@ public interface IBenchmarkService
 
     /// <summary>Выполняет один прогон до конца; вызывается из фонового задания.</summary>
     public Task RunAsync(Guid runId, string caseId, Guid modelId, bool? useLlmMatching,
-        CancellationToken ct = default);
+        LlmReasoningEffort? reasoningEffort = null, CancellationToken ct = default);
 
     public Task<IReadOnlyList<BenchmarkRun>> GetRunsAsync(string? caseId = null, Guid? modelId = null,
-        ProgressStatus? status = null, int limit = 50, int offset = 0, CancellationToken ct = default);
+        ProgressStatus? status = null, LlmReasoningEffort? reasoning = null, int limit = 50, int offset = 0,
+        CancellationToken ct = default);
 
     public Task<BenchmarkRun?> GetRunAsync(Guid runId, CancellationToken ct = default);
 

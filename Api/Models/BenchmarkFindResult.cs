@@ -22,4 +22,7 @@ public class BenchmarkRunRequest
 
     /// <summary>Разрешить LLM-досопоставление остатка (иначе только детерминированное).</summary>
     public bool? UseLlmMatching { get; init; }
+
+    /// <summary>Уровень рассуждений тестируемой модели; пусто — значение по умолчанию фабрики.</summary>
+    public LlmReasoningEffort? ReasoningEffort { get; init; }
 }

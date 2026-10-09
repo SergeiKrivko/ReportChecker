@@ -7,7 +7,8 @@ import {
   BenchmarkRun,
   BenchmarkSummary,
   CreateBenchmarkRunSchema,
-  LlmModel
+  LlmModel,
+  LlmReasoningEffort
 } from './api-client';
 import {catchError, combineLatest, forkJoin, map, Observable, of, tap} from 'rxjs';
 import {patchState, signalState} from '@ngrx/signals';
@@ -146,11 +147,13 @@ export class BenchmarksService {
    * Запускает прогоны (по одному на пару тест–модель) и возвращает их идентификаторы.
    * Пустой список тестов означает «все доступные тесты».
    */
-  createRuns(caseIds: string[], modelIds: string[], useLlmMatching?: boolean) {
+  createRuns(caseIds: string[], modelIds: string[], useLlmMatching?: boolean,
+             reasoningEffort?: LlmReasoningEffort) {
     return this.apiClient.runsAllPOST(CreateBenchmarkRunSchema.fromJS({
       caseIds,
       modelIds,
       useLlmMatching,
+      reasoningEffort,
     }));
   }
 
@@ -189,6 +192,7 @@ const runToEntity = (run: BenchmarkRun): BenchmarkRunEntity => ({
   caseName: run.caseName ?? run.caseId ?? '',
   modelId: run.modelId,
   modelName: run.modelDisplayName ?? run.modelId,
+  reasoningEffort: run.reasoningEffort,
   status: run.status,
   createdAt: run.createdAt,
   startedAt: run.startedAt,

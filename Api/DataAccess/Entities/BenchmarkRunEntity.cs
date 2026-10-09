@@ -9,6 +9,7 @@ public class BenchmarkRunEntity
     [MaxLength(100)] public required string CaseId { get; init; }
     [MaxLength(200)] public required string CaseName { get; init; }
     public required Guid ModelId { get; init; }
+    public LlmReasoningEffort ReasoningEffort { get; init; }
     public ProgressStatus Status { get; init; }
     public required DateTime CreatedAt { get; init; }
     public DateTime? StartedAt { get; init; }

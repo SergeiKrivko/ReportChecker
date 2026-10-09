@@ -32,6 +32,7 @@ public class BenchmarksController(
             CaseIds = schema.CaseIds,
             ModelIds = schema.ModelIds,
             UseLlmMatching = schema.UseLlmMatching,
+            ReasoningEffort = schema.ReasoningEffort,
         }, ct);
         return Ok(runIds);
     }
@@ -40,12 +41,12 @@ public class BenchmarksController(
     [HttpGet("runs")]
     [AllowAnonymous]
     public async Task<ActionResult<IEnumerable<BenchmarkRun>>> GetRunsAsync(string? caseId = null,
-        Guid? modelId = null, ProgressStatus? status = null, int limit = 50, int offset = 0,
-        CancellationToken ct = default)
+        Guid? modelId = null, ProgressStatus? status = null, LlmReasoningEffort? reasoning = null,
+        int limit = 50, int offset = 0, CancellationToken ct = default)
     {
         limit = Math.Clamp(limit, 1, 200);
         offset = Math.Max(0, offset);
-        var runs = await benchmarkService.GetRunsAsync(caseId, modelId, status, limit, offset, ct);
+        var runs = await benchmarkService.GetRunsAsync(caseId, modelId, status, reasoning, limit, offset, ct);
         return Ok(runs);
     }
 
@@ -59,7 +60,7 @@ public class BenchmarksController(
         return Ok(run);
     }
 
-    /// <summary>Сводка по всем неудалённым прогонам, агрегированная по паре тест–модель.</summary>
+    /// <summary>Сводка по всем неудалённым прогонам, агрегированная по тройке тест–модель–уровень рассуждений.</summary>
     [HttpGet("summary")]
     [AllowAnonymous]
     public async Task<ActionResult<IEnumerable<BenchmarkSummary>>> GetSummaryAsync(string? caseId = null,

@@ -3,6 +3,7 @@ import {
   BenchmarkCaseDisplayMode,
   BenchmarkFixMatchStatus,
   BenchmarkMatchMethod,
+  LlmReasoningEffort,
   ProgressStatus
 } from '../services/api-client';
 
@@ -30,6 +31,8 @@ export interface BenchmarkRunEntity {
   caseName: string;
   modelId: string;
   modelName: string;
+  /** Уровень рассуждений, с которым выполнялся прогон. */
+  reasoningEffort?: LlmReasoningEffort;
   status?: ProgressStatus;
   createdAt?: Moment;
   startedAt?: Moment;

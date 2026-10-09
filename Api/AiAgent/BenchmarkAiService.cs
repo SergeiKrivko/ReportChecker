@@ -24,10 +24,12 @@ public class BenchmarkAiService(
         configuration["Benchmarks.MaxRequestSize"] ?? configuration["Reports.MaxRequestSize"] ?? "5000");
 
     public async Task<BenchmarkFindResult> FindIssuesAsync(IReadOnlyList<Chapter> chapters, Guid modelId,
-        CancellationToken ct = default)
+        LlmReasoningEffort? reasoningEffort = null, CancellationToken ct = default)
     {
         // Прогон бенчмарка не привязан к отчёту: расход не пишется в LlmUsages.
-        await using var client = await aiAgentFactory.CreateClientAsync(modelId, LlmUsageType.Other, null, ct);
+        // Значение по умолчанию совпадает с тем, что сохраняется в прогоне (None).
+        await using var client = await aiAgentFactory.CreateClientAsync(modelId, LlmUsageType.Other,
+            reasoningEffort ?? LlmReasoningEffort.None, null, ct);
 
         var differences = chapters
             .Select(e => differenceService.GetDifference(e, null))

@@ -15,6 +15,9 @@ public class BenchmarkRun
 
     public string? ModelDisplayName { get; init; }
 
+    /// <summary>Уровень рассуждений, с которым выполнялся прогон.</summary>
+    public LlmReasoningEffort ReasoningEffort { get; init; }
+
     public ProgressStatus Status { get; init; }
 
     public DateTime CreatedAt { get; init; }

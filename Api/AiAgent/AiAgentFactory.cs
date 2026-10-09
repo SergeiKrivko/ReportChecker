@@ -29,6 +29,12 @@ public class AiAgentFactory(
     public async Task<IAiAgent> CreateClientAsync(Guid? modelId, LlmUsageType type, Guid? reportId = null,
         CancellationToken ct = default)
     {
+        return await CreateClientAsync(modelId, type, LlmReasoningEffort.None, reportId, ct);
+    }
+
+    public async Task<IAiAgent> CreateClientAsync(Guid? modelId, LlmUsageType type, LlmReasoningEffort reasoningEffort = LlmReasoningEffort.None,
+        Guid? reportId = null, CancellationToken ct = default)
+    {
         LlmModel? model = null;
         if (modelId.HasValue)
         {
@@ -47,6 +53,6 @@ public class AiAgentFactory(
         });
 
         // Guid.Empty означает «без отчёта»: расход не пишется в LlmUsages (например, бенчмарк).
-        return new AiAgent(client, type, model, reportId ?? Guid.Empty, llmUsageRepository, logger);
+        return new AiAgent(client, type, model, reportId ?? Guid.Empty, reasoningEffort, llmUsageRepository, logger);
     }
 }

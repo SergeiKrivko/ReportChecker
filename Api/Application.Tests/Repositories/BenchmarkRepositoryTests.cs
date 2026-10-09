@@ -27,7 +27,7 @@ public class BenchmarkRepositoryTests
             .Options;
 
         _context = new ReportCheckerDbContext(options);
-        await _context.Database.MigrateAsync("20261005112831_Benchmarks");
+        await _context.Database.MigrateAsync("20261012150454_BenchmarkRunReasoningEffort");
 
         await _context.LlmModels.AddAsync(new LlmModelEntity
         {
@@ -104,6 +104,27 @@ public class BenchmarkRepositoryTests
         run.StartedAt.Should().BeNull();
         run.FinishedAt.Should().BeNull();
         run.DeletedAt.Should().BeNull();
+    }
+
+    [Test]
+    public async Task CreateRunAsync_ShouldStoreReasoningEffort()
+    {
+        var runId = await _repository.CreateRunAsync("case", "Case", _modelId, LlmReasoningEffort.High);
+
+        var run = await _repository.GetRunByIdAsync(runId);
+        run!.ReasoningEffort.Should().Be(LlmReasoningEffort.High);
+
+        var listed = (await _repository.GetRunsAsync()).Single(e => e.Id == runId);
+        listed.ReasoningEffort.Should().Be(LlmReasoningEffort.High);
+    }
+
+    [Test]
+    public async Task CreateRunAsync_WithoutReasoningEffort_ShouldDefaultToNone()
+    {
+        var runId = await _repository.CreateRunAsync("case", "Case", _modelId);
+
+        var run = await _repository.GetRunByIdAsync(runId);
+        run!.ReasoningEffort.Should().Be(LlmReasoningEffort.None);
     }
 
     [Test]
@@ -300,5 +321,55 @@ public class BenchmarkRepositoryTests
 
         var byOtherModel = await _repository.GetSummaryAsync(modelId: Guid.NewGuid());
         byOtherModel.Should().BeEmpty();
+    }
+
+    [Test]
+    public async Task GetSummaryAsync_WithDifferentReasoning_ShouldSplitGroups()
+    {
+        var none = await _repository.CreateRunAsync("case", "Case", _modelId, LlmReasoningEffort.None);
+        var high = await _repository.CreateRunAsync("case", "Case", _modelId, LlmReasoningEffort.High);
+        var highAgain = await _repository.CreateRunAsync("case", "Case", _modelId, LlmReasoningEffort.High);
+
+        foreach (var runId in new[] { none, high, highAgain })
+            await _repository.CompleteRunAsync(runId, [], Aggregates(runId), Usage(), DateTime.UtcNow);
+
+        var summary = await _repository.GetSummaryAsync();
+
+        summary.Should().HaveCount(2);
+        summary.Should().OnlyContain(e => e.CaseId == "case" && e.ModelId == _modelId);
+        summary.Single(e => e.ReasoningEffort == LlmReasoningEffort.None).RunCount.Should().Be(1);
+        summary.Single(e => e.ReasoningEffort == LlmReasoningEffort.High).RunCount.Should().Be(2);
+    }
+
+    [Test]
+    public async Task GetRunsAsync_WithReasoningFilter_ShouldRestrictRuns()
+    {
+        var none = await _repository.CreateRunAsync("case", "Case", _modelId, LlmReasoningEffort.None);
+        var low = await _repository.CreateRunAsync("case", "Case", _modelId, LlmReasoningEffort.Low);
+
+        var all = await _repository.GetRunsAsync();
+        all.Should().HaveCount(2);
+
+        var byLow = await _repository.GetRunsAsync(reasoning: LlmReasoningEffort.Low);
+        byLow.Should().ContainSingle().Which.Id.Should().Be(low);
+
+        var byNone = await _repository.GetRunsAsync(reasoning: LlmReasoningEffort.None);
+        byNone.Should().ContainSingle().Which.Id.Should().Be(none);
+
+        var byMax = await _repository.GetRunsAsync(reasoning: LlmReasoningEffort.Max);
+        byMax.Should().BeEmpty();
+    }
+
+    [Test]
+    public async Task GetRunsAsync_WithReasoningFilter_ShouldCombineWithOtherFilters()
+    {
+        var matching = await _repository.CreateRunAsync("case-a", "Case A", _modelId, LlmReasoningEffort.High);
+        await _repository.CreateRunAsync("case-b", "Case B", _modelId, LlmReasoningEffort.High);
+        await _repository.CreateRunAsync("case-a", "Case A", _modelId, LlmReasoningEffort.Low);
+
+        var runs = await _repository.GetRunsAsync(caseId: "case-a", modelId: _modelId,
+            reasoning: LlmReasoningEffort.High);
+
+        runs.Should().ContainSingle().Which.Id.Should().Be(matching);
     }
 }

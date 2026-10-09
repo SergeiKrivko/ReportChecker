@@ -71,15 +71,17 @@ public class BenchmarkService(
         foreach (var benchmarkCase in cases)
         foreach (var modelId in request.ModelIds.Distinct())
         {
-            var runId = await benchmarkRepository.CreateRunAsync(benchmarkCase.Id, benchmarkCase.Name, modelId, ct);
+            var runId = await benchmarkRepository.CreateRunAsync(benchmarkCase.Id, benchmarkCase.Name, modelId,
+                request.ReasoningEffort ?? LlmReasoningEffort.None, ct);
             runIds.Add(runId);
-            RunInBackground(runId, benchmarkCase.Id, modelId, request.UseLlmMatching);
+            RunInBackground(runId, benchmarkCase.Id, modelId, request.UseLlmMatching, request.ReasoningEffort);
         }
 
         return runIds;
     }
 
-    private void RunInBackground(Guid runId, string caseId, Guid modelId, bool? useLlmMatching)
+    private void RunInBackground(Guid runId, string caseId, Guid modelId, bool? useLlmMatching,
+        LlmReasoningEffort? reasoningEffort)
     {
         var cancellation = new CancellationTokenSource();
         var scope = serviceProvider.CreateScope();
@@ -90,7 +92,7 @@ public class BenchmarkService(
             try
             {
                 var service = scope.ServiceProvider.GetRequiredService<IBenchmarkService>();
-                await service.RunAsync(runId, caseId, modelId, useLlmMatching, cancellation.Token);
+                await service.RunAsync(runId, caseId, modelId, useLlmMatching, reasoningEffort, cancellation.Token);
             }
             catch (Exception e)
             {
@@ -112,7 +114,7 @@ public class BenchmarkService(
     }
 
     public async Task RunAsync(Guid runId, string caseId, Guid modelId, bool? useLlmMatching,
-        CancellationToken ct = default)
+        LlmReasoningEffort? reasoningEffort = null, CancellationToken ct = default)
     {
         await benchmarkRepository.SetStatusAsync(runId, ProgressStatus.InProgress, ct);
         try
@@ -122,7 +124,7 @@ public class BenchmarkService(
             var chapters = await caseProvider.GetChaptersAsync(benchmarkCase, ct);
             var chapterContents = chapters.ToDictionary(e => e.Name, e => e.Content);
 
-            var findResult = await benchmarkAiService.FindIssuesAsync(chapters, modelId, ct);
+            var findResult = await benchmarkAiService.FindIssuesAsync(chapters, modelId, reasoningEffort, ct);
             var options = DefaultOptions with { LlmMatching = useLlmMatching ?? _llmMatching };
 
             var outcome = _matcher.Match(benchmarkCase.Expected, findResult.Issues, options);
@@ -280,9 +282,10 @@ public class BenchmarkService(
     }
 
     public Task<IReadOnlyList<BenchmarkRun>> GetRunsAsync(string? caseId = null, Guid? modelId = null,
-        ProgressStatus? status = null, int limit = 50, int offset = 0, CancellationToken ct = default)
+        ProgressStatus? status = null, LlmReasoningEffort? reasoning = null, int limit = 50, int offset = 0,
+        CancellationToken ct = default)
     {
-        return benchmarkRepository.GetRunsAsync(caseId, modelId, status, limit, offset, ct);
+        return benchmarkRepository.GetRunsAsync(caseId, modelId, status, reasoning, limit, offset, ct);
     }
 
     public Task<BenchmarkRun?> GetRunAsync(Guid runId, CancellationToken ct = default)

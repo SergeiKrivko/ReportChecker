@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using OpenAI.Chat;
+using ReportChecker.Models;
 
 namespace AiAgent.Internals;
 
@@ -30,8 +31,22 @@ public static class CompletionOptionsExtension
 
         public ChatCompletionOptions DisableReasoning()
         {
-            options.ReasoningEffortLevel = ChatReasoningEffortLevel.Low;
-            // options.Patch.Set("$.reasoning.enabled"u8, false);
+            options.Patch.Set("$.reasoning.enabled"u8, false);
+            return options;
+        }
+
+        public ChatCompletionOptions SetReasoningEffort(LlmReasoningEffort reasoningEffort)
+        {
+            if (reasoningEffort != LlmReasoningEffort.Default)
+                options.Patch.Set("$.reasoning.effort"u8, reasoningEffort.ToString().ToLower());
+            if (reasoningEffort == LlmReasoningEffort.None)
+                options.Patch.Set("$.reasoning.enabled"u8, false);
+            return options;
+        }
+
+        public ChatCompletionOptions SelectProviderByPrice()
+        {
+            options.Patch.Set("$.provider.sort"u8, "price");
             return options;
         }
 

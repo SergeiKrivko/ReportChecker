@@ -17,8 +17,10 @@ public class AiAgent : IAiAgent
     private readonly LlmModel _model;
     private readonly Guid _reportId;
     private readonly ChatUsage _usage = new();
+    private readonly LlmReasoningEffort _reasoningEffort;
 
     internal AiAgent(ChatClient client, LlmUsageType type, LlmModel model, Guid reportId,
+        LlmReasoningEffort reasoningEffort,
         ILlmUsageRepository llmUsageRepository, ILogger<AiAgent> logger)
     {
         _logger = logger;
@@ -27,6 +29,7 @@ public class AiAgent : IAiAgent
 
         _type = type;
         _model = model;
+        _reasoningEffort = reasoningEffort;
         _reportId = reportId;
     }
 
@@ -47,7 +50,7 @@ public class AiAgent : IAiAgent
             InputTokens = _usage.InputTokens,
             OutputTokens = _usage.OutputTokens,
             // TotalTokens = (int)(_usage.InputTokens * _model.InputCoefficient +
-                                // _usage.OutputTokens * _model.OutputCoefficient),
+            // _usage.OutputTokens * _model.OutputCoefficient),
             TotalTokens = (int)(_usage.TotalMoney * 10000),
             TotalRequests = _usage.TotalRequests,
         });
@@ -82,7 +85,7 @@ public class AiAgent : IAiAgent
         ];
         var options = new ChatCompletionOptions()
             .SetResponseFormat<IssueCreateAgent>()
-            .DisableReasoning();
+            .SetReasoningEffort(_reasoningEffort);
         AddChapters(messages, param.Chapters);
 
         var response = await _client.CompleteChatAsync(messages, options, ct);
@@ -93,7 +96,8 @@ public class AiAgent : IAiAgent
         return completion.ReadAsJson<IssueCreateAgent[]>();
     }
 
-    public async Task<CommentResponseAgent?> WriteComment(WriteCommentRequestAgent param, CancellationToken ct = default)
+    public async Task<CommentResponseAgent?> WriteComment(WriteCommentRequestAgent param,
+        CancellationToken ct = default)
     {
         List<ChatMessage> messages =
         [
@@ -104,7 +108,7 @@ public class AiAgent : IAiAgent
         ];
         var options = new ChatCompletionOptions()
             .SetResponseFormat<CommentResponseAgent>()
-            .DisableReasoning();
+            .SetReasoningEffort(_reasoningEffort);
         if (param.Images.Length > 0 && param.ImageProcessingMode != ImageProcessingMode.Disable)
             messages.Add(ChatMessage.CreateUserMessage(param.Images
                 .Select(e =>
@@ -136,7 +140,7 @@ public class AiAgent : IAiAgent
         ];
         var options = new ChatCompletionOptions()
             .SetResponseFormat<CommentCreateAgent[]>()
-            .DisableReasoning();
+            .SetReasoningEffort(_reasoningEffort);
         AddChapters(messages, param.Chapters);
 
         var response = await _client.CompleteChatAsync(messages, options, ct);
@@ -147,7 +151,8 @@ public class AiAgent : IAiAgent
         return completion.ReadAsJson<CommentCreateAgent[]>();
     }
 
-    public async Task<CommentCreateAgent[]?> ApplyInstruction(InstructionRequestAgent param, CancellationToken ct = default)
+    public async Task<CommentCreateAgent[]?> ApplyInstruction(InstructionRequestAgent param,
+        CancellationToken ct = default)
     {
         List<ChatMessage> messages =
         [
@@ -157,7 +162,7 @@ public class AiAgent : IAiAgent
         ];
         var options = new ChatCompletionOptions()
             .SetResponseFormat<CommentCreateAgent[]>()
-            .DisableReasoning();
+            .SetReasoningEffort(_reasoningEffort);
         AddChapters(messages, param.Chapters);
 
         var response = await _client.CompleteChatAsync(messages, options, ct);
@@ -168,7 +173,8 @@ public class AiAgent : IAiAgent
         return completion.ReadAsJson<CommentCreateAgent[]>();
     }
 
-    public async Task<IssueCreateAgent[]?> SearchInstruction(InstructionRequestAgent param, CancellationToken ct = default)
+    public async Task<IssueCreateAgent[]?> SearchInstruction(InstructionRequestAgent param,
+        CancellationToken ct = default)
     {
         List<ChatMessage> messages =
         [
@@ -178,7 +184,7 @@ public class AiAgent : IAiAgent
         ];
         var options = new ChatCompletionOptions()
             .SetResponseFormat<IssueCreateAgent[]>()
-            .DisableReasoning();
+            .SetReasoningEffort(_reasoningEffort);
         AddChapters(messages, param.Chapters);
 
         var response = await _client.CompleteChatAsync(messages, options, ct);
@@ -198,7 +204,7 @@ public class AiAgent : IAiAgent
         ];
         var options = new ChatCompletionOptions()
             .SetResponseFormat<IssueCreateAgent[]>()
-            .DisableReasoning();
+            .SetReasoningEffort(_reasoningEffort);
         AddChapters(messages, param);
 
         var response = await _client.CompleteChatAsync(messages, options, ct);
@@ -220,7 +226,7 @@ public class AiAgent : IAiAgent
         ];
         var options = new ChatCompletionOptions()
             .SetResponseFormat<BenchmarkMatchAgent[]>()
-            .DisableReasoning();
+            .SetReasoningEffort(_reasoningEffort);
 
         var response = await _client.CompleteChatAsync(messages, options, ct);
         var completion = response.Value;

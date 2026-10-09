@@ -1,13 +1,16 @@
 namespace ReportChecker.Models;
 
 /// <summary>
-/// Агрегированные результаты всех неудалённых прогонов по паре (тест, модель).
+/// Агрегированные результаты всех неудалённых прогонов по тройке (тест, модель, уровень рассуждений).
 /// </summary>
 public class BenchmarkSummary
 {
     public required string CaseId { get; init; }
 
     public required Guid ModelId { get; init; }
+
+    /// <summary>Уровень рассуждений, с которым выполнялись прогоны группы.</summary>
+    public LlmReasoningEffort ReasoningEffort { get; init; }
 
     public string? CaseName { get; init; }
 

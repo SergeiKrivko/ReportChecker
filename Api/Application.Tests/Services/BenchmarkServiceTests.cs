@@ -134,7 +134,7 @@ public class BenchmarkServiceTests
         _caseProvider.Setup(e => e.GetChaptersAsync(It.IsAny<BenchmarkCase>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Chapters());
         _aiService.Setup(e => e.FindIssuesAsync(It.IsAny<IReadOnlyList<Chapter>>(), It.IsAny<Guid>(),
-                It.IsAny<CancellationToken>()))
+                It.IsAny<LlmReasoningEffort?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new BenchmarkFindResult
             {
                 Issues =
@@ -183,7 +183,7 @@ public class BenchmarkServiceTests
         _caseProvider.Setup(e => e.GetChaptersAsync(It.IsAny<BenchmarkCase>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Chapters());
         _aiService.Setup(e => e.FindIssuesAsync(It.IsAny<IReadOnlyList<Chapter>>(), It.IsAny<Guid>(),
-                It.IsAny<CancellationToken>()))
+                It.IsAny<LlmReasoningEffort?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new BenchmarkFindResult { Issues = [Found(0, 2, "Ошибка", patch)] });
 
         await _service.RunAsync(Guid.NewGuid(), "case", Guid.NewGuid(), false);
@@ -204,7 +204,7 @@ public class BenchmarkServiceTests
         _caseProvider.Setup(e => e.GetChaptersAsync(It.IsAny<BenchmarkCase>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Chapters());
         _aiService.Setup(e => e.FindIssuesAsync(It.IsAny<IReadOnlyList<Chapter>>(), It.IsAny<Guid>(),
-                It.IsAny<CancellationToken>()))
+                It.IsAny<LlmReasoningEffort?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new BenchmarkFindResult());
 
         await _service.RunAsync(Guid.NewGuid(), "case", Guid.NewGuid(), false);
@@ -222,7 +222,7 @@ public class BenchmarkServiceTests
         _caseProvider.Setup(e => e.GetChaptersAsync(It.IsAny<BenchmarkCase>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Chapters());
         _aiService.Setup(e => e.FindIssuesAsync(It.IsAny<IReadOnlyList<Chapter>>(), It.IsAny<Guid>(),
-                It.IsAny<CancellationToken>()))
+                It.IsAny<LlmReasoningEffort?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new BenchmarkFindResult
             {
                 Issues = [Found(0, 90, "Совсем другое")],
@@ -250,7 +250,7 @@ public class BenchmarkServiceTests
         _caseProvider.Setup(e => e.GetChaptersAsync(It.IsAny<BenchmarkCase>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Chapters());
         _aiService.Setup(e => e.FindIssuesAsync(It.IsAny<IReadOnlyList<Chapter>>(), It.IsAny<Guid>(),
-                It.IsAny<CancellationToken>()))
+                It.IsAny<LlmReasoningEffort?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new BenchmarkFindResult { Issues = [Found(0, 90, "Совсем другое")] });
 
         await _service.RunAsync(Guid.NewGuid(), "case", Guid.NewGuid(), false);
@@ -269,7 +269,7 @@ public class BenchmarkServiceTests
         _caseProvider.Setup(e => e.GetChaptersAsync(It.IsAny<BenchmarkCase>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Chapters());
         _aiService.Setup(e => e.FindIssuesAsync(It.IsAny<IReadOnlyList<Chapter>>(), It.IsAny<Guid>(),
-                It.IsAny<CancellationToken>()))
+                It.IsAny<LlmReasoningEffort?>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("Модель недоступна"));
 
         var runId = Guid.NewGuid();
@@ -375,7 +375,7 @@ public class BenchmarkServiceTests
             },
         ]);
         _repository.Setup(e => e.CreateRunAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Guid>(),
-                It.IsAny<CancellationToken>()))
+                It.IsAny<LlmReasoningEffort>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Guid.NewGuid());
 
         var runIds = await _service.CreateRunsAsync(new BenchmarkRunRequest
@@ -386,7 +386,61 @@ public class BenchmarkServiceTests
 
         runIds.Should().HaveCount(4);
         _repository.Verify(e => e.CreateRunAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Guid>(),
-            It.IsAny<CancellationToken>()), Times.Exactly(4));
+            It.IsAny<LlmReasoningEffort>(), It.IsAny<CancellationToken>()), Times.Exactly(4));
+    }
+
+    [Test]
+    public async Task CreateRunsAsync_ShouldPassReasoningEffortToRepository()
+    {
+        _caseProvider.Setup(e => e.GetCases()).Returns([Case(Expected(1, 1, "x"))]);
+        _repository.Setup(e => e.CreateRunAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Guid>(),
+                It.IsAny<LlmReasoningEffort>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Guid.NewGuid());
+
+        await _service.CreateRunsAsync(new BenchmarkRunRequest
+        {
+            CaseIds = ["case"],
+            ModelIds = [Guid.NewGuid()],
+            ReasoningEffort = LlmReasoningEffort.High,
+        });
+
+        _repository.Verify(e => e.CreateRunAsync("case", It.IsAny<string>(), It.IsAny<Guid>(),
+            LlmReasoningEffort.High, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Test]
+    public async Task CreateRunsAsync_WithoutReasoningEffort_ShouldStoreNone()
+    {
+        _caseProvider.Setup(e => e.GetCases()).Returns([Case(Expected(1, 1, "x"))]);
+        _repository.Setup(e => e.CreateRunAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Guid>(),
+                It.IsAny<LlmReasoningEffort>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Guid.NewGuid());
+
+        await _service.CreateRunsAsync(new BenchmarkRunRequest
+        {
+            CaseIds = ["case"],
+            ModelIds = [Guid.NewGuid()],
+        });
+
+        _repository.Verify(e => e.CreateRunAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Guid>(),
+            LlmReasoningEffort.None, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Test]
+    public async Task RunAsync_ShouldForwardReasoningEffortToAiService()
+    {
+        SetupCompleteCapture();
+        _caseProvider.Setup(e => e.GetCase("case")).Returns(Case(Expected(1, 1, "Ошибка")));
+        _caseProvider.Setup(e => e.GetChaptersAsync(It.IsAny<BenchmarkCase>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Chapters());
+        _aiService.Setup(e => e.FindIssuesAsync(It.IsAny<IReadOnlyList<Chapter>>(), It.IsAny<Guid>(),
+                It.IsAny<LlmReasoningEffort?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BenchmarkFindResult { Issues = [Found(0, 1, "Ошибка")] });
+
+        await _service.RunAsync(Guid.NewGuid(), "case", Guid.NewGuid(), false, LlmReasoningEffort.Max);
+
+        _aiService.Verify(e => e.FindIssuesAsync(It.IsAny<IReadOnlyList<Chapter>>(), It.IsAny<Guid>(),
+            LlmReasoningEffort.Max, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Test]
