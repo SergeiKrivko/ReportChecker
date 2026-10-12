@@ -186,10 +186,11 @@
   <div class="hint">
     <b>Средняя стоимость одного теста</b>
     <span class="hint-model">{{ row.modelName }} · {{ row.reasoningEffort }}</span>
-    <span>Среднее по {{ row.totals.costScoredCaseCount }} тестам из средних стоимостей прогона</span>
-    <span>Суммы складывать нельзя: тест с большим числом прогонов перевесил бы остальные</span>
+    <span>Среднее по {{ row.totals.costScoredCaseCount }} тестам с успешными прогонами</span>
+    <span>Стоимость усредняется по тестам: тест с большим числом прогонов перевесил бы остальные</span>
+    <span>Упавшие и отменённые прогоны не учитываются: у них стоимость не сохраняется</span>
     @if (row.totals.totalCost > 0) {
-      <span>Суммарная стоимость всех прогонов: {{ cost(row.totals.totalCost) }}</span>
+      <span>Суммарная стоимость успешных прогонов: {{ cost(row.totals.totalCost) }}</span>
     }
   </div>
 </ng-template>

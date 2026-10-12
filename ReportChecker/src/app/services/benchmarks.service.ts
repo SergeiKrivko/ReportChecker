@@ -522,15 +522,22 @@ const addToTotals = (accumulator: BenchmarkScoreAccumulator,
     + (summary.totalFixChecked === 0 ? 0 : summary.fixMatchShare),
   fixScoredCaseCount: accumulator.fixScoredCaseCount + (summary.totalFixChecked === 0 ? 0 : 1),
 
-  // Средняя стоимость одного прогона по этому тесту; суммируются именно средние
-  // по тестам, чтобы тест с большим числом прогонов не перевешивал остальные.
+  // Средняя стоимость одного успешного прогона по этому тесту; суммируются именно
+  // средние по тестам, чтобы тест с большим числом прогонов не перевешивал остальные.
   testCostSum: accumulator.testCostSum + testAverageCost(summary),
-  costScoredCaseCount: accumulator.costScoredCaseCount + (summary.runCount === 0 ? 0 : 1),
+  // Тест входит в среднее, только если у него есть успешный прогон: без него
+  // стоимость теста неизвестна, и учитывать её как 0 нельзя.
+  costScoredCaseCount: accumulator.costScoredCaseCount + (summary.completedRunCount === 0 ? 0 : 1),
 });
 
-/** Средняя стоимость одного прогона теста; `0`, если прогонов нет. */
+/**
+ * Средняя стоимость одного прогона теста; `0`, если успешных прогонов нет.
+ * Делим на число успешных прогонов, а не на `runCount`: у упавших, отменённых и ещё
+ * выполняющихся прогонов стоимость не сохраняется (всегда 0), поэтому они бы
+ * искусственно занижали среднюю стоимость теста.
+ */
 const testAverageCost = (summary: BenchmarkSummaryEntity): number =>
-  summary.runCount === 0 ? 0 : summary.totalCost / summary.runCount;
+  summary.completedRunCount === 0 ? 0 : summary.totalCost / summary.completedRunCount;
 
 const sumDuration = (totals: BenchmarkTotalsEntity,
                      summary: BenchmarkSummaryEntity): number | undefined => {

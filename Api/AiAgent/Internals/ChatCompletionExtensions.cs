@@ -38,6 +38,12 @@ public static class ChatCompletionExtensions
                     content.IndexOf("```json", StringComparison.InvariantCulture) + "```json".Length);
                 content = content.Substring(0, content.IndexOf("```", StringComparison.InvariantCulture));
             }
+            else if (content.Contains("```"))
+            {
+                content = content.Substring(
+                    content.IndexOf("```", StringComparison.InvariantCulture) + "```".Length);
+                content = content.Substring(0, content.IndexOf("```", StringComparison.InvariantCulture));
+            }
 
             return JsonSerializer.Deserialize<T>(content, JsonSerializerOptions) ??
                    throw new Exception("Invalid LLM response");
