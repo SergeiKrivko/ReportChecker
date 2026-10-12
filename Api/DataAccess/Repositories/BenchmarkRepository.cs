@@ -107,9 +107,9 @@ public class BenchmarkRepository(ReportCheckerDbContext dbContext) : IBenchmarkR
 
     public async Task<IReadOnlyList<BenchmarkRun>> GetRunsAsync(string? caseId = null, Guid? modelId = null,
         ProgressStatus? status = null, LlmReasoningEffort? reasoning = null, int limit = 50, int offset = 0,
-        CancellationToken ct = default)
+        bool includeDeleted = false, CancellationToken ct = default)
     {
-        var entities = await FilteredRuns(caseId, modelId, status, reasoning)
+        var entities = await FilteredRuns(caseId, modelId, status, reasoning, includeDeleted)
             .Include(e => e.Model)
             .OrderByDescending(e => e.CreatedAt)
             .Skip(offset)
@@ -190,11 +190,11 @@ public class BenchmarkRepository(ReportCheckerDbContext dbContext) : IBenchmarkR
     }
 
     private IQueryable<BenchmarkRunEntity> FilteredRuns(string? caseId, Guid? modelId, ProgressStatus? status,
-        LlmReasoningEffort? reasoning = null)
+        LlmReasoningEffort? reasoning = null, bool includeDeleted = false)
     {
         var query = dbContext.BenchmarkRuns
             .AsNoTracking()
-            .Where(e => e.DeletedAt == null);
+            .Where(e => includeDeleted || e.DeletedAt == null);
         if (!string.IsNullOrWhiteSpace(caseId))
             query = query.Where(e => e.CaseId == caseId);
         if (modelId != null)

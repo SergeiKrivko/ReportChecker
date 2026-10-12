@@ -1,7 +1,7 @@
 <section class="runner">
   <div class="runner-head">
     <h2>Запуск прогона</h2>
-    <p class="runner-note">Создаётся по одному прогону на каждую пару «тест × модель».</p>
+    <p class="runner-note">Создаётся по одному прогону на каждую тройку «тест × модель × уровень рассуждений».</p>
   </div>
 
   @if (isLoading()) {
@@ -77,6 +77,36 @@
             </li>
           } @empty {
             <li class="empty-note">Ничего не найдено</li>
+          }
+        </ul>
+      </div>
+
+      <div class="group">
+        <div class="group-head">
+          <span class="group-title">Уровень рассуждений</span>
+          <span class="group-count">{{ selectedReasoningEfforts().size }} из {{ reasoningOptions.length }}</span>
+          <div class="group-actions">
+            <button tuiButton appearance="flat" size="s" type="button" (click)="setAllReasoning(true)">
+              Все
+            </button>
+            <button tuiButton appearance="flat" size="s" type="button" (click)="setAllReasoning(false)">
+              Снять
+            </button>
+          </div>
+        </div>
+        <ul class="options">
+          @for (effort of reasoningOptions; track effort) {
+            <li class="option">
+              <label>
+                <input type="checkbox"
+                       [checked]="isReasoningSelected(effort)"
+                       (change)="toggleReasoning(effort, $event)"/>
+                <span class="option-name">{{ reasoningText(effort) }}</span>
+                @if (reasoningHint(effort)) {
+                  <span class="option-meta">{{ reasoningHint(effort) }}</span>
+                }
+              </label>
+            </li>
           }
         </ul>
       </div>

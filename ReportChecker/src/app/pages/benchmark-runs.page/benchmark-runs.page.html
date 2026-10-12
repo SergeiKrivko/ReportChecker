@@ -19,6 +19,19 @@
       <tui-data-list-wrapper *tuiTextfieldDropdown new [items]="models()"/>
     </tui-textfield>
 
+    <tui-textfield [tuiTextfieldCleaner]="false" [stringify]="stringifyReasoning">
+      <label tuiLabel>Уровень рассуждений</label>
+      <input tuiSelect [formControl]="reasoningControl"/>
+      <tui-data-list-wrapper *tuiTextfieldDropdown new [items]="reasoningItems"/>
+    </tui-textfield>
+
+    <label class="deleted-toggle">
+      <input type="checkbox"
+             [checked]="showDeleted()"
+             (change)="toggleDeleted($event)"/>
+      <span>Показать удалённые</span>
+    </label>
+
     @if (hasSelection()) {
       <button tuiButton appearance="flat" type="button" (click)="reset()">Сбросить</button>
     }
@@ -36,7 +49,7 @@
     @if (items.length === 0) {
       <div class="placeholder">
         @if (hasSelection()) {
-          Для этой пары прогонов пока нет.
+          Для выбранных фильтров прогонов пока нет.
         } @else {
           Прогонов пока нет.
         }
@@ -56,13 +69,20 @@
                 <span class="score">{{ percent(run.matchedShare) }}%</span>
                 <span class="fraction">{{ run.matchedCount }}/{{ run.expectedCount }}</span>
               }
+              @if (isDeleted(run)) {
+                <span class="fraction deleted-note">удалён {{ deletedAt(run) }}</span>
+              }
             </div>
 
             <div class="run-body">
               <div class="run-head">
                 <span class="run-case">{{ run.caseName }}</span>
                 <span class="run-model">{{ run.modelName }}</span>
+                <span class="run-reasoning">{{ reasoningText(run.reasoningEffort) }}</span>
                 <span tuiBadge [appearance]="statusAppearance(run)">{{ statusText(run) }}</span>
+                @if (isDeleted(run)) {
+                  <span tuiBadge appearance="warning">Удалён</span>
+                }
               </div>
 
               <dl class="run-stats">

@@ -221,6 +221,28 @@ public class BenchmarkRepositoryTests
     }
 
     [Test]
+    public async Task GetRunsAsync_WithIncludeDeleted_ShouldReturnDeletedRunsMarkedAsDeleted()
+    {
+        var kept = await _repository.CreateRunAsync("case", "Case", _modelId);
+        var removed = await _repository.CreateRunAsync("case", "Case", _modelId);
+        await _repository.SoftDeleteAsync(removed);
+
+        // По умолчанию удалённый прогон скрыт.
+        var visible = await _repository.GetRunsAsync();
+        visible.Should().ContainSingle().Which.Id.Should().Be(kept);
+
+        // С флагом он возвращается и помечен временем удаления.
+        var all = await _repository.GetRunsAsync(includeDeleted: true);
+        all.Should().HaveCount(2);
+        all.Single(e => e.Id == removed).DeletedAt.Should().NotBeNull();
+        all.Single(e => e.Id == kept).DeletedAt.Should().BeNull();
+
+        // Флаг не подменяет фильтры: удалённый прогон по-прежнему не попадает в сводку.
+        var summary = await _repository.GetSummaryAsync();
+        summary.Single().RunCount.Should().Be(1);
+    }
+
+    [Test]
     public async Task GetRunsAsync_ShouldOrderByCreatedAtDescAndFilter()
     {
         var older = await _repository.CreateRunAsync("case-a", "Case A", _modelId);

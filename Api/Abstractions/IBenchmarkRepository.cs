@@ -24,9 +24,14 @@ public interface IBenchmarkRepository
     /// <summary>Мягко удаляет прогон.</summary>
     public Task<bool> SoftDeleteAsync(Guid runId, CancellationToken ct = default);
 
+    /// <summary>
+    /// Возвращает прогоны, отсортированные по времени создания (сначала новые). Мягко удалённые
+    /// попадают в выборку только при <paramref name="includeDeleted"/> и помечены
+    /// <see cref="BenchmarkRun.DeletedAt"/>.
+    /// </summary>
     public Task<IReadOnlyList<BenchmarkRun>> GetRunsAsync(string? caseId = null, Guid? modelId = null,
         ProgressStatus? status = null, LlmReasoningEffort? reasoning = null, int limit = 50, int offset = 0,
-        CancellationToken ct = default);
+        bool includeDeleted = false, CancellationToken ct = default);
 
     /// <summary>Возвращает прогон с результатами; удалённый — только при <paramref name="includeDeleted"/>.</summary>
     public Task<BenchmarkRun?> GetRunByIdAsync(Guid runId, bool includeDeleted = false,

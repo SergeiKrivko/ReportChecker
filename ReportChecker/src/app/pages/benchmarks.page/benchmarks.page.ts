@@ -3,11 +3,12 @@ import {AsyncPipe} from '@angular/common';
 import {RouterLink} from '@angular/router';
 import {TuiButton, TuiHint, TuiLoader} from '@taiga-ui/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {BenchmarksService} from '../../services/benchmarks.service';
+import {BenchmarkSortColumn, BenchmarksService} from '../../services/benchmarks.service';
 import {BenchmarkCaseEntity} from '../../entities/benchmark-entity';
 import {BenchmarkRunner} from '../../components/benchmark-runner/benchmark-runner';
 import {AuthClient} from '../../auth/auth.client';
 import {Observable} from 'rxjs';
+import {TuiBadge} from '@taiga-ui/kit';
 
 @Component({
   selector: 'app-benchmarks.page',
@@ -18,6 +19,7 @@ import {Observable} from 'rxjs';
     TuiButton,
     TuiHint,
     TuiLoader,
+    TuiBadge,
   ],
   templateUrl: './benchmarks.page.html',
   styleUrl: './benchmarks.page.scss',
@@ -50,6 +52,18 @@ export class BenchmarksPage implements OnInit {
   /** Доля найденных известных ошибок в процентах — главный показатель. */
   protected percent(share?: number): number {
     return Math.round((share ?? 0) * 100);
+  }
+
+  /** Переключает сортировку по клику на заголовок столбца. */
+  protected toggleSort(column: BenchmarkSortColumn) {
+    this.benchmarksService.toggleSort(column);
+  }
+
+  /** Стрелка направления сортировки; пустая строка, если столбец не выбран. */
+  protected sortMark(column: BenchmarkSortColumn): string {
+    if (this.benchmarksService.sortColumn$$() !== column)
+      return '';
+    return this.benchmarksService.sortDirection$$() === 'asc' ? '▲' : '▼';
   }
 
   /**

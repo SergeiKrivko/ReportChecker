@@ -8,12 +8,14 @@ import {combineLatest, distinctUntilChanged, filter, map, startWith, switchMap, 
 import {BenchmarksService} from '../../services/benchmarks.service';
 import {BenchmarkCaseEntity, BenchmarkRunEntity} from '../../entities/benchmark-entity';
 import {LlmModelEntity} from '../../entities/llm-model-entity';
-import {ProgressStatus} from '../../services/api-client';
+import {LlmReasoningEffort, ProgressStatus} from '../../services/api-client';
 import {Moment} from 'moment';
+import {parseReasoningEffort, REASONING_EFFORT_OPTIONS, reasoningEffortText} from '../../helpers/llm-reasoning-effort';
 
 /**
- * Список прогонов бенчмарка с фильтрами по тесту и модели.
- * Выборка отражается в query-параметрах (`?case=…&model=…`), чтобы ссылкой можно было поделиться.
+ * Список прогонов бенчмарка с фильтрами по тесту, модели и уровню рассуждений.
+ * Выборка отражается в query-параметрах (`?case=…&model=…&reasoning=…`),
+ * чтобы ссылкой можно было поделиться.
  */
 @Component({
   selector: 'app-benchmark-runs.page',
@@ -50,6 +52,13 @@ export class BenchmarkRunsPage {
 
   protected readonly caseControl = new FormControl<BenchmarkCaseEntity | null>(null);
   protected readonly modelControl = new FormControl<LlmModelEntity | null>(null);
+  protected readonly reasoningControl = new FormControl<LlmReasoningEffort | null>(null);
+
+  /** Показывать мягко удалённые прогоны: по умолчанию они скрыты. */
+  protected readonly showDeleted = signal(false);
+
+  /** Варианты фильтра по уровню рассуждений: `null` — «все уровни». */
+  protected readonly reasoningItems: readonly (LlmReasoningEffort | null)[] = [null, ...REASONING_EFFORT_OPTIONS];
 
   protected readonly runsLoading = signal(true);
   protected readonly runs = signal<BenchmarkRunEntity[]>([]);
@@ -63,19 +72,27 @@ export class BenchmarkRunsPage {
     this.modelControl.valueChanges.pipe(startWith(this.modelControl.value)),
     {initialValue: null},
   );
+  private readonly selectedReasoning = toSignal(
+    this.reasoningControl.valueChanges.pipe(startWith(this.reasoningControl.value)),
+    {initialValue: null},
+  );
 
-  /** Заголовок страницы: без фильтров показываем последние прогоны по всем парам. */
+  /** Заголовок страницы: без фильтров показываем последние прогоны по всем тройкам. */
   protected readonly heading = computed(() => {
     const caseName = this.selectedCase()?.name;
     const modelName = this.selectedModel()?.displayName;
-    if (caseName && modelName)
-      return `${caseName} · ${modelName}`;
-    return caseName ?? modelName ?? 'Все прогоны';
+    if (!caseName && !modelName)
+      return 'Все прогоны';
+    const parts = [caseName, modelName].filter(Boolean);
+    const reasoning = this.selectedReasoning();
+    if (reasoning)
+      parts.push(reasoningEffortText(reasoning));
+    return parts.join(' · ');
   });
 
-  /** Выбрана ли конкретная пара «тест + модель» — от этого зависит текст пустого состояния. */
+  /** Выбран ли хотя бы один фильтр — от этого зависит текст пустого состояния. */
   protected readonly hasSelection = computed(() =>
-    !!this.selectedCase() || !!this.selectedModel());
+    !!this.selectedCase() || !!this.selectedModel() || !!this.selectedReasoning() || this.showDeleted());
 
   constructor() {
     this.benchmarksService.ensureLoaded().pipe(
@@ -87,13 +104,24 @@ export class BenchmarkRunsPage {
     combineLatest([
       toObservable(this.selectedCase),
       toObservable(this.selectedModel),
+      toObservable(this.selectedReasoning),
       toObservable(this.loaded),
+      toObservable(this.showDeleted),
     ]).pipe(
-      filter(([, , loaded]) => loaded),
-      map(([benchmarkCase, model]) => ({caseId: benchmarkCase?.id, modelId: model?.id})),
-      distinctUntilChanged((a, b) => a.caseId === b.caseId && a.modelId === b.modelId),
+      filter(([, , , loaded]) => loaded),
+      map(([benchmarkCase, model, reasoning, , includeDeleted]) => ({
+        caseId: benchmarkCase?.id,
+        modelId: model?.id,
+        reasoning,
+        includeDeleted,
+      })),
+      distinctUntilChanged((a, b) => a.caseId === b.caseId
+        && a.modelId === b.modelId
+        && a.reasoning === b.reasoning
+        && a.includeDeleted === b.includeDeleted),
       tap(() => this.runsLoading.set(true)),
-      switchMap(selection => this.benchmarksService.runsFor(selection.caseId, selection.modelId)),
+      switchMap(selection => this.benchmarksService.runsFor(
+        selection.caseId, selection.modelId, selection.reasoning, selection.includeDeleted)),
       takeUntilDestroyed(),
     ).subscribe({
       next: runs => {
@@ -115,7 +143,7 @@ export class BenchmarkRunsPage {
       filter(([, loaded]) => loaded),
       takeUntilDestroyed(),
     ).subscribe(([params]) => {
-      this.syncSelection(params.get('case'), params.get('model'));
+      this.syncSelection(params.get('case'), params.get('model'), params.get('reasoning'));
     });
 
     this.caseControl.valueChanges.pipe(
@@ -123,6 +151,10 @@ export class BenchmarkRunsPage {
     ).subscribe(() => this.applyQuery());
 
     this.modelControl.valueChanges.pipe(
+      takeUntilDestroyed(),
+    ).subscribe(() => this.applyQuery());
+
+    this.reasoningControl.valueChanges.pipe(
       takeUntilDestroyed(),
     ).subscribe(() => this.applyQuery());
   }
@@ -135,12 +167,18 @@ export class BenchmarkRunsPage {
     return model?.displayName ?? 'Все модели';
   }
 
+  protected stringifyReasoning(effort?: LlmReasoningEffort | null): string {
+    return effort ? reasoningEffortText(effort) : 'Все уровни';
+  }
+
   /** Доля найденных известных ошибок в процентах — главный показатель прогона. */
   protected percent(value: number): number {
     return Math.round(value * 100);
   }
 
   protected level(run: BenchmarkRunEntity): string {
+    if (this.isDeleted(run))
+      return 'deleted';
     if (this.isActive(run))
       return 'active';
     if (run.status === ProgressStatus.Failed)
@@ -239,21 +277,47 @@ export class BenchmarkRunsPage {
     return `${value.toFixed(2)} ₽`;
   }
 
+  /** Человекочитаемое название уровня рассуждений прогона. */
+  protected reasoningText(effort?: LlmReasoningEffort): string {
+    return reasoningEffortText(effort);
+  }
+
   protected reset() {
     this.caseControl.setValue(null);
     this.modelControl.setValue(null);
+    this.reasoningControl.setValue(null);
+    this.showDeleted.set(false);
+  }
+
+  /** Переключатель «Показать удалённые»: список перезапрашивается вместе с удалёнными. */
+  protected toggleDeleted(event: Event) {
+    this.showDeleted.set((event.target as HTMLInputElement).checked);
+  }
+
+  /** Прогон мягко удалён и потому исключён из сводки. */
+  protected isDeleted(run: BenchmarkRunEntity): boolean {
+    return run.deletedAt != null;
+  }
+
+  /** Дата удаления для пометки в списке, в том же формате, что и остальные даты. */
+  protected deletedAt(run: BenchmarkRunEntity): string {
+    return this.date(run.deletedAt);
   }
 
   /** Восстановление фильтров из query-параметров; без нужды значения не перезаписываются. */
-  private syncSelection(caseId: string | null, modelId: string | null) {
+  private syncSelection(caseId: string | null, modelId: string | null, reasoning: string | null) {
     const benchmarkCase = this.cases().find(e => e.id === caseId) ?? null;
     const model = this.models().find(e => e.id === modelId) ?? null;
+    const effort = parseReasoningEffort(reasoning);
 
     if (this.caseControl.value?.id !== benchmarkCase?.id)
       this.caseControl.setValue(benchmarkCase);
 
     if (this.modelControl.value?.id !== model?.id)
       this.modelControl.setValue(model);
+
+    if (this.reasoningControl.value !== effort)
+      this.reasoningControl.setValue(effort);
   }
 
   /** Отражает выбранные фильтры в адресной строке, не добавляя запись в историю. */
@@ -266,6 +330,7 @@ export class BenchmarkRunsPage {
       queryParams: {
         case: this.caseControl.value?.id ?? null,
         model: this.modelControl.value?.id ?? null,
+        reasoning: this.reasoningControl.value ?? null,
       },
       replaceUrl: true,
     });

@@ -37,25 +37,34 @@ public class BenchmarksController(
         return Ok(runIds);
     }
 
-    /// <summary>Прогоны, отсортированные по времени создания (сначала новые), без удалённых.</summary>
+    /// <summary>
+    /// Прогоны, отсортированные по времени создания (сначала новые). Мягко удалённые
+    /// скрыты, пока явно не запрошены через <paramref name="includeDeleted"/>.
+    /// </summary>
     [HttpGet("runs")]
     [AllowAnonymous]
     public async Task<ActionResult<IEnumerable<BenchmarkRun>>> GetRunsAsync(string? caseId = null,
         Guid? modelId = null, ProgressStatus? status = null, LlmReasoningEffort? reasoning = null,
-        int limit = 50, int offset = 0, CancellationToken ct = default)
+        int limit = 50, int offset = 0, bool includeDeleted = false, CancellationToken ct = default)
     {
         limit = Math.Clamp(limit, 1, 200);
         offset = Math.Max(0, offset);
-        var runs = await benchmarkService.GetRunsAsync(caseId, modelId, status, reasoning, limit, offset, ct);
+        var runs = await benchmarkService.GetRunsAsync(caseId, modelId, status, reasoning, limit, offset,
+            includeDeleted, ct);
         return Ok(runs);
     }
 
-    /// <summary>Один прогон со всеми строками результатов.</summary>
+    /// <summary>
+    /// Один прогон со всеми строками результатов. Удалённый отдаётся только при
+    /// <paramref name="includeDeleted"/> — тогда страница прогона показывает предупреждение
+    /// вместо «не найден».
+    /// </summary>
     [HttpGet("runs/{runId:guid}")]
     [AllowAnonymous]
-    public async Task<ActionResult<BenchmarkRun>> GetRunAsync(Guid runId, CancellationToken ct = default)
+    public async Task<ActionResult<BenchmarkRun>> GetRunAsync(Guid runId, bool includeDeleted = false,
+        CancellationToken ct = default)
     {
-        var run = await benchmarkService.GetRunAsync(runId, ct) ??
+        var run = await benchmarkService.GetRunAsync(runId, includeDeleted, ct) ??
                   throw new NotFoundException($"Прогон '{runId}' не найден");
         return Ok(run);
     }

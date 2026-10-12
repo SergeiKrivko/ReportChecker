@@ -36,6 +36,15 @@
   tui-textfield {
     min-inline-size: 14rem;
   }
+
+  .deleted-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-block-end: 0.5rem;
+    font: var(--tui-font-text-s);
+    cursor: pointer;
+  }
 }
 
 .heading {
@@ -104,6 +113,12 @@
   &.empty {
     border-inline-start-color: var(--tui-border-normal);
   }
+
+  // Удалённый прогон виден только по явному фильтру и приглушён.
+  &.deleted {
+    border-inline-start-color: var(--tui-border-normal);
+    opacity: 0.7;
+  }
 }
 
 .run-score {
@@ -122,6 +137,10 @@
   .fraction {
     color: var(--tui-text-secondary);
     font: var(--tui-font-text-xs);
+  }
+
+  .fraction.deleted-note {
+    color: var(--tui-status-warning);
   }
 }
 
@@ -147,6 +166,14 @@
 .run-model {
   color: var(--tui-text-secondary);
   font: var(--tui-font-text-s);
+}
+
+.run-reasoning {
+  padding: 0.0625rem 0.375rem;
+  border: 1px solid var(--tui-border-normal);
+  border-radius: var(--tui-radius-xs);
+  color: var(--tui-text-secondary);
+  font: var(--tui-font-text-xs);
 }
 
 .run-stats {

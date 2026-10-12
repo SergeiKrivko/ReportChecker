@@ -1,12 +1,23 @@
 <div class="container page-padding">
+  @let current = run();
   <header class="page-header">
     <div class="page-title">
       <a tuiButton appearance="flat" size="m" routerLink="/benchmarks/runs" iconStart="@tui.chevron-left">Назад</a>
       <h1>Прогон</h1>
+      @if (canDelete()) {
+        <button tuiButton
+                class="delete-button"
+                appearance="flat-destructive"
+                size="m"
+                iconStart="@tui.trash"
+                [disabled]="deleting()"
+                (click)="deleteRun()">
+          Удалить
+        </button>
+      }
     </div>
   </header>
 
-  @let current = run();
   @if (loading()) {
     <div class="center-container">
       <tui-loader size="xxl"/>
@@ -15,6 +26,17 @@
   } @else if (!current) {
     <div class="placeholder">Прогон не найден.</div>
   } @else {
+    @if (current.deletedAt) {
+      <tui-notification size="l" appearance="warning" icon="@tui.trash">
+        <div class="deleted-warning">
+          <span>
+            Прогон удалён {{ date(current.deletedAt) }} и исключён из результатов:
+            он не попадает в список прогонов и в сводку. Результаты ниже показаны только для справки.
+          </span>
+        </div>
+      </tui-notification>
+    }
+
     <section class="card summary">
       <div class="card-head">
         <span class="run-case">{{ current.caseName }}</span>

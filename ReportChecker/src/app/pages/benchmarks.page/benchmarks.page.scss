@@ -109,13 +109,22 @@
     font: var(--tui-font-text-xs);
   }
 
-  .model-column {
-    position: sticky;
-    left: 0;
-    z-index: 1;
-    min-inline-size: 12rem;
-    background: var(--tui-background-base);
-    text-align: start;
+  .sortable {
+    cursor: pointer;
+    user-select: none;
+
+    &:hover {
+      color: var(--tui-text-primary);
+      background: var(--tui-background-neutral-1-hover);
+    }
+  }
+
+  .sort-mark {
+    display: block;
+    block-size: 0.75rem;
+    color: var(--tui-text-primary);
+    font: var(--tui-font-text-xs);
+    line-height: 1;
   }
 
   thead .model-column {
@@ -126,6 +135,13 @@
     background: var(--tui-background-neutral-1-hover);
   }
 
+  .model-id-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
   .model-name {
     display: block;
     font: var(--tui-font-text-s);
@@ -134,7 +150,18 @@
 
   .model-meta {
     display: block;
+    text-align: start;
     color: var(--tui-text-secondary);
+    font: var(--tui-font-text-xs);
+  }
+
+  .cost-column {
+    min-inline-size: 8rem;
+    border-inline-start: 1px dashed var(--tui-border-normal);
+  }
+
+  thead .cost-column .test-name {
+    max-inline-size: none;
     font: var(--tui-font-text-xs);
   }
 

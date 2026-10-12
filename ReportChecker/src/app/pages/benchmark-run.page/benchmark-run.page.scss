@@ -19,6 +19,17 @@
     margin: 0;
     font: var(--tui-font-heading-4);
   }
+
+  // Кнопка удаления доступна только администратору и прижата к правому краю заголовка.
+  .delete-button {
+    margin-inline-start: auto;
+  }
+}
+
+.deleted-warning {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .center-container {

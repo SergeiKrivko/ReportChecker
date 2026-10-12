@@ -3,13 +3,19 @@ import {toSignal} from '@angular/core/rxjs-interop';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {TuiAlertService, TuiButton, TuiLoader, TuiTextfield} from '@taiga-ui/core';
 import {BenchmarksService} from '../../services/benchmarks.service';
-import {BenchmarkCaseDisplayMode} from '../../services/api-client';
+import {BenchmarkCaseDisplayMode, LlmReasoningEffort} from '../../services/api-client';
 import {BenchmarkCaseEntity} from '../../entities/benchmark-entity';
 import {LlmModelEntity} from '../../entities/llm-model-entity';
+import {
+  DEFAULT_REASONING_EFFORT,
+  REASONING_EFFORT_OPTIONS,
+  reasoningEffortHint,
+  reasoningEffortText
+} from '../../helpers/llm-reasoning-effort';
 
 /**
- * Панель запуска прогонов бенчмарка: выбор тестов и моделей.
- * Прогон создаётся по одному на каждую пару «тест × модель».
+ * Панель запуска прогонов бенчмарка: выбор тестов, моделей и уровней рассуждений.
+ * Прогон создаётся по одному на каждую тройку «тест × модель × уровень рассуждений».
  * Видна только администратору; права всё равно проверяются на сервере (политика `Admin`).
  */
 @Component({
@@ -39,12 +45,18 @@ export class BenchmarkRunner {
     initialValue: false,
   });
 
-  /** Отмеченные тесты и модели. В запрос всегда уходит явный список идентификаторов. */
+  /** Отмеченные тесты, модели и уровни рассуждений. В запрос всегда уходит явный список идентификаторов. */
   protected readonly selectedCaseIds = signal<ReadonlySet<string>>(new Set());
   protected readonly selectedModelIds = signal<ReadonlySet<string>>(new Set());
   protected readonly starting = signal(false);
   protected readonly useLlmMatching = signal(true);
   protected readonly modelFilter = new FormControl<string>('', {nonNullable: true});
+
+  /** Доступные уровни рассуждений в порядке от «по умолчанию» к максимальному. */
+  protected readonly reasoningOptions = REASONING_EFFORT_OPTIONS;
+
+  protected readonly selectedReasoningEfforts =
+    signal<ReadonlySet<LlmReasoningEffort>>(new Set([DEFAULT_REASONING_EFFORT]));
 
   private readonly casesDefaulted = signal(false);
 
@@ -74,14 +86,15 @@ export class BenchmarkRunner {
       : models;
   });
 
-  /** Число будущих прогонов: тесты × модели. */
+  /** Число будущих прогонов: тесты × модели × уровни рассуждений. */
   protected readonly plannedRuns = computed(() =>
-    this.selectedCaseIds().size * this.selectedModelIds().size);
+    this.selectedCaseIds().size * this.selectedModelIds().size * this.selectedReasoningEfforts().size);
 
   protected readonly canStart = computed(() =>
     !this.starting()
     && this.selectedCaseIds().size > 0
-    && this.selectedModelIds().size > 0);
+    && this.selectedModelIds().size > 0
+    && this.selectedReasoningEfforts().size > 0);
 
   protected readonly isLoading = computed(() => !this.loaded());
 
@@ -91,6 +104,18 @@ export class BenchmarkRunner {
 
   protected isModelSelected(modelId: string): boolean {
     return this.selectedModelIds().has(modelId);
+  }
+
+  protected isReasoningSelected(effort: LlmReasoningEffort): boolean {
+    return this.selectedReasoningEfforts().has(effort);
+  }
+
+  protected reasoningText(effort: LlmReasoningEffort): string {
+    return reasoningEffortText(effort);
+  }
+
+  protected reasoningHint(effort: LlmReasoningEffort): string {
+    return reasoningEffortHint(effort);
   }
 
   /** Скрытые тесты не попадают в таблицу, но их можно запускать — об этом стоит предупредить. */
@@ -106,6 +131,11 @@ export class BenchmarkRunner {
   protected toggleModel(modelId: string, event: Event): void {
     const checked = (event.target as HTMLInputElement).checked;
     this.selectedModelIds.update(ids => this.withId(ids, modelId, checked));
+  }
+
+  protected toggleReasoning(effort: LlmReasoningEffort, event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    this.selectedReasoningEfforts.update(efforts => this.withId(efforts, effort, checked));
   }
 
   protected toggleMatching(event: Event): void {
@@ -124,6 +154,13 @@ export class BenchmarkRunner {
       : new Set());
   }
 
+  /** Отметить все уровни или снять все — без уровней прогоны не создаются. */
+  protected setAllReasoning(selected: boolean) {
+    this.selectedReasoningEfforts.set(selected
+      ? new Set(REASONING_EFFORT_OPTIONS)
+      : new Set());
+  }
+
   protected start() {
     if (!this.canStart())
       return;
@@ -133,6 +170,7 @@ export class BenchmarkRunner {
       [...this.selectedCaseIds()],
       [...this.selectedModelIds()],
       this.useLlmMatching(),
+      [...this.selectedReasoningEfforts()],
     ).subscribe({
       next: runIds => {
         this.starting.set(false);
@@ -148,7 +186,8 @@ export class BenchmarkRunner {
     });
   }
 
-  private withId(ids: ReadonlySet<string>, id: string, selected: boolean): ReadonlySet<string> {
+  /** Добавляет или убирает значение в неизменяемом наборе — общий шаг для всех трёх столбцов. */
+  private withId<T>(ids: ReadonlySet<T>, id: T, selected: boolean): ReadonlySet<T> {
     const next = new Set(ids);
     if (selected)
       next.add(id);

@@ -161,11 +161,12 @@ export class ApiClient extends ApiClientBase {
      * @param caseId (optional)
      * @param modelId (optional)
      * @param status (optional)
+     * @param reasoning (optional)
      * @param limit (optional)
      * @param offset (optional)
      * @return OK
      */
-    runsAllGET(caseId: string | undefined, modelId: string | undefined, status: ProgressStatus | undefined, limit: number | undefined, offset: number | undefined): Observable<BenchmarkRun[]> {
+    runsAllGET(caseId: string | undefined, modelId: string | undefined, status: ProgressStatus | undefined, reasoning: LlmReasoningEffort | undefined, limit: number | undefined, offset: number | undefined, includeDeleted: boolean | undefined): Observable<BenchmarkRun[]> {
         let url_ = this.baseUrl + "/api/v1/benchmarks/runs?";
         if (caseId === null)
             throw new Error("The parameter 'caseId' cannot be null.");
@@ -179,6 +180,10 @@ export class ApiClient extends ApiClientBase {
             throw new Error("The parameter 'status' cannot be null.");
         else if (status !== undefined)
             url_ += "status=" + encodeURIComponent("" + status) + "&";
+        if (reasoning === null)
+            throw new Error("The parameter 'reasoning' cannot be null.");
+        else if (reasoning !== undefined)
+            url_ += "reasoning=" + encodeURIComponent("" + reasoning) + "&";
         if (limit === null)
             throw new Error("The parameter 'limit' cannot be null.");
         else if (limit !== undefined)
@@ -187,6 +192,10 @@ export class ApiClient extends ApiClientBase {
             throw new Error("The parameter 'offset' cannot be null.");
         else if (offset !== undefined)
             url_ += "offset=" + encodeURIComponent("" + offset) + "&";
+        if (includeDeleted === null)
+            throw new Error("The parameter 'includeDeleted' cannot be null.");
+        else if (includeDeleted !== undefined)
+            url_ += "includeDeleted=" + encodeURIComponent("" + includeDeleted) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
@@ -245,11 +254,15 @@ export class ApiClient extends ApiClientBase {
     /**
      * @return OK
      */
-    runsGET(runId: string): Observable<BenchmarkRun> {
-        let url_ = this.baseUrl + "/api/v1/benchmarks/runs/{runId}";
+    runsGET(runId: string, includeDeleted: boolean | undefined): Observable<BenchmarkRun> {
+        let url_ = this.baseUrl + "/api/v1/benchmarks/runs/{runId}?";
         if (runId === undefined || runId === null)
             throw new Error("The parameter 'runId' must be defined.");
         url_ = url_.replace("{runId}", encodeURIComponent("" + runId));
+        if (includeDeleted === null)
+            throw new Error("The parameter 'includeDeleted' cannot be null.");
+        else if (includeDeleted !== undefined)
+            url_ += "includeDeleted=" + encodeURIComponent("" + includeDeleted) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
@@ -4299,6 +4312,7 @@ export interface IBenchmarkRun {
 export class BenchmarkSummary implements IBenchmarkSummary {
     caseId!: string | undefined;
     modelId!: string;
+    reasoningEffort?: LlmReasoningEffort;
     caseName?: string | undefined;
     modelDisplayName?: string | undefined;
     runCount?: number;
@@ -4340,6 +4354,7 @@ export class BenchmarkSummary implements IBenchmarkSummary {
         if (_data) {
             this.caseId = _data["caseId"];
             this.modelId = _data["modelId"];
+            this.reasoningEffort = _data["reasoningEffort"];
             this.caseName = _data["caseName"];
             this.modelDisplayName = _data["modelDisplayName"];
             this.runCount = _data["runCount"];
@@ -4381,6 +4396,7 @@ export class BenchmarkSummary implements IBenchmarkSummary {
         data = typeof data === 'object' ? data : {};
         data["caseId"] = this.caseId;
         data["modelId"] = this.modelId;
+        data["reasoningEffort"] = this.reasoningEffort;
         data["caseName"] = this.caseName;
         data["modelDisplayName"] = this.modelDisplayName;
         data["runCount"] = this.runCount;
@@ -4415,6 +4431,7 @@ export class BenchmarkSummary implements IBenchmarkSummary {
 export interface IBenchmarkSummary {
     caseId: string | undefined;
     modelId: string;
+    reasoningEffort?: LlmReasoningEffort;
     caseName?: string | undefined;
     modelDisplayName?: string | undefined;
     runCount?: number;
@@ -5696,17 +5713,6 @@ export enum IssueStatus {
     Fixed = "Fixed",
 }
 
-export enum LlmReasoningEffort {
-    Default = "Default",
-    None = "None",
-    Minimal = "Minimal",
-    Low = "Low",
-    Medium = "Medium",
-    High = "High",
-    XHigh = "XHigh",
-    Max = "Max",
-}
-
 export class LlmModel implements ILlmModel {
     id!: string;
     displayName!: string | undefined;
@@ -5769,6 +5775,17 @@ export interface ILlmModel {
     isDefault?: boolean;
     createdAt: moment.Moment;
     deletedAt?: moment.Moment | undefined;
+}
+
+export enum LlmReasoningEffort {
+    Default = "Default",
+    None = "None",
+    Minimal = "Minimal",
+    Low = "Low",
+    Medium = "Medium",
+    High = "High",
+    XHigh = "XHigh",
+    Max = "Max",
 }
 
 export class LlmUsageGroup implements ILlmUsageGroup {

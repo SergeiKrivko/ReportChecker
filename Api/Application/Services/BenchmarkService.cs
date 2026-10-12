@@ -283,14 +283,16 @@ public class BenchmarkService(
 
     public Task<IReadOnlyList<BenchmarkRun>> GetRunsAsync(string? caseId = null, Guid? modelId = null,
         ProgressStatus? status = null, LlmReasoningEffort? reasoning = null, int limit = 50, int offset = 0,
-        CancellationToken ct = default)
+        bool includeDeleted = false, CancellationToken ct = default)
     {
-        return benchmarkRepository.GetRunsAsync(caseId, modelId, status, reasoning, limit, offset, ct);
+        return benchmarkRepository.GetRunsAsync(caseId, modelId, status, reasoning, limit, offset, includeDeleted,
+            ct);
     }
 
-    public Task<BenchmarkRun?> GetRunAsync(Guid runId, CancellationToken ct = default)
+    public Task<BenchmarkRun?> GetRunAsync(Guid runId, bool includeDeleted = false,
+        CancellationToken ct = default)
     {
-        return benchmarkRepository.GetRunByIdAsync(runId, false, ct);
+        return benchmarkRepository.GetRunByIdAsync(runId, includeDeleted, ct);
     }
 
     public Task<IReadOnlyList<BenchmarkSummary>> GetSummaryAsync(string? caseId = null, Guid? modelId = null,

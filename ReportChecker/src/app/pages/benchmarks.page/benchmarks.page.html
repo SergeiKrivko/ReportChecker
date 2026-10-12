@@ -33,9 +33,14 @@
         <table class="matrix">
           <thead>
           <tr>
-            <th class="model-column">Модель</th>
+            <th class="model-column sortable" (click)="toggleSort('model')">
+              <span class="test-name">Модель</span>
+              <span class="sort-mark">{{ sortMark('model') }}</span>
+            </th>
             @for (benchmarkCase of cases; track benchmarkCase.id) {
-              <th [class.invalid]="benchmarkCase.validationError"
+              <th class="sortable"
+                  [class.invalid]="benchmarkCase.validationError"
+                  (click)="toggleSort(benchmarkCase.id)"
                   [tuiHint]="caseHint(benchmarkCase)">
                 <span class="test-name">{{ benchmarkCase.name }}</span>
                 <span class="test-meta">
@@ -45,16 +50,31 @@
                     {{ benchmarkCase.expectedCount }} ошибок
                   }
                 </span>
+                <span class="sort-mark">{{ sortMark(benchmarkCase.id) }}</span>
               </th>
             }
-            <th class="total-column">Итого</th>
+            <th class="cost-column sortable"
+                (click)="toggleSort('cost')"
+                tuiHint="Средняя стоимость одного теста: среднее средних стоимостей прогона по тестам, где у пары есть прогоны">
+              <span class="test-name">Ср. стоимость теста</span>
+              <span class="sort-mark">{{ sortMark('cost') }}</span>
+            </th>
+            <th class="total-column sortable" (click)="toggleSort('total')">
+              <span class="test-name">Итого</span>
+              <span class="sort-mark">{{ sortMark('total') }}</span>
+            </th>
           </tr>
           </thead>
           <tbody>
-            @for (row of rows; track row.modelId) {
+            @for (row of rows; track row.key) {
               <tr>
                 <td class="model-column">
-                  <span class="model-name">{{ row.modelName }}</span>
+                  <div class="model-id-container">
+                    <span class="model-name">{{ row.modelName }}</span>
+                    @if (row.reasoningEffort != 'Default') {
+                      <tui-badge size="m">{{ row.reasoningEffort }}</tui-badge>
+                    }
+                  </div>
                   <span class="model-meta">{{ row.totals.runCount }} прогонов</span>
                 </td>
                 @for (benchmarkCase of cases; track benchmarkCase.id) {
@@ -66,7 +86,7 @@
                     @if (cell) {
                       <a class="cell-link"
                          [routerLink]="['/benchmarks/runs']"
-                         [queryParams]="{case: benchmarkCase.id, model: row.modelId}">
+                         [queryParams]="{case: benchmarkCase.id, model: row.modelId, reasoning: row.reasoningEffort}">
                         <span class="score">{{ percent(cell.matchedShare) }}%</span>
                         <span class="fraction">{{ cell.totalMatched }}/{{ cell.totalExpected }}</span>
                       </a>
@@ -75,6 +95,14 @@
                     }
                   </td>
                 }
+                <td class="cell cost-column" [tuiHint]="costHint" [tuiHintContext]="{row: row}">
+                  @if (row.totals.avgTestCost != null) {
+                    <span class="score">{{ cost(row.totals.avgTestCost) }}</span>
+                    <span class="fraction">по {{ row.totals.costScoredCaseCount }} тестам</span>
+                  } @else {
+                    <span class="score muted">—</span>
+                  }
+                </td>
                 <td class="cell total-column"
                     [tuiHint]="totalHint"
                     [tuiHintContext]="{row: row}">
@@ -105,7 +133,7 @@
 <ng-template #cellHint let-row="row" let-cell="cell" let-benchmarkCase="benchmarkCase">
   <div class="hint">
     <b>{{ benchmarkCase.name }}</b>
-    <span class="hint-model">{{ row.modelName }}</span>
+    <span class="hint-model">{{ row.modelName }} · {{ row.reasoningEffort }}</span>
     @if (cell) {
       <span>Найдено {{ cell.totalMatched }} из {{ cell.totalExpected }} известных ошибок
         ({{ percent(cell.matchedShare) }} %)</span>
@@ -130,20 +158,38 @@
 <ng-template #totalHint let-row="row">
   <div class="hint">
     <b>Итого по всем тестам</b>
-    <span class="hint-model">{{ row.modelName }}</span>
-    <span>Найдено {{ row.totals.totalMatched }} из {{ row.totals.totalExpected }} известных ошибок
-      ({{ percent(row.totals.matchedShare) }} %)</span>
+    <span class="hint-model">{{ row.modelName }} · {{ row.reasoningEffort }}</span>
+    <span>Средний балл по тестам: {{ percent(row.totals.matchedShare) }} %
+      — {{ row.totals.scoredCaseCount }} тестов без веса по числу прогонов</span>
+    <span>Суммарно найдено {{ row.totals.totalMatched }} из {{ row.totals.totalExpected }} известных ошибок</span>
     <span>Лишних ошибок: {{ row.totals.totalExtra }}</span>
     <span>Прогонов: {{ row.totals.runCount }}</span>
     @if (row.totals.totalFixChecked > 0) {
-      <span>Исправление совпало: {{ row.totals.totalFixMatched }} из {{ row.totals.totalFixChecked }}
-        ({{ percent(row.totals.fixMatchShare) }} %)</span>
+      <span>Исправление совпало: {{ percent(row.totals.fixMatchShare) }} % в среднем по тестам
+        ({{ row.totals.fixScoredCaseCount }}); суммарно {{ row.totals.totalFixMatched }}
+        из {{ row.totals.totalFixChecked }}</span>
     }
     @if (row.totals.avgDurationMs != null) {
       <span>Средняя длительность: {{ duration(row.totals.avgDurationMs) }}</span>
     }
     @if (row.totals.totalTokens > 0) {
-      <span>Токенов: {{ tokens(row.totals.totalTokens) }}, стоимость: {{ cost(row.totals.totalCost) }}</span>
+      <span>Токенов: {{ tokens(row.totals.totalTokens) }}, суммарная стоимость:
+        {{ cost(row.totals.totalCost) }}</span>
+    }
+    @if (row.totals.avgTestCost != null) {
+      <span>Средняя стоимость теста: {{ cost(row.totals.avgTestCost) }}</span>
+    }
+  </div>
+</ng-template>
+
+<ng-template #costHint let-row="row">
+  <div class="hint">
+    <b>Средняя стоимость одного теста</b>
+    <span class="hint-model">{{ row.modelName }} · {{ row.reasoningEffort }}</span>
+    <span>Среднее по {{ row.totals.costScoredCaseCount }} тестам из средних стоимостей прогона</span>
+    <span>Суммы складывать нельзя: тест с большим числом прогонов перевесил бы остальные</span>
+    @if (row.totals.totalCost > 0) {
+      <span>Суммарная стоимость всех прогонов: {{ cost(row.totals.totalCost) }}</span>
     }
   </div>
 </ng-template>

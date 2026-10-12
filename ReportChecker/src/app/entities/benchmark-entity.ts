@@ -37,6 +37,8 @@ export interface BenchmarkRunEntity {
   createdAt?: Moment;
   startedAt?: Moment;
   finishedAt?: Moment;
+  /** Момент мягкого удаления; `undefined`, если прогон не удалён. */
+  deletedAt?: Moment;
   durationMs?: number;
   failureReason?: string;
 
@@ -100,11 +102,14 @@ export interface BenchmarkResultEntity {
 }
 
 /**
- * Агрегированный результат пары (тест, модель) — summary по всем неудалённым прогонам.
+ * Агрегированный результат тройки (тест, модель, уровень рассуждений) —
+ * summary по всем неудалённым прогонам этой группы.
  */
 export interface BenchmarkSummaryEntity {
   caseId: string;
   modelId: string;
+  /** Уровень рассуждений, с которым выполнялись прогоны группы. */
+  reasoningEffort?: LlmReasoningEffort;
   caseName?: string;
   modelDisplayName?: string;
 
@@ -141,12 +146,17 @@ export interface BenchmarkSummaryEntity {
 }
 
 /**
- * Строка сводной таблицы: одна модель по горизонтали против всех тестов по вертикали.
+ * Строка сводной таблицы: одна пара «модель + уровень рассуждений» по горизонтали
+ * против всех тестов по вертикали.
  */
 export interface BenchmarkModelRowEntity {
+  /** Ключ строки: модель вместе с уровнем рассуждений. */
+  key: string;
   modelId: string;
   modelName: string;
-  /** Итоги по всем тестам, где у модели есть хотя бы один прогон. */
+  /** Уровень рассуждений строки; `undefined`, если уровень не задан. */
+  reasoningEffort?: LlmReasoningEffort;
+  /** Итоги по всем тестам, где у пары есть хотя бы один прогон. */
   totals: BenchmarkTotalsEntity;
   /** Результаты по тестам, ключ — идентификатор теста. */
   cells: Record<string, BenchmarkSummaryEntity>;
@@ -163,8 +173,28 @@ export interface BenchmarkTotalsEntity {
   totalRequests: number;
   totalCost: number;
   runCount: number;
+  /** Успешно завершённые прогоны: строка без них в таблицу не попадает. */
+  completedRunCount: number;
   lastRunAt?: Moment;
+  /**
+   * Итоговый балл — среднее арифметическое `matchedShare` по тестам, где у пары
+   * есть прогоны хотя бы с одной известной ошибкой. Тесты без известных ошибок
+   * (`totalExpected === 0`) в среднее не входят: их балл не определён.
+   */
   matchedShare: number;
+  /** Число тестов, вошедших в средние (по ним и по `fixMatchShare`). */
+  scoredCaseCount: number;
+  /** Среднее арифметическое `fixMatchShare` по тестам с проверенными исправлениями. */
   fixMatchShare: number;
+  /** Число тестов, вошедших в среднее по исправлениям (`totalFixChecked > 0`). */
+  fixScoredCaseCount: number;
+  /**
+   * Средняя стоимость одного теста: среднее арифметическое средних стоимостей прогона
+   * по каждому тесту. Суммы складывать нельзя — тест с большим числом прогонов
+   * перевесил бы остальные, поэтому берётся среднее средних.
+   */
+  avgTestCost?: number;
+  /** Число тестов, по которым посчитана средняя стоимость (`runCount > 0`). */
+  costScoredCaseCount: number;
   avgDurationMs?: number;
 }

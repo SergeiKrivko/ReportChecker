@@ -1,4 +1,4 @@
-import {inject, Injectable} from '@angular/core';
+import {inject, Injectable, signal} from '@angular/core';
 import {
   ApiClient,
   BenchmarkCase,
@@ -23,9 +23,18 @@ import {
 } from '../entities/benchmark-entity';
 import {LlmModelEntity} from '../entities/llm-model-entity';
 import {Moment} from 'moment';
+import {modelReasoningKey, reasoningEffortIndex} from '../helpers/llm-reasoning-effort';
 
 /** Сколько последних прогонов запрашивать для списка. */
 const RUNS_LIMIT = 200;
+
+/**
+ * Столбец сортировки таблицы: `model` — колонка модели, `cost` — средняя стоимость теста,
+ * `total` — «Итого», любое другое значение — идентификатор теста (сортировка по его баллу).
+ */
+export type BenchmarkSortColumn = 'model' | 'cost' | 'total' | string;
+
+export type BenchmarkSortDirection = 'asc' | 'desc';
 
 interface BenchmarksStore {
   /** Все корректно загруженные тесты, включая скрытые (для запуска прогонов). */
@@ -72,16 +81,42 @@ export class BenchmarksService {
     map(cases => new Set(cases.map(benchmarkCase => benchmarkCase.id))),
   );
 
+  /** Текущий столбец сортировки таблицы. По умолчанию — «Итого». */
+  readonly sortColumn$$ = signal<BenchmarkSortColumn>('total');
+
+  /** Текущее направление сортировки. По умолчанию — по убыванию. */
+  readonly sortDirection$$ = signal<BenchmarkSortDirection>('desc');
+
   /**
-   * Матрица «модели × тесты», отсортированная по главному показателю.
+   * Матрица «модели × тесты».
    * Скрытые тесты (`displayMode: Hidden`) в таблицу не попадают и в «Итого» не учитываются.
+   * Балл в «Итого» — среднее арифметическое баллов по тестам, а не доля суммарных
+   * `matched`/`expected`: у тестов разное число известных ошибок и разное число прогонов,
+   * поэтому отношение сумм давало бы крупным тестам больший вес.
    */
   readonly rows$: Observable<BenchmarkModelRowEntity[]> = combineLatest([
     this.summaries$,
     this.visibleCaseIds$,
+    toObservable(this.sortColumn$$),
+    toObservable(this.sortDirection$$),
   ]).pipe(
-    map(([summaries, visibleCaseIds]) => buildRows(summaries, visibleCaseIds)),
+    map(([summaries, visibleCaseIds, sortColumn, sortDirection]) =>
+      sortRows(buildRows(summaries, visibleCaseIds), sortColumn, sortDirection)),
   );
+
+  /**
+   * Переключает сортировку по столбцу: первый клик сортирует по убыванию, повторный —
+   * по возрастанию, клик по другому столбцу начинает с убывания (кроме «Модели» и
+   * названий тестов, где естественнее возрастание).
+   */
+  toggleSort(column: BenchmarkSortColumn) {
+    if (this.sortColumn$$() === column) {
+      this.sortDirection$$.update(direction => direction === 'desc' ? 'asc' : 'desc');
+      return;
+    }
+    this.sortColumn$$.set(column);
+    this.sortDirection$$.set(sortDirectionDefault(column));
+  }
 
   load() {
     patchState(this.store$$, {loaded: false, error: null});
@@ -124,37 +159,58 @@ export class BenchmarksService {
   }
 
   /**
-   * Прогоны с фильтром по паре (тест, модель), сначала новые.
-   * Без аргументов возвращает последние прогоны по всем тестам и моделям.
+   * Прогоны с фильтром по тройке (тест, модель, уровень рассуждений), сначала новые.
+   * Без аргументов возвращает последние прогоны по всем тестам, моделям и уровням.
+   * Мягко удалённые попадают в выборку только при `includeDeleted`.
    */
-  runsFor(caseId?: string, modelId?: string): Observable<BenchmarkRunEntity[]> {
-    return this.apiClient.runsAllGET(caseId, modelId, undefined, RUNS_LIMIT, 0).pipe(
+  runsFor(caseId?: string, modelId?: string,
+          reasoningEffort?: LlmReasoningEffort | null,
+          includeDeleted = false): Observable<BenchmarkRunEntity[]> {
+    return this.apiClient.runsAllGET(caseId, modelId, undefined, reasoningEffort ?? undefined,
+      RUNS_LIMIT, 0, includeDeleted).pipe(
       map(runs => runs.map(runToEntity)),
     );
   }
 
-  /** Один прогон со всеми строками результатов; `null`, если прогон не найден. */
-  runById(runId: string): Observable<BenchmarkRunEntity | null> {
+  /**
+   * Один прогон со всеми строками результатов; `null`, если прогон не найден.
+   * Удалённый прогон отдаётся только при `includeDeleted` и приходит с заполненным `deletedAt`.
+   */
+  runById(runId: string, includeDeleted = false): Observable<BenchmarkRunEntity | null> {
     if (!runId)
       return of(null);
-    return this.apiClient.runsGET(runId).pipe(
+    return this.apiClient.runsGET(runId, includeDeleted).pipe(
       map(run => runToEntity(run)),
       catchError(() => of(null)),
     );
   }
 
   /**
-   * Запускает прогоны (по одному на пару тест–модель) и возвращает их идентификаторы.
+   * Мягко удаляет прогон: активный сначала отменяется на сервере, затем запись
+   * помечается удалённой и пропадает из списка прогонов и сводки.
+   */
+  deleteRun(runId: string): Observable<void> {
+    return this.apiClient.runsDELETE(runId);
+  }
+
+  /**
+   * Запускает прогоны (по одному на каждую пару тест–модель) для каждого выбранного
+   * уровня рассуждений и возвращает их идентификаторы.
    * Пустой список тестов означает «все доступные тесты».
+   * Уровень рассуждений задаётся на весь запрос, поэтому на каждый уровень идёт свой запрос.
    */
   createRuns(caseIds: string[], modelIds: string[], useLlmMatching?: boolean,
-             reasoningEffort?: LlmReasoningEffort) {
-    return this.apiClient.runsAllPOST(CreateBenchmarkRunSchema.fromJS({
-      caseIds,
-      modelIds,
-      useLlmMatching,
-      reasoningEffort,
-    }));
+             reasoningEfforts?: LlmReasoningEffort[]): Observable<string[]> {
+    const efforts = reasoningEfforts?.length ? reasoningEfforts : [undefined];
+    return forkJoin(efforts.map(reasoningEffort =>
+      this.apiClient.runsAllPOST(CreateBenchmarkRunSchema.fromJS({
+        caseIds,
+        modelIds,
+        useLlmMatching,
+        reasoningEffort,
+      })))).pipe(
+      map(idLists => idLists.flat()),
+    );
   }
 
   /** Перезагружает сводку, чтобы подхватить только что созданные прогоны. */
@@ -197,6 +253,7 @@ const runToEntity = (run: BenchmarkRun): BenchmarkRunEntity => ({
   createdAt: run.createdAt,
   startedAt: run.startedAt,
   finishedAt: run.finishedAt,
+  deletedAt: run.deletedAt,
   durationMs: run.durationMs,
   failureReason: run.failureReason,
 
@@ -254,6 +311,7 @@ const resultToEntity = (result: BenchmarkResult): BenchmarkResultEntity => ({
 const summaryToEntity = (summary: BenchmarkSummary): BenchmarkSummaryEntity => ({
   caseId: summary.caseId ?? '',
   modelId: summary.modelId,
+  reasoningEffort: summary.reasoningEffort,
   caseName: summary.caseName,
   modelDisplayName: summary.modelDisplayName,
 
@@ -290,32 +348,118 @@ const summaryToEntity = (summary: BenchmarkSummary): BenchmarkSummaryEntity => (
 
 const buildRows = (summaries: BenchmarkSummaryEntity[],
                    visibleCaseIds: Set<string>): BenchmarkModelRowEntity[] => {
-  const rows = new Map<string, BenchmarkModelRowEntity>();
+  const rows = new Map<string, {row: BenchmarkModelRowEntity; accumulator: BenchmarkScoreAccumulator}>();
 
   for (const summary of summaries) {
     if (!visibleCaseIds.has(summary.caseId))
       continue;
 
-    let row = rows.get(summary.modelId);
-    if (!row) {
-      row = {
-        modelId: summary.modelId,
-        modelName: summary.modelDisplayName ?? summary.modelId,
-        totals: emptyTotals(),
-        cells: {},
+    // Сводка группируется по тройке «тест + модель + уровень рассуждений»,
+    // поэтому строка таблицы — это модель вместе с уровнем рассуждений.
+    const key = modelReasoningKey(summary.modelId, summary.reasoningEffort);
+    let entry = rows.get(key);
+    if (!entry) {
+      entry = {
+        row: {
+          key,
+          modelId: summary.modelId,
+          modelName: summary.modelDisplayName ?? summary.modelId,
+          reasoningEffort: summary.reasoningEffort,
+          totals: emptyTotals(),
+          cells: {},
+        },
+        accumulator: emptyAccumulator(),
       };
-      rows.set(summary.modelId, row);
+      rows.set(key, entry);
     }
-    row.cells[summary.caseId] = summary;
-    row.totals = addToTotals(row.totals, summary);
+    entry.row.cells[summary.caseId] = summary;
+    entry.accumulator = addToTotals(entry.accumulator, summary);
   }
 
   return [...rows.values()]
-    .map(row => ({...row, totals: finalizeTotals(row.totals)}))
-    .sort((a, b) => b.totals.matchedShare - a.totals.matchedShare
-      || b.totals.totalMatched - a.totals.totalMatched
-      || a.modelName.localeCompare(b.modelName, 'ru'));
+    .map(({row, accumulator}) => ({...row, totals: finalizeTotals(accumulator)}))
+    // Строка без ни одного успешного прогона ничего не показывает: балл и стоимость
+    // у неё пустые, поэтому в таблице она не нужна.
+    .filter(row => row.totals.completedRunCount > 0);
 };
+
+/**
+ * Направление по умолчанию для столбца: текстовые столбцы удобнее читать сверху вниз,
+ * а числовые показатели — от лучшего к худшему.
+ */
+const sortDirectionDefault = (column: BenchmarkSortColumn): BenchmarkSortDirection =>
+  column === 'model' ? 'asc' : 'desc';
+
+/**
+ * Значение столбца для строки. `undefined` означает «значения нет» — такие строки
+ * всегда уезжают в конец, независимо от направления сортировки.
+ */
+const sortValue = (row: BenchmarkModelRowEntity,
+                   column: BenchmarkSortColumn): number | string | undefined => {
+  switch (column) {
+    case 'model':
+      return row.modelName;
+    case 'cost':
+      return row.totals.avgTestCost;
+    case 'total':
+      return row.totals.matchedShare;
+    default:
+      // Любой другой идентификатор — тест: сортируем по его баллу.
+      return row.cells[column]?.matchedShare;
+  }
+};
+
+/**
+ * Сравнение строк по выбранному столбцу. Строки без значения столбца всегда оказываются
+ * в конце списка. При равенстве значений порядок стабилизируется прежним «рейтинговым»
+ * правилом: сначала лучший балл, затем больше оценённых тестов, затем имя модели.
+ */
+const compareRows = (a: BenchmarkModelRowEntity, b: BenchmarkModelRowEntity,
+                     column: BenchmarkSortColumn,
+                     direction: BenchmarkSortDirection): number => {
+  const left = sortValue(a, column);
+  const right = sortValue(b, column);
+
+  const leftMissing = left == null;
+  const rightMissing = right == null;
+  if (leftMissing || rightMissing) {
+    if (leftMissing && rightMissing)
+      return tieBreak(a, b);
+    return leftMissing ? 1 : -1;
+  }
+
+  const sign = direction === 'asc' ? 1 : -1;
+  const compared = typeof left === 'string' || typeof right === 'string'
+    ? String(left).localeCompare(String(right), 'ru')
+    : left - right;
+  return compared !== 0 ? sign * compared : tieBreak(a, b);
+};
+
+/** Устойчивый порядок строк с равными значениями: рейтинг, затем имя, затем уровень. */
+const tieBreak = (a: BenchmarkModelRowEntity, b: BenchmarkModelRowEntity): number =>
+  b.totals.matchedShare - a.totals.matchedShare
+  || b.totals.scoredCaseCount - a.totals.scoredCaseCount
+  || a.modelName.localeCompare(b.modelName, 'ru')
+  || reasoningEffortIndex(a.reasoningEffort) - reasoningEffortIndex(b.reasoningEffort);
+
+const sortRows = (rows: BenchmarkModelRowEntity[], column: BenchmarkSortColumn,
+                  direction: BenchmarkSortDirection): BenchmarkModelRowEntity[] =>
+  [...rows].sort((a, b) => compareRows(a, b, column, direction));
+
+/**
+ * Суммы, накапливаемые по тестам строки, плюс накопленные показатели по тестам.
+ * Показатели копятся отдельно от сумм, потому что «Итого» — среднее по тестам,
+ * а `totalMatched`/`totalExpected`/`totalExtra` в подсказке остаются суммами.
+ */
+interface BenchmarkScoreAccumulator {
+  totals: BenchmarkTotalsEntity;
+  matchedShareSum: number;
+  scoredCaseCount: number;
+  fixMatchShareSum: number;
+  fixScoredCaseCount: number;
+  testCostSum: number;
+  costScoredCaseCount: number;
+}
 
 const emptyTotals = (): BenchmarkTotalsEntity => ({
   totalExpected: 0,
@@ -328,28 +472,65 @@ const emptyTotals = (): BenchmarkTotalsEntity => ({
   totalRequests: 0,
   totalCost: 0,
   runCount: 0,
+  completedRunCount: 0,
   lastRunAt: undefined,
   matchedShare: 0,
+  scoredCaseCount: 0,
   fixMatchShare: 0,
+  fixScoredCaseCount: 0,
+  avgTestCost: undefined,
+  costScoredCaseCount: 0,
   avgDurationMs: undefined,
 });
 
-const addToTotals = (totals: BenchmarkTotalsEntity,
-                     summary: BenchmarkSummaryEntity): BenchmarkTotalsEntity => ({
-  ...totals,
-  totalExpected: totals.totalExpected + summary.totalExpected,
-  totalFound: totals.totalFound + summary.totalFound,
-  totalMatched: totals.totalMatched + summary.totalMatched,
-  totalExtra: totals.totalExtra + summary.totalExtra,
-  totalFixChecked: totals.totalFixChecked + summary.totalFixChecked,
-  totalFixMatched: totals.totalFixMatched + summary.totalFixMatched,
-  totalTokens: totals.totalTokens + summary.totalTokens,
-  totalRequests: totals.totalRequests + summary.totalRequests,
-  totalCost: totals.totalCost + summary.totalCost,
-  runCount: totals.runCount + summary.runCount,
-  lastRunAt: latest(totals.lastRunAt, summary.lastRunAt),
-  avgDurationMs: sumDuration(totals, summary),
+const emptyAccumulator = (): BenchmarkScoreAccumulator => ({
+  totals: emptyTotals(),
+  matchedShareSum: 0,
+  scoredCaseCount: 0,
+  fixMatchShareSum: 0,
+  fixScoredCaseCount: 0,
+  testCostSum: 0,
+  costScoredCaseCount: 0,
 });
+
+const addToTotals = (accumulator: BenchmarkScoreAccumulator,
+                     summary: BenchmarkSummaryEntity): BenchmarkScoreAccumulator => ({
+  totals: {
+    ...accumulator.totals,
+    totalExpected: accumulator.totals.totalExpected + summary.totalExpected,
+    totalFound: accumulator.totals.totalFound + summary.totalFound,
+    totalMatched: accumulator.totals.totalMatched + summary.totalMatched,
+    totalExtra: accumulator.totals.totalExtra + summary.totalExtra,
+    totalFixChecked: accumulator.totals.totalFixChecked + summary.totalFixChecked,
+    totalFixMatched: accumulator.totals.totalFixMatched + summary.totalFixMatched,
+    totalTokens: accumulator.totals.totalTokens + summary.totalTokens,
+    totalRequests: accumulator.totals.totalRequests + summary.totalRequests,
+    totalCost: accumulator.totals.totalCost + summary.totalCost,
+    runCount: accumulator.totals.runCount + summary.runCount,
+    completedRunCount: accumulator.totals.completedRunCount + summary.completedRunCount,
+    lastRunAt: latest(accumulator.totals.lastRunAt, summary.lastRunAt),
+    avgDurationMs: sumDuration(accumulator.totals, summary),
+  },
+
+  // Балл теста без известных ошибок не определён — в среднее такой тест не входит.
+  matchedShareSum: accumulator.matchedShareSum
+    + (summary.totalExpected === 0 ? 0 : summary.matchedShare),
+  scoredCaseCount: accumulator.scoredCaseCount + (summary.totalExpected === 0 ? 0 : 1),
+
+  // Тест, где ни одно исправление не проверялось, тоже не участвует в среднем.
+  fixMatchShareSum: accumulator.fixMatchShareSum
+    + (summary.totalFixChecked === 0 ? 0 : summary.fixMatchShare),
+  fixScoredCaseCount: accumulator.fixScoredCaseCount + (summary.totalFixChecked === 0 ? 0 : 1),
+
+  // Средняя стоимость одного прогона по этому тесту; суммируются именно средние
+  // по тестам, чтобы тест с большим числом прогонов не перевешивал остальные.
+  testCostSum: accumulator.testCostSum + testAverageCost(summary),
+  costScoredCaseCount: accumulator.costScoredCaseCount + (summary.runCount === 0 ? 0 : 1),
+});
+
+/** Средняя стоимость одного прогона теста; `0`, если прогонов нет. */
+const testAverageCost = (summary: BenchmarkSummaryEntity): number =>
+  summary.runCount === 0 ? 0 : summary.totalCost / summary.runCount;
 
 const sumDuration = (totals: BenchmarkTotalsEntity,
                      summary: BenchmarkSummaryEntity): number | undefined => {
@@ -368,10 +549,16 @@ const latest = (a?: Moment, b?: Moment): Moment | undefined => {
   return b.isAfter(a) ? b : a;
 };
 
-const share = (part: number, total: number): number => total === 0 ? 0 : part / total;
+const average = (sum: number, count: number): number => count === 0 ? 0 : sum / count;
 
-const finalizeTotals = (totals: BenchmarkTotalsEntity): BenchmarkTotalsEntity => ({
-  ...totals,
-  matchedShare: share(totals.totalMatched, totals.totalExpected),
-  fixMatchShare: share(totals.totalFixMatched, totals.totalFixChecked),
+const finalizeTotals = (accumulator: BenchmarkScoreAccumulator): BenchmarkTotalsEntity => ({
+  ...accumulator.totals,
+  matchedShare: average(accumulator.matchedShareSum, accumulator.scoredCaseCount),
+  scoredCaseCount: accumulator.scoredCaseCount,
+  fixMatchShare: average(accumulator.fixMatchShareSum, accumulator.fixScoredCaseCount),
+  fixScoredCaseCount: accumulator.fixScoredCaseCount,
+  avgTestCost: accumulator.costScoredCaseCount === 0
+    ? undefined
+    : accumulator.testCostSum / accumulator.costScoredCaseCount,
+  costScoredCaseCount: accumulator.costScoredCaseCount,
 });

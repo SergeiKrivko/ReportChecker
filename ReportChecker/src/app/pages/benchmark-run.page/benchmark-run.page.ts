@@ -1,17 +1,20 @@
-import {ChangeDetectionStrategy, Component, computed, inject} from '@angular/core';
-import {ActivatedRoute, RouterLink} from '@angular/router';
+import {ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal} from '@angular/core';
+import {ActivatedRoute, Router, RouterLink} from '@angular/router';
 import {takeUntilDestroyed, toSignal} from '@angular/core/rxjs-interop';
-import {TuiButton, TuiLoader} from '@taiga-ui/core';
-import {TuiBadge} from '@taiga-ui/kit';
-import {map, switchMap} from 'rxjs';
+import {TuiAlertService, TuiButton, TuiLoader, TuiNotification} from '@taiga-ui/core';
+import {TUI_CONFIRM, TuiBadge, TuiConfirmData} from '@taiga-ui/kit';
+import {TuiResponsiveDialogService} from '@taiga-ui/addon-mobile';
+import {filter, map, switchMap, tap} from 'rxjs';
 import {BenchmarksService} from '../../services/benchmarks.service';
 import {BenchmarkResultEntity, BenchmarkRunEntity} from '../../entities/benchmark-entity';
 import {BenchmarkFixMatchStatus, BenchmarkMatchMethod, LlmReasoningEffort, ProgressStatus} from '../../services/api-client';
 import {Moment} from 'moment';
+import {AuthClient} from '../../auth/auth.client';
 
 /**
  * Подробности одного прогона: сводка, все известные ошибки теста вместе с ответом модели
  * и отдельным списком «лишние» ошибки, которых в тесте не было.
+ * Администратор может исключить прогон из результатов (мягкое удаление).
  */
 @Component({
   selector: 'app-benchmark-run.page',
@@ -20,6 +23,7 @@ import {Moment} from 'moment';
     TuiBadge,
     TuiButton,
     TuiLoader,
+    TuiNotification,
   ],
   templateUrl: './benchmark-run.page.html',
   styleUrl: './benchmark-run.page.scss',
@@ -29,18 +33,39 @@ import {Moment} from 'moment';
 export class BenchmarkRunPage {
   private readonly benchmarksService = inject(BenchmarksService);
   private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly authClient = inject(AuthClient);
+  private readonly alerts = inject(TuiAlertService);
+  private readonly dialogs = inject(TuiResponsiveDialogService);
+  private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
   private readonly runId$ = this.activatedRoute.paramMap.pipe(
     map(params => params.get('runId') ?? ''),
   );
 
-  /** `undefined` — прогон ещё загружается, `null` — не найден. */
+  /**
+   * `undefined` — прогон ещё загружается, `null` — не найден.
+   * Запрашивается вместе с удалёнными: по прямой ссылке удалённый прогон открывается
+   * с предупреждением, а не превращается в «не найден».
+   */
   protected readonly run = toSignal(
-    this.runId$.pipe(switchMap(runId => this.benchmarksService.runById(runId))),
+    this.runId$.pipe(switchMap(runId => this.benchmarksService.runById(runId, true))),
     {initialValue: undefined},
   );
 
   protected readonly loading = computed(() => this.run() === undefined);
+
+  /** Права администратора нужны для кнопки удаления; сервер проверяет их сам. */
+  protected readonly isAdmin = toSignal(this.authClient.isAdmin$, {initialValue: false});
+
+  /** Идёт удаление — кнопка блокируется, чтобы не отправить запрос дважды. */
+  protected readonly deleting = signal(false);
+
+  /** Прогон мягко удалён и исключён из списка прогонов и сводки. */
+  protected readonly isDeleted = computed(() => this.run()?.deletedAt != null);
+
+  /** Кнопка удаления доступна администратору и только для неудалённого прогона. */
+  protected readonly canDelete = computed(() => this.isAdmin() && this.run() != null && !this.isDeleted());
 
   /** Все известные (эталонные) ошибки теста, найденные и пропущенные. */
   protected readonly expected = computed(() =>
@@ -67,6 +92,41 @@ export class BenchmarkRunPage {
 
   protected percent(value: number): number {
     return Math.round(value * 100);
+  }
+
+  /**
+   * Исключает прогон из результатов: подтверждение, затем мягкое удаление на сервере.
+   * После успеха возвращаемся к списку — прогон уже не входит в сводку.
+   */
+  protected deleteRun() {
+    const run = this.run();
+    if (!run || this.deleting())
+      return;
+
+    const data: TuiConfirmData = {
+      content: `Исключить прогон «${run.caseName}» (${run.modelName}) из результатов? `
+        + 'Он пропадёт из списка прогонов и сводки, результаты останутся доступны по прямой ссылке.',
+      yes: 'Удалить',
+      no: 'Отмена',
+    };
+
+    this.dialogs.open<boolean>(TUI_CONFIRM, {size: 's', data}).pipe(
+      filter(Boolean),
+      tap(() => this.deleting.set(true)),
+      switchMap(() => this.benchmarksService.deleteRun(run.id)),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe({
+      next: () => {
+        this.deleting.set(false);
+        this.alerts.open('Прогон исключён из результатов', {
+          label: 'Прогон удалён',
+          appearance: 'positive',
+        }).subscribe();
+        void this.router.navigate(['/benchmarks/runs']);
+      },
+      // Общий HTTP-слой уже показывает причину ошибки во всплывающем уведомлении.
+      error: () => this.deleting.set(false),
+    });
   }
 
   protected isActive(run: BenchmarkRunEntity): boolean {
