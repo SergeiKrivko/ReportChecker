@@ -85,7 +85,7 @@ public class AiAgent : IAiAgent
         ];
         var options = new ChatCompletionOptions()
             .SetResponseFormat<IssueCreateAgent>()
-            .SelectProviderByPrice()
+            // .SelectProviderByPrice()
             .SetReasoningEffort(_reasoningEffort);
         AddChapters(messages, param.Chapters);
 
