@@ -15,4 +15,10 @@ public interface IBenchmarkCaseProvider
     /// <summary>Разбирает исходник теста на главы провайдером формата из <see cref="BenchmarkCase.Format"/>.</summary>
     public Task<IReadOnlyList<Chapter>> GetChaptersAsync(BenchmarkCase benchmarkCase,
         CancellationToken ct = default);
+
+    /// <summary>
+    /// Текст теста, разбитый на главы и пронумерованные строки. Номера строк совпадают
+    /// с полем <c>line</c> известных ошибок в <c>case.json</c>.
+    /// </summary>
+    public Task<BenchmarkCaseText> GetTextAsync(BenchmarkCase benchmarkCase, CancellationToken ct = default);
 }

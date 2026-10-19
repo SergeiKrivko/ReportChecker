@@ -21,6 +21,23 @@ public class BenchmarksController(
         return Ok(benchmarkCaseProvider.GetCases());
     }
 
+    /// <summary>
+    /// Текст теста, разбитый на главы и строки. Строки пронумерованы так же, как их видит
+    /// модель (внутри главы с единицы), поэтому номера совпадают с полем <c>line</c>
+    /// известных ошибок из <c>GET /cases</c>.
+    /// </summary>
+    [HttpGet("cases/{caseId}/chapters")]
+    [AllowAnonymous]
+    public async Task<ActionResult<BenchmarkCaseText>> GetCaseChaptersAsync(string caseId,
+        CancellationToken ct = default)
+    {
+        var benchmarkCase = benchmarkCaseProvider.GetCase(caseId) ??
+                            throw new NotFoundException($"Тест '{caseId}' не найден");
+        if (benchmarkCase.ValidationError != null)
+            throw new BadRequestException($"Тест '{caseId}' некорректен: {benchmarkCase.ValidationError}");
+        return Ok(await benchmarkCaseProvider.GetTextAsync(benchmarkCase, ct));
+    }
+
     /// <summary>Запускает прогоны (по одному на пару тест–модель) и возвращает их идентификаторы.</summary>
     [HttpPost("runs")]
     [Authorize(Policy = "Admin")]

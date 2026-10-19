@@ -24,13 +24,15 @@ public class BenchmarkCaseProvider : IBenchmarkCaseProvider
     };
 
     private readonly IProviderService _providerService;
+    private readonly IDifferenceService _differenceService;
     private readonly ILogger<BenchmarkCaseProvider> _logger;
     private readonly Lazy<IReadOnlyList<BenchmarkCase>> _cases;
 
     public BenchmarkCaseProvider(IConfiguration configuration, IProviderService providerService,
-        ILogger<BenchmarkCaseProvider> logger)
+        IDifferenceService differenceService, ILogger<BenchmarkCaseProvider> logger)
     {
         _providerService = providerService;
+        _differenceService = differenceService;
         _logger = logger;
         DataPath = Path.IsPathRooted(configuration["Benchmarks.DataPath"])
             ? configuration["Benchmarks.DataPath"]!
@@ -60,6 +62,36 @@ public class BenchmarkCaseProvider : IBenchmarkCaseProvider
         var archive = new BenchmarkDirectoryArchive(directory, benchmarkCase.EntryFile);
         var formatProvider = _providerService.GetFormatProvider(benchmarkCase.Format);
         return await formatProvider.GetChaptersAsync(archive);
+    }
+
+    public async Task<BenchmarkCaseText> GetTextAsync(BenchmarkCase benchmarkCase,
+        CancellationToken ct = default)
+    {
+        var chapters = await GetChaptersAsync(benchmarkCase, ct);
+
+        // Нумерация строк берётся из DifferenceService: именно её результат уходит модели
+        // (см. BenchmarkAiService), поэтому номера совпадают с полем line в case.json.
+        var numbered = chapters
+            .Select(chapter => new BenchmarkCaseChapter
+            {
+                Name = chapter.Name,
+                Lines = _differenceService.GetDifference(chapter, null).Difference
+                    .Select(line => new BenchmarkCaseLine
+                    {
+                        Number = line.Number,
+                        Content = line.Content,
+                    })
+                    .ToArray(),
+            })
+            .ToArray();
+
+        return new BenchmarkCaseText
+        {
+            CaseId = benchmarkCase.Id,
+            CaseName = benchmarkCase.Name,
+            Format = benchmarkCase.Format,
+            Chapters = numbered,
+        };
     }
 
     private IReadOnlyList<BenchmarkCase> LoadCases()

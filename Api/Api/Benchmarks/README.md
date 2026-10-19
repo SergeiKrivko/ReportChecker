@@ -83,15 +83,17 @@
 верхнего уровня («Введение»), а `\section` — вложенную с корневым префиксом
 («`<root>//Введение`»). Проще всего получить точные значения так:
 
-1. запустить тест (`POST /api/v1/benchmarks/runs`) и посмотреть, какие строки вернула модель;
-2. либо временно добавить диагностический тест, который печатает разбор главы —
-   `new LatexFormatProvider(configuration).GetChaptersAsync(archive)` и
-   `new DifferenceService().GetDifference(chapter, null)`, где `Difference[i].Number` — номер строки.
+1. запросить `GET /api/v1/benchmarks/cases/{caseId}/chapters` — эндпоинт возвращает текст теста,
+   разбитый на главы и пронумерованные строки (`chapters[].lines[].number`);
+2. либо запустить тест (`POST /api/v1/benchmarks/runs`) и посмотреть, какие строки вернула модель.
 
 Согласованность тестовых данных проверяется автоматически:
 [`BenchmarkCaseDataTests`](../../Application.Tests/Services/BenchmarkCaseDataTests.cs) сверяет
 каждую известную ошибку с реальным разбором исходника и падает, если глава не найдена,
 строка выходит за границы или указывает на пустую строку (признак сдвига нумерации).
+[`BenchmarkCaseTextTests`](../../Application.Tests/Services/BenchmarkCaseTextTests.cs) проверяет,
+что ответ эндпоинта нумерует строки подряд с единицы и что каждая известная ошибка указывает
+на существующую непустую строку в нём.
 
 ## Ошибки в описании теста
 
