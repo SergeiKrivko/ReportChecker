@@ -93,6 +93,62 @@ export class ApiClient extends ApiClientBase {
     }
 
     /**
+     * @return OK
+     */
+    chapters(caseId: string): Observable<BenchmarkCaseText> {
+        let url_ = this.baseUrl + "/api/v1/benchmarks/cases/{caseId}/chapters";
+        if (caseId === undefined || caseId === null)
+            throw new Error("The parameter 'caseId' must be defined.");
+        url_ = url_.replace("{caseId}", encodeURIComponent("" + caseId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
+            return this.http.request("get", url_, transformedOptions_);
+        })).pipe(_observableMergeMap((response_: any) => {
+            return this.transformResult(url_, response_, (r) => this.processChapters(r as any));
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.transformResult(url_, response_, (r) => this.processChapters(r as any));
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<BenchmarkCaseText>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<BenchmarkCaseText>;
+        }));
+    }
+
+    protected processChapters(response: HttpResponseBase): Observable<BenchmarkCaseText> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = BenchmarkCaseText.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
      * @param body (optional)
      * @return OK
      */
@@ -164,6 +220,7 @@ export class ApiClient extends ApiClientBase {
      * @param reasoning (optional)
      * @param limit (optional)
      * @param offset (optional)
+     * @param includeDeleted (optional)
      * @return OK
      */
     runsAllGET(caseId: string | undefined, modelId: string | undefined, status: ProgressStatus | undefined, reasoning: LlmReasoningEffort | undefined, limit: number | undefined, offset: number | undefined, includeDeleted: boolean | undefined): Observable<BenchmarkRun[]> {
@@ -252,6 +309,7 @@ export class ApiClient extends ApiClientBase {
     }
 
     /**
+     * @param includeDeleted (optional)
      * @return OK
      */
     runsGET(runId: string, includeDeleted: boolean | undefined): Observable<BenchmarkRun> {
@@ -669,7 +727,7 @@ export class ApiClient extends ApiClientBase {
     /**
      * @return OK
      */
-    chapters(reportId: string): Observable<Chapter[]> {
+    chaptersAll(reportId: string): Observable<Chapter[]> {
         let url_ = this.baseUrl + "/api/v1/reports/{reportId}/checks/latest/chapters";
         if (reportId === undefined || reportId === null)
             throw new Error("The parameter 'reportId' must be defined.");
@@ -687,11 +745,11 @@ export class ApiClient extends ApiClientBase {
         return _observableFrom(this.transformOptions(options_)).pipe(_observableMergeMap(transformedOptions_ => {
             return this.http.request("get", url_, transformedOptions_);
         })).pipe(_observableMergeMap((response_: any) => {
-            return this.transformResult(url_, response_, (r) => this.processChapters(r as any));
+            return this.transformResult(url_, response_, (r) => this.processChaptersAll(r as any));
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.transformResult(url_, response_, (r) => this.processChapters(r as any));
+                    return this.transformResult(url_, response_, (r) => this.processChaptersAll(r as any));
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<Chapter[]>;
                 }
@@ -700,7 +758,7 @@ export class ApiClient extends ApiClientBase {
         }));
     }
 
-    protected processChapters(response: HttpResponseBase): Observable<Chapter[]> {
+    protected processChaptersAll(response: HttpResponseBase): Observable<Chapter[]> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -3941,10 +3999,154 @@ export interface IBenchmarkCase {
     validationError?: string | undefined;
 }
 
+export class BenchmarkCaseChapter implements IBenchmarkCaseChapter {
+    name!: string | undefined;
+    lines?: BenchmarkCaseLine[] | undefined;
+
+    constructor(data?: IBenchmarkCaseChapter) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["name"];
+            if (Array.isArray(_data["lines"])) {
+                this.lines = [] as any;
+                for (let item of _data["lines"])
+                    this.lines!.push(BenchmarkCaseLine.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): BenchmarkCaseChapter {
+        data = typeof data === 'object' ? data : {};
+        let result = new BenchmarkCaseChapter();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name;
+        if (Array.isArray(this.lines)) {
+            data["lines"] = [];
+            for (let item of this.lines)
+                data["lines"].push(item.toJSON());
+        }
+        return data;
+    }
+}
+
+export interface IBenchmarkCaseChapter {
+    name: string | undefined;
+    lines?: BenchmarkCaseLine[] | undefined;
+}
+
 export enum BenchmarkCaseDisplayMode {
     Always = "Always",
     Collapsed = "Collapsed",
     Hidden = "Hidden",
+}
+
+export class BenchmarkCaseLine implements IBenchmarkCaseLine {
+    number!: number;
+    content!: string | undefined;
+
+    constructor(data?: IBenchmarkCaseLine) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.number = _data["number"];
+            this.content = _data["content"];
+        }
+    }
+
+    static fromJS(data: any): BenchmarkCaseLine {
+        data = typeof data === 'object' ? data : {};
+        let result = new BenchmarkCaseLine();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["number"] = this.number;
+        data["content"] = this.content;
+        return data;
+    }
+}
+
+export interface IBenchmarkCaseLine {
+    number: number;
+    content: string | undefined;
+}
+
+export class BenchmarkCaseText implements IBenchmarkCaseText {
+    caseId!: string | undefined;
+    caseName!: string | undefined;
+    format!: string | undefined;
+    chapters?: BenchmarkCaseChapter[] | undefined;
+
+    constructor(data?: IBenchmarkCaseText) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.caseId = _data["caseId"];
+            this.caseName = _data["caseName"];
+            this.format = _data["format"];
+            if (Array.isArray(_data["chapters"])) {
+                this.chapters = [] as any;
+                for (let item of _data["chapters"])
+                    this.chapters!.push(BenchmarkCaseChapter.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): BenchmarkCaseText {
+        data = typeof data === 'object' ? data : {};
+        let result = new BenchmarkCaseText();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["caseId"] = this.caseId;
+        data["caseName"] = this.caseName;
+        data["format"] = this.format;
+        if (Array.isArray(this.chapters)) {
+            data["chapters"] = [];
+            for (let item of this.chapters)
+                data["chapters"].push(item.toJSON());
+        }
+        return data;
+    }
+}
+
+export interface IBenchmarkCaseText {
+    caseId: string | undefined;
+    caseName: string | undefined;
+    format: string | undefined;
+    chapters?: BenchmarkCaseChapter[] | undefined;
 }
 
 export class BenchmarkExpectedIssue implements IBenchmarkExpectedIssue {
