@@ -1,0 +1,42 @@
+.lines-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--tui-border-normal);
+  border-radius: var(--tui-radius-m);
+  background: var(--tui-background-base-alt);
+  overflow: hidden;
+
+  .line-container {
+    display: flex;
+    flex-direction: row;
+    gap: 0.75rem;
+    padding: 0.125rem 0.5rem;
+
+    &.Add {
+      background: var(--tui-status-positive-pale);
+    }
+
+    &.Delete {
+      background: var(--tui-status-negative-pale);
+    }
+
+    .line-number {
+      width: 2rem;
+      margin: 0;
+      color: var(--tui-text-tertiary);
+      font-family: var(--tui-font-monospace, monospace);
+      font-size: 0.75rem;
+      text-align: end;
+    }
+
+    .line-content {
+      flex-grow: 1;
+      margin: 0;
+      font-family: var(--tui-font-monospace, monospace);
+      font-size: 0.75rem;
+      text-wrap: wrap;
+      overflow-wrap: anywhere;
+    }
+  }
+}

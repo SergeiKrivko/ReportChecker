@@ -1,0 +1,20 @@
+@if (lines().length > 0) {
+  <div class="lines-container">
+    @for (line of lines(); track $index) {
+      <div class="line-container" [class]="line.type">
+        <span class="line-number">{{ line.number }}</span>
+        @switch (line.type) {
+          @case ("Add") {
+            <code class="line-content">{{ line.content }}</code>
+          }
+          @case ("Delete") {
+            <code class="line-content">{{ line.previousContent }}</code>
+          }
+          @case ("Modify") {
+            <code class="line-content" [innerHTML]="line | diffHtml"></code>
+          }
+        }
+      </div>
+    }
+  </div>
+}

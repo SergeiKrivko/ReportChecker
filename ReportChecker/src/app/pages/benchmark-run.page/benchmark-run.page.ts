@@ -1,13 +1,22 @@
 import {ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal} from '@angular/core';
 import {ActivatedRoute, Router, RouterLink} from '@angular/router';
-import {takeUntilDestroyed, toSignal} from '@angular/core/rxjs-interop';
+import {takeUntilDestroyed, toObservable, toSignal} from '@angular/core/rxjs-interop';
 import {TuiAlertService, TuiButton, TuiLoader, TuiNotification} from '@taiga-ui/core';
 import {TUI_CONFIRM, TuiBadge, TuiConfirmData} from '@taiga-ui/kit';
 import {TuiResponsiveDialogService} from '@taiga-ui/addon-mobile';
-import {filter, map, switchMap, tap} from 'rxjs';
+import {catchError, distinctUntilChanged, filter, map, of, switchMap, tap} from 'rxjs';
 import {BenchmarksService} from '../../services/benchmarks.service';
 import {BenchmarkResultEntity, BenchmarkRunEntity} from '../../entities/benchmark-entity';
-import {BenchmarkFixMatchStatus, BenchmarkMatchMethod, LlmReasoningEffort, ProgressStatus} from '../../services/api-client';
+import {
+  ApiClient,
+  BenchmarkFixMatchStatus,
+  BenchmarkMatchMethod,
+  LlmReasoningEffort,
+  ProgressStatus
+} from '../../services/api-client';
+import {PatchLineEntity} from '../../entities/patch-entity';
+import {diffFixLines} from '../../helpers/fix-lines';
+import {FixLines} from '../../components/fix-lines/fix-lines';
 import {Moment} from 'moment';
 import {AuthClient} from '../../auth/auth.client';
 
@@ -24,6 +33,7 @@ import {AuthClient} from '../../auth/auth.client';
     TuiButton,
     TuiLoader,
     TuiNotification,
+    FixLines,
   ],
   templateUrl: './benchmark-run.page.html',
   styleUrl: './benchmark-run.page.scss',
@@ -32,6 +42,7 @@ import {AuthClient} from '../../auth/auth.client';
 })
 export class BenchmarkRunPage {
   private readonly benchmarksService = inject(BenchmarksService);
+  private readonly apiClient = inject(ApiClient);
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly authClient = inject(AuthClient);
   private readonly alerts = inject(TuiAlertService);
@@ -63,6 +74,29 @@ export class BenchmarkRunPage {
 
   /** Прогон мягко удалён и исключён из списка прогонов и сводки. */
   protected readonly isDeleted = computed(() => this.run()?.deletedAt != null);
+
+  /**
+   * Исходный текст теста, разбитый на главы и строки; `undefined`, пока он грузится.
+   * Номера строк совпадают с полем `line` результатов, поэтому по главе и номеру
+   * восстанавливаются исходные строки для сравнения с предложенным исправлением.
+   */
+  protected readonly chapters = toSignal(
+    toObservable(computed(() => this.run()?.caseId)).pipe(
+      distinctUntilChanged(),
+      switchMap(caseId => caseId
+        ? this.apiClient.chapters(caseId).pipe(catchError(() => of(undefined)))
+        : of(undefined)),
+    ),
+    {initialValue: undefined},
+  );
+
+  /** Строки исходного текста по названию главы — для сравнения с исправлением. */
+  private readonly sourceLines = computed(() => {
+    const map = new Map<string, {number: number; content?: string}[]>();
+    for (const chapter of this.chapters()?.chapters ?? [])
+      map.set(chapter.name ?? '', chapter.lines ?? []);
+    return map;
+  });
 
   /** Кнопка удаления доступна администратору и только для неудалённого прогона. */
   protected readonly canDelete = computed(() => this.isAdmin() && this.run() != null && !this.isDeleted());
@@ -232,6 +266,33 @@ export class BenchmarkRunPage {
         return 'neutral';
     }
   }
+
+  /** Изменённые строки эталонного исправления по сравнению с исходным текстом главы. */
+  protected expectedFixLines(result: BenchmarkResultEntity): PatchLineEntity[] {
+    return this.fixLines().get(result.id)?.expected ?? [];
+  }
+
+  /** Изменённые строки исправления модели по сравнению с исходным текстом главы. */
+  protected foundFixLines(result: BenchmarkResultEntity): PatchLineEntity[] {
+    return this.fixLines().get(result.id)?.found ?? [];
+  }
+
+  /**
+   * Различия «исходный текст — применённое исправление» для каждой строки результатов.
+   * Считается один раз на прогон: сравнение главы целиком слишком дорого для шаблона.
+   */
+  private readonly fixLines = computed(() => {
+    const sourceLines = this.sourceLines();
+    const map = new Map<string, { expected: PatchLineEntity[]; found: PatchLineEntity[] }>();
+    for (const result of this.run()?.results ?? []) {
+      const original = result.chapter ? sourceLines.get(result.chapter) : undefined;
+      map.set(result.id, {
+        expected: diffFixLines(original, result.expectedFix),
+        found: diffFixLines(original, result.foundFix),
+      });
+    }
+    return map;
+  });
 
   /** Дата и время в фиксированном формате, независимо от локали браузера. */
   protected date(value?: Moment): string {

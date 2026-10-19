@@ -1,0 +1,316 @@
+{
+  "id": "latex-math-notation",
+  "name": "Оформление математических формул в LaTeX",
+  "description": "Тест на поиск ошибок записи математических формул в LaTeX. Сами формулы корректны математически, ошибки только в записи. Три вида ошибок: unicode-символ вместо LaTeX-команды (∫ вместо \\int, → вместо \\to, √ вместо \\sqrt, ℝ вместо \\mathbb, ∑ вместо \\sum, × вместо \\cdot, ∞ вместо \\infty и др.), опечатка в несуществующей команде (\\fraq, \\aprox, \\lambd и т. п.) и неверный порядок аргументов (\\binom{k}{n} вместо \\binom{n}{k}, \\sqrt{3}{...} вместо \\sqrt[3]{...}, \\overbrace^{n}{...} вместо \\overbrace{...}^{n}).",
+  "format": "Latex",
+  "entryFile": "report.tex",
+  "displayMode": "Collapsed",
+  "expected": [
+    {
+      "number": 1,
+      "chapter": "Введение",
+      "line": 9,
+      "title": "Unicode-символ ∫ вместо команды \\int",
+      "comment": "Знак интеграла набран unicode-символом «∫» вместо LaTeX-команды \\int. Такая запись не обрабатывается движком и выпадает из математической вёрстки. Правильно: \\[ \\int_a^b f(x)\\,dx, \\]",
+      "priority": 2,
+      "class": "LaTeX",
+      "checkFix": true,
+      "patch": [
+        {
+          "number": 9,
+          "content": "\\[ \\int_a^b f(x)\\,dx, \\]",
+          "type": "Modify"
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "chapter": "Введение",
+      "line": 11,
+      "title": "Unicode-символ → вместо команды \\to",
+      "comment": "Стрелка набрана символом «→» вместо команды \\to. Правильно: «При $h \\to 0$ главный член погрешности убывает как $h^p$».",
+      "priority": 2,
+      "class": "LaTeX",
+      "checkFix": true,
+      "patch": [
+        {
+          "number": 11,
+          "content": "узлах сетки. При $h \\to 0$ главный член погрешности убывает как $h^p$,",
+          "type": "Modify"
+        }
+      ]
+    },
+    {
+      "number": 3,
+      "chapter": "Основные определения",
+      "line": 5,
+      "title": "Опечатка в команде дроби: \\fraq вместо \\frac",
+      "comment": "Команды \\fraq не существует. Дробь записывается командой \\frac{числитель}{знаменатель}. Правильно: \\frac{h^2}{2}.",
+      "priority": 1,
+      "class": "LaTeX",
+      "checkFix": true,
+      "patch": [
+        {
+          "number": 5,
+          "content": "\\[ f(x + h) = f(x) + h f'(x) + \\frac{h^2}{2} f''(x) + O(h^3). \\]",
+          "type": "Modify"
+        }
+      ]
+    },
+    {
+      "number": 4,
+      "chapter": "Основные определения",
+      "line": 8,
+      "title": "Unicode-символ √ вместо команды \\sqrt",
+      "comment": "Знак корня набран символом «√» вместо команды \\sqrt. При этом подкоренное выражение в фигурных скобках остаётся обычным текстом и не получает нужной высоты. Правильно: \\sqrt{\\int_a^b |f(x)|^2 \\,dx}.",
+      "priority": 2,
+      "class": "LaTeX",
+      "checkFix": true,
+      "patch": [
+        {
+          "number": 8,
+          "content": "\\[ \\|f\\|_2 = \\sqrt{\\int_a^b |f(x)|^2 \\,dx}. \\]",
+          "type": "Modify"
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "chapter": "Основные определения",
+      "line": 10,
+      "title": "Unicode-символ ℝ вместо команды \\mathbb{R}",
+      "comment": "Множество вещественных чисел набрано unicode-символом «ℝ» вместо \\mathbb{R}. В математической вёрстке принято использовать \\mathbb{R}. Правильно: «в $\\mathbb{R}^n$».",
+      "priority": 2,
+      "class": "LaTeX",
+      "checkFix": true,
+      "patch": [
+        {
+          "number": 10,
+          "content": "Скалярное произведение векторов в $\\mathbb{R}^n$ задаётся формулой",
+          "type": "Modify"
+        }
+      ]
+    },
+    {
+      "number": 6,
+      "chapter": "Основные определения",
+      "line": 11,
+      "title": "Unicode-символ ∑ вместо команды \\sum",
+      "comment": "Знак суммы набран символом «∑» вместо команды \\sum; в этом случае не работают пределы суммирования \\sum_{i=1}^{n}. Правильно: \\[ (u, v) = \\sum_{i=1}^{n} u_i v_i, \\]",
+      "priority": 2,
+      "class": "LaTeX",
+      "checkFix": true,
+      "patch": [
+        {
+          "number": 11,
+          "content": "\\[ (u, v) = \\sum_{i=1}^{n} u_i v_i, \\]",
+          "type": "Modify"
+        }
+      ]
+    },
+    {
+      "number": 7,
+      "chapter": "Основные определения",
+      "line": 13,
+      "title": "Перепутан порядок аргументов: \\binom{k}{n} вместо \\binom{n}{k}",
+      "comment": "Число сочетаний из n элементов по k равно n!/(k!(n-k)!) и обозначается \\binom{n}{k}. В записи аргументы переставлены: левая часть читается как «из k по n» и не соответствует правой. Правильно: \\binom{n}{k}.",
+      "priority": 3,
+      "class": "Математика",
+      "checkFix": true,
+      "patch": [
+        {
+          "number": 13,
+          "content": "\\[ \\binom{n}{k} = \\frac{n!}{k!\\,(n - k)!}. \\]",
+          "type": "Modify"
+        }
+      ]
+    },
+    {
+      "number": 8,
+      "chapter": "Основные определения",
+      "line": 16,
+      "title": "Перепутан порядок аргументов: \\sqrt{3}{...} вместо \\sqrt[3]{...}",
+      "comment": "Корень третьей степени задаётся необязательным аргументом в квадратных скобках: \\sqrt[3]{...}. Запись \\sqrt{3}{...} даёт квадратный корень из 3, умноженный на группу в фигурных скобках. Правильно: \\sqrt[3]{\\frac{3V}{4\\pi}}.",
+      "priority": 3,
+      "class": "Математика",
+      "checkFix": true,
+      "patch": [
+        {
+          "number": 16,
+          "content": "\\[ r = \\sqrt[3]{\\frac{3V}{4\\pi}}. \\]",
+          "type": "Modify"
+        }
+      ]
+    },
+    {
+      "number": 9,
+      "chapter": "Квадратурные формулы",
+      "line": 4,
+      "title": "Опечатка в команде приближённого равенства: \\aprox вместо \\approx",
+      "comment": "Команды \\aprox не существует; знак «приближённо равно» задаётся как \\approx. Правильно: \\int_a^b f(x)\\,dx \\approx \\frac{b - a}{2}(f(a) + f(b)).",
+      "priority": 1,
+      "class": "LaTeX",
+      "checkFix": true,
+      "patch": [
+        {
+          "number": 4,
+          "content": "\\[ \\int_a^b f(x)\\,dx \\approx \\frac{b - a}{2} \\bigl( f(a) + f(b) \\bigr). \\]",
+          "type": "Modify"
+        }
+      ]
+    },
+    {
+      "number": 10,
+      "chapter": "Квадратурные формулы",
+      "line": 16,
+      "title": "Unicode-символ ξ вместо команды \\xi",
+      "comment": "Греческая буква набрана unicode-символом «ξ» вместо команды \\xi. Правильно: \\[ \\int_a^b f(x)\\,dx = (b - a) f(\\xi), \\qquad \\xi \\in [a, b], \\]",
+      "priority": 2,
+      "class": "LaTeX",
+      "checkFix": true,
+      "patch": [
+        {
+          "number": 16,
+          "content": "\\[ \\int_a^b f(x)\\,dx = (b - a) f(\\xi), \\qquad \\xi \\in [a, b], \\]",
+          "type": "Modify"
+        }
+      ]
+    },
+    {
+      "number": 11,
+      "chapter": "Численная схема",
+      "line": 4,
+      "title": "Опечатка в команде лямбды: \\lambd вместо \\lambda",
+      "comment": "Команды \\lambd не существует; греческая буква задаётся как \\lambda. Правильно: \\frac{du}{dt} = \\lambda u.",
+      "priority": 1,
+      "class": "LaTeX",
+      "checkFix": true,
+      "patch": [
+        {
+          "number": 4,
+          "content": "\\[ \\frac{du}{dt} = \\lambda u, \\qquad u(0) = u_0, \\]",
+          "type": "Modify"
+        }
+      ]
+    },
+    {
+      "number": 12,
+      "chapter": "Численная схема",
+      "line": 13,
+      "title": "Unicode-символ ε вместо команды \\varepsilon",
+      "comment": "Буква набрана unicode-символом «ε» вместо команды \\varepsilon. Правильно: «равно $\\varepsilon$».",
+      "priority": 2,
+      "class": "LaTeX",
+      "checkFix": true,
+      "patch": [
+        {
+          "number": 13,
+          "content": "Если минимальное сингулярное число матрицы равно $\\varepsilon$, то",
+          "type": "Modify"
+        }
+      ]
+    },
+    {
+      "number": 13,
+      "chapter": "Численная схема",
+      "line": 15,
+      "title": "Опечатка в команде закрывающей скобки: \\rigth вместо \\right",
+      "comment": "Команды \\rigth не существует, поэтому автоматическая скобка \\left( на предыдущей строке остаётся незакрытой. Правильно: \\right).",
+      "priority": 1,
+      "class": "LaTeX",
+      "checkFix": true,
+      "patch": [
+        {
+          "number": 15,
+          "content": "   h \\sum_{i=1}^{n} \\|f_i\\| \\right), \\]",
+          "type": "Modify"
+        }
+      ]
+    },
+    {
+      "number": 14,
+      "chapter": "Численная схема",
+      "line": 18,
+      "title": "Перепутан порядок аргументов: \\overbrace^{n}{...} вместо \\overbrace{...}^{n}",
+      "comment": "У команды \\overbrace сначала идёт обязательный аргумент — выражение, а затем необязательный верхний индекс. Запись \\overbrace^{n}{...} оставляет \\overbrace без аргумента. Правильно: $\\overbrace{a_1 + a_2 + \\dots + a_n}^{n}$.",
+      "priority": 2,
+      "class": "Математика",
+      "checkFix": true,
+      "patch": [
+        {
+          "number": 18,
+          "content": "Суммы вида $\\overbrace{a_1 + a_2 + \\dots + a_n}^{n}$ встречаются при",
+          "type": "Modify"
+        }
+      ]
+    },
+    {
+      "number": 15,
+      "chapter": "Численная схема",
+      "line": 20,
+      "title": "Unicode-символ × вместо команды \\cdot",
+      "comment": "Знак умножения набран символом «×» вместо команды \\cdot. Правильно: s = \\sum_{i=1}^{n} a_i \\cdot b_i.",
+      "priority": 2,
+      "class": "LaTeX",
+      "checkFix": true,
+      "patch": [
+        {
+          "number": 20,
+          "content": "\\[ s = \\sum_{i=1}^{n} a_i \\cdot b_i. \\]",
+          "type": "Modify"
+        }
+      ]
+    },
+    {
+      "number": 16,
+      "chapter": "Оценка погрешности",
+      "line": 5,
+      "title": "Unicode-символ ≤ вместо команды \\le",
+      "comment": "Знак «меньше или равно» набран символом «≤» вместо команды \\le. Правильно: \\[ \\|u - u_h\\| \\le C h^p, \\]",
+      "priority": 2,
+      "class": "LaTeX",
+      "checkFix": true,
+      "patch": [
+        {
+          "number": 5,
+          "content": "\\[ \\|u - u_h\\| \\le C h^p, \\]",
+          "type": "Modify"
+        }
+      ]
+    },
+    {
+      "number": 17,
+      "chapter": "Оценка погрешности",
+      "line": 8,
+      "title": "Опечатка в команде квантора: \\foral вместо \\forall",
+      "comment": "Команды \\foral не существует; квантор всеобщности задаётся как \\forall. Правильно: \\[ \\forall \\, h > 0, \\quad \\|u - u_h\\| \\le C h^p. \\]",
+      "priority": 1,
+      "class": "LaTeX",
+      "checkFix": true,
+      "patch": [
+        {
+          "number": 8,
+          "content": "\\[ \\forall \\, h > 0, \\quad \\|u - u_h\\| \\le C h^p. \\]",
+          "type": "Modify"
+        }
+      ]
+    },
+    {
+      "number": 18,
+      "chapter": "Оценка погрешности",
+      "line": 12,
+      "title": "Unicode-символ ∞ вместо команды \\infty",
+      "comment": "Символ бесконечности набран знаком «∞» вместо команды \\infty. Правильно: «при $n \\to \\infty$».",
+      "priority": 2,
+      "class": "LaTeX",
+      "checkFix": true,
+      "patch": [
+        {
+          "number": 12,
+          "content": "а при $n \\to \\infty$ остаток ряда стремится к нулю, что используется",
+          "type": "Modify"
+        }
+      ]
+    }
+  ]
+}

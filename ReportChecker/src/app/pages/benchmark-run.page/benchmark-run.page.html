@@ -169,6 +169,7 @@
                   @if (result.expectedComment) {
                     <p class="block-comment">{{ result.expectedComment }}</p>
                   }
+                  <app-fix-lines [lines]="expectedFixLines(result)"/>
                 </div>
 
                 @if (result.isFound) {
@@ -183,42 +184,8 @@
                     @if (result.foundComment) {
                       <p class="block-comment">{{ result.foundComment }}</p>
                     }
-<!--                    <div class="marks">-->
-<!--                      @if (result.foundPriority != null) {-->
-<!--                        <span tuiBadge>{{ result.foundPriority }}</span>-->
-<!--                        @if (result.priorityDelta != null && result.priorityDelta !== 0) {-->
-<!--                          <span class="mark-note">-->
-<!--                            приоритет {{ result.priorityDelta > 0 ? '+' : '' }}{{ result.priorityDelta }}-->
-<!--                          </span>-->
-<!--                        }-->
-<!--                      }-->
-<!--                      @if (result.titleMatch != null) {-->
-<!--                        <span class="mark-note">-->
-<!--                          заголовок {{ result.titleMatch ? 'совпал' : 'отличается' }}-->
-<!--                        </span>-->
-<!--                      }-->
-<!--                      <span class="mark-note">{{ matchMethodText(result) }}</span>-->
-<!--                    </div>-->
+                    <app-fix-lines [lines]="foundFixLines(result)"/>
                   </div>
-
-<!--                  @if (result.expectedFix || result.foundFix) {-->
-<!--                    <details class="fix">-->
-<!--                      <summary>-->
-<!--                        Исправление-->
-<!--                        @if (fixStatusText(result.fixMatchStatus)) {-->
-<!--                          <span tuiBadge [appearance]="fixStatusAppearance(result.fixMatchStatus)">-->
-<!--                            {{ fixStatusText(result.fixMatchStatus) }}-->
-<!--                          </span>-->
-<!--                        }-->
-<!--                      </summary>-->
-<!--                      @if (result.expectedFix && result.foundFix) {-->
-<!--                        <pre [innerHTML]="-->
-<!--                          {expected: result.expectedFix, found: result.foundFix} | fixDiff"></pre>-->
-<!--                      } @else {-->
-<!--                        <pre>{{ result.foundFix ?? result.expectedFix }}</pre>-->
-<!--                      }-->
-<!--                    </details>-->
-<!--                  }-->
                 } @else {
                   <div class="block found empty">
                     <span class="block-label">Ответ модели</span>
@@ -275,6 +242,7 @@
                   @if (result.foundComment) {
                     <p class="block-comment">{{ result.foundComment }}</p>
                   }
+                  <app-fix-lines [lines]="foundFixLines(result)"/>
                 </div>
               </div>
             </article>
