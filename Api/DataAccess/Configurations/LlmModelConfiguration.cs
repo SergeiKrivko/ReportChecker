@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ReportChecker.DataAccess.Entities;
+using ReportChecker.Models;
 
 namespace ReportChecker.DataAccess.Configurations;
 
@@ -15,6 +16,8 @@ public class LlmModelConfiguration : IEntityTypeConfiguration<LlmModelEntity>
         builder.Property(e => e.ModelKey).IsRequired();
         builder.Property(e => e.InputCoefficient).IsRequired();
         builder.Property(e => e.OutputCoefficient).IsRequired();
+        builder.Property(e => e.DefaultReasoningLevel).HasDefaultValue(LlmReasoningEffort.Default);
+        builder.Property(e => e.IsRecommended).HasDefaultValue(false);
         builder.Property(e => e.CreatedAt).IsRequired();
         builder.Property(e => e.DeletedAt);
 

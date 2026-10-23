@@ -134,14 +134,31 @@ public class SubscriptionService(
         var defaultPricePerMonth = offer.Price / offer.Months;
         var activeSubscription = await userSubscriptionRepository.GetActiveSubscriptionAsync(userId, ct);
         var futureSubscriptions = await userSubscriptionRepository.GetFutureSubscriptionsAsync(userId, ct);
+
+        // Покупка новой подписки отменяет все прежние неподтверждённые подписки.
+        // Очистка выполняется ровно перед созданием новой подписки, чтобы не потерять черновики,
+        // если покупка завершится ошибкой валидации.
+        var unconfirmedDeleted = false;
+
+        async Task<UserSubscription> CreateNewSubscriptionAsync(decimal price, DateTime startsAt, DateTime endsAt)
+        {
+            if (!unconfirmedDeleted)
+            {
+                await userSubscriptionRepository.DeleteUnconfirmedSubscriptionsAsync(userId, ct);
+                unconfirmedDeleted = true;
+            }
+
+            return await userSubscriptionRepository.CreateSubscriptionAsync(plan.Id, userId, defaultPricePerMonth,
+                price, startsAt, endsAt, ct);
+        }
+
         UserSubscription? subscription = null;
         if (activeSubscription == null)
         {
             if (futureSubscriptions.Any())
                 throw new SubscriptionException("Обнаружены будущие подписки при отсутствии текущей. " +
                                                 "Покупка подписки невозможна. Обратитесь в поддержку.");
-            subscription = await userSubscriptionRepository.CreateSubscriptionAsync(plan.Id, userId,
-                defaultPricePerMonth, offer.Price, now, now.AddDays(offer.Months * DaysPerMonth), ct);
+            subscription = await CreateNewSubscriptionAsync(offer.Price, now, now.AddDays(offer.Months * DaysPerMonth));
             return new CreatedSubscription
             {
                 Subscription = subscription,
@@ -156,9 +173,8 @@ public class SubscriptionService(
             if ((activeSubscription.EndsAt - now).TotalDays >= DaysPerMonth ||
                 futureSubscriptions.Any())
                 throw new SubscriptionException("Невозможно купить новую подписку: осталось больше месяца.");
-            subscription = await userSubscriptionRepository.CreateSubscriptionAsync(plan.Id, userId,
-                defaultPricePerMonth, offer.Price, activeSubscription.EndsAt,
-                activeSubscription.EndsAt.AddDays(offer.Months * DaysPerMonth), ct);
+            subscription = await CreateNewSubscriptionAsync(offer.Price, activeSubscription.EndsAt,
+                activeSubscription.EndsAt.AddDays(offer.Months * DaysPerMonth));
             return new CreatedSubscription
             {
                 Subscription = subscription,
@@ -173,8 +189,7 @@ public class SubscriptionService(
         decimal monthsDiscount = 0;
         var nextSubscriptions = new List<UserSubscription>();
         if (newSubscriptionMonths == 0)
-            subscription = await userSubscriptionRepository.CreateSubscriptionAsync(plan.Id, userId,
-                defaultPricePerMonth, offer.Price - tokensDiscount - monthsDiscount, now, endsAt, ct);
+            subscription = await CreateNewSubscriptionAsync(offer.Price - tokensDiscount - monthsDiscount, now, endsAt);
         foreach (var futureSubscription in
                  new List<UserSubscription> { activeSubscription }.Concat(futureSubscriptions))
         {
@@ -197,8 +212,8 @@ public class SubscriptionService(
                 {
                     monthsDiscount += futureSubscription.DefaultPricePerMonth * monthsRemaining;
                     monthsRemaining -= newSubscriptionMonths;
-                    subscription = await userSubscriptionRepository.CreateSubscriptionAsync(plan.Id, userId,
-                        defaultPricePerMonth, offer.Price - tokensDiscount - monthsDiscount, now, endsAt, ct);
+                    subscription = await CreateNewSubscriptionAsync(offer.Price - tokensDiscount - monthsDiscount,
+                        now, endsAt);
                     newSubscriptionMonths = 0;
                 }
 
@@ -213,8 +228,7 @@ public class SubscriptionService(
         }
 
         if (newSubscriptionMonths > 0)
-            subscription = await userSubscriptionRepository.CreateSubscriptionAsync(plan.Id, userId,
-                defaultPricePerMonth, offer.Price - tokensDiscount - monthsDiscount, now, endsAt, ct);
+            subscription = await CreateNewSubscriptionAsync(offer.Price - tokensDiscount - monthsDiscount, now, endsAt);
 
         return new CreatedSubscription
         {

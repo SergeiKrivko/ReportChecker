@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using ReportChecker.Models;
 
 namespace ReportChecker.DataAccess.Entities;
 
@@ -9,6 +10,8 @@ public class LlmModelEntity
     [MaxLength(64)] public required string ModelKey { get; init; }
     public double InputCoefficient { get; init; }
     public double OutputCoefficient { get; init; }
+    public LlmReasoningEffort DefaultReasoningLevel { get; init; } = LlmReasoningEffort.Default;
+    public bool IsRecommended { get; init; }
     public required DateTime CreatedAt { get; init; }
     public DateTime? DeletedAt { get; init; }
 

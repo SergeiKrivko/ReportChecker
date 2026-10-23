@@ -7,7 +7,9 @@ public class LlmModel
     public required string ModelKey { get; init; }
     public double InputCoefficient { get; init; }
     public double OutputCoefficient { get; init; }
+    public LlmReasoningEffort DefaultReasoningLevel { get; init; } = LlmReasoningEffort.Default;
     public bool IsDefault { get; init; }
+    public bool IsRecommended { get; init; }
     public required DateTime CreatedAt { get; init; }
     public DateTime? DeletedAt { get; init; }
 }

@@ -1,4 +1,6 @@
-﻿namespace ReportChecker.Api.Schemas;
+﻿using ReportChecker.Models;
+
+namespace ReportChecker.Api.Schemas;
 
 public class CreateLlmModelSchema
 {
@@ -6,4 +8,6 @@ public class CreateLlmModelSchema
     public required string ModelKey { get; init; }
     public double InputCoefficient { get; init; } = 1;
     public double OutputCoefficient { get; init; } = 1;
+    public LlmReasoningEffort DefaultReasoningLevel { get; init; } = LlmReasoningEffort.Default;
+    public bool IsRecommended { get; init; }
 }

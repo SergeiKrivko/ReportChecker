@@ -1,4 +1,4 @@
-﻿using ReportChecker.Models;
+using ReportChecker.Models;
 
 namespace ReportChecker.Abstractions;
 
@@ -18,6 +18,11 @@ public interface IUserSubscriptionRepository
 
     public Task<bool> ConfirmSubscriptionAsync(Guid subscriptionId, CancellationToken ct = default);
     public Task<bool> DeleteSubscriptionAsync(Guid subscriptionId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Мягко удаляет все неподтверждённые подписки пользователя.
+    /// </summary>
+    public Task<bool> DeleteUnconfirmedSubscriptionsAsync(Guid userId, CancellationToken ct = default);
 
     public Task<bool> SetPaymentAsync(Guid subscriptionId, Guid paymentId, CancellationToken ct = default);
     public Task<IReadOnlyDictionary<Guid, Payment>> GetPaymentsAsync(Guid userId, CancellationToken ct = default);

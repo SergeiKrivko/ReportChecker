@@ -11,6 +11,7 @@ public class Report
     public required string Format { get; init; }
     public Guid? LlmModelId { get; init; }
     public ImageProcessingMode ImageProcessingMode { get; init; }
+    public LlmReasoningEffort ReasoningLevel { get; init; } = LlmReasoningEffort.Default;
     public DateTime CreatedAt { get; init; }
     public DateTime? DeletedAt { get; init; }
 

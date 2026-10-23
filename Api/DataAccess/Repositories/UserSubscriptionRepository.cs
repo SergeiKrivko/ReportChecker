@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using ReportChecker.Abstractions;
 using ReportChecker.DataAccess.Converters;
 using ReportChecker.DataAccess.Entities;
@@ -140,6 +140,16 @@ public class UserSubscriptionRepository(ReportCheckerDbContext dbContext) : IUse
         var now = DateTime.UtcNow;
         var count = await dbContext.UserSubscriptions
             .Where(e => e.Id == subscriptionId || e.LinkedSubscriptionId == subscriptionId)
+            .ExecuteUpdateAsync(p => p.SetProperty(e => e.DeletedAt, now), ct);
+        await dbContext.SaveChangesAsync(ct);
+        return count > 0;
+    }
+
+    public async Task<bool> DeleteUnconfirmedSubscriptionsAsync(Guid userId, CancellationToken ct = default)
+    {
+        var now = DateTime.UtcNow;
+        var count = await dbContext.UserSubscriptions
+            .Where(e => e.UserId == userId && e.DeletedAt == null && e.ConfirmedAt == null)
             .ExecuteUpdateAsync(p => p.SetProperty(e => e.DeletedAt, now), ct);
         await dbContext.SaveChangesAsync(ct);
         return count > 0;

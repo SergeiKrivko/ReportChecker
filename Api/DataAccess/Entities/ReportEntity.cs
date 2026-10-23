@@ -9,6 +9,7 @@ public class ReportEntity
     public required Guid OwnerId { get; init; }
     public Guid? LlmModelId { get; init; }
     public ImageProcessingMode ImageProcessingMode { get; init; }
+    public LlmReasoningEffort ReasoningLevel { get; init; } = LlmReasoningEffort.Default;
     [MaxLength(100)] public string? Name { get; init; }
     [MaxLength(20)] public required string SourceProvider { get; init; }
     [MaxLength(20)] public required string Format { get; init; }

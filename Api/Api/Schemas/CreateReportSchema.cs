@@ -11,4 +11,5 @@ public class CreateReportSchema
     public required ReportSourceUnion Source { get; init; }
     public Guid? LlmModelId { get; init; }
     public ImageProcessingMode ImageProcessingMode { get; init; } = ImageProcessingMode.Disable;
+    public LlmReasoningEffort ReasoningLevel { get; init; } = LlmReasoningEffort.Default;
 }

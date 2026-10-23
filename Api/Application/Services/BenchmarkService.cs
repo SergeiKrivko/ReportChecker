@@ -133,7 +133,7 @@ public class BenchmarkService(
             {
                 var matchResult = await benchmarkAiService.MatchIssuesAsync(outcome.Pending, _judgeModelId, ct);
                 outcome = _matcher.ApplyLlmMatches(outcome, matchResult.Matches, options);
-                // usage = Sum(usage, matchResult.Usage);
+                usage = Sum(usage, matchResult.Usage);
             }
 
             var (results, aggregates) = BuildResults(runId, benchmarkCase, findResult.Issues, outcome,

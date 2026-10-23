@@ -19,6 +19,7 @@ public class ReportConfiguration : IEntityTypeConfiguration<ReportEntity>
         builder.Property(x => x.Format).IsRequired();
         builder.Property(x => x.LlmModelId);
         builder.Property(x => x.ImageProcessingMode).HasDefaultValue(ImageProcessingMode.Disable);
+        builder.Property(x => x.ReasoningLevel).HasDefaultValue(LlmReasoningEffort.Default);
         builder.Property(x => x.CreatedAt).IsRequired();
         builder.Property(x => x.DeletedAt);
 

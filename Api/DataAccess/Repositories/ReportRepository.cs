@@ -9,7 +9,8 @@ namespace ReportChecker.DataAccess.Repositories;
 public class ReportRepository(ReportCheckerDbContext dbContext) : IReportRepository
 {
     public async Task<Guid> CreateReportAsync(Guid ownerId, string name, string format, string sourceProvider,
-        Guid? llmModelId, ImageProcessingMode imageProcessingMode)
+        Guid? llmModelId, ImageProcessingMode imageProcessingMode,
+        LlmReasoningEffort reasoningLevel = LlmReasoningEffort.Default)
     {
         var id = Guid.NewGuid();
         var entity = new ReportEntity
@@ -21,6 +22,7 @@ public class ReportRepository(ReportCheckerDbContext dbContext) : IReportReposit
             Format = format,
             LlmModelId = llmModelId,
             ImageProcessingMode = imageProcessingMode,
+            ReasoningLevel = reasoningLevel,
             CreatedAt = DateTime.UtcNow,
             DeletedAt = null,
         };
@@ -39,14 +41,15 @@ public class ReportRepository(ReportCheckerDbContext dbContext) : IReportReposit
     }
 
     public async Task<bool> UpdateReportAsync(Guid reportId, string newName, Guid? llmModelId,
-        ImageProcessingMode imageProcessingMode)
+        ImageProcessingMode imageProcessingMode, LlmReasoningEffort reasoningLevel = LlmReasoningEffort.Default)
     {
         var result = await dbContext.Reports
             .Where(e => e.ReportId == reportId && e.DeletedAt == null)
             .ExecuteUpdateAsync(e => e
                 .SetProperty(x => x.Name, newName)
                 .SetProperty(x => x.LlmModelId, llmModelId)
-                .SetProperty(x => x.ImageProcessingMode, imageProcessingMode));
+                .SetProperty(x => x.ImageProcessingMode, imageProcessingMode)
+                .SetProperty(x => x.ReasoningLevel, reasoningLevel));
         await dbContext.SaveChangesAsync();
         return result > 0;
     }
@@ -109,6 +112,7 @@ public class ReportRepository(ReportCheckerDbContext dbContext) : IReportReposit
             Format = entity.Format,
             LlmModelId = entity.LlmModelId,
             ImageProcessingMode = entity.ImageProcessingMode,
+            ReasoningLevel = entity.ReasoningLevel,
             CreatedAt = entity.CreatedAt,
             DeletedAt = entity.DeletedAt,
 

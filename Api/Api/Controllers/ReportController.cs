@@ -47,7 +47,7 @@ public class ReportController(
 
         var reportId = await
             reportService.CreateReportAsync(userId, schema.Name, schema.Format, schema.SourceProvider,
-                schema.Source, schema.LlmModelId, schema.ImageProcessingMode);
+                schema.Source, schema.LlmModelId, schema.ImageProcessingMode, schema.ReasoningLevel);
         return Ok(reportId);
     }
 
@@ -70,7 +70,8 @@ public class ReportController(
         var report = await reportRepository.GetReportByIdAsync(reportId);
         if (report == null || report.OwnerId != User.UserId)
             throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
-        await reportRepository.UpdateReportAsync(reportId, schema.Name, schema.LlmModelId, schema.ImageProcessingMode);
+        await reportRepository.UpdateReportAsync(reportId, schema.Name, schema.LlmModelId, schema.ImageProcessingMode,
+            schema.ReasoningLevel);
         return Ok();
     }
 

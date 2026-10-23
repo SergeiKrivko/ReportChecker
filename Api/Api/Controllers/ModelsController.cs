@@ -38,7 +38,7 @@ public class ModelsController(ILlmModelRepository llmModelRepository, IAiHelperS
     public async Task<ActionResult<Guid>> CreateModelAsync(CreateLlmModelSchema schema, CancellationToken ct = default)
     {
         var id = await llmModelRepository.CreateModelAsync(schema.DisplayName, schema.ModelKey,
-            schema.InputCoefficient, schema.OutputCoefficient, ct);
+            schema.InputCoefficient, schema.OutputCoefficient, schema.DefaultReasoningLevel, schema.IsRecommended, ct);
         return Ok(id);
     }
 
@@ -48,7 +48,7 @@ public class ModelsController(ILlmModelRepository llmModelRepository, IAiHelperS
         CancellationToken ct = default)
     {
         var res = await llmModelRepository.UpdateModelAsync(modelId, schema.DisplayName, schema.ModelKey,
-            schema.InputCoefficient, schema.OutputCoefficient, ct);
+            schema.InputCoefficient, schema.OutputCoefficient, schema.DefaultReasoningLevel, schema.IsRecommended, ct);
         if (!res)
             throw new NotFoundException($"Модель '{modelId}' не найдена");
         return Ok();
@@ -75,8 +75,10 @@ public class ModelsController(ILlmModelRepository llmModelRepository, IAiHelperS
             CreatedAt = m.CreatedAt,
             DeletedAt = m.DeletedAt,
             IsDefault = m.IsDefault,
+            IsRecommended = m.IsRecommended,
             InputCoefficient = (double)p.InputCoefficient,
             OutputCoefficient = (double)p.OutputCoefficient,
+            DefaultReasoningLevel = m.DefaultReasoningLevel,
         };
     }
 }

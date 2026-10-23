@@ -36,7 +36,9 @@ public class LlmModelRepository(ReportCheckerDbContext dbContext, IConfiguration
     }
 
     public async Task<Guid> CreateModelAsync(string displayName, string modelKey,
-        double inputCoefficient, double outputCoefficient, CancellationToken ct = default)
+        double inputCoefficient, double outputCoefficient,
+        LlmReasoningEffort defaultReasoningLevel = LlmReasoningEffort.Default, bool isRecommended = false,
+        CancellationToken ct = default)
     {
         var id = Guid.NewGuid();
         var entity = new LlmModelEntity
@@ -46,6 +48,8 @@ public class LlmModelRepository(ReportCheckerDbContext dbContext, IConfiguration
             ModelKey = modelKey,
             InputCoefficient = inputCoefficient,
             OutputCoefficient = outputCoefficient,
+            DefaultReasoningLevel = defaultReasoningLevel,
+            IsRecommended = isRecommended,
             CreatedAt = DateTime.UtcNow,
             DeletedAt = null,
         };
@@ -55,7 +59,8 @@ public class LlmModelRepository(ReportCheckerDbContext dbContext, IConfiguration
     }
 
     public async Task<bool> UpdateModelAsync(Guid modelId, string displayName, string modelKey, double inputCoefficient,
-        double outputCoefficient, CancellationToken ct = default)
+        double outputCoefficient, LlmReasoningEffort defaultReasoningLevel = LlmReasoningEffort.Default,
+        bool isRecommended = false, CancellationToken ct = default)
     {
         var count = await dbContext.LlmModels
             .Where(e => e.Id == modelId)
@@ -64,6 +69,8 @@ public class LlmModelRepository(ReportCheckerDbContext dbContext, IConfiguration
                     .SetProperty(e => e.ModelKey, modelKey)
                     .SetProperty(e => e.InputCoefficient, inputCoefficient)
                     .SetProperty(e => e.OutputCoefficient, outputCoefficient)
+                    .SetProperty(e => e.DefaultReasoningLevel, defaultReasoningLevel)
+                    .SetProperty(e => e.IsRecommended, isRecommended)
                 , ct);
         return count > 0;
     }

@@ -12,10 +12,11 @@ public class ReportService(
     IEnumerable<IFormatProvider> formatProviders) : IReportService
 {
     public async Task<Guid> CreateReportAsync(Guid ownerId, string name, string format, string sourceProviderKey,
-        ReportSourceUnion source, Guid? llmModelId, ImageProcessingMode imageProcessingMode)
+        ReportSourceUnion source, Guid? llmModelId, ImageProcessingMode imageProcessingMode,
+        LlmReasoningEffort reasoningLevel = LlmReasoningEffort.Default)
     {
         var reportId = await reportRepository.CreateReportAsync(ownerId, name, format, sourceProviderKey, llmModelId,
-            imageProcessingMode);
+            imageProcessingMode, reasoningLevel);
         var provider = providerService.GetSourceProvider(sourceProviderKey);
         await provider.SaveAsync(reportId, source);
 

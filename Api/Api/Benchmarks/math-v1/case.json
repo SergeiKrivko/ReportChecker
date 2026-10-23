@@ -86,7 +86,7 @@
       "patch": [
         {
           "number": 8,
-          "content": "\\[ S = \\sqrt{p\\,(p - a)(p - b)(p - c)}, \\]",
+          "content": "\\[ S = \\sqrt{p(p - a)(p - b)(p - c)}, \\]",
           "type": "Modify"
         }
       ]

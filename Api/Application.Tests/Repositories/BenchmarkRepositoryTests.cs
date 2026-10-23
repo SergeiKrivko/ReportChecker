@@ -27,7 +27,7 @@ public class BenchmarkRepositoryTests
             .Options;
 
         _context = new ReportCheckerDbContext(options);
-        await _context.Database.MigrateAsync("20261012150454_BenchmarkRunReasoningEffort");
+        await _context.Database.MigrateAsync("20261023161623_LlmModelIsRecommended");
 
         await _context.LlmModels.AddAsync(new LlmModelEntity
         {

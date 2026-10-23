@@ -6,7 +6,8 @@ namespace ReportChecker.Abstractions;
 public interface IReportService
 {
     public Task<Guid> CreateReportAsync(Guid ownerId, string name, string format, string sourceProviderKey,
-        ReportSourceUnion source, Guid? llmModelId, ImageProcessingMode imageProcessingMode);
+        ReportSourceUnion source, Guid? llmModelId, ImageProcessingMode imageProcessingMode,
+        LlmReasoningEffort reasoningLevel = LlmReasoningEffort.Default);
 
     public Task<Guid> CreateCheckAsync(Report report);
     public Task<SourceInfo> GetSourceInfoAsync(string sourceProvider, ReportSourceUnion source);

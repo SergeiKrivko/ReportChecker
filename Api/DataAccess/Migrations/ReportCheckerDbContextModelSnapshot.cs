@@ -521,6 +521,11 @@ namespace ReportChecker.DataAccess.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("DefaultReasoningLevel")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -531,6 +536,11 @@ namespace ReportChecker.DataAccess.Migrations
 
                     b.Property<double>("InputCoefficient")
                         .HasColumnType("double precision");
+
+                    b.Property<bool>("IsRecommended")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
 
                     b.Property<string>("ModelKey")
                         .IsRequired()
@@ -752,6 +762,11 @@ namespace ReportChecker.DataAccess.Migrations
 
                     b.Property<Guid>("OwnerId")
                         .HasColumnType("uuid");
+
+                    b.Property<int>("ReasoningLevel")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
 
                     b.Property<string>("Source")
                         .HasMaxLength(200)
