@@ -14,15 +14,23 @@
   </div>
   <div class="grid-container">
     <label tuiLabel>Модель:</label>
-    <tui-textfield [content]="modelContent">
-      <input placeholder="По умолчанию" tuiSelect formControlName="llmModel"/>
+    <tui-textfield [content]="modelContent" [stringify]="stringifyModel">
+      <input placeholder="По умолчанию" tuiComboBox (blur)="restoreModel()" [formControl]="modelControl"/>
       @let models = models$ | async;
-      <tui-data-list-wrapper *tuiTextfieldDropdown new [items]="models" [itemContent]="modelContent"/>
+      <tui-data-list-wrapper *tuiTextfieldDropdown new
+                              [labels]="modelGroupLabels"
+                              [itemContent]="modelContent"
+                              [items]="models | llmModelGroups | tuiFilterByInput"/>
     </tui-textfield>
     <label tuiLabel>Обработка изображений:</label>
     <tui-textfield [stringify]="stringifyImageProcessingMode">
       <input placeholder="Отключить" tuiSelect formControlName="imageProcessingMode"/>
       <tui-data-list-wrapper *tuiTextfieldDropdown new [items]="imageProcessingModes"/>
+    </tui-textfield>
+    <label tuiLabel>Уровень рассуждений:</label>
+    <tui-textfield [stringify]="stringifyReasoningEffort">
+      <input placeholder="По умолчанию" tuiSelect formControlName="reasoningLevel"/>
+      <tui-data-list-wrapper *tuiTextfieldDropdown new [items]="reasoningEfforts"/>
     </tui-textfield>
   </div>
 

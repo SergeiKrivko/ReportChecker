@@ -18,4 +18,15 @@
   <tui-textfield>
     <input tuiInputNumber formControlName="outputCoefficient">
   </tui-textfield>
+
+  <label tuiLabel>Уровень рассуждений по умолчанию:</label>
+  <tui-textfield [stringify]="stringifyReasoningEffort">
+    <input tuiSelect formControlName="defaultReasoningLevel"/>
+    <tui-data-list-wrapper *tuiTextfieldDropdown new [items]="reasoningEfforts"/>
+  </tui-textfield>
+
+  <label class="recommended-container">
+    <input tuiCheckbox type="checkbox" formControlName="isRecommended"/>
+    Рекомендуемая модель
+  </label>
 </form>

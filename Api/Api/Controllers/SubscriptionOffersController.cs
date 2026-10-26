@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReportChecker.Abstractions;
-using ReportChecker.Api.Schemas;
+using ReportChecker.Api.Converters;
+using ReportChecker.Api.Dtos;
 using ReportChecker.Exceptions;
-using ReportChecker.Models;
 
 namespace ReportChecker.Api.Controllers;
 
@@ -13,38 +13,38 @@ public class SubscriptionOffersController(ISubscriptionOfferRepository subscript
 {
     [HttpGet]
     [AllowAnonymous]
-    public async Task<ActionResult<IEnumerable<SubscriptionOffer>>> GetAllOffers(Guid planId, CancellationToken ct)
+    public async Task<ActionResult<IEnumerable<SubscriptionOfferDto>>> GetAllOffers(Guid planId, CancellationToken ct)
     {
         var offers = await subscriptionOfferRepository.GetAllOffersAsync(planId, ct);
-        return Ok(offers);
+        return Ok(offers.Select(e => e.ToDto()));
     }
 
     [HttpGet("{offerId:guid}")]
     [AllowAnonymous]
-    public async Task<ActionResult<SubscriptionOffer>> GetAllOffers(Guid planId, Guid offerId,
+    public async Task<ActionResult<SubscriptionOfferDto>> GetOfferById(Guid planId, Guid offerId,
         CancellationToken ct)
     {
         var offer = await subscriptionOfferRepository.GetOfferById(offerId, ct);
         if (offer == null || offer.PlanId != planId)
             throw new NotFoundException("Предложение не найдено");
-        return Ok(offer);
+        return Ok(offer.ToDto());
     }
 
     [HttpPost]
     [Authorize(Policy = "Admin")]
-    public async Task<ActionResult<Guid>> CreateOffer(Guid planId, CreateSubscriptionOfferSchema schema,
+    public async Task<ActionResult<Guid>> CreateOffer(Guid planId, CreateSubscriptionOfferDto dto,
         CancellationToken ct)
     {
-        var id = await subscriptionOfferRepository.CreateOfferAsync(planId, schema.Months, schema.Price, ct);
+        var id = await subscriptionOfferRepository.CreateOfferAsync(planId, dto.Months, dto.Price, ct);
         return Ok(id);
     }
 
     [HttpPut("{offerId:guid}")]
     [Authorize(Policy = "Admin")]
-    public async Task<ActionResult> UpdateOffer(Guid planId, Guid offerId, CreateSubscriptionOfferSchema schema,
+    public async Task<ActionResult> UpdateOffer(Guid planId, Guid offerId, CreateSubscriptionOfferDto dto,
         CancellationToken ct)
     {
-        var res = await subscriptionOfferRepository.UpdateOfferAsync(offerId, schema.Months, schema.Price, ct);
+        var res = await subscriptionOfferRepository.UpdateOfferAsync(offerId, dto.Months, dto.Price, ct);
         if (!res)
             throw new NotFoundException("Предложение не найдено");
         return Ok();

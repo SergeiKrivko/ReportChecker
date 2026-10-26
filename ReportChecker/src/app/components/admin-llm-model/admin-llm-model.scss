@@ -8,3 +8,10 @@
     grid-template-columns: 1fr;
   }
 }
+
+.recommended-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  grid-column: 1 / -1;
+}

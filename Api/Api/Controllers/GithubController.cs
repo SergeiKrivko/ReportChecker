@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ReportChecker.Api.Converters;
+using ReportChecker.Api.Dtos;
 using ReportChecker.Api.Extensions;
 using ReportChecker.SourceProviders.GitHub;
 using ReportChecker.SourceProviders.GitHub.Models;
@@ -12,9 +14,10 @@ namespace ReportChecker.Api.Controllers;
 public class GithubController(GithubService githubService) : ControllerBase
 {
     [HttpGet("repositories")]
-    public async Task<ActionResult<IEnumerable<Repository>>> GetRepositories()
+    public async Task<ActionResult<IEnumerable<RepositoryDto>>> GetRepositories()
     {
-        return Ok(await githubService.GetRepositories(User.UserId));
+        var repositories = await githubService.GetRepositories(User.UserId);
+        return Ok(repositories.Select(e => e.ToDto()));
     }
 
     [HttpGet("branches")]
@@ -24,10 +27,11 @@ public class GithubController(GithubService githubService) : ControllerBase
     }
 
     [HttpGet("files")]
-    public async Task<ActionResult<IEnumerable<RepositoryFile>>> GetFiles([FromQuery] long repositoryId,
+    public async Task<ActionResult<IEnumerable<RepositoryFileDto>>> GetFiles([FromQuery] long repositoryId,
         [FromQuery] string branch)
     {
-        return Ok(await githubService.GetFilesOfRepositoryAsync(User.UserId, repositoryId, branch));
+        var files = await githubService.GetFilesOfRepositoryAsync(User.UserId, repositoryId, branch);
+        return Ok(files.Select(e => e.ToDto()));
     }
 
     [HttpGet("installation")]
@@ -37,8 +41,9 @@ public class GithubController(GithubService githubService) : ControllerBase
     }
 
     [HttpGet("repositories/{repositoryId:long}")]
-    public async Task<ActionResult<RepositoryInfo>> GetRepository(long repositoryId)
+    public async Task<ActionResult<RepositoryInfoDto>> GetRepository(long repositoryId)
     {
-        return Ok(await githubService.GetRepositoryInfoAsync(User.UserId, repositoryId));
+        var repository = await githubService.GetRepositoryInfoAsync(User.UserId, repositoryId);
+        return Ok(repository.ToDto());
     }
 }

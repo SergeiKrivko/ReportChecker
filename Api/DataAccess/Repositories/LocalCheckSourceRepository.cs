@@ -1,4 +1,5 @@
-﻿using ReportChecker.DataAccess.Entities;
+﻿using ReportChecker.DataAccess.Converters;
+using ReportChecker.DataAccess.Entities;
 using ReportChecker.Models.Sources;
 
 namespace ReportChecker.DataAccess.Repositories;
@@ -8,23 +9,11 @@ public class LocalCheckSourceRepository(ReportCheckerDbContext dbContext)
 {
     protected override LocalCheckSource FromEntity(LocalCheckSourceEntity entity)
     {
-        return new LocalCheckSource
-        {
-            FileName = entity.FileName,
-            CreatedAt = entity.CreatedAt,
-            DeletedAt = entity.DeletedAt,
-        };
+        return entity.ToDomain();
     }
 
     protected override LocalCheckSourceEntity ToEntity(Guid id, Guid? checkId, LocalCheckSource data)
     {
-        return new LocalCheckSourceEntity
-        {
-            Id = id,
-            CheckId = checkId,
-            FileName = data.FileName,
-            CreatedAt = data.CreatedAt,
-            DeletedAt = data.DeletedAt,
-        };
+        return data.ToEntity(id, checkId);
     }
 }

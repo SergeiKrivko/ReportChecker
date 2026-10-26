@@ -1,10 +1,10 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReportChecker.Abstractions;
+using ReportChecker.Api.Converters;
+using ReportChecker.Api.Dtos;
 using ReportChecker.Api.Extensions;
-using ReportChecker.Api.Schemas;
 using ReportChecker.Exceptions;
-using ReportChecker.Models;
 
 namespace ReportChecker.Api.Controllers;
 
@@ -21,7 +21,7 @@ public class CommentsController(
 {
     [HttpGet]
     [Authorize]
-    public async Task<ActionResult<IEnumerable<Comment>>> GetAllIssueComments(Guid reportId, Guid issueId)
+    public async Task<ActionResult<IEnumerable<CommentDto>>> GetAllIssueComments(Guid reportId, Guid issueId)
     {
         var userId = User.UserId;
 
@@ -38,12 +38,12 @@ public class CommentsController(
             throw new NotFoundException($"Ошибка '{issueId}' не найдена");
 
         var comments = await commentRepository.GetAllCommentsOfIssueAsync(issueId, userId);
-        return Ok(comments);
+        return Ok(comments.Select(e => e.ToDto()));
     }
 
     [HttpGet("{commentId:guid}")]
     [Authorize]
-    public async Task<ActionResult<Comment>> GetCommentById(Guid reportId, Guid issueId, Guid commentId)
+    public async Task<ActionResult<CommentDto>> GetCommentById(Guid reportId, Guid issueId, Guid commentId)
     {
         var userId = User.UserId;
 
@@ -61,13 +61,13 @@ public class CommentsController(
 
         var comment = await commentRepository.GetCommentByIdAsync(commentId, userId) ??
                       throw new NotFoundException($"Комментарий '{commentId}' не найден");
-        return Ok(comment);
+        return Ok(comment.ToDto());
     }
 
     [HttpPost]
     [Authorize]
     public async Task<ActionResult<Guid>> CreateIssueComment(Guid reportId, Guid issueId,
-        [FromBody] CreateCommentSchema schema)
+        [FromBody] CreateCommentDto dto)
     {
         var userId = User.UserId;
 
@@ -79,8 +79,8 @@ public class CommentsController(
         if (issue == null)
             throw new NotFoundException($"Ошибка '{issueId}' не найдена");
 
-        var id = await commentRepository.CreateCommentAsync(issueId, userId, schema.Content, schema.Status);
-        if (!string.IsNullOrWhiteSpace(schema.Content))
+        var id = await commentRepository.CreateCommentAsync(issueId, userId, dto.Content, dto.Status);
+        if (!string.IsNullOrWhiteSpace(dto.Content))
             await checkService.WriteCommentAsync(report.Id, issueId);
 
         return Ok(id);
@@ -89,7 +89,7 @@ public class CommentsController(
     [HttpPut("{commentId:guid}")]
     [Authorize]
     public async Task<ActionResult<Guid>> UpdateIssueComment(Guid reportId, Guid issueId, Guid commentId,
-        [FromBody] UpdateCommentSchema schema)
+        [FromBody] UpdateCommentDto dto)
     {
         var userId = User.UserId;
 
@@ -97,7 +97,7 @@ public class CommentsController(
         if (comment == null || comment.UserId != userId)
             throw new NotFoundException($"Комментарий '{commentId}' не найден либо написан другим пользователем");
 
-        await commentRepository.UpdateCommentAsync(commentId, schema.Content);
+        await commentRepository.UpdateCommentAsync(commentId, dto.Content);
         return Ok(commentId);
     }
 
@@ -115,16 +115,16 @@ public class CommentsController(
     }
 
     [HttpPost("read")]
-    public async Task<ActionResult> MarkRead(Guid reportId, Guid issueId, [FromBody] MarkReadSchema schema,
+    public async Task<ActionResult> MarkRead(Guid reportId, Guid issueId, [FromBody] MarkReadDto dto,
         CancellationToken ct)
     {
         var userId = User.UserId;
 
         var comments = await commentRepository.GetAllCommentsOfIssueAsync(issueId, userId);
-        var commentIds = comments.Where(e => e.IsRead != schema.IsRead).Select(e => e.Id);
-        if (schema.CommentIds.Length > 0)
-            commentIds = commentIds.Where(e => schema.CommentIds.Contains(e));
-        if (schema.IsRead)
+        var commentIds = comments.Where(e => e.IsRead != dto.IsRead).Select(e => e.Id);
+        if (dto.CommentIds.Length > 0)
+            commentIds = commentIds.Where(e => dto.CommentIds.Contains(e));
+        if (dto.IsRead)
         {
             await commentReadRepository.AddAsync(userId, commentIds, ct);
         }
@@ -139,7 +139,7 @@ public class CommentsController(
     [HttpPut("{commentId:guid}/patch")]
     [Authorize]
     public async Task<ActionResult> UpdatePatchStatus(Guid reportId, Guid issueId, Guid commentId,
-        [FromBody] UpdatePatchSchema schema, CancellationToken ct = default)
+        [FromBody] UpdatePatchDto dto, CancellationToken ct = default)
     {
         var userId = User.UserId;
 
@@ -157,7 +157,7 @@ public class CommentsController(
         if (comment.Patch == null)
             throw new NotFoundException($"Комментарий '{commentId}' не содержит предложений по исправлению");
 
-        await patchService.SetPatchStatus(comment.Patch.Id, schema.Status, ct);
+        await patchService.SetPatchStatus(comment.Patch.Id, dto.Status, ct);
         return Ok();
     }
 }

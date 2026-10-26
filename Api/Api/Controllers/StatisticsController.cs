@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReportChecker.Abstractions;
+using ReportChecker.Api.Converters;
+using ReportChecker.Api.Dtos;
 using ReportChecker.Api.Extensions;
-using ReportChecker.Models;
 
 namespace ReportChecker.Api.Controllers;
 
@@ -12,7 +13,7 @@ public class StatisticsController(ILlmUsageRepository llmUsageRepository) : Cont
 {
     [HttpGet("usage")]
     [Authorize]
-    public async Task<ActionResult<IEnumerable<LlmUsageGroup>>> GetReportsUsage(
+    public async Task<ActionResult<IEnumerable<LlmUsageGroupDto>>> GetReportsUsage(
         [FromQuery(Name = "start")] DateTime? timeStart = null,
         [FromQuery(Name = "end")] DateTime? timeEnd = null,
         CancellationToken ct = default)
@@ -21,12 +22,12 @@ public class StatisticsController(ILlmUsageRepository llmUsageRepository) : Cont
         timeEnd ??= DateTime.UtcNow;
         timeStart ??= timeEnd.Value.AddDays(-30);
         var usage = await llmUsageRepository.GetUsageStatisticsAsync(userId, timeStart.Value, timeEnd.Value, ct);
-        return Ok(usage);
+        return Ok(usage.Select(e => e.ToDto()));
     }
 
     [HttpGet("timeUsage")]
     [Authorize]
-    public async Task<ActionResult<IEnumerable<LlmUsageInterval>>> GetUsageByTime(
+    public async Task<ActionResult<IEnumerable<LlmUsageIntervalDto>>> GetUsageByTime(
         [FromQuery(Name = "start")] DateTime? timeStart = null,
         [FromQuery(Name = "end")] DateTime? timeEnd = null,
         [FromQuery(Name = "report")] Guid? reportId = null,
@@ -39,6 +40,6 @@ public class StatisticsController(ILlmUsageRepository llmUsageRepository) : Cont
         timeStart ??= timeEnd.Value.AddDays(-30);
         var usage = await llmUsageRepository.GetTimeUsageAsync(userId, timeStart.Value, timeEnd.Value, modelId,
             reportId, numberOfIntervals, ct);
-        return Ok(usage);
+        return Ok(usage.Select(e => e.ToDto()));
     }
 }

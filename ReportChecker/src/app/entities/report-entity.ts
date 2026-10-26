@@ -1,4 +1,4 @@
-import {IReportSourceUnion} from '../services/api-client';
+import {IReportSourceUnion, LlmReasoningEffort} from '../services/api-client';
 import {Moment} from 'moment';
 
 export interface ReportEntity {
@@ -8,6 +8,7 @@ export interface ReportEntity {
   format: string;
   llmModelId?: string;
   imageProcessingMode: ImageProcessingModeEntity;
+  reasoningLevel: LlmReasoningEffort;
 
   source?: IReportSourceUnion,
   issueCount?: { [key: string]: number; },

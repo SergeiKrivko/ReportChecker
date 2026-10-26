@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReportChecker.Abstractions;
+using ReportChecker.Api.Dtos;
 using ReportChecker.Api.Extensions;
-using ReportChecker.Api.Schemas;
 using ReportChecker.Exceptions;
 using ReportChecker.Models.Sources;
 
@@ -19,7 +19,7 @@ public class FilesController(
 {
     [HttpPost]
     [Authorize]
-    public async Task<ActionResult<UploadFileResponseSchema>> UploadFile(IFormFile file,
+    public async Task<ActionResult<UploadFileResponseDto>> UploadFile(IFormFile file,
         [FromQuery] FileBucketDto bucket = FileBucketDto.Default)
     {
         Guid id;
@@ -49,7 +49,7 @@ public class FilesController(
             throw new BadRequestException("Unknown bucket");
         await fileRepository.UploadFileAsync(s3Bucket, id, file.FileName,
             file.OpenReadStream());
-        return Ok(new UploadFileResponseSchema
+        return Ok(new UploadFileResponseDto
         {
             Id = id,
             FileName = file.FileName,
@@ -58,7 +58,7 @@ public class FilesController(
 
     [HttpGet]
     [Authorize]
-    public async Task<ActionResult<DownloadUrlResponse>> DownloadFile([FromQuery(Name = "report")] Guid reportId,
+    public async Task<ActionResult<DownloadUrlDto>> DownloadFile([FromQuery(Name = "report")] Guid reportId,
         [FromQuery] FileBucketDto bucket = FileBucketDto.Default)
     {
         var report = await reportRepository.GetReportByIdAsync(reportId);
@@ -77,7 +77,7 @@ public class FilesController(
                 TimeSpan.FromHours(1))
             : await fileRepository.GetDownloadUrlAsync(s3Bucket, source.Id, source.Data.FileName,
                 TimeSpan.FromHours(1));
-        return Ok(new DownloadUrlResponse
+        return Ok(new DownloadUrlDto
         {
             Url = fileUrl,
         });

@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReportChecker.Abstractions;
-using ReportChecker.Api.Schemas;
+using ReportChecker.Api.Converters;
+using ReportChecker.Api.Dtos;
 using ReportChecker.Exceptions;
-using ReportChecker.Models;
 
 namespace ReportChecker.Api.Controllers;
 
@@ -13,42 +13,43 @@ public class ModelsController(ILlmModelRepository llmModelRepository, IAiHelperS
 {
     [HttpGet]
     [AllowAnonymous]
-    public async Task<ActionResult<IEnumerable<LlmModel>>> GetAllModelsAsync(bool source = false, CancellationToken ct = default)
+    public async Task<ActionResult<IEnumerable<LlmModelDto>>> GetAllModelsAsync(bool source = false,
+        CancellationToken ct = default)
     {
         var models = await llmModelRepository.GetAllModelsAsync(ct);
         if (source)
-            return Ok(models);
+            return Ok(models.Select(e => e.ToDto()));
         var pricing = await aiHelperService.GetModelsPricingAsync(ct);
-        return Ok(models.Join(pricing, e => e.ModelKey, e => e.ModelId, AddPrice));
+        return Ok(models.Join(pricing, e => e.ModelKey, e => e.ModelId, (model, price) => model.ToDto(price)));
     }
 
     [HttpGet("{modelId:guid}")]
     [AllowAnonymous]
-    public async Task<ActionResult<LlmModel>> GetModelByIdAsync(Guid modelId,
+    public async Task<ActionResult<LlmModelDto>> GetModelByIdAsync(Guid modelId,
         CancellationToken ct = default)
     {
         var model = await llmModelRepository.GetModelByIdAsync(modelId, ct) ??
                     throw new NotFoundException($"Модель '{modelId}' не найдена");
         var pricing = await aiHelperService.GetModelsPricingAsync(ct);
-        return Ok(AddPrice(model, pricing.First(e => e.ModelId == model.ModelKey)));
+        return Ok(model.ToDto(pricing.First(e => e.ModelId == model.ModelKey)));
     }
 
     [HttpPost]
     [Authorize(Policy = "Admin")]
-    public async Task<ActionResult<Guid>> CreateModelAsync(CreateLlmModelSchema schema, CancellationToken ct = default)
+    public async Task<ActionResult<Guid>> CreateModelAsync(CreateLlmModelDto dto, CancellationToken ct = default)
     {
-        var id = await llmModelRepository.CreateModelAsync(schema.DisplayName, schema.ModelKey,
-            schema.InputCoefficient, schema.OutputCoefficient, schema.DefaultReasoningLevel, schema.IsRecommended, ct);
+        var id = await llmModelRepository.CreateModelAsync(dto.DisplayName, dto.ModelKey,
+            dto.InputCoefficient, dto.OutputCoefficient, dto.DefaultReasoningLevel, dto.IsRecommended, ct);
         return Ok(id);
     }
 
     [HttpPut("{modelId:guid}")]
     [Authorize(Policy = "Admin")]
-    public async Task<ActionResult> UpdateModelAsync(Guid modelId, CreateLlmModelSchema schema,
+    public async Task<ActionResult> UpdateModelAsync(Guid modelId, CreateLlmModelDto dto,
         CancellationToken ct = default)
     {
-        var res = await llmModelRepository.UpdateModelAsync(modelId, schema.DisplayName, schema.ModelKey,
-            schema.InputCoefficient, schema.OutputCoefficient, schema.DefaultReasoningLevel, schema.IsRecommended, ct);
+        var res = await llmModelRepository.UpdateModelAsync(modelId, dto.DisplayName, dto.ModelKey,
+            dto.InputCoefficient, dto.OutputCoefficient, dto.DefaultReasoningLevel, dto.IsRecommended, ct);
         if (!res)
             throw new NotFoundException($"Модель '{modelId}' не найдена");
         return Ok();
@@ -63,22 +64,5 @@ public class ModelsController(ILlmModelRepository llmModelRepository, IAiHelperS
         if (!res)
             throw new NotFoundException($"Модель '{modelId}' не найдена");
         return Ok();
-    }
-
-    private static LlmModel AddPrice(LlmModel m, LLmModelPrice p)
-    {
-        return new LlmModel
-        {
-            Id = m.Id,
-            DisplayName = m.DisplayName,
-            ModelKey = m.ModelKey,
-            CreatedAt = m.CreatedAt,
-            DeletedAt = m.DeletedAt,
-            IsDefault = m.IsDefault,
-            IsRecommended = m.IsRecommended,
-            InputCoefficient = (double)p.InputCoefficient,
-            OutputCoefficient = (double)p.OutputCoefficient,
-            DefaultReasoningLevel = m.DefaultReasoningLevel,
-        };
     }
 }

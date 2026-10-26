@@ -1,8 +1,9 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReportChecker.Abstractions;
+using ReportChecker.Api.Converters;
+using ReportChecker.Api.Dtos;
 using ReportChecker.Api.Extensions;
-using ReportChecker.Api.Schemas;
 using ReportChecker.Exceptions;
 using ReportChecker.Models;
 
@@ -19,19 +20,19 @@ public class CheckController(
 {
     [HttpGet]
     [Authorize]
-    public async Task<ActionResult<IEnumerable<Check>>> GetAllChecksAsync(Guid reportId)
+    public async Task<ActionResult<IEnumerable<CheckDto>>> GetAllChecksAsync(Guid reportId)
     {
         var userId = User.UserId;
         var report = await reportRepository.GetReportByIdAsync(reportId);
         if (report == null || report.OwnerId != userId)
             throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
         var checks = await checkRepository.GetAllChecksOfReportAsync(reportId);
-        return Ok(checks);
+        return Ok(checks.Select(e => e.ToDto()));
     }
 
     [HttpGet("latest")]
     [Authorize]
-    public async Task<ActionResult<Check>> GetLatestCheckAsync(Guid reportId, CancellationToken ct)
+    public async Task<ActionResult<CheckDto>> GetLatestCheckAsync(Guid reportId, CancellationToken ct)
     {
         var userId = User.UserId;
         var report = await reportRepository.GetReportByIdAsync(reportId);
@@ -41,7 +42,7 @@ public class CheckController(
         var check = await checkRepository.GetLatestCheckOfReportAsync(reportId, true, ct) ??
                     throw new NotFoundException("Не найдено ни одной проверки для данного отчета");
 
-        return Ok(check);
+        return Ok(check.ToDto());
     }
 
     [HttpPost("latest/restart")]
@@ -59,7 +60,7 @@ public class CheckController(
 
     [HttpGet("latest/chapters")]
     [Authorize]
-    public async Task<ActionResult<IEnumerable<Chapter>>> GetLatestCheckChaptersAsync(Guid reportId)
+    public async Task<ActionResult<IEnumerable<ChapterDto>>> GetLatestCheckChaptersAsync(Guid reportId)
     {
         var userId = User.UserId;
         var report = await reportRepository.GetReportByIdAsync(reportId);
@@ -68,12 +69,12 @@ public class CheckController(
         var check = await checkRepository.GetLatestCheckOfReportAsync(reportId) ??
                     throw new NotFoundException("Не найдено ни одной проверки для данного отчета");
         var chapters = await checkService.GetChaptersAsync(report, check);
-        return Ok(chapters);
+        return Ok(chapters.Select(e => e.ToDto()));
     }
 
     [HttpPost]
     [Authorize]
-    public async Task<ActionResult<Guid>> CreateCheckAsync(Guid reportId, [FromBody] CreateCheckSchema? schema)
+    public async Task<ActionResult<Guid>> CreateCheckAsync(Guid reportId, [FromBody] CreateCheckDto? dto)
     {
         var userId = User.UserId;
 
@@ -81,9 +82,9 @@ public class CheckController(
         if (report == null || report.OwnerId != userId)
             throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
 
-        var checkId = schema?.Source == null
+        var checkId = dto?.Source == null
             ? await reportService.CreateCheckAsync(report)
-            : await checkService.CreateCheckAsync(reportId, userId, schema.Source, schema.Name);
+            : await checkService.CreateCheckAsync(reportId, userId, dto.Source.ToDomain(), dto.Name);
 
         return Ok(checkId);
     }

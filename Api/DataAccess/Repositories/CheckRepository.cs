@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ReportChecker.Abstractions;
+using ReportChecker.DataAccess.Converters;
 using ReportChecker.DataAccess.Entities;
 using ReportChecker.Models;
 
@@ -29,7 +30,7 @@ public class CheckRepository(ReportCheckerDbContext dbContext) : ICheckRepositor
         var result = await dbContext.Checks
             .Where(e => e.CheckId == checkId)
             .FirstOrDefaultAsync(ct);
-        return result is null ? null : FromEntity(result);
+        return result?.ToDomain();
     }
 
     public async Task<Check?> GetPreviousCheckAsync(Check offset, CancellationToken ct = default)
@@ -38,7 +39,7 @@ public class CheckRepository(ReportCheckerDbContext dbContext) : ICheckRepositor
             .Where(e => e.ReportId == offset.ReportId && e.CreatedAt < offset.CreatedAt)
             .OrderByDescending(e => e.CreatedAt)
             .FirstOrDefaultAsync(ct);
-        return result is null ? null : FromEntity(result);
+        return result?.ToDomain();
     }
 
     public async Task<Check?> GetLatestCheckOfReportAsync(Guid reportId, bool includeFailed = false,
@@ -52,7 +53,7 @@ public class CheckRepository(ReportCheckerDbContext dbContext) : ICheckRepositor
                                 e.Status != ProgressStatus.Cancelled))
             .OrderByDescending(e => e.CreatedAt)
             .FirstOrDefaultAsync(ct);
-        return result is null ? null : FromEntity(result);
+        return result?.ToDomain();
     }
 
     public async Task<IEnumerable<Check>> GetAllChecksOfReportAsync(Guid reportId, CancellationToken ct = default)
@@ -60,7 +61,7 @@ public class CheckRepository(ReportCheckerDbContext dbContext) : ICheckRepositor
         var result = await dbContext.Checks
             .Where(e => e.ReportId == reportId)
             .ToListAsync(ct);
-        return result.Select(FromEntity);
+        return result.Select(e => e.ToDomain());
     }
 
     public async Task SetCheckStatusAsync(Guid checkId, ProgressStatus status, CancellationToken ct = default)
@@ -78,19 +79,5 @@ public class CheckRepository(ReportCheckerDbContext dbContext) : ICheckRepositor
             .Include(e => e.Report)
             .Where(e => e.Report.OwnerId == userId)
             .CountAsync(ct);
-    }
-
-
-    private static Check FromEntity(CheckEntity entity)
-    {
-        return new Check
-        {
-            Id = entity.CheckId,
-            ReportId = entity.ReportId,
-            UserId = entity.UserId,
-            Name = entity.Name,
-            CreatedAt = entity.CreatedAt,
-            Status = entity.Status,
-        };
     }
 }

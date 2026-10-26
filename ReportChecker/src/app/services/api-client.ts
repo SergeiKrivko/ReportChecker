@@ -5180,6 +5180,8 @@ export class CreateLlmModelSchema implements ICreateLlmModelSchema {
     modelKey!: string | undefined;
     inputCoefficient?: number;
     outputCoefficient?: number;
+    defaultReasoningLevel?: LlmReasoningEffort;
+    isRecommended?: boolean;
 
     constructor(data?: ICreateLlmModelSchema) {
         if (data) {
@@ -5196,6 +5198,8 @@ export class CreateLlmModelSchema implements ICreateLlmModelSchema {
             this.modelKey = _data["modelKey"];
             this.inputCoefficient = _data["inputCoefficient"];
             this.outputCoefficient = _data["outputCoefficient"];
+            this.defaultReasoningLevel = _data["defaultReasoningLevel"];
+            this.isRecommended = _data["isRecommended"];
         }
     }
 
@@ -5212,6 +5216,8 @@ export class CreateLlmModelSchema implements ICreateLlmModelSchema {
         data["modelKey"] = this.modelKey;
         data["inputCoefficient"] = this.inputCoefficient;
         data["outputCoefficient"] = this.outputCoefficient;
+        data["defaultReasoningLevel"] = this.defaultReasoningLevel;
+        data["isRecommended"] = this.isRecommended;
         return data;
     }
 }
@@ -5221,6 +5227,8 @@ export interface ICreateLlmModelSchema {
     modelKey: string | undefined;
     inputCoefficient?: number;
     outputCoefficient?: number;
+    defaultReasoningLevel?: LlmReasoningEffort;
+    isRecommended?: boolean;
 }
 
 export class CreateReportSchema implements ICreateReportSchema {
@@ -5230,6 +5238,7 @@ export class CreateReportSchema implements ICreateReportSchema {
     source!: ReportSourceUnion;
     llmModelId?: string | undefined;
     imageProcessingMode?: ImageProcessingMode;
+    reasoningLevel?: LlmReasoningEffort;
 
     constructor(data?: ICreateReportSchema) {
         if (data) {
@@ -5251,6 +5260,7 @@ export class CreateReportSchema implements ICreateReportSchema {
             this.source = _data["source"] ? ReportSourceUnion.fromJS(_data["source"]) : new ReportSourceUnion();
             this.llmModelId = _data["llmModelId"];
             this.imageProcessingMode = _data["imageProcessingMode"];
+            this.reasoningLevel = _data["reasoningLevel"];
         }
     }
 
@@ -5269,6 +5279,7 @@ export class CreateReportSchema implements ICreateReportSchema {
         data["source"] = this.source ? this.source.toJSON() : <any>undefined;
         data["llmModelId"] = this.llmModelId;
         data["imageProcessingMode"] = this.imageProcessingMode;
+        data["reasoningLevel"] = this.reasoningLevel;
         return data;
     }
 }
@@ -5280,6 +5291,7 @@ export interface ICreateReportSchema {
     source: ReportSourceUnion;
     llmModelId?: string | undefined;
     imageProcessingMode?: ImageProcessingMode;
+    reasoningLevel?: LlmReasoningEffort;
 }
 
 export class CreateSubscriptionOfferSchema implements ICreateSubscriptionOfferSchema {
@@ -5921,7 +5933,9 @@ export class LlmModel implements ILlmModel {
     modelKey!: string | undefined;
     inputCoefficient?: number;
     outputCoefficient?: number;
+    defaultReasoningLevel?: LlmReasoningEffort;
     isDefault?: boolean;
+    isRecommended?: boolean;
     createdAt!: moment.Moment;
     deletedAt?: moment.Moment | undefined;
 
@@ -5941,7 +5955,9 @@ export class LlmModel implements ILlmModel {
             this.modelKey = _data["modelKey"];
             this.inputCoefficient = _data["inputCoefficient"];
             this.outputCoefficient = _data["outputCoefficient"];
+            this.defaultReasoningLevel = _data["defaultReasoningLevel"];
             this.isDefault = _data["isDefault"];
+            this.isRecommended = _data["isRecommended"];
             this.createdAt = _data["createdAt"] ? moment(_data["createdAt"].toString()) : <any>undefined;
             this.deletedAt = _data["deletedAt"] ? moment(_data["deletedAt"].toString()) : <any>undefined;
         }
@@ -5961,7 +5977,9 @@ export class LlmModel implements ILlmModel {
         data["modelKey"] = this.modelKey;
         data["inputCoefficient"] = this.inputCoefficient;
         data["outputCoefficient"] = this.outputCoefficient;
+        data["defaultReasoningLevel"] = this.defaultReasoningLevel;
         data["isDefault"] = this.isDefault;
+        data["isRecommended"] = this.isRecommended;
         data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
         data["deletedAt"] = this.deletedAt ? this.deletedAt.toISOString() : <any>undefined;
         return data;
@@ -5974,7 +5992,9 @@ export interface ILlmModel {
     modelKey: string | undefined;
     inputCoefficient?: number;
     outputCoefficient?: number;
+    defaultReasoningLevel?: LlmReasoningEffort;
     isDefault?: boolean;
+    isRecommended?: boolean;
     createdAt: moment.Moment;
     deletedAt?: moment.Moment | undefined;
 }
@@ -6397,6 +6417,7 @@ export class Report implements IReport {
     format!: string | undefined;
     llmModelId?: string | undefined;
     imageProcessingMode?: ImageProcessingMode;
+    reasoningLevel?: LlmReasoningEffort;
     createdAt?: moment.Moment;
     deletedAt?: moment.Moment | undefined;
     source?: ReportSourceUnion;
@@ -6421,6 +6442,7 @@ export class Report implements IReport {
             this.format = _data["format"];
             this.llmModelId = _data["llmModelId"];
             this.imageProcessingMode = _data["imageProcessingMode"];
+            this.reasoningLevel = _data["reasoningLevel"];
             this.createdAt = _data["createdAt"] ? moment(_data["createdAt"].toString()) : <any>undefined;
             this.deletedAt = _data["deletedAt"] ? moment(_data["deletedAt"].toString()) : <any>undefined;
             this.source = _data["source"] ? ReportSourceUnion.fromJS(_data["source"]) : <any>undefined;
@@ -6451,6 +6473,7 @@ export class Report implements IReport {
         data["format"] = this.format;
         data["llmModelId"] = this.llmModelId;
         data["imageProcessingMode"] = this.imageProcessingMode;
+        data["reasoningLevel"] = this.reasoningLevel;
         data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
         data["deletedAt"] = this.deletedAt ? this.deletedAt.toISOString() : <any>undefined;
         data["source"] = this.source ? this.source.toJSON() : <any>undefined;
@@ -6474,6 +6497,7 @@ export interface IReport {
     format: string | undefined;
     llmModelId?: string | undefined;
     imageProcessingMode?: ImageProcessingMode;
+    reasoningLevel?: LlmReasoningEffort;
     createdAt?: moment.Moment;
     deletedAt?: moment.Moment | undefined;
     source?: ReportSourceUnion;
@@ -6946,6 +6970,7 @@ export class UpdateReportSchema implements IUpdateReportSchema {
     name!: string | undefined;
     llmModelId?: string | undefined;
     imageProcessingMode?: ImageProcessingMode;
+    reasoningLevel?: LlmReasoningEffort;
 
     constructor(data?: IUpdateReportSchema) {
         if (data) {
@@ -6961,6 +6986,7 @@ export class UpdateReportSchema implements IUpdateReportSchema {
             this.name = _data["name"];
             this.llmModelId = _data["llmModelId"];
             this.imageProcessingMode = _data["imageProcessingMode"];
+            this.reasoningLevel = _data["reasoningLevel"];
         }
     }
 
@@ -6976,6 +7002,7 @@ export class UpdateReportSchema implements IUpdateReportSchema {
         data["name"] = this.name;
         data["llmModelId"] = this.llmModelId;
         data["imageProcessingMode"] = this.imageProcessingMode;
+        data["reasoningLevel"] = this.reasoningLevel;
         return data;
     }
 }
@@ -6984,6 +7011,7 @@ export interface IUpdateReportSchema {
     name: string | undefined;
     llmModelId?: string | undefined;
     imageProcessingMode?: ImageProcessingMode;
+    reasoningLevel?: LlmReasoningEffort;
 }
 
 export class UploadFileResponseSchema implements IUploadFileResponseSchema {

@@ -1,8 +1,9 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReportChecker.Abstractions;
+using ReportChecker.Api.Converters;
+using ReportChecker.Api.Dtos;
 using ReportChecker.Api.Extensions;
-using ReportChecker.Api.Schemas;
 using ReportChecker.Exceptions;
 using ReportChecker.Models;
 
@@ -19,7 +20,7 @@ public class InstructionController(
 {
     [HttpGet]
     [Authorize]
-    public async Task<ActionResult<IEnumerable<Instruction>>> GetInstructionsAsync(Guid reportId,
+    public async Task<ActionResult<IEnumerable<InstructionDto>>> GetInstructionsAsync(Guid reportId,
         CancellationToken ct)
     {
         var userId = User.UserId;
@@ -27,7 +28,7 @@ public class InstructionController(
         if (report == null || report.OwnerId != userId)
             throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
         var instructions = await instructionRepository.GetInstructionsAsync(reportId, ct);
-        return Ok(instructions);
+        return Ok(instructions.Select(e => e.ToDto()));
     }
 
     [HttpPost]
@@ -71,36 +72,36 @@ public class InstructionController(
 
     [HttpGet("tasks")]
     [Authorize]
-    public async Task<ActionResult<IEnumerable<InstructionTask>>> GetInstructionTasks(Guid reportId)
+    public async Task<ActionResult<IEnumerable<InstructionTaskDto>>> GetInstructionTasks(Guid reportId)
     {
         var userId = User.UserId;
         var report = await reportRepository.GetReportByIdAsync(reportId);
         if (report == null || report.OwnerId != userId)
             throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
         var tasks = await instructionTaskRepository.GetAllForReportAsync(reportId, ProgressStatus.InProgress);
-        return Ok(tasks);
+        return Ok(tasks.Select(e => e.ToDto()));
     }
 
     [HttpPost("tasks")]
     [Authorize]
     public async Task<ActionResult<Guid>> CreateInstructionTaskAsync(Guid reportId,
-        [FromBody] CreateInstructionTaskSchema schema, CancellationToken ct)
+        [FromBody] CreateInstructionTaskDto dto, CancellationToken ct)
     {
         var report = await reportRepository.GetReportByIdAsync(reportId);
         if (report == null || report.OwnerId != User.UserId)
             throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
 
-        if (schema.InstructionId != null)
+        if (dto.InstructionId != null)
         {
-            var id = await instructionTaskService.CreateInstructionTaskAsync(reportId, schema.InstructionId.Value,
-                schema.Mode,
+            var id = await instructionTaskService.CreateInstructionTaskAsync(reportId, dto.InstructionId.Value,
+                dto.Mode,
                 ct);
             return Ok(id);
         }
 
-        if (schema.Instruction != null)
+        if (dto.Instruction != null)
         {
-            var id = await instructionTaskService.CreateInstructionTaskAsync(reportId, schema.Instruction, schema.Mode,
+            var id = await instructionTaskService.CreateInstructionTaskAsync(reportId, dto.Instruction, dto.Mode,
                 ct);
             return Ok(id);
         }

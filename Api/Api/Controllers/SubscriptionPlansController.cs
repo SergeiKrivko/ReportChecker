@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReportChecker.Abstractions;
-using ReportChecker.Api.Schemas;
+using ReportChecker.Api.Converters;
+using ReportChecker.Api.Dtos;
 using ReportChecker.Exceptions;
 using ReportChecker.Models;
 
@@ -15,7 +16,7 @@ public class SubscriptionPlansController(
 {
     [HttpGet]
     [AllowAnonymous]
-    public async Task<ActionResult<IEnumerable<SubscriptionPlan>>> GetAllPlans(CancellationToken ct)
+    public async Task<ActionResult<IEnumerable<SubscriptionPlanDto>>> GetAllPlans(CancellationToken ct)
     {
         var plans = await subscriptionPlanRepository.GetAllPlansAsync(ct);
         var freeSubscription =
@@ -28,35 +29,35 @@ public class SubscriptionPlansController(
                 ReportsLimit = int.Parse(configuration["Subscriptions.Free.Reports"] ?? "0"),
                 CreatedAt = DateTime.UnixEpoch,
             };
-        return Ok(new[] { freeSubscription }.Concat(plans));
+        return Ok(plans.Prepend(freeSubscription).Select(e => e.ToDto()));
     }
 
     [HttpGet("{planId:guid}")]
     [AllowAnonymous]
-    public async Task<ActionResult<IEnumerable<SubscriptionPlan>>> GetPlanById(Guid planId, CancellationToken ct)
+    public async Task<ActionResult<SubscriptionPlanDto>> GetPlanById(Guid planId, CancellationToken ct)
     {
         var plan = await subscriptionPlanRepository.GetPlanByIdAsync(planId, ct);
         if (plan == null)
             throw new NotFoundException("План не найден");
-        return Ok(plan);
+        return Ok(plan.ToDto());
     }
 
     [HttpPost]
     [Authorize(Policy = "Admin")]
-    public async Task<ActionResult<Guid>> CreatePlan(CreateSubscriptionPlanSchema schema, CancellationToken ct)
+    public async Task<ActionResult<Guid>> CreatePlan(CreateSubscriptionPlanDto dto, CancellationToken ct)
     {
-        var id = await subscriptionPlanRepository.CreatePlanAsync(schema.Name, schema.Description, schema.TokensLimit,
-            schema.ReportsLimit, schema.IsHidden, ct);
+        var id = await subscriptionPlanRepository.CreatePlanAsync(dto.Name, dto.Description, dto.TokensLimit,
+            dto.ReportsLimit, dto.IsHidden, ct);
         return Ok(id);
     }
 
     [HttpPut("{planId:guid}")]
     [Authorize(Policy = "Admin")]
-    public async Task<ActionResult> UpdatePlan(Guid planId, CreateSubscriptionPlanSchema schema,
+    public async Task<ActionResult> UpdatePlan(Guid planId, CreateSubscriptionPlanDto dto,
         CancellationToken ct)
     {
-        var res = await subscriptionPlanRepository.UpdatePlanAsync(planId, schema.Name, schema.Description,
-            schema.TokensLimit, schema.ReportsLimit, schema.IsHidden, ct);
+        var res = await subscriptionPlanRepository.UpdatePlanAsync(planId, dto.Name, dto.Description,
+            dto.TokensLimit, dto.ReportsLimit, dto.IsHidden, ct);
         if (!res)
             throw new NotFoundException("План не найден");
         return Ok();

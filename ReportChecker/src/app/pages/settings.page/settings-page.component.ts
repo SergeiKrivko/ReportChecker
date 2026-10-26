@@ -4,8 +4,17 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {AsyncPipe} from '@angular/common';
 import {TuiButton, TuiTextfield} from '@taiga-ui/core';
 import {InstructionInput} from '../../components/instruction-input/instruction-input';
-import {TUI_CONFIRM, TuiBadge, TuiConfirmData, TuiDataListWrapperComponent, TuiSelectDirective} from '@taiga-ui/kit';
-import {combineLatest, debounceTime, EMPTY, from, map, NEVER, switchMap, tap} from 'rxjs';
+import {
+  TUI_CONFIRM,
+  TuiBadge,
+  TuiComboBox,
+  TuiConfirmData,
+  TuiDataListGroupWrapperComponent,
+  TuiDataListWrapperComponent,
+  TuiFilterByInputPipe,
+  TuiSelectDirective
+} from '@taiga-ui/kit';
+import {combineLatest, debounceTime, EMPTY, filter, from, map, NEVER, Observable, switchMap, tap} from 'rxjs';
 import {Router, RouterLink} from '@angular/router';
 import {TuiResponsiveDialogService} from '@taiga-ui/addon-mobile';
 import {ReportsService} from '../../services/reports.service';
@@ -14,6 +23,9 @@ import {PathService} from '../../services/path.service';
 import {LlmModelEntity} from '../../entities/llm-model-entity';
 import {ImageProcessingModeEntity} from '../../entities/report-entity';
 import {RoundPipe} from '../../pipes/round-pipe';
+import {LlmModelGroupsPipe, LLM_MODEL_GROUP_LABELS} from '../../pipes/llm-model-groups-pipe';
+import {LlmReasoningEffort} from '../../services/api-client';
+import {REASONING_EFFORT_OPTIONS, reasoningEffortText} from '../../helpers/llm-reasoning-effort';
 
 @Component({
   selector: 'app-instructions.page',
@@ -24,10 +36,14 @@ import {RoundPipe} from '../../pipes/round-pipe';
     TuiTextfield,
     ReactiveFormsModule,
     TuiDataListWrapperComponent,
+    TuiDataListGroupWrapperComponent,
     TuiSelectDirective,
+    TuiComboBox,
+    TuiFilterByInputPipe,
     RouterLink,
     TuiBadge,
-    RoundPipe
+    RoundPipe,
+    LlmModelGroupsPipe
   ],
   templateUrl: './settings-page.component.html',
   styleUrl: './settings-page.component.scss',
@@ -46,17 +62,36 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   protected readonly control = new FormGroup({
     name: new FormControl<string>(""),
-    llmModel: new FormControl<LlmModelEntity | null>(null),
     imageProcessingMode: new FormControl<ImageProcessingModeEntity>(ImageProcessingModeEntity.Disable),
+    reasoningLevel: new FormControl<LlmReasoningEffort>(LlmReasoningEffort.Default),
   });
+
+  /**
+   * Отдельный контрол для комбобокса модели: при поиске tuiComboBox временно
+   * сбрасывает значение в null, и если бы контрол входил в `control`,
+   * это сохраняло бы отчет без модели.
+   */
+  protected readonly modelControl = new FormControl<LlmModelEntity | null>(null);
+
+  /**
+   * Последняя выбранная/сохраненная модель. Нужна, чтобы незавершенный поиск
+   * в комбобоксе не сбрасывал модель отчета.
+   */
+  private savedModel: LlmModelEntity | null = null;
+
+  protected readonly modelGroupLabels = LLM_MODEL_GROUP_LABELS;
 
   ngOnInit() {
     combineLatest([this.reportsService.selectedReport$, this.reportsService.models$]).pipe(
-      tap(([report, models]) => this.control.setValue({
-        name: report?.name ?? "",
-        llmModel: models.find(e => e.id == report?.llmModelId) ?? null,
-        imageProcessingMode: report?.imageProcessingMode ?? ImageProcessingModeEntity.Disable,
-      })),
+      tap(([report, models]) => {
+        this.control.setValue({
+          name: report?.name ?? "",
+          imageProcessingMode: report?.imageProcessingMode ?? ImageProcessingModeEntity.Disable,
+          reasoningLevel: report?.reasoningLevel ?? LlmReasoningEffort.Default,
+        });
+        this.savedModel = models.find(e => e.id == report?.llmModelId) ?? null;
+        this.modelControl.setValue(this.savedModel, {emitEvent: false});
+      }),
       takeUntilDestroyed(this.destroyRef),
     ).subscribe();
     this.reportsService.loadModels().pipe(
@@ -64,12 +99,13 @@ export class SettingsPage implements OnInit, OnDestroy {
     ).subscribe();
     this.control.valueChanges.pipe(
       debounceTime(1000),
-      switchMap(value => {
-        if (value.name)
-          return this.reportsService.updateReport(value.name, value.llmModel?.id,
-            value.imageProcessingMode ?? ImageProcessingModeEntity.Disable);
-        return NEVER;
-      }),
+      switchMap(() => this.saveReport()),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe();
+    this.modelControl.valueChanges.pipe(
+      filter(model => model != null),
+      tap(model => this.savedModel = model),
+      switchMap(() => this.saveReport()),
       takeUntilDestroyed(this.destroyRef),
     ).subscribe();
     this.instructionService.loadInstructionsOnReportChanged$.pipe(
@@ -89,6 +125,20 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.pathService.clear(1);
+  }
+
+  private saveReport(): Observable<unknown> {
+    const value = this.control.value;
+    if (!value.name)
+      return NEVER;
+    return this.reportsService.updateReport(value.name, (this.modelControl.value ?? this.savedModel)?.id,
+      value.imageProcessingMode ?? ImageProcessingModeEntity.Disable,
+      value.reasoningLevel ?? LlmReasoningEffort.Default);
+  }
+
+  protected restoreModel() {
+    if (this.modelControl.value == null)
+      this.modelControl.setValue(this.savedModel, {emitEvent: false});
   }
 
   protected addInstruction() {
@@ -144,6 +194,12 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   protected stringifyImageProcessingMode(mode: ImageProcessingModeEntity): string {
     return imageProcessingModesMap[mode];
+  }
+
+  protected readonly reasoningEfforts = REASONING_EFFORT_OPTIONS;
+
+  protected stringifyReasoningEffort(effort: LlmReasoningEffort): string {
+    return reasoningEffortText(effort);
   }
 }
 

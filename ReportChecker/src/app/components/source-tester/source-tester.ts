@@ -1,16 +1,24 @@
 import {ChangeDetectorRef, Component, DestroyRef, inject, input, OnInit} from '@angular/core';
 import {takeUntilDestroyed, toObservable} from '@angular/core/rxjs-interop';
-import {from, map, NEVER, switchMap, tap} from 'rxjs';
+import {filter, from, map, NEVER, switchMap, tap} from 'rxjs';
 import {ReportsService} from '../../services/reports.service';
 import {SourceInfoEntity} from '../../entities/source-info-entity';
 import {TuiButton, TuiLabel, TuiNotification, TuiTextfield, TuiTextfieldComponent} from '@taiga-ui/core';
 import {Router} from '@angular/router';
-import {IFileReportSource, IGitHubReportSource} from '../../services/api-client';
+import {IFileReportSource, IGitHubReportSource, LlmReasoningEffort} from '../../services/api-client';
 import {AsyncPipe} from "@angular/common";
 import {FormControl, FormGroup, ReactiveFormsModule} from "@angular/forms";
-import {TuiDataListWrapperComponent, TuiSelectDirective} from "@taiga-ui/kit";
+import {
+  TuiComboBox,
+  TuiDataListGroupWrapperComponent,
+  TuiDataListWrapperComponent,
+  TuiFilterByInputPipe,
+  TuiSelectDirective
+} from "@taiga-ui/kit";
 import {LlmModelEntity} from '../../entities/llm-model-entity';
 import {ImageProcessingModeEntity} from '../../entities/report-entity';
+import {REASONING_EFFORT_OPTIONS, reasoningEffortText} from '../../helpers/llm-reasoning-effort';
+import {LlmModelGroupsPipe, LLM_MODEL_GROUP_LABELS} from '../../pipes/llm-model-groups-pipe';
 
 @Component({
   selector: 'app-source-tester',
@@ -20,10 +28,14 @@ import {ImageProcessingModeEntity} from '../../entities/report-entity';
     AsyncPipe,
     ReactiveFormsModule,
     TuiDataListWrapperComponent,
+    TuiDataListGroupWrapperComponent,
     TuiLabel,
     TuiSelectDirective,
+    TuiComboBox,
+    TuiFilterByInputPipe,
     TuiTextfieldComponent,
-    TuiTextfield
+    TuiTextfield,
+    LlmModelGroupsPipe
   ],
   templateUrl: './source-tester.html',
   styleUrl: './source-tester.scss',
@@ -42,10 +54,14 @@ export class SourceTester implements OnInit {
 
   protected sourceInfo: SourceInfoEntity | undefined;
   protected readonly models$ = this.reportsService.models$;
+  protected readonly modelGroupLabels = LLM_MODEL_GROUP_LABELS;
+
+  private selectedModel: LlmModelEntity | null = null;
 
   protected readonly control = new FormGroup({
     llmModel: new FormControl<LlmModelEntity | null>(null),
     imageProcessingMode: new FormControl<ImageProcessingModeEntity>(ImageProcessingModeEntity.Disable),
+    reasoningLevel: new FormControl<LlmReasoningEffort>(LlmReasoningEffort.Default),
   });
 
   ngOnInit() {
@@ -65,6 +81,16 @@ export class SourceTester implements OnInit {
     this.reportsService.loadModels().pipe(
       takeUntilDestroyed(this.destroyRef),
     ).subscribe();
+
+    this.control.controls.llmModel.valueChanges.pipe(
+      filter((model): model is LlmModelEntity => model != null),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe(model => this.selectedModel = model);
+  }
+
+  protected restoreModel() {
+    if (this.control.value.llmModel == null)
+      this.control.patchValue({llmModel: this.selectedModel}, {emitEvent: false});
   }
 
   createReport() {
@@ -74,8 +100,10 @@ export class SourceTester implements OnInit {
       return;
     const llmModelId = this.control.value.llmModel?.id;
     const imageProcessingMode = this.control.value.imageProcessingMode;
+    const reasoningLevel = this.control.value.reasoningLevel;
     this.reportsService.createReport(this.name() || "New report", source, this.provider(), format, llmModelId,
-      imageProcessingMode ?? ImageProcessingModeEntity.Disable).pipe(
+      imageProcessingMode ?? ImageProcessingModeEntity.Disable,
+      reasoningLevel ?? LlmReasoningEffort.Default).pipe(
       switchMap(reportId => this.reportsService.loadReports().pipe(map(() => reportId))),
       switchMap(id => from(this.router.navigate(['/reports/' + id]))),
       takeUntilDestroyed(this.destroyRef),
@@ -97,6 +125,12 @@ export class SourceTester implements OnInit {
 
   protected stringifyImageProcessingMode(mode: ImageProcessingModeEntity): string {
     return imageProcessingModesMap[mode];
+  }
+
+  protected readonly reasoningEfforts = REASONING_EFFORT_OPTIONS;
+
+  protected stringifyReasoningEffort(effort: LlmReasoningEffort): string {
+    return reasoningEffortText(effort);
   }
 }
 

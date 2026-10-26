@@ -1,4 +1,5 @@
-﻿using ReportChecker.DataAccess.Entities;
+﻿using ReportChecker.DataAccess.Converters;
+using ReportChecker.DataAccess.Entities;
 using ReportChecker.Models.Sources;
 
 namespace ReportChecker.DataAccess.Repositories;
@@ -8,19 +9,11 @@ public class GitHubCheckSourceRepository(ReportCheckerDbContext dbContext)
 {
     protected override GitHubCheckSource FromEntity(GitHubCheckSourceEntity entity)
     {
-        return new GitHubCheckSource
-        {
-            CommitHash = entity.CommitHash
-        };
+        return entity.ToDomain();
     }
 
     protected override GitHubCheckSourceEntity ToEntity(Guid id, Guid? checkId, GitHubCheckSource data)
     {
-        return new GitHubCheckSourceEntity
-        {
-            Id = id,
-            CheckId = checkId,
-            CommitHash = data.CommitHash
-        };
+        return data.ToEntity(id, checkId);
     }
 }

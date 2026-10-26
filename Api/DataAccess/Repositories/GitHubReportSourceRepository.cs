@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ReportChecker.DataAccess.Converters;
 using ReportChecker.DataAccess.Entities;
 using ReportChecker.Models.Sources;
 
@@ -20,29 +21,17 @@ public class GitHubReportSourceRepository(ReportCheckerDbContext dbContext)
             {
                 Id = entity.Id,
                 ReportId = entity.ReportId,
-                Data = FromEntity(entity)
+                Data = entity.ToDomain()
             };
     }
 
     protected override GitHubReportSource FromEntity(GitHubReportSourceEntity entity)
     {
-        return new GitHubReportSource
-        {
-            RepositoryId = entity.RepositoryId,
-            Branch = entity.Branch,
-            Path = entity.Path,
-        };
+        return entity.ToDomain();
     }
 
     protected override GitHubReportSourceEntity ToEntity(Guid id, Guid reportId, GitHubReportSource data)
     {
-        return new GitHubReportSourceEntity
-        {
-            Id = id,
-            ReportId = reportId,
-            RepositoryId = data.RepositoryId,
-            Branch = data.Branch,
-            Path = data.Path,
-        };
+        return data.ToEntity(id, reportId);
     }
 }

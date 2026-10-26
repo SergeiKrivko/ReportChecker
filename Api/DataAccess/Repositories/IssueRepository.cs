@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ReportChecker.Abstractions;
+using ReportChecker.DataAccess.Converters;
 using ReportChecker.DataAccess.Entities;
 using ReportChecker.Models;
 
@@ -15,7 +16,7 @@ public class IssueRepository(ReportCheckerDbContext dbContext) : IIssueRepositor
             .ThenInclude(e => e.Patch).ThenInclude(e => e.Lines)
             .Include(e => e.Locations)
             .ToListAsync(ct);
-        return result.Select(e => FromEntity(e));
+        return result.Select(e => e.ToDomain());
     }
 
     public async Task<IEnumerable<Issue>> GetAllIssuesOfReportAsync(Guid reportId, CancellationToken ct = default)
@@ -27,7 +28,7 @@ public class IssueRepository(ReportCheckerDbContext dbContext) : IIssueRepositor
             .ThenInclude(e => e.Patch).ThenInclude(e => e.Lines)
             .Include(e => e.Locations)
             .ToListAsync(ct);
-        return result.Select(e => FromEntity(e));
+        return result.Select(e => e.ToDomain());
     }
 
     public async Task<IEnumerable<Issue>> GetAllIssuesOfReportAsync(Guid reportId, Guid userId,
@@ -41,7 +42,7 @@ public class IssueRepository(ReportCheckerDbContext dbContext) : IIssueRepositor
             .ThenInclude(e => e.Patch).ThenInclude(e => e.Lines)
             .Include(e => e.Locations)
             .ToListAsync(ct);
-        return result.Select(e => FromEntity(e, userId));
+        return result.Select(e => e.ToDomain(userId));
     }
 
     public async Task<Issue?> GetIssueByIdAsync(Guid issueId, CancellationToken ct = default)
@@ -52,7 +53,7 @@ public class IssueRepository(ReportCheckerDbContext dbContext) : IIssueRepositor
             .ThenInclude(e => e.Patch).ThenInclude(e => e.Lines)
             .Include(e => e.Locations)
             .FirstOrDefaultAsync(ct);
-        return result is null ? null : FromEntity(result);
+        return result?.ToDomain();
     }
 
     public async Task<Issue?> GetIssueByIdAsync(Guid issueId, Guid userId, CancellationToken ct = default)
@@ -64,7 +65,7 @@ public class IssueRepository(ReportCheckerDbContext dbContext) : IIssueRepositor
             .ThenInclude(e => e.Patch).ThenInclude(e => e.Lines)
             .Include(e => e.Locations)
             .FirstOrDefaultAsync(ct);
-        return result is null ? null : FromEntity(result, userId);
+        return result?.ToDomain(userId);
     }
 
     public async Task<Guid> CreateIssueAsync(Guid checkId, string chapter, int line, string title, int? priority,
@@ -105,31 +106,5 @@ public class IssueRepository(ReportCheckerDbContext dbContext) : IIssueRepositor
             Line = line,
         }, ct);
         await dbContext.SaveChangesAsync(ct);
-    }
-
-    private static Issue FromEntity(IssueEntity entity, Guid? userId = null)
-    {
-        var location = entity.Locations
-            .OrderByDescending(e => e.CreatedAt)
-            .FirstOrDefault();
-        return new Issue
-        {
-            Id = entity.IssueId,
-            CheckId = entity.CheckId,
-            Title = entity.Title,
-            Priority = entity.Priority,
-            Status = entity.Comments
-                .Where(e => e.Status != null)
-                .OrderByDescending(e => e.CreatedAt)
-                .FirstOrDefault()
-                ?.Status ?? IssueStatus.Open,
-            Comments = entity.Comments
-                .Where(e => e.DeletedAt == null)
-                .OrderBy(e => e.CreatedAt)
-                .Select(x => CommentRepository.FromEntity(x, userId))
-                .ToArray(),
-            Chapter = location?.Chapter ?? "???",
-            Line = location?.Line,
-        };
     }
 }

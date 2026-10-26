@@ -1,5 +1,6 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using ReportChecker.Abstractions;
+using ReportChecker.DataAccess.Converters;
 using ReportChecker.DataAccess.Entities;
 using ReportChecker.Models;
 
@@ -76,7 +77,7 @@ public class BenchmarkRepository(ReportCheckerDbContext dbContext) : IBenchmarkR
         var createdAt = DateTime.UtcNow;
         foreach (var result in results)
         {
-            var resultEntity = FromDomain(result, runId, createdAt);
+            var resultEntity = result.ToEntity(runId, createdAt);
             await dbContext.BenchmarkResults.AddAsync(resultEntity, ct);
         }
 
@@ -115,7 +116,7 @@ public class BenchmarkRepository(ReportCheckerDbContext dbContext) : IBenchmarkR
             .Skip(offset)
             .Take(limit)
             .ToListAsync(ct);
-        return entities.Select(e => FromEntity(e)).ToList();
+        return entities.Select(e => e.ToDomain()).ToList();
     }
 
     public async Task<BenchmarkRun?> GetRunByIdAsync(Guid runId, bool includeDeleted = false,
@@ -130,7 +131,7 @@ public class BenchmarkRepository(ReportCheckerDbContext dbContext) : IBenchmarkR
             .Include(e => e.Results)
             .Include(e => e.Model)
             .FirstOrDefaultAsync(ct);
-        return entity == null ? null : FromEntity(entity, entity.Results);
+        return entity?.ToDomain(entity.Results);
     }
 
     public async Task<IReadOnlyList<BenchmarkSummary>> GetSummaryAsync(string? caseId = null, Guid? modelId = null,
@@ -209,100 +210,5 @@ public class BenchmarkRepository(ReportCheckerDbContext dbContext) : IBenchmarkR
     private static bool IsFinished(ProgressStatus status)
     {
         return status is ProgressStatus.Completed or ProgressStatus.Failed or ProgressStatus.Cancelled;
-    }
-
-    private static BenchmarkResultEntity FromDomain(BenchmarkResult result, Guid runId, DateTime createdAt)
-    {
-        return new BenchmarkResultEntity
-        {
-            Id = result.Id == Guid.Empty ? Guid.NewGuid() : result.Id,
-            RunId = runId,
-            CreatedAt = createdAt,
-            ExpectedNumber = result.ExpectedNumber,
-            ErrorClass = result.ErrorClass,
-            Chapter = result.Chapter,
-            Line = result.Line,
-            ExpectedTitle = result.ExpectedTitle,
-            ExpectedComment = result.ExpectedComment,
-            ExpectedPriority = result.ExpectedPriority,
-            FoundIndex = result.FoundIndex,
-            FoundTitle = result.FoundTitle,
-            FoundComment = result.FoundComment,
-            FoundPriority = result.FoundPriority,
-            IsFound = result.IsFound,
-            TitleMatch = result.TitleMatch,
-            PriorityMatch = result.PriorityMatch,
-            PriorityDelta = result.PriorityDelta,
-            MatchingMethod = result.MatchingMethod,
-            MatchScore = result.MatchScore,
-            MatchingReason = result.MatchingReason,
-            FixMatchStatus = result.FixMatchStatus,
-            ExpectedFix = result.ExpectedFix,
-            FoundFix = result.FoundFix,
-        };
-    }
-
-    private static BenchmarkRun FromEntity(BenchmarkRunEntity entity,
-        IEnumerable<BenchmarkResultEntity>? results = null)
-    {
-        return new BenchmarkRun
-        {
-            Id = entity.Id,
-            CaseId = entity.CaseId,
-            CaseName = entity.CaseName,
-            ModelId = entity.ModelId,
-            ModelDisplayName = entity.Model?.DisplayName,
-            ReasoningEffort = entity.ReasoningEffort,
-            Status = entity.Status,
-            CreatedAt = entity.CreatedAt,
-            StartedAt = entity.StartedAt,
-            FinishedAt = entity.FinishedAt,
-            DeletedAt = entity.DeletedAt,
-            FailureReason = entity.FailureReason,
-            ExpectedCount = entity.ExpectedCount,
-            FoundCount = entity.FoundCount,
-            MatchedCount = entity.MatchedCount,
-            TitleMatchCount = entity.TitleMatchCount,
-            PriorityMatchCount = entity.PriorityMatchCount,
-            FixCheckedCount = entity.FixCheckedCount,
-            FixMatchCount = entity.FixMatchCount,
-            InputTokens = entity.InputTokens,
-            OutputTokens = entity.OutputTokens,
-            TotalTokens = entity.TotalTokens,
-            TotalRequests = entity.TotalRequests,
-            TotalCost = entity.TotalCost,
-            Results = results?.Select(FromEntity).ToArray() ?? [],
-        };
-    }
-
-    private static BenchmarkResult FromEntity(BenchmarkResultEntity entity)
-    {
-        return new BenchmarkResult
-        {
-            Id = entity.Id,
-            RunId = entity.RunId,
-            CreatedAt = entity.CreatedAt,
-            ExpectedNumber = entity.ExpectedNumber,
-            ErrorClass = entity.ErrorClass,
-            Chapter = entity.Chapter,
-            Line = entity.Line,
-            ExpectedTitle = entity.ExpectedTitle,
-            ExpectedComment = entity.ExpectedComment,
-            ExpectedPriority = entity.ExpectedPriority,
-            FoundIndex = entity.FoundIndex,
-            FoundTitle = entity.FoundTitle,
-            FoundComment = entity.FoundComment,
-            FoundPriority = entity.FoundPriority,
-            IsFound = entity.IsFound,
-            TitleMatch = entity.TitleMatch,
-            PriorityMatch = entity.PriorityMatch,
-            PriorityDelta = entity.PriorityDelta,
-            MatchingMethod = entity.MatchingMethod,
-            MatchScore = entity.MatchScore,
-            MatchingReason = entity.MatchingReason,
-            FixMatchStatus = entity.FixMatchStatus,
-            ExpectedFix = entity.ExpectedFix,
-            FoundFix = entity.FoundFix,
-        };
     }
 }

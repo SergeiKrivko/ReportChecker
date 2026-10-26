@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ReportChecker.Abstractions;
+using ReportChecker.DataAccess.Converters;
 using ReportChecker.DataAccess.Entities;
 using ReportChecker.Models;
 
@@ -13,7 +14,7 @@ public class InstructionTaskRepository(ReportCheckerDbContext dbContext) : IInst
         var entities = await dbContext.InstructionTasks
             .Where(e => e.ReportId == reportId)
             .ToListAsync(ct);
-        return entities.Select(FromEntity).ToList();
+        return entities.Select(e => e.ToDomain()).ToList();
     }
 
     public async Task<IReadOnlyList<InstructionTask>> GetAllForReportAsync(Guid reportId, ProgressStatus status,
@@ -22,7 +23,7 @@ public class InstructionTaskRepository(ReportCheckerDbContext dbContext) : IInst
         var entities = await dbContext.InstructionTasks
             .Where(e => e.ReportId == reportId && e.Status == status)
             .ToListAsync(ct);
-        return entities.Select(FromEntity).ToList();
+        return entities.Select(e => e.ToDomain()).ToList();
     }
 
     public async Task<InstructionTask?> GetByIdAsync(Guid taskId, CancellationToken ct = default)
@@ -30,7 +31,7 @@ public class InstructionTaskRepository(ReportCheckerDbContext dbContext) : IInst
         var entity = await dbContext.InstructionTasks
             .Where(e => e.Id == taskId)
             .FirstOrDefaultAsync(ct);
-        return entity == null ? null : FromEntity(entity);
+        return entity?.ToDomain();
     }
 
     public async Task<Guid> CreateAsync(Guid reportId, string instruction, InstructionTaskMode mode,
@@ -58,17 +59,5 @@ public class InstructionTaskRepository(ReportCheckerDbContext dbContext) : IInst
             .ExecuteUpdateAsync(e => e.SetProperty(x => x.Status, status), ct);
         await dbContext.SaveChangesAsync(ct);
         return count > 0;
-    }
-
-    private static InstructionTask FromEntity(InstructionTaskEntity entity)
-    {
-        return new InstructionTask
-        {
-            Id = entity.Id,
-            ReportId = entity.ReportId,
-            Status = entity.Status,
-            Instruction = entity.Instruction,
-            Mode = entity.Mode,
-        };
     }
 }

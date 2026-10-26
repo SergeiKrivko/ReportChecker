@@ -1,7 +1,8 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReportChecker.Abstractions;
-using ReportChecker.Api.Schemas;
+using ReportChecker.Api.Converters;
+using ReportChecker.Api.Dtos;
 using ReportChecker.Exceptions;
 using ReportChecker.Models;
 
@@ -16,9 +17,9 @@ public class BenchmarksController(
     /// <summary>Список тестов бенчмарка с описанием известных ошибок.</summary>
     [HttpGet("cases")]
     [AllowAnonymous]
-    public ActionResult<IEnumerable<BenchmarkCase>> GetCases()
+    public ActionResult<IEnumerable<BenchmarkCaseDto>> GetCases()
     {
-        return Ok(benchmarkCaseProvider.GetCases());
+        return Ok(benchmarkCaseProvider.GetCases().Select(e => e.ToDto()));
     }
 
     /// <summary>
@@ -28,28 +29,29 @@ public class BenchmarksController(
     /// </summary>
     [HttpGet("cases/{caseId}/chapters")]
     [AllowAnonymous]
-    public async Task<ActionResult<BenchmarkCaseText>> GetCaseChaptersAsync(string caseId,
+    public async Task<ActionResult<BenchmarkCaseTextDto>> GetCaseChaptersAsync(string caseId,
         CancellationToken ct = default)
     {
         var benchmarkCase = benchmarkCaseProvider.GetCase(caseId) ??
                             throw new NotFoundException($"Тест '{caseId}' не найден");
         if (benchmarkCase.ValidationError != null)
             throw new BadRequestException($"Тест '{caseId}' некорректен: {benchmarkCase.ValidationError}");
-        return Ok(await benchmarkCaseProvider.GetTextAsync(benchmarkCase, ct));
+        var text = await benchmarkCaseProvider.GetTextAsync(benchmarkCase, ct);
+        return Ok(text.ToDto());
     }
 
     /// <summary>Запускает прогоны (по одному на пару тест–модель) и возвращает их идентификаторы.</summary>
     [HttpPost("runs")]
     [Authorize(Policy = "Admin")]
-    public async Task<ActionResult<IReadOnlyList<Guid>>> CreateRunsAsync(CreateBenchmarkRunSchema schema,
+    public async Task<ActionResult<IReadOnlyList<Guid>>> CreateRunsAsync(CreateBenchmarkRunDto dto,
         CancellationToken ct = default)
     {
         var runIds = await benchmarkService.CreateRunsAsync(new BenchmarkRunRequest
         {
-            CaseIds = schema.CaseIds,
-            ModelIds = schema.ModelIds,
-            UseLlmMatching = schema.UseLlmMatching,
-            ReasoningEffort = schema.ReasoningEffort,
+            CaseIds = dto.CaseIds,
+            ModelIds = dto.ModelIds,
+            UseLlmMatching = dto.UseLlmMatching,
+            ReasoningEffort = dto.ReasoningEffort,
         }, ct);
         return Ok(runIds);
     }
@@ -60,7 +62,7 @@ public class BenchmarksController(
     /// </summary>
     [HttpGet("runs")]
     [AllowAnonymous]
-    public async Task<ActionResult<IEnumerable<BenchmarkRun>>> GetRunsAsync(string? caseId = null,
+    public async Task<ActionResult<IEnumerable<BenchmarkRunDto>>> GetRunsAsync(string? caseId = null,
         Guid? modelId = null, ProgressStatus? status = null, LlmReasoningEffort? reasoning = null,
         int limit = 50, int offset = 0, bool includeDeleted = false, CancellationToken ct = default)
     {
@@ -68,7 +70,7 @@ public class BenchmarksController(
         offset = Math.Max(0, offset);
         var runs = await benchmarkService.GetRunsAsync(caseId, modelId, status, reasoning, limit, offset,
             includeDeleted, ct);
-        return Ok(runs);
+        return Ok(runs.Select(e => e.ToDto()));
     }
 
     /// <summary>
@@ -78,22 +80,22 @@ public class BenchmarksController(
     /// </summary>
     [HttpGet("runs/{runId:guid}")]
     [AllowAnonymous]
-    public async Task<ActionResult<BenchmarkRun>> GetRunAsync(Guid runId, bool includeDeleted = false,
+    public async Task<ActionResult<BenchmarkRunDto>> GetRunAsync(Guid runId, bool includeDeleted = false,
         CancellationToken ct = default)
     {
         var run = await benchmarkService.GetRunAsync(runId, includeDeleted, ct) ??
                   throw new NotFoundException($"Прогон '{runId}' не найден");
-        return Ok(run);
+        return Ok(run.ToDto());
     }
 
     /// <summary>Сводка по всем неудалённым прогонам, агрегированная по тройке тест–модель–уровень рассуждений.</summary>
     [HttpGet("summary")]
     [AllowAnonymous]
-    public async Task<ActionResult<IEnumerable<BenchmarkSummary>>> GetSummaryAsync(string? caseId = null,
+    public async Task<ActionResult<IEnumerable<BenchmarkSummaryDto>>> GetSummaryAsync(string? caseId = null,
         Guid? modelId = null, CancellationToken ct = default)
     {
         var summary = await benchmarkService.GetSummaryAsync(caseId, modelId, ct);
-        return Ok(summary);
+        return Ok(summary.Select(e => e.ToDto()));
     }
 
     /// <summary>

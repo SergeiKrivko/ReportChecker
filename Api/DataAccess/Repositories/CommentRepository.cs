@@ -14,7 +14,7 @@ public class CommentRepository(ReportCheckerDbContext dbContext) : ICommentRepos
             .Where(e => e.IssueId == issueId && e.DeletedAt == null)
             .Include(e => e.Patch).ThenInclude(e => e.Lines)
             .ToListAsync();
-        return result.Select(e => FromEntity(e));
+        return result.Select(e => e.ToDomain());
     }
 
     public async Task<IReadOnlyList<Comment>> GetAllCommentsOfIssueAsync(Guid issueId, Guid userId)
@@ -24,7 +24,7 @@ public class CommentRepository(ReportCheckerDbContext dbContext) : ICommentRepos
             .Include(e => e.Reads)
             .Include(e => e.Patch).ThenInclude(e => e.Lines)
             .ToListAsync();
-        return result.Select(e => FromEntity(e, userId)).ToList();
+        return result.Select(e => e.ToDomain(userId)).ToList();
     }
 
     public async Task<Comment?> GetCommentByIdAsync(Guid commentId)
@@ -33,7 +33,7 @@ public class CommentRepository(ReportCheckerDbContext dbContext) : ICommentRepos
             .Where(e => e.CommentId == commentId && e.DeletedAt == null)
             .Include(e => e.Patch).ThenInclude(e => e.Lines)
             .FirstOrDefaultAsync();
-        return result is null ? null : FromEntity(result);
+        return result?.ToDomain();
     }
 
     public async Task<Comment?> GetCommentByIdAsync(Guid commentId, Guid userId)
@@ -43,7 +43,7 @@ public class CommentRepository(ReportCheckerDbContext dbContext) : ICommentRepos
             .Include(e => e.Reads)
             .Include(e => e.Patch).ThenInclude(e => e.Lines)
             .FirstOrDefaultAsync();
-        return result is null ? null : FromEntity(result, userId);
+        return result?.ToDomain(userId);
     }
 
     public async Task<Guid> CreateCommentAsync(Guid issueId, Guid userId, string? content, IssueStatus? status,
@@ -113,23 +113,5 @@ public class CommentRepository(ReportCheckerDbContext dbContext) : ICommentRepos
         return await dbContext.Comments
             .Where(e => e.UserId == userId && e.ProgressStatus != null)
             .CountAsync();
-    }
-
-    internal static Comment FromEntity(CommentEntity entity, Guid? userId = null)
-    {
-        return new Comment
-        {
-            Id = entity.CommentId,
-            IssueId = entity.IssueId,
-            UserId = entity.UserId,
-            Content = entity.Content,
-            Status = entity.Status,
-            ProgressStatus = entity.ProgressStatus,
-            IsRead = userId == null ? null : entity.Reads.FirstOrDefault(e => e.UserId == userId) != null,
-            Patch = entity.Patch?.ToDomain(),
-            CreatedAt = entity.CreatedAt,
-            ModifiedAt = entity.ModifiedAt,
-            DeletedAt = entity.DeletedAt,
-        };
     }
 }

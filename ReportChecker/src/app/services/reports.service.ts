@@ -9,6 +9,7 @@ import {
   IGitHubReportSource,
   ImageProcessingMode,
   LlmModel,
+  LlmReasoningEffort,
   Report,
   SourceInfo,
   TestSourceRequestSchema,
@@ -76,7 +77,8 @@ export class ReportsService {
                sourceProvider: string,
                format: string,
                llmModelId?: string,
-               imageProcessingMode: ImageProcessingModeEntity = ImageProcessingModeEntity.Disable): Observable<string> {
+               imageProcessingMode: ImageProcessingModeEntity = ImageProcessingModeEntity.Disable,
+               reasoningLevel: LlmReasoningEffort = LlmReasoningEffort.Default): Observable<string> {
     return this.apiClient.reportsPOST(CreateReportSchema.fromJS({
       name: name,
       source: sourceProvider == 'GitHub' ? {gitHub: source} : {file: source},
@@ -84,6 +86,7 @@ export class ReportsService {
       format: format,
       llmModelId,
       imageProcessingMode: imageProcessingModeReverseMap[imageProcessingMode],
+      reasoningLevel: reasoningLevel,
     }));
   }
 
@@ -103,7 +106,9 @@ export class ReportsService {
     );
   }
 
-  updateReport(newName: string, llmModelId?: string, imageProcessingMode: ImageProcessingModeEntity = ImageProcessingModeEntity.Disable): Observable<any> {
+  updateReport(newName: string, llmModelId?: string,
+               imageProcessingMode: ImageProcessingModeEntity = ImageProcessingModeEntity.Disable,
+               reasoningLevel: LlmReasoningEffort = LlmReasoningEffort.Default): Observable<any> {
     return this.selectedReport$.pipe(
       first(),
       switchMap(report => {
@@ -112,6 +117,7 @@ export class ReportsService {
             name: newName,
             llmModelId,
             imageProcessingMode: imageProcessingModeReverseMap[imageProcessingMode],
+            reasoningLevel: reasoningLevel,
           }));
         return NEVER;
       }),
@@ -186,6 +192,7 @@ const reportToEntity = (report: Report): ReportEntity => ({
   format: report.format ?? "Latex",
   llmModelId: report.llmModelId,
   imageProcessingMode: imageProcessingModeMap[report.imageProcessingMode ?? ImageProcessingMode.Disable],
+  reasoningLevel: report.reasoningLevel ?? LlmReasoningEffort.Default,
   source: report.source,
   issueCount: report.issueCount,
   updatedAt: report.updatedAt,
@@ -201,6 +208,8 @@ const llmModelToEntity = (info: LlmModel): LlmModelEntity => ({
   displayName: info.displayName,
   inputCoefficient: info.inputCoefficient,
   outputCoefficient: info.outputCoefficient,
+  defaultReasoningLevel: info.defaultReasoningLevel ?? LlmReasoningEffort.Default,
+  isRecommended: info.isRecommended ?? false,
 });
 
 const imageProcessingModeMap: Record<ImageProcessingMode, ImageProcessingModeEntity> = {

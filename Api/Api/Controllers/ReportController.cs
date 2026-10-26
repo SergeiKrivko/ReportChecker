@@ -2,10 +2,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReportChecker.Abstractions;
+using ReportChecker.Api.Converters;
+using ReportChecker.Api.Dtos;
 using ReportChecker.Api.Extensions;
-using ReportChecker.Api.Schemas;
 using ReportChecker.Exceptions;
-using ReportChecker.Models;
 
 namespace ReportChecker.Api.Controllers;
 
@@ -18,27 +18,27 @@ public class ReportController(
 {
     [HttpGet]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task<ActionResult<IEnumerable<Report>>> GetAllReports()
+    public async Task<ActionResult<IEnumerable<ReportDto>>> GetAllReports()
     {
         var userId = User.UserId;
         var reports = await reportRepository.GetAllReportsOfUserAsync(userId);
-        return Ok(reports);
+        return Ok(reports.Select(e => e.ToDto()));
     }
 
     [HttpGet("{reportId:guid}")]
     [Authorize]
-    public async Task<ActionResult<Report>> GetReportById(Guid reportId)
+    public async Task<ActionResult<ReportDto>> GetReportById(Guid reportId)
     {
         var userId = User.UserId;
         var report = await reportRepository.GetReportByIdAsync(reportId);
         if (report == null || report.OwnerId != userId)
             throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
-        return Ok(report);
+        return Ok(report.ToDto());
     }
 
     [HttpPost]
     [Authorize]
-    public async Task<ActionResult<Guid>> CreateReport([FromBody] CreateReportSchema schema, CancellationToken ct)
+    public async Task<ActionResult<Guid>> CreateReport([FromBody] CreateReportDto dto, CancellationToken ct)
     {
         var userId = User.UserId;
 
@@ -46,8 +46,8 @@ public class ReportController(
             return StatusCode(StatusCodes.Status402PaymentRequired, "Reports limit is reached");
 
         var reportId = await
-            reportService.CreateReportAsync(userId, schema.Name, schema.Format, schema.SourceProvider,
-                schema.Source, schema.LlmModelId, schema.ImageProcessingMode, schema.ReasoningLevel);
+            reportService.CreateReportAsync(userId, dto.Name, dto.Format, dto.SourceProvider,
+                dto.Source.ToDomain(), dto.LlmModelId, dto.ImageProcessingMode, dto.ReasoningLevel);
         return Ok(reportId);
     }
 
@@ -65,21 +65,21 @@ public class ReportController(
 
     [HttpPut("{reportId:guid}")]
     [Authorize]
-    public async Task<ActionResult> UpdateReportById(Guid reportId, [FromBody] UpdateReportSchema schema)
+    public async Task<ActionResult> UpdateReportById(Guid reportId, [FromBody] UpdateReportDto dto)
     {
         var report = await reportRepository.GetReportByIdAsync(reportId);
         if (report == null || report.OwnerId != User.UserId)
             throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
-        await reportRepository.UpdateReportAsync(reportId, schema.Name, schema.LlmModelId, schema.ImageProcessingMode,
-            schema.ReasoningLevel);
+        await reportRepository.UpdateReportAsync(reportId, dto.Name, dto.LlmModelId, dto.ImageProcessingMode,
+            dto.ReasoningLevel);
         return Ok();
     }
 
     [HttpPost("test-source")]
     [Authorize]
-    public async Task<ActionResult<SourceInfo>> CheckReportSource([FromBody] TestSourceRequestSchema schema)
+    public async Task<ActionResult<SourceInfoDto>> CheckReportSource([FromBody] TestSourceRequestDto dto)
     {
-        var res = await reportService.GetSourceInfoAsync(schema.Provider, schema.Source);
-        return Ok(res);
+        var res = await reportService.GetSourceInfoAsync(dto.Provider, dto.Source.ToDomain());
+        return Ok(res.ToDto());
     }
 }
