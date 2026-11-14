@@ -54,14 +54,13 @@ Traefik (стек `infra`) сам выпускает сертификаты Let'
 
 ## Ограничение фронтенда
 
-Образ `ghcr.io/sergeikrivko/reportchecker-frontend:master` собран со «вшитыми» адресами:
-API — `https://api.reportchecker.ru`, auth — `https://auth.nachert.art`
-(`ReportChecker/src/app/app.config.ts`, `src/app/auth/auth.config.ts`). Поэтому UI на новых
-доменах будет обращаться к старому бэкенду/авторизации, пока образ не пересобран с новыми
-адресами:
+Образ `ghcr.io/sergeikrivko/reportchecker-frontend:master` собран со «вшитыми» адресами
+(`ReportChecker/src/app/app.config.ts`, `src/app/auth/auth.config.ts`), поэтому после правки
+исходников образ нужно пересобрать и перезапустить. Текущее состояние:
 
-- `API_BASE_URL` → `https://reportchecker-api.reportchecker.ru` (или `https://api.reportchecker.ru`
-  после переключения DNS);
-- issuer/baseUrl auth → `https://auth.reportchecker.ru/api/v1` / `https://auth.reportchecker.ru/`;
+- auth в исходниках переведён на `https://auth.reportchecker.ru/api/v1` /
+  `https://auth.reportchecker.ru/`;
+- `API_BASE_URL` пока `https://api.reportchecker.ru` — заменить на
+  `https://reportchecker-api.reportchecker.ru` (или оставить после переключения DNS);
 - в Avalux Auth в `RedirectUrls` приложения ReportChecker добавить
   `https://reportchecker-ui.reportchecker.ru/auth/callback`.

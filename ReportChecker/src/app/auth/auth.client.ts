@@ -11,7 +11,7 @@ interface AuthState {
   userInfo: UserInfoEntity | null;
 }
 
-/** Идентификатор администратора в auth.nachert.art. Синхронизирован с `Security:AdminIds` на бэкенде. */
+/** Идентификатор администратора в auth.reportchecker.ru. Синхронизирован с `Security:AdminIds` на бэкенде. */
 const ADMIN_USER_ID = 'b13fa26b-0a30-4558-a2cd-da2d68022bab';
 
 @Injectable({
@@ -20,7 +20,7 @@ const ADMIN_USER_ID = 'b13fa26b-0a30-4558-a2cd-da2d68022bab';
 export class AuthClient {
   private readonly authService = inject(AuthService);
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = "https://auth.nachert.art/";
+  private readonly baseUrl = "https://auth.reportchecker.ru/";
 
   private readonly accessToken$ = toObservable(this.authService.accessToken);
 
