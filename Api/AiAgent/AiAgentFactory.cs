@@ -61,10 +61,10 @@ public class AiAgentFactory(
 
     private IAiAgent CreateAgent(LlmModel model, LlmUsageType type, LlmReasoningEffort reasoningEffort, Guid reportId)
     {
-        var apiKey = configuration["Ai.ApiKey"] ?? throw new Exception("API key not found");
+        var apiKey = configuration["Ai:ApiKey"] ?? throw new Exception("API key not found");
         var client = new ChatClient(model.ModelKey, new ApiKeyCredential(apiKey), new OpenAIClientOptions
         {
-            Endpoint = new Uri(configuration["Ai.ApiUrl"] ?? throw new Exception("AI API url not set")),
+            Endpoint = new Uri(configuration["Ai:ApiUrl"] ?? throw new Exception("AI API url not set")),
             NetworkTimeout = TimeSpan.FromMinutes(5),
         });
 

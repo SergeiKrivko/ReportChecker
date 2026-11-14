@@ -13,7 +13,7 @@ public class PdfFormatProvider(IConfiguration configuration) : IFormatProvider
 {
     public string Key => "Pdf";
 
-    private string ChapterSeparator { get; } = configuration["Reports.ChapterSeparator"] ?? "//";
+    private string ChapterSeparator { get; } = configuration["Reports:ChapterSeparator"] ?? "//";
 
     public async Task<IReadOnlyList<Chapter>> GetChaptersAsync(IFileArchive archive)
     {

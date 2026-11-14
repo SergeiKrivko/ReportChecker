@@ -31,7 +31,7 @@ public class SubscriptionService(
         int maxTokens;
         if (subscription == null)
         {
-            maxTokens = int.Parse(configuration["Subscriptions.Free.Tokens"] ?? "0");
+            maxTokens = int.Parse(configuration["Subscriptions:Free:Tokens"] ?? "0");
         }
         else
         {
@@ -75,7 +75,7 @@ public class SubscriptionService(
     public async Task<Limit<int>> GetReportsLimitAsync(Guid userId, CancellationToken ct = default)
     {
         var active = await userSubscriptionRepository.GetActiveSubscriptionAsync(userId, ct);
-        var maxReports = int.Parse(configuration["Subscriptions.Free.Reports"] ?? "0");
+        var maxReports = int.Parse(configuration["Subscriptions:Free:Reports"] ?? "0");
         if (active != null)
         {
             var plan = await subscriptionPlanRepository.GetPlanByIdAsync(active.PlanId, ct);
@@ -100,7 +100,7 @@ public class SubscriptionService(
     public async Task<bool> CheckReportsLimitAsync(Guid userId, CancellationToken ct = default)
     {
         var count = await reportRepository.CountReportsAsync(userId);
-        var maxReports = int.Parse(configuration["Subscriptions.Free.Reports"] ?? "0");
+        var maxReports = int.Parse(configuration["Subscriptions:Free:Reports"] ?? "0");
         if (count < maxReports)
             return true;
         var active = await userSubscriptionRepository.GetActiveSubscriptionAsync(userId, ct);

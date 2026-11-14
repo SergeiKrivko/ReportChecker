@@ -24,19 +24,19 @@ public class BenchmarkService(
     private readonly BenchmarkMatcher _matcher = new();
     private readonly BenchmarkFixComparer _fixComparer = new();
 
-    private readonly int _lineTolerance = int.Parse(configuration["Benchmarks.LineTolerance"] ?? "3");
+    private readonly int _lineTolerance = int.Parse(configuration["Benchmarks:LineTolerance"] ?? "3");
 
-    private readonly Guid _judgeModelId = Guid.Parse(configuration["Benchmarks.JudgeModelId"] ??
-                                                     configuration["Ai.DefaultModelId"] ??
+    private readonly Guid _judgeModelId = Guid.Parse(configuration["Benchmarks:JudgeModelId"] ??
+                                                     configuration["Ai:DefaultModelId"] ??
                                                      "00000000-0000-0000-0000-000000000000");
 
     private readonly double _titleSimilarityThreshold = double.Parse(
-        configuration["Benchmarks.TitleSimilarityThreshold"] ?? "0.6", CultureInfo.InvariantCulture);
+        configuration["Benchmarks:TitleSimilarityThreshold"] ?? "0.6", CultureInfo.InvariantCulture);
 
-    private readonly bool _llmMatching = bool.Parse(configuration["Benchmarks.LlmMatching"] ?? "true");
+    private readonly bool _llmMatching = bool.Parse(configuration["Benchmarks:LlmMatching"] ?? "true");
 
     private readonly int _llmConfidenceThreshold =
-        int.Parse(configuration["Benchmarks.LlmConfidenceThreshold"] ?? "60");
+        int.Parse(configuration["Benchmarks:LlmConfidenceThreshold"] ?? "60");
 
     private BenchmarkMatchOptions DefaultOptions => new()
     {

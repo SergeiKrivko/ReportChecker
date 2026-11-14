@@ -77,7 +77,7 @@ public class GitHubSourceProvider(
         return await reportSourceRepository.CreateAsync(reportId, source.GitHub);
     }
 
-    private long GitHubAppId { get; } = long.Parse(configuration["GitHub.AppId"] ?? "0");
+    private long GitHubAppId { get; } = long.Parse(configuration["GitHub:AppId"] ?? "0");
 
     public async Task WriteCheckStatusAsync(Report report, Check check, bool isCompleted)
     {
@@ -117,7 +117,7 @@ public class GitHubSourceProvider(
 
         await client.Check.Run.Update(reportSource.Data.RepositoryId, existingCheck.Id, new CheckRunUpdate
         {
-            DetailsUrl = $"{configuration["Frontend.Url"]}/reports/{report.Id}",
+            DetailsUrl = $"{configuration["Frontend:Url"]}/reports/{report.Id}",
             Status = isCompleted ? CheckStatus.Completed : CheckStatus.InProgress,
             StartedAt = isCompleted ? null : DateTimeOffset.UtcNow,
             CompletedAt = isCompleted ? DateTimeOffset.UtcNow : null,

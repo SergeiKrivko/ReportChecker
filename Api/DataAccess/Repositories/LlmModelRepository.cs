@@ -9,7 +9,7 @@ namespace ReportChecker.DataAccess.Repositories;
 
 public class LlmModelRepository(ReportCheckerDbContext dbContext, IConfiguration configuration) : ILlmModelRepository
 {
-    private Guid DefaultModelId { get; } = Guid.Parse(configuration["Ai.DefaultModelId"] ?? "");
+    private Guid DefaultModelId { get; } = Guid.Parse(configuration["Ai:DefaultModelId"] ?? "");
 
     public async Task<IReadOnlyList<LlmModel>> GetAllModelsAsync(CancellationToken ct = default)
     {

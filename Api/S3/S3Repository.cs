@@ -11,12 +11,12 @@ namespace ReportChecker.S3;
 public class S3Repository(ILogger<S3Repository> logger, IConfiguration configuration) : IFileRepository
 {
     private readonly AmazonS3Client _s3Client = new(
-        new BasicAWSCredentials(configuration["S3.AccessKey"],
-            configuration["S3.SecretKey"]),
+        new BasicAWSCredentials(configuration["S3:AccessKey"],
+            configuration["S3:SecretKey"]),
         new AmazonS3Config
         {
-            ServiceURL = configuration["S3.ServiceUrl"],
-            AuthenticationRegion = configuration["S3.AuthorizationRegion"],
+            ServiceURL = configuration["S3:ServiceUrl"],
+            AuthenticationRegion = configuration["S3:AuthorizationRegion"],
             ForcePathStyle = true,
             Timeout = TimeSpan.FromSeconds(2),
             RetryMode = RequestRetryMode.Standard,
@@ -25,12 +25,12 @@ public class S3Repository(ILogger<S3Repository> logger, IConfiguration configura
         });
 
     private readonly AmazonS3Client _retryS3Client = new(
-        new BasicAWSCredentials(configuration["S3.AccessKey"],
-            configuration["S3.SecretKey"]),
+        new BasicAWSCredentials(configuration["S3:AccessKey"],
+            configuration["S3:SecretKey"]),
         new AmazonS3Config
         {
-            ServiceURL = configuration["S3.ServiceUrl"],
-            AuthenticationRegion = configuration["S3.AuthorizationRegion"],
+            ServiceURL = configuration["S3:ServiceUrl"],
+            AuthenticationRegion = configuration["S3:AuthorizationRegion"],
             ForcePathStyle = true,
             Timeout = TimeSpan.FromSeconds(15),
             RetryMode = RequestRetryMode.Standard,
@@ -199,8 +199,8 @@ public class S3Repository(ILogger<S3Repository> logger, IConfiguration configura
         return count;
     }
 
-    private string SourcesBucket { get; } = configuration["S3.Bucket.Sources"] ?? "sources";
-    private string LocalSourcesBucket { get; } = configuration["S3.Bucket.LocalSources"] ?? "local";
+    private string SourcesBucket { get; } = configuration["S3:Bucket:Sources"] ?? "sources";
+    private string LocalSourcesBucket { get; } = configuration["S3:Bucket:LocalSources"] ?? "local";
 
     private string GetBucket(FileRepositoryBucket bucket)
     {

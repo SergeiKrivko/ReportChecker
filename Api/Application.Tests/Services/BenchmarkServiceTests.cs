@@ -32,7 +32,7 @@ public class BenchmarkServiceTests
         _cancellationService = new Mock<ITaskCancellationService>();
 
         var configuration = new Mock<IConfiguration>();
-        configuration.Setup(e => e["Benchmarks.MaxParallelRuns"]).Returns("2");
+        configuration.Setup(e => e["Benchmarks:MaxParallelRuns"]).Returns("2");
 
         var scope = new Mock<IServiceScope>();
         scope.Setup(e => e.ServiceProvider).Returns(new Mock<IServiceProvider>().Object);

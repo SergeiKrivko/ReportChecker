@@ -29,11 +29,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddDbContext<ReportCheckerDbContext>(options =>
 {
-    options.UseNpgsql(builder.Configuration["ConnectionStrings.Postgres"]);
+    options.UseNpgsql(builder.Configuration["ConnectionStrings:Postgres"]);
 });
 builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
 {
-    var redisConnection = builder.Configuration["ConnectionStrings.Redis"];
+    var redisConnection = builder.Configuration["ConnectionStrings:Redis"];
     return ConnectionMultiplexer.Connect(redisConnection ?? "localhost:6381");
 });
 
@@ -75,8 +75,8 @@ builder.Services.AddScoped<IDifferenceService, DifferenceService>();
 builder.Services.AddScoped<IChapterGroupService, ChapterGroupService>();
 builder.Services.AddScoped<IInstructionTaskService, InstructionTaskService>();
 builder.Services.AddAvaluxAuthApiClient(
-    builder.Configuration["Security.AuthApiUrl"] ?? "",
-    builder.Configuration["Security.ApiToken"] ?? "");
+    builder.Configuration["Security:AuthApiUrl"] ?? "",
+    builder.Configuration["Security:ApiToken"] ?? "");
 builder.Services.AddScoped<IUserRepository, AvaluxAuthUserRepository>();
 builder.Services.AddSingleton<ITaskCancellationService, TaskCancellationService>();
 builder.Services.AddScoped<IPositionsUpdater, PositionsUpdater>();
@@ -96,9 +96,9 @@ builder.Services.AddSingleton<IFormatProvider, DocxFormatProvider>();
 builder.Services.AddHttpClient("Auth",
     client =>
     {
-        client.BaseAddress = new Uri(builder.Configuration["Security.AuthApiUrl"] ?? throw new Exception());
+        client.BaseAddress = new Uri(builder.Configuration["Security:AuthApiUrl"] ?? throw new Exception());
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer",
-            builder.Configuration["Security.ApiToken"] ?? throw new Exception());
+            builder.Configuration["Security:ApiToken"] ?? throw new Exception());
     });
 builder.Services.AddHttpClient("YooMoney");
 builder.Services.AddScoped<IPaymentClient, YooMoneyService>();
@@ -113,16 +113,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
     {
         options.MetadataAddress =
-            $"{builder.Configuration["Security.AuthApiUrl"]}/api/v1/.well-known/openid-configuration";
-        options.Authority = builder.Configuration["Security.AuthApiUrl"];
+            $"{builder.Configuration["Security:AuthApiUrl"]}/api/v1/.well-known/openid-configuration";
+        options.Authority = builder.Configuration["Security:AuthApiUrl"];
         options.RequireHttpsMetadata = false;
 
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidIssuer = builder.Configuration["Security.Issuer"],
+            ValidIssuer = builder.Configuration["Security:Issuer"],
             ValidateAudience = true,
-            ValidAudience = builder.Configuration["Security.Audience"],
+            ValidAudience = builder.Configuration["Security:Audience"],
             ValidateIssuerSigningKey = true,
             ValidateLifetime = true,
         };
@@ -130,7 +130,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.RefreshInterval = TimeSpan.FromMinutes(30);
         options.RefreshOnIssuerKeyNotFound = true;
     });
-var adminIds = builder.Configuration["Security.AdminIds"]?.Split(';').ToList() ?? [];
+var adminIds = builder.Configuration["Security:AdminIds"]?.Split(';').ToList() ?? [];
 builder.Services.AddAuthorizationBuilder()
     .AddDefaultPolicy("User", e => e.RequireClaim("UserId"))
     .AddPolicy("Admin", e => e.RequireClaim("UserId", adminIds));
@@ -145,8 +145,8 @@ app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 app.UseCors(policy => policy
-    .WithOrigins("http://localhost:4200", app.Configuration["Frontend.Url"] ?? throw new Exception("Frontend url not set"))
-    .WithOrigins(app.Configuration["Security.CorsOrigins"]?.Split(';') ?? [])
+    .WithOrigins("http://localhost:4200", app.Configuration["Frontend:Url"] ?? throw new Exception("Frontend url not set"))
+    .WithOrigins(app.Configuration["Security:CorsOrigins"]?.Split(';') ?? [])
     .AllowAnyHeader()
     .AllowAnyMethod()
 );
@@ -154,7 +154,7 @@ app.UseCors(policy => policy
 app.UseAuthorization();
 
 app.MapControllers();
-var webhookSecret = builder.Configuration["GitHub.WebhookSecret"]?.Trim();
+var webhookSecret = builder.Configuration["GitHub:WebhookSecret"]?.Trim();
 if (string.IsNullOrEmpty(webhookSecret))
     throw new Exception("GitHub.WebhookSecret not set");
 app.MapGitHubWebhooks("api/v1/github/webhooks", webhookSecret);

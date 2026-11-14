@@ -6,8 +6,8 @@ namespace ReportChecker.Application.Services;
 
 public class ChapterGroupService(IConfiguration configuration) : IChapterGroupService
 {
-    private int MinChapterSize { get; } = int.Parse(configuration["Reports.MinChapterSize"] ?? "50");
-    private int MaxRequestSize { get; } = int.Parse(configuration["Reports.MaxRequestSize"] ?? "5000");
+    private int MinChapterSize { get; } = int.Parse(configuration["Reports:MinChapterSize"] ?? "50");
+    private int MaxRequestSize { get; } = int.Parse(configuration["Reports:MaxRequestSize"] ?? "5000");
 
     public IEnumerable<Chapter[]> GroupChapters(IEnumerable<Chapter> chapters)
     {

@@ -14,11 +14,11 @@ public class YooMoneyService(IHttpClientFactory httpClientFactory, IConfiguratio
         var label = paymentId.ToString();
         var quickPay = new QuickPay
         {
-            Receiver = configuration["YooMoney.WalletId"] ?? throw new Exception("WalletId not set"),
+            Receiver = configuration["YooMoney:WalletId"] ?? throw new Exception("WalletId not set"),
             Sum = sum,
             Label = label,
             Source = PaymentSource.Wallet,
-            SuccessRedirectUrl = configuration["YooMoney.PaymentRedirectUrl"]
+            SuccessRedirectUrl = configuration["YooMoney:PaymentRedirectUrl"]
         };
         var url = await RequestData(quickPay, ct);
         return url;
@@ -96,7 +96,7 @@ public class YooMoneyService(IHttpClientFactory httpClientFactory, IConfiguratio
         {
             Label = label,
         });
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", configuration["YooMoney.AccessToken"]);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", configuration["YooMoney:AccessToken"]);
 
         var httpClient = httpClientFactory.CreateClient("YooMoney");
         var response = await httpClient.SendAsync(request, ct);

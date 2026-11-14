@@ -12,7 +12,7 @@ public sealed class BenchmarkRunLimiter : IDisposable
 
     public BenchmarkRunLimiter(IConfiguration configuration)
     {
-        var limit = int.Parse(configuration["Benchmarks.MaxParallelRuns"] ?? "2");
+        var limit = int.Parse(configuration["Benchmarks:MaxParallelRuns"] ?? "2");
         _semaphore = new SemaphoreSlim(Math.Max(1, limit));
     }
 

@@ -15,7 +15,7 @@ public class GithubService(
 {
     private readonly IDatabase _redis = redisConnection.GetDatabase(2);
 
-    private readonly GitHubClient _client = new(new ProductHeaderValue(configuration["GitHub.AppName"]))
+    private readonly GitHubClient _client = new(new ProductHeaderValue(configuration["GitHub:AppName"]))
     {
         Credentials = new Credentials(GenerateJwt(), AuthenticationType.Bearer),
     };
@@ -31,7 +31,7 @@ public class GithubService(
         var installation = await _client.GitHubApps.GetUserInstallationForCurrent(account.Login ?? account.Name);
         var token = await GetInstallationTokenAsync(installation.Id);
 
-        return new GitHubClient(new ProductHeaderValue(configuration["GitHub.AppName"]))
+        return new GitHubClient(new ProductHeaderValue(configuration["GitHub:AppName"]))
         {
             Credentials = new Credentials(token),
         };
@@ -42,7 +42,7 @@ public class GithubService(
         var installation = await _client.GitHubApps.GetRepositoryInstallationForCurrent(repositoryId);
         var token = await GetInstallationTokenAsync(installation.Id);
 
-        return new GitHubClient(new ProductHeaderValue(configuration["GitHub.AppName"]))
+        return new GitHubClient(new ProductHeaderValue(configuration["GitHub:AppName"]))
         {
             Credentials = new Credentials(token),
         };
@@ -69,7 +69,7 @@ public class GithubService(
         if (_jwtExpiresAt > now && _jwt != null)
             return _jwt;
 
-        var privateKeySource = new EnvironmentVariablePrivateKeySource("GitHub.PrivateKey");
+        var privateKeySource = new EnvironmentVariablePrivateKeySource("GitHub__PrivateKey");
         var generator = new GitHubJwtFactory(
             privateKeySource,
             new GitHubJwtFactoryOptions

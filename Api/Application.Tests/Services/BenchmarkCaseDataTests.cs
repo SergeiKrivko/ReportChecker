@@ -18,9 +18,9 @@ public class BenchmarkCaseDataTests
     private static IConfiguration Configuration()
     {
         var configuration = new Mock<IConfiguration>();
-        configuration.Setup(e => e["Reports.ChapterSeparator"]).Returns("//");
-        configuration.Setup(e => e["Reports.MinChapterSize"]).Returns("50");
-        configuration.Setup(e => e["Reports.MaxRequestSize"]).Returns("5000");
+        configuration.Setup(e => e["Reports:ChapterSeparator"]).Returns("//");
+        configuration.Setup(e => e["Reports:MinChapterSize"]).Returns("50");
+        configuration.Setup(e => e["Reports:MaxRequestSize"]).Returns("5000");
         return configuration.Object;
     }
 

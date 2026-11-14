@@ -34,9 +34,9 @@ public class BenchmarkCaseProvider : IBenchmarkCaseProvider
         _providerService = providerService;
         _differenceService = differenceService;
         _logger = logger;
-        DataPath = Path.IsPathRooted(configuration["Benchmarks.DataPath"])
-            ? configuration["Benchmarks.DataPath"]!
-            : Path.Combine(AppContext.BaseDirectory, configuration["Benchmarks.DataPath"] ?? "Benchmarks");
+        DataPath = Path.IsPathRooted(configuration["Benchmarks:DataPath"])
+            ? configuration["Benchmarks:DataPath"]!
+            : Path.Combine(AppContext.BaseDirectory, configuration["Benchmarks:DataPath"] ?? "Benchmarks");
         _cases = new Lazy<IReadOnlyList<BenchmarkCase>>(LoadCases);
     }
 

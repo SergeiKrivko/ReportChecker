@@ -123,7 +123,7 @@ Angular-приложение на standalone-компонентах с Taiga UI:
    `\chapter`/`\section`/`\subsection`, с переходом по `\include`; для PDF — по закладкам;
    для DOCX — по стилям заголовков). Изображения главы извлекаются отдельно.
 3. **Первая проверка.** `AiService.FindIssuesAsync` группирует главы по размеру
-   (`Reports.MinChapterSize` / `Reports.MaxRequestSize`), отправляет их агенту и сохраняет
+   (`Reports__MinChapterSize` / `Reports__MaxRequestSize`), отправляет их агенту и сохраняет
    найденные ошибки, комментарии и патчи.
 4. **Обсуждение.** Пользователь комментирует ошибку — агент отвечает (`WriteComment`), может
    поменять статус (`Open` / `Fixed` / `Closed`) и предложить патч.
@@ -150,7 +150,7 @@ Angular-приложение на standalone-компонентах с Taiga UI:
 | PDF | `Pdf` | По закладкам документа (иначе — весь текст как глава `Root`) | — |
 | DOCX | `Docx` | По стилям заголовков (outline level) | — |
 
-Разделитель вложенности глав настраивается параметром `Reports.ChapterSeparator` (по умолчанию `//`).
+Разделитель вложенности глав настраивается параметром `Reports__ChapterSeparator` (по умолчанию `//`).
 
 ### Источники (`ISourceProvider`)
 
@@ -167,7 +167,7 @@ Angular-приложение на standalone-компонентах с Taiga UI:
 
 ## ИИ-агенты
 
-Все агенты используют OpenAI-совместимый API (`Ai.ApiUrl` / `Ai.ApiKey`) и возвращают
+Все агенты используют OpenAI-совместимый API (`Ai__ApiUrl` / `Ai__ApiKey`) и возвращают
 структурированный JSON по заданной схеме. Промпты лежат в `Api/AiAgent/Prompts/*.prompt.txt`.
 
 | Агент | Промпт | Задача |
@@ -196,7 +196,7 @@ Angular-приложение на standalone-компонентах с Taiga UI:
 
 Тесты лежат в каталоге `Api/Api/Benchmarks/<id>` и копируются в выходные файлы приложения:
 `case.json` с описанием и списком известных ошибок плюс исходный файл (`entryFile`).
-Путь переопределяется ключом `Benchmarks.DataPath`. Полный формат `case.json`, режимы
+Путь переопределяется ключом `Benchmarks__DataPath`. Полный формат `case.json`, режимы
 `displayMode` и правила сопоставления описаны в
 [`Api/Api/Benchmarks/README.md`](Api/Api/Benchmarks/README.md).
 
@@ -206,12 +206,12 @@ Angular-приложение на standalone-компонентах с Taiga UI:
 ### Как работает прогон
 
 1. `POST /api/v1/benchmarks/runs` создаёт прогон для каждой пары (тест, модель) в статусе
-   `Queued` и запускает их в фоне (не более `Benchmarks.MaxParallelRuns` одновременно).
+   `Queued` и запускает их в фоне (не более `Benchmarks__MaxParallelRuns` одновременно).
 2. Модель ищет ошибки тем же агентом, что и первая проверка отчёта
    (`FindIssues`, по одному запросу на группу глав).
 3. Найденное сопоставляется с известным сначала детерминированно (глава, строка, похожесть
    заголовка), затем остаток — одним запросом `BenchmarkMatchIssues` (если включено
-   `Benchmarks.LlmMatching`).
+   `Benchmarks__LlmMatching`).
 4. Для ошибок с `checkFix` патч модели применяется к тексту главы и сравнивается с эталонным.
 5. Результат сохраняется: для каждой известной ошибки — найдена ли, совпал ли заголовок и
    приоритет, статус сравнения исправления, заголовок/комментарий/приоритет найденного;
@@ -222,9 +222,9 @@ Angular-приложение на standalone-компонентах с Taiga UI:
 расход хранится на самом прогоне. Прогоны удаляются мягко: `DELETE` отменяет активный прогон
 и помечает запись удалённой, после чего она пропадает из `GET /runs` и `/summary`.
 
-Ключи конфигурации: `Benchmarks.DataPath` (`Benchmarks`), `Benchmarks.LineTolerance` (`3`),
-`Benchmarks.TitleSimilarityThreshold` (`0.6`), `Benchmarks.LlmMatching` (`true`),
-`Benchmarks.LlmConfidenceThreshold` (`60`), `Benchmarks.MaxParallelRuns` (`2`).
+Ключи конфигурации: `Benchmarks__DataPath` (`Benchmarks`), `Benchmarks__LineTolerance` (`3`),
+`Benchmarks__TitleSimilarityThreshold` (`0.6`), `Benchmarks__LlmMatching` (`true`),
+`Benchmarks__LlmConfidenceThreshold` (`60`), `Benchmarks__MaxParallelRuns` (`2`).
 
 ---
 
@@ -321,35 +321,36 @@ npm test               # тесты latex-провайдера
 
 ## Конфигурация API
 
-Параметры читаются из `appsettings*.json`, переменных окружения (`AddEnvironmentVariables`,
-разделитель `__`) или секретов. Ключи:
+Параметры читаются из `appsettings*.json`, переменных окружения (`AddEnvironmentVariables`)
+или секретов. Уровни ключа разделяются `__` в переменных окружения (в коде и JSON — `:`),
+например `Security__AuthApiUrl` (ключ `Security:AuthApiUrl`). Ключи:
 
 | Ключ | Назначение |
 | --- | --- |
-| `ConnectionStrings.Postgres` | Строка подключения к PostgreSQL |
-| `ConnectionStrings.Redis` | Подключение к Redis (по умолчанию `localhost:6381`) |
-| `Security.AuthApiUrl` | Базовый адрес Avalux Auth (OIDC-discovery) |
-| `Security.ApiToken` | Сервисный токен для Auth API |
-| `Security.Issuer` / `Security.Audience` | Проверка JWT |
-| `Security.AdminIds` | Список ID администраторов через `;` |
-| `Security.CorsOrigins` | Дополнительные разрешённые origin через `;` |
-| `Frontend.Url` | Адрес веб-версии (CORS, ссылки в GitHub Check Run) |
-| `GitHub.AppName` / `GitHub.AppId` | Параметры GitHub App |
-| `GitHub.PrivateKey` | Переменная окружения с приватным ключом GitHub App |
-| `GitHub.WebhookSecret` | Секрет webhook (обязателен) |
-| `Ai.ApiUrl` / `Ai.ApiKey` | OpenAI-совместимый эндпоинт и ключ |
-| `Ai.DefaultModelId` | Модель по умолчанию |
-| `S3.AccessKey` / `S3.SecretKey` / `S3.ServiceUrl` / `S3.AuthorizationRegion` | Доступ к S3 |
-| `S3.Bucket.Sources` / `S3.Bucket.LocalSources` | Бакеты (по умолчанию `sources` / `local`) |
-| `YooMoney.WalletId` / `YooMoney.AccessToken` / `YooMoney.PaymentRedirectUrl` | Приём платежей |
-| `Subscriptions.Free.Name` / `.Description` / `.Tokens` / `.Reports` | Параметры бесплатного тарифа |
-| `Reports.ChapterSeparator` | Разделитель вложенности глав (по умолчанию `//`) |
-| `Reports.MinChapterSize` / `Reports.MaxRequestSize` | Границы группировки глав для LLM |
-| `Benchmarks.DataPath` | Каталог тестов бенчмарка (по умолчанию `Benchmarks` рядом с приложением) |
-| `Benchmarks.LineTolerance` | Допустимая разница строк при детерминированном сопоставлении (по умолчанию `3`) |
-| `Benchmarks.TitleSimilarityThreshold` | Порог похожести заголовков (по умолчанию `0.6`) |
-| `Benchmarks.LlmMatching` / `Benchmarks.LlmConfidenceThreshold` | LLM-досопоставление остатка и порог уверенности (по умолчанию `true` / `60`) |
-| `Benchmarks.MaxParallelRuns` | Сколько прогонов бенчмарка выполнять одновременно (по умолчанию `2`) |
+| `ConnectionStrings__Postgres` | Строка подключения к PostgreSQL |
+| `ConnectionStrings__Redis` | Подключение к Redis (по умолчанию `localhost:6381`) |
+| `Security__AuthApiUrl` | Базовый адрес Avalux Auth (OIDC-discovery) |
+| `Security__ApiToken` | Сервисный токен для Auth API |
+| `Security__Issuer` / `Security__Audience` | Проверка JWT |
+| `Security__AdminIds` | Список ID администраторов через `;` |
+| `Security__CorsOrigins` | Дополнительные разрешённые origin через `;` |
+| `Frontend__Url` | Адрес веб-версии (CORS, ссылки в GitHub Check Run) |
+| `GitHub__AppName` / `GitHub__AppId` | Параметры GitHub App |
+| `GitHub__PrivateKey` | Переменная окружения с приватным ключом GitHub App |
+| `GitHub__WebhookSecret` | Секрет webhook (обязателен) |
+| `Ai__ApiUrl` / `Ai__ApiKey` | OpenAI-совместимый эндпоинт и ключ |
+| `Ai__DefaultModelId` | Модель по умолчанию |
+| `S3__AccessKey` / `S3__SecretKey` / `S3__ServiceUrl` / `S3__AuthorizationRegion` | Доступ к S3 |
+| `S3__Bucket__Sources` / `S3__Bucket__LocalSources` | Бакеты (по умолчанию `sources` / `local`) |
+| `YooMoney__WalletId` / `YooMoney__AccessToken` / `YooMoney__PaymentRedirectUrl` | Приём платежей |
+| `Subscriptions__Free__Name` / `Subscriptions__Free__Description` / `Subscriptions__Free__Tokens` / `Subscriptions__Free__Reports` | Параметры бесплатного тарифа |
+| `Reports__ChapterSeparator` | Разделитель вложенности глав (по умолчанию `//`) |
+| `Reports__MinChapterSize` / `Reports__MaxRequestSize` | Границы группировки глав для LLM |
+| `Benchmarks__DataPath` | Каталог тестов бенчмарка (по умолчанию `Benchmarks` рядом с приложением) |
+| `Benchmarks__LineTolerance` | Допустимая разница строк при детерминированном сопоставлении (по умолчанию `3`) |
+| `Benchmarks__TitleSimilarityThreshold` | Порог похожести заголовков (по умолчанию `0.6`) |
+| `Benchmarks__LlmMatching` / `Benchmarks__LlmConfidenceThreshold` | LLM-досопоставление остатка и порог уверенности (по умолчанию `true` / `60`) |
+| `Benchmarks__MaxParallelRuns` | Сколько прогонов бенчмарка выполнять одновременно (по умолчанию `2`) |
 
 ---
 
@@ -372,7 +373,7 @@ npm test               # тесты latex-провайдера
 | Бенчмарк | `/benchmarks/cases`, `/benchmarks/runs` (+ `{id}`), `/benchmarks/summary` |
 | Webhook | `POST /api/v1/github/webhooks` (подпись проверяется секретом) |
 
-Политики авторизации: `User` (требуется claim `UserId`) и `Admin` (claim входит в `Security.AdminIds`).
+Политики авторизации: `User` (требуется claim `UserId`) и `Admin` (claim входит в `Security__AdminIds`).
 Ошибки возвращаются в формате Problem Details.
 
 ---

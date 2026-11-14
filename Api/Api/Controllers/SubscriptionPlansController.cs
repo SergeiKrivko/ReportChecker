@@ -23,10 +23,10 @@ public class SubscriptionPlansController(
             new SubscriptionPlan
             {
                 Id = Guid.Empty,
-                Name = configuration["Subscriptions.Free.Name"] ?? "Free",
-                Description = configuration["Subscriptions.Free.Description"],
-                TokensLimit = int.Parse(configuration["Subscriptions.Free.Tokens"] ?? "0"),
-                ReportsLimit = int.Parse(configuration["Subscriptions.Free.Reports"] ?? "0"),
+                Name = configuration["Subscriptions:Free:Name"] ?? "Free",
+                Description = configuration["Subscriptions:Free:Description"],
+                TokensLimit = int.Parse(configuration["Subscriptions:Free:Tokens"] ?? "0"),
+                ReportsLimit = int.Parse(configuration["Subscriptions:Free:Reports"] ?? "0"),
                 CreatedAt = DateTime.UnixEpoch,
             };
         return Ok(plans.Prepend(freeSubscription).Select(e => e.ToDto()));

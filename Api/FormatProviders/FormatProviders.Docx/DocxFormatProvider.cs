@@ -12,7 +12,7 @@ public class DocxFormatProvider(IConfiguration configuration) : IFormatProvider
 {
     public string Key => "Docx";
 
-    private string ChapterSeparator { get; } = configuration["Reports.ChapterSeparator"] ?? "//";
+    private string ChapterSeparator { get; } = configuration["Reports:ChapterSeparator"] ?? "//";
 
     public async Task<IReadOnlyList<Chapter>> GetChaptersAsync(IFileArchive archive)
     {

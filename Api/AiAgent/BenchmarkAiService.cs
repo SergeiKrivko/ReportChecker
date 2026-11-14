@@ -21,7 +21,7 @@ public class BenchmarkAiService(
     /// главы не отбрасываются по минимальному размеру: тест может быть коротким.
     /// </summary>
     private readonly int _maxRequestSize = int.Parse(
-        configuration["Benchmarks.MaxRequestSize"] ?? configuration["Reports.MaxRequestSize"] ?? "5000");
+        configuration["Benchmarks:MaxRequestSize"] ?? configuration["Reports:MaxRequestSize"] ?? "5000");
 
     public async Task<BenchmarkFindResult> FindIssuesAsync(IReadOnlyList<Chapter> chapters, Guid modelId,
         LlmReasoningEffort? reasoningEffort = null, CancellationToken ct = default)
