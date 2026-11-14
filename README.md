@@ -378,6 +378,14 @@ npm test               # тесты latex-провайдера
 
 ---
 
+## Развёртывание
+
+Прод-стек для ВМ — [`deploy/docker-compose.yml`](deploy/docker-compose.yml) (Portainer, стек
+`reportchecker`). Домены, переменные окружения и ограничения описаны в
+[`deploy/README.md`](deploy/README.md).
+
+---
+
 ## CI/CD
 
 | Workflow | Триггер | Действие |

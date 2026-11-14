@@ -1,0 +1,151 @@
+# ReportChecker — production stack for the VM at 84.54.59.70.
+#
+# Deployed as the Portainer stack `reportchecker`. Secrets are NOT stored here:
+# they are passed through Portainer stack environment variables (see README.md
+# next to this file) and referenced below as ${...}.
+#
+# Environment variable names use "__" as the key separator (.NET convention):
+#   ConnectionStrings__Postgres  ->  ConnectionStrings:Postgres
+#
+# Domains (2026-11-14):
+#   * reportchecker.ru / www.reportchecker.ru / api.reportchecker.ru — still
+#     point to the old machine (176.109.106.249); routers are already declared,
+#     certificates will be issued once DNS is switched to this VM.
+#   * reportchecker-ui.reportchecker.ru / reportchecker-api.reportchecker.ru —
+#     covered by the *.reportchecker.ru wildcard that already points here, so
+#     these work immediately.
+
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "1m"
+    max-file: "1"
+    tag: "{{.Name}}"
+
+services:
+  reportchecker-ui:
+    image: ghcr.io/sergeikrivko/reportchecker-frontend:master
+    container_name: reportchecker-ui
+    restart: always
+    networks:
+      - proxy
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.services.reportchecker-ui.loadbalancer.server.port=80
+      # Primary domain (works after DNS is switched to this VM).
+      - traefik.http.routers.reportchecker-ui.entrypoints=websecure
+      - traefik.http.routers.reportchecker-ui.rule=Host(`reportchecker.ru`) || Host(`www.reportchecker.ru`)
+      - traefik.http.routers.reportchecker-ui.service=reportchecker-ui
+      - traefik.http.routers.reportchecker-ui.tls.certresolver=le
+      # Temporary domain that resolves to this VM today.
+      - traefik.http.routers.reportchecker-ui-alt.entrypoints=websecure
+      - traefik.http.routers.reportchecker-ui-alt.rule=Host(`reportchecker-ui.reportchecker.ru`)
+      - traefik.http.routers.reportchecker-ui-alt.service=reportchecker-ui
+      - traefik.http.routers.reportchecker-ui-alt.tls.certresolver=le
+    logging: *default-logging
+
+  reportchecker-api:
+    image: ghcr.io/sergeikrivko/reportchecker:master
+    container_name: reportchecker-api
+    restart: always
+    networks:
+      - proxy
+    depends_on:
+      reportchecker-postgres:
+        condition: service_healthy
+      reportchecker-redis:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__Postgres: "Host=reportchecker-postgres;Port=5432;Database=${DB__NAME};Username=${DB__USER};Password=${DB__PASS}"
+      ConnectionStrings__Redis: "reportchecker-redis:6379"
+
+      Security__AuthApiUrl: "${Security__AuthApiUrl}"
+      Security__Issuer: "${Security__Issuer}"
+      Security__Audience: "${Security__Audience}"
+      Security__AdminIds: "${Security__AdminIds}"
+      Security__CorsOrigins: "${Security__CorsOrigins}"
+      Security__ApiToken: "${Security__ApiToken}"
+
+      Frontend__Url: "${Frontend__Url}"
+
+      GitHub__AppName: "reportchecker"
+      GitHub__AppId: "${GitHub__AppId:-0}"
+      GitHub__PrivateKey: "${GitHub__PrivateKey}"
+      GitHub__WebhookSecret: "${GitHub__WebhookSecret}"
+
+      Ai__ApiUrl: "${Ai__ApiUrl}"
+      Ai__ApiKey: "${Ai__ApiKey}"
+      Ai__DefaultModelId: "${Ai__DefaultModelId}"
+
+      S3__AccessKey: "${S3__AccessKey}"
+      S3__SecretKey: "${S3__SecretKey}"
+      S3__ServiceUrl: "${S3__ServiceUrl}"
+      S3__AuthorizationRegion: "${S3__AuthorizationRegion}"
+      S3__Bucket__Sources: "${S3__Bucket__Sources:-sources}"
+      S3__Bucket__LocalSources: "${S3__Bucket__LocalSources:-local}"
+
+      YooMoney__WalletId: "${YooMoney__WalletId}"
+      YooMoney__AccessToken: "${YooMoney__AccessToken}"
+      YooMoney__PaymentRedirectUrl: "${YooMoney__PaymentRedirectUrl}"
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.services.reportchecker-api.loadbalancer.server.port=3000
+      # Primary domain (works after DNS is switched to this VM).
+      - traefik.http.routers.reportchecker-api.entrypoints=websecure
+      - traefik.http.routers.reportchecker-api.rule=Host(`api.reportchecker.ru`)
+      - traefik.http.routers.reportchecker-api.service=reportchecker-api
+      - traefik.http.routers.reportchecker-api.tls.certresolver=le
+      # Temporary domain that resolves to this VM today.
+      - traefik.http.routers.reportchecker-api-alt.entrypoints=websecure
+      - traefik.http.routers.reportchecker-api-alt.rule=Host(`reportchecker-api.reportchecker.ru`)
+      - traefik.http.routers.reportchecker-api-alt.service=reportchecker-api
+      - traefik.http.routers.reportchecker-api-alt.tls.certresolver=le
+    logging: *default-logging
+
+  reportchecker-postgres:
+    image: postgres:17-alpine
+    container_name: reportchecker-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB__NAME}
+      POSTGRES_USER: ${DB__USER}
+      POSTGRES_PASSWORD: ${DB__PASS}
+    networks:
+      - proxy
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB__USER} -d ${DB__NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    logging: *default-logging
+
+  reportchecker-redis:
+    image: redis:7-alpine
+    container_name: reportchecker-redis
+    restart: always
+    command: ["redis-server", "--appendonly", "yes"]
+    networks:
+      - proxy
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging: *default-logging
+
+networks:
+  proxy:
+    external: true
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
