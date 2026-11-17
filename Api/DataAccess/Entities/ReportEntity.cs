@@ -18,6 +18,8 @@ public class ReportEntity
     public DateTime? DeletedAt { get; init; }
 
     public virtual ICollection<CheckEntity> Checks { get; init; } = [];
+    public virtual ICollection<ReportShareEntity> Shares { get; init; } = [];
+    public virtual ReportShareLinkEntity? ShareLink { get; init; }
     public virtual ICollection<InstructionEntity> Instructions { get; init; } = [];
     public virtual ICollection<InstructionTaskEntity> InstructionTasks { get; init; } = [];
     public virtual LlmModelEntity? LlmModel { get; init; }

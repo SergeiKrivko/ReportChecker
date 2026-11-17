@@ -44,6 +44,7 @@ builder.Services.AddScoped<ICheckRepository, CheckRepository>();
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 builder.Services.AddScoped<IIssueRepository, IssueRepository>();
 builder.Services.AddScoped<IReportRepository, ReportRepository>();
+builder.Services.AddScoped<IReportShareRepository, ReportShareRepository>();
 builder.Services.AddScoped<IInstructionRepository, InstructionRepository>();
 builder.Services.AddScoped<IInstructionTaskRepository, InstructionTaskRepository>();
 builder.Services.AddScoped<ICommentReadRepository, CommentReadRepository>();
@@ -63,6 +64,8 @@ builder.Services.AddScoped<ICheckSourceRepository<LocalCheckSource>, LocalCheckS
 builder.Services.AddSingleton<IFileRepository, S3Repository>();
 
 builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IReportAccessService, ReportAccessService>();
+builder.Services.AddScoped<IReportShareService, ReportShareService>();
 builder.Services.AddScoped<ICheckService, CheckService>();
 builder.Services.AddScoped<IAiAgentFactory, AiAgentFactory>();
 builder.Services.AddScoped<IAiService, AiService>();

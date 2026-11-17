@@ -6,6 +6,7 @@ public class ReportDto
 {
     public required Guid Id { get; init; }
     public required Guid OwnerId { get; init; }
+    public required ReportAccessLevel AccessLevel { get; init; }
     public string? Name { get; init; }
     public required string SourceProvider { get; init; }
     public required string Format { get; init; }

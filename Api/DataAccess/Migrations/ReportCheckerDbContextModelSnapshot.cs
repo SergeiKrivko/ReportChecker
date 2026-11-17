@@ -784,6 +784,51 @@ namespace ReportChecker.DataAccess.Migrations
                     b.ToTable("Reports");
                 });
 
+            modelBuilder.Entity("ReportChecker.DataAccess.Entities.ReportShareEntity", b =>
+                {
+                    b.Property<Guid>("ReportId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("AccessLevel")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("ReportId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ReportShares");
+                });
+
+            modelBuilder.Entity("ReportChecker.DataAccess.Entities.ReportShareLinkEntity", b =>
+                {
+                    b.Property<Guid>("ReportId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.HasKey("ReportId");
+
+                    b.HasIndex("Token")
+                        .IsUnique();
+
+                    b.ToTable("ReportShareLinks");
+                });
+
             modelBuilder.Entity("ReportChecker.DataAccess.Entities.SubscriptionOfferEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1124,6 +1169,28 @@ namespace ReportChecker.DataAccess.Migrations
                     b.Navigation("LlmModel");
                 });
 
+            modelBuilder.Entity("ReportChecker.DataAccess.Entities.ReportShareEntity", b =>
+                {
+                    b.HasOne("ReportChecker.DataAccess.Entities.ReportEntity", "Report")
+                        .WithMany("Shares")
+                        .HasForeignKey("ReportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Report");
+                });
+
+            modelBuilder.Entity("ReportChecker.DataAccess.Entities.ReportShareLinkEntity", b =>
+                {
+                    b.HasOne("ReportChecker.DataAccess.Entities.ReportEntity", "Report")
+                        .WithOne("ShareLink")
+                        .HasForeignKey("ReportChecker.DataAccess.Entities.ReportShareLinkEntity", "ReportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Report");
+                });
+
             modelBuilder.Entity("ReportChecker.DataAccess.Entities.SubscriptionOfferEntity", b =>
                 {
                     b.HasOne("ReportChecker.DataAccess.Entities.SubscriptionPlanEntity", "Plan")
@@ -1228,6 +1295,10 @@ namespace ReportChecker.DataAccess.Migrations
                     b.Navigation("Instructions");
 
                     b.Navigation("LocalSource");
+
+                    b.Navigation("ShareLink");
+
+                    b.Navigation("Shares");
 
                     b.Navigation("Usages");
                 });

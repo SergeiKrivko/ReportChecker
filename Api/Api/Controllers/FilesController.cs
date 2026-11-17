@@ -4,6 +4,7 @@ using ReportChecker.Abstractions;
 using ReportChecker.Api.Dtos;
 using ReportChecker.Api.Extensions;
 using ReportChecker.Exceptions;
+using ReportChecker.Models;
 using ReportChecker.Models.Sources;
 
 namespace ReportChecker.Api.Controllers;
@@ -12,7 +13,7 @@ namespace ReportChecker.Api.Controllers;
 [Route("api/v1/files")]
 public class FilesController(
     IFileRepository fileRepository,
-    IReportRepository reportRepository,
+    IReportAccessService reportAccessService,
     ICheckRepository checkRepository,
     ICheckSourceRepository<FileCheckSource> checkSourceRepository,
     ICheckSourceRepository<LocalCheckSource> localCheckSourceRepository) : ControllerBase
@@ -45,7 +46,7 @@ public class FilesController(
                 throw new BadRequestException("Unknown bucket");
         }
 
-        if (!TryGetS3Buket(bucket, out var s3Bucket))
+        if (!bucket.TryGetS3Bucket(out var s3Bucket))
             throw new BadRequestException("Unknown bucket");
         await fileRepository.UploadFileAsync(s3Bucket, id, file.FileName,
             file.OpenReadStream());
@@ -61,16 +62,15 @@ public class FilesController(
     public async Task<ActionResult<DownloadUrlDto>> DownloadFile([FromQuery(Name = "report")] Guid reportId,
         [FromQuery] FileBucketDto bucket = FileBucketDto.Default)
     {
-        var report = await reportRepository.GetReportByIdAsync(reportId);
-        if (User.UserId != report?.OwnerId)
-            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
-        var check = await checkRepository.GetLatestCheckOfReportAsync(reportId);
+        var access = await reportAccessService.RequireAccessAsync(reportId, User.UserId,
+            ReportAccessLevel.Read);
+        var check = await checkRepository.GetLatestCheckOfReportAsync(access.Report.Id);
         if (check == null)
             throw new NotFoundException($"Отчет '{reportId}' не содержит ни одной проверки");
         var source = await checkSourceRepository.GetByCheckIdAsync(check.Id);
         if (source == null)
             throw new NotFoundException($"Не удалось получить информацию об источнике файла");
-        if (!TryGetS3Buket(bucket, out var s3Bucket))
+        if (!bucket.TryGetS3Bucket(out var s3Bucket))
             throw new BadRequestException("Unknown bucket");
         var fileUrl = source.Data.FileName == null
             ? await fileRepository.GetDownloadUrlAsync(s3Bucket, source.Id,
@@ -81,21 +81,5 @@ public class FilesController(
         {
             Url = fileUrl,
         });
-    }
-
-    private static bool TryGetS3Buket(FileBucketDto dto, out FileRepositoryBucket s3Bucket)
-    {
-        switch (dto)
-        {
-            case FileBucketDto.Default:
-                s3Bucket = FileRepositoryBucket.Sources;
-                return true;
-            case FileBucketDto.Local:
-                s3Bucket = FileRepositoryBucket.LocalSources;
-                return true;
-            default:
-                s3Bucket = FileRepositoryBucket.Sources;
-                return false;
-        }
     }
 }

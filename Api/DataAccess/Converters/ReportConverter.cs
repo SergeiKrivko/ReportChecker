@@ -41,7 +41,7 @@ public static class ReportConverter
                 e => e.Count(i => i.Comments
                     .Where(c => c.Status != null)
                     .OrderByDescending(c => c.CreatedAt)
-                    .First().Status == IssueStatus.Open));
+                    .FirstOrDefault()?.Status == IssueStatus.Open));
     }
 
     private static DateTime GetUpdatedAt(ReportEntity entity)

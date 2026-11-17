@@ -5,13 +5,14 @@ using ReportChecker.Api.Converters;
 using ReportChecker.Api.Dtos;
 using ReportChecker.Api.Extensions;
 using ReportChecker.Exceptions;
+using ReportChecker.Models;
 
 namespace ReportChecker.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/reports/{reportId:guid}/issues/{issueId:guid}/comments")]
 public class CommentsController(
-    IReportRepository reportRepository,
+    IReportAccessService reportAccessService,
     IIssueRepository issueRepository,
     ICheckRepository checkRepository,
     ICheckService checkService,
@@ -25,17 +26,8 @@ public class CommentsController(
     {
         var userId = User.UserId;
 
-        var report = await reportRepository.GetReportByIdAsync(reportId);
-        if (report == null || report.OwnerId != userId)
-            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
-
-        var issue = await issueRepository.GetIssueByIdAsync(issueId);
-        if (issue == null)
-            throw new NotFoundException($"Ошибка '{issueId}' не найдена");
-
-        var check = await checkRepository.GetCheckByIdAsync(issue.CheckId);
-        if (issue.CheckId != check?.Id)
-            throw new NotFoundException($"Ошибка '{issueId}' не найдена");
+        await reportAccessService.RequireAccessAsync(reportId, userId, ReportAccessLevel.Read);
+        await GetIssueAsync(reportId, issueId);
 
         var comments = await commentRepository.GetAllCommentsOfIssueAsync(issueId, userId);
         return Ok(comments.Select(e => e.ToDto()));
@@ -47,20 +39,12 @@ public class CommentsController(
     {
         var userId = User.UserId;
 
-        var report = await reportRepository.GetReportByIdAsync(reportId);
-        if (report == null || report.OwnerId != userId)
-            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
+        await reportAccessService.RequireAccessAsync(reportId, userId, ReportAccessLevel.Read);
+        await GetIssueAsync(reportId, issueId);
 
-        var issue = await issueRepository.GetIssueByIdAsync(issueId);
-        if (issue == null)
-            throw new NotFoundException($"Ошибка '{issueId}' не найдена");
-
-        var check = await checkRepository.GetCheckByIdAsync(issue.CheckId);
-        if (issue.CheckId != check?.Id)
-            throw new NotFoundException($"Ошибка '{issueId}' не найдена");
-
-        var comment = await commentRepository.GetCommentByIdAsync(commentId, userId) ??
-                      throw new NotFoundException($"Комментарий '{commentId}' не найден");
+        var comment = await commentRepository.GetCommentByIdAsync(commentId, userId);
+        if (comment == null || comment.IssueId != issueId)
+            throw new NotFoundException($"Комментарий '{commentId}' не найден");
         return Ok(comment.ToDto());
     }
 
@@ -71,13 +55,9 @@ public class CommentsController(
     {
         var userId = User.UserId;
 
-        var report = await reportRepository.GetReportByIdAsync(reportId);
-        if (report == null || report.OwnerId != userId)
-            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
-
-        var issue = await issueRepository.GetIssueByIdAsync(issueId);
-        if (issue == null)
-            throw new NotFoundException($"Ошибка '{issueId}' не найдена");
+        var report = (await reportAccessService.RequireAccessAsync(reportId, userId,
+            ReportAccessLevel.Comment)).Report;
+        await GetIssueAsync(reportId, issueId);
 
         var id = await commentRepository.CreateCommentAsync(issueId, userId, dto.Content, dto.Status);
         if (!string.IsNullOrWhiteSpace(dto.Content))
@@ -93,8 +73,11 @@ public class CommentsController(
     {
         var userId = User.UserId;
 
+        await reportAccessService.RequireAccessAsync(reportId, userId, ReportAccessLevel.Comment);
+        await GetIssueAsync(reportId, issueId);
+
         var comment = await commentRepository.GetCommentByIdAsync(commentId);
-        if (comment == null || comment.UserId != userId)
+        if (comment == null || comment.IssueId != issueId || comment.UserId != userId)
             throw new NotFoundException($"Комментарий '{commentId}' не найден либо написан другим пользователем");
 
         await commentRepository.UpdateCommentAsync(commentId, dto.Content);
@@ -102,12 +85,16 @@ public class CommentsController(
     }
 
     [HttpDelete("{commentId:guid}")]
+    [Authorize]
     public async Task<ActionResult> DeleteIssueComment(Guid reportId, Guid issueId, Guid commentId)
     {
         var userId = User.UserId;
 
+        await reportAccessService.RequireAccessAsync(reportId, userId, ReportAccessLevel.Comment);
+        await GetIssueAsync(reportId, issueId);
+
         var comment = await commentRepository.GetCommentByIdAsync(commentId);
-        if (comment == null || comment.UserId != userId)
+        if (comment == null || comment.IssueId != issueId || comment.UserId != userId)
             throw new NotFoundException($"Комментарий '{commentId}' не найден либо написан другим пользователем");
 
         await commentRepository.DeleteCommentAsync(commentId);
@@ -115,10 +102,14 @@ public class CommentsController(
     }
 
     [HttpPost("read")]
+    [Authorize]
     public async Task<ActionResult> MarkRead(Guid reportId, Guid issueId, [FromBody] MarkReadDto dto,
         CancellationToken ct)
     {
         var userId = User.UserId;
+
+        await reportAccessService.RequireAccessAsync(reportId, userId, ReportAccessLevel.Read);
+        await GetIssueAsync(reportId, issueId, ct);
 
         var comments = await commentRepository.GetAllCommentsOfIssueAsync(issueId, userId);
         var commentIds = comments.Where(e => e.IsRead != dto.IsRead).Select(e => e.Id);
@@ -141,23 +132,29 @@ public class CommentsController(
     public async Task<ActionResult> UpdatePatchStatus(Guid reportId, Guid issueId, Guid commentId,
         [FromBody] UpdatePatchDto dto, CancellationToken ct = default)
     {
-        var userId = User.UserId;
-
-        var report = await reportRepository.GetReportByIdAsync(reportId);
-        if (report == null || report.OwnerId != userId)
-            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
-
-        var issue = await issueRepository.GetIssueByIdAsync(issueId);
-        if (issue == null)
-            throw new NotFoundException($"Ошибка '{issueId}' не найдена");
+        await reportAccessService.RequireAccessAsync(reportId, User.UserId, ReportAccessLevel.Edit);
+        await GetIssueAsync(reportId, issueId, ct);
 
         var comment = await commentRepository.GetCommentByIdAsync(commentId);
-        if (comment == null)
+        if (comment == null || comment.IssueId != issueId)
             throw new NotFoundException($"Комментарий '{commentId}' не найден либо написан другим пользователем");
         if (comment.Patch == null)
             throw new NotFoundException($"Комментарий '{commentId}' не содержит предложений по исправлению");
 
         await patchService.SetPatchStatus(comment.Patch.Id, dto.Status, ct);
         return Ok();
+    }
+
+    private async Task<Issue> GetIssueAsync(Guid reportId, Guid issueId, CancellationToken ct = default)
+    {
+        var issue = await issueRepository.GetIssueByIdAsync(issueId, ct);
+        if (issue == null)
+            throw new NotFoundException($"Ошибка '{issueId}' не найдена");
+
+        var check = await checkRepository.GetCheckByIdAsync(issue.CheckId, ct);
+        if (check?.ReportId != reportId)
+            throw new NotFoundException($"Ошибка '{issueId}' не найдена");
+
+        return issue;
     }
 }

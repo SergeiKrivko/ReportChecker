@@ -5,12 +5,13 @@ namespace ReportChecker.Api.Converters;
 
 public static class ReportConverter
 {
-    public static ReportDto ToDto(this Report report)
+    public static ReportDto ToDto(this Report report, ReportAccessLevel accessLevel)
     {
         return new ReportDto
         {
             Id = report.Id,
             OwnerId = report.OwnerId,
+            AccessLevel = accessLevel,
             Name = report.Name,
             SourceProvider = report.SourceProvider,
             Format = report.Format,

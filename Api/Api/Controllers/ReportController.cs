@@ -5,7 +5,7 @@ using ReportChecker.Abstractions;
 using ReportChecker.Api.Converters;
 using ReportChecker.Api.Dtos;
 using ReportChecker.Api.Extensions;
-using ReportChecker.Exceptions;
+using ReportChecker.Models;
 
 namespace ReportChecker.Api.Controllers;
 
@@ -14,6 +14,7 @@ namespace ReportChecker.Api.Controllers;
 public class ReportController(
     IReportRepository reportRepository,
     IReportService reportService,
+    IReportAccessService reportAccessService,
     ISubscriptionService subscriptionService) : ControllerBase
 {
     [HttpGet]
@@ -22,7 +23,7 @@ public class ReportController(
     {
         var userId = User.UserId;
         var reports = await reportRepository.GetAllReportsOfUserAsync(userId);
-        return Ok(reports.Select(e => e.ToDto()));
+        return Ok(reports.Select(e => e.Report.ToDto(e.Level)));
     }
 
     [HttpGet("{reportId:guid}")]
@@ -30,10 +31,8 @@ public class ReportController(
     public async Task<ActionResult<ReportDto>> GetReportById(Guid reportId)
     {
         var userId = User.UserId;
-        var report = await reportRepository.GetReportByIdAsync(reportId);
-        if (report == null || report.OwnerId != userId)
-            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
-        return Ok(report.ToDto());
+        var access = await reportAccessService.RequireAccessAsync(reportId, userId, ReportAccessLevel.Read);
+        return Ok(access.Report.ToDto(access.Level));
     }
 
     [HttpPost]
@@ -55,10 +54,7 @@ public class ReportController(
     [Authorize]
     public async Task<ActionResult> DeleteReportById(Guid reportId)
     {
-        var userId = User.UserId;
-        var report = await reportRepository.GetReportByIdAsync(reportId);
-        if (report == null || report.OwnerId != userId)
-            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
+        await reportAccessService.RequireOwnerAsync(reportId, User.UserId);
         await reportRepository.DeleteReportAsync(reportId);
         return Ok();
     }
@@ -67,9 +63,7 @@ public class ReportController(
     [Authorize]
     public async Task<ActionResult> UpdateReportById(Guid reportId, [FromBody] UpdateReportDto dto)
     {
-        var report = await reportRepository.GetReportByIdAsync(reportId);
-        if (report == null || report.OwnerId != User.UserId)
-            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
+        await reportAccessService.RequireAccessAsync(reportId, User.UserId, ReportAccessLevel.Edit);
         await reportRepository.UpdateReportAsync(reportId, dto.Name, dto.LlmModelId, dto.ImageProcessingMode,
             dto.ReasoningLevel);
         return Ok();

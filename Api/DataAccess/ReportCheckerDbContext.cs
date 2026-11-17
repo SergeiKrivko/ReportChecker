@@ -23,6 +23,8 @@ public class ReportCheckerDbContext : DbContext
     public DbSet<PaymentEntity> Payments { get; init; }
     public DbSet<BenchmarkRunEntity> BenchmarkRuns { get; init; }
     public DbSet<BenchmarkResultEntity> BenchmarkResults { get; init; }
+    public DbSet<ReportShareEntity> ReportShares { get; init; }
+    public DbSet<ReportShareLinkEntity> ReportShareLinks { get; init; }
 
     public DbSet<FileReportSourceEntity> FileReportSources { get; init; }
     public DbSet<FileCheckSourceEntity> FileCheckSources { get; init; }

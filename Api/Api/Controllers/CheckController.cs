@@ -12,7 +12,7 @@ namespace ReportChecker.Api.Controllers;
 [ApiController]
 [Route("api/v1/reports/{reportId:guid}/checks")]
 public class CheckController(
-    IReportRepository reportRepository,
+    IReportAccessService reportAccessService,
     ICheckRepository checkRepository,
     IReportService reportService,
     ITaskCancellationService taskCancellationService,
@@ -22,10 +22,7 @@ public class CheckController(
     [Authorize]
     public async Task<ActionResult<IEnumerable<CheckDto>>> GetAllChecksAsync(Guid reportId)
     {
-        var userId = User.UserId;
-        var report = await reportRepository.GetReportByIdAsync(reportId);
-        if (report == null || report.OwnerId != userId)
-            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
+        await reportAccessService.RequireAccessAsync(reportId, User.UserId, ReportAccessLevel.Read);
         var checks = await checkRepository.GetAllChecksOfReportAsync(reportId);
         return Ok(checks.Select(e => e.ToDto()));
     }
@@ -34,10 +31,7 @@ public class CheckController(
     [Authorize]
     public async Task<ActionResult<CheckDto>> GetLatestCheckAsync(Guid reportId, CancellationToken ct)
     {
-        var userId = User.UserId;
-        var report = await reportRepository.GetReportByIdAsync(reportId);
-        if (report == null || report.OwnerId != userId)
-            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
+        await reportAccessService.RequireAccessAsync(reportId, User.UserId, ReportAccessLevel.Read);
 
         var check = await checkRepository.GetLatestCheckOfReportAsync(reportId, true, ct) ??
                     throw new NotFoundException("Не найдено ни одной проверки для данного отчета");
@@ -49,10 +43,7 @@ public class CheckController(
     [Authorize]
     public async Task<ActionResult> RestartLatestCheck(Guid reportId, CancellationToken ct)
     {
-        var userId = User.UserId;
-        var report = await reportRepository.GetReportByIdAsync(reportId);
-        if (report == null || report.OwnerId != userId)
-            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
+        await reportAccessService.RequireAccessAsync(reportId, User.UserId, ReportAccessLevel.Edit);
 
         await checkService.RestartLatestCheckAsync(reportId, ct);
         return Ok();
@@ -62,13 +53,11 @@ public class CheckController(
     [Authorize]
     public async Task<ActionResult<IEnumerable<ChapterDto>>> GetLatestCheckChaptersAsync(Guid reportId)
     {
-        var userId = User.UserId;
-        var report = await reportRepository.GetReportByIdAsync(reportId);
-        if (report == null || report.OwnerId != userId)
-            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
+        var access = await reportAccessService.RequireAccessAsync(reportId, User.UserId,
+            ReportAccessLevel.Read);
         var check = await checkRepository.GetLatestCheckOfReportAsync(reportId) ??
                     throw new NotFoundException("Не найдено ни одной проверки для данного отчета");
-        var chapters = await checkService.GetChaptersAsync(report, check);
+        var chapters = await checkService.GetChaptersAsync(access.Report, check);
         return Ok(chapters.Select(e => e.ToDto()));
     }
 
@@ -78,12 +67,11 @@ public class CheckController(
     {
         var userId = User.UserId;
 
-        var report = await reportRepository.GetReportByIdAsync(reportId);
-        if (report == null || report.OwnerId != userId)
-            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
+        var access = await reportAccessService.RequireAccessAsync(reportId, userId,
+            ReportAccessLevel.Edit);
 
         var checkId = dto?.Source == null
-            ? await reportService.CreateCheckAsync(report)
+            ? await reportService.CreateCheckAsync(access.Report)
             : await checkService.CreateCheckAsync(reportId, userId, dto.Source.ToDomain(), dto.Name);
 
         return Ok(checkId);
@@ -93,13 +81,11 @@ public class CheckController(
     [Authorize]
     public async Task<ActionResult> CancelCheckAsync(Guid reportId, Guid checkId, CancellationToken ct)
     {
-        var userId = User.UserId;
-        var report = await reportRepository.GetReportByIdAsync(reportId);
-        if (report == null || report.OwnerId != userId)
-            throw new NotFoundException($"Отчет '{reportId}' не найден либо доступ заблокирован");
+        var access = await reportAccessService.RequireAccessAsync(reportId, User.UserId,
+            ReportAccessLevel.Edit);
 
         var check = await checkRepository.GetCheckByIdAsync(checkId, ct);
-        if (check == null || check.ReportId != report.Id)
+        if (check == null || check.ReportId != access.Report.Id)
             throw new NotFoundException("Проверка не найдена");
 
         var res = await taskCancellationService.CancelCheckAsync(checkId);
