@@ -13,6 +13,7 @@ import {MapPriorityPipe} from '../../pipes/map-priority-pipe';
 import {DateFromNowPipe} from '../../pipes/date-from-now-pipe';
 import {ReportAccessLevel} from '../../services/api-client';
 import {ReportEntity} from '../../entities/report-entity';
+import {ReportOwner} from '../../components/report-owner/report-owner';
 
 @Component({
   selector: 'app-home.page',
@@ -30,7 +31,8 @@ import {ReportEntity} from '../../entities/report-entity';
     MapPriorityPipe,
     TuiBadge,
     DateFromNowPipe,
-    TuiLoader
+    TuiLoader,
+    ReportOwner,
   ],
   templateUrl: './home.page.html',
   styleUrl: './home.page.scss',

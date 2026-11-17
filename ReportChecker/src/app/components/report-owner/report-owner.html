@@ -1,0 +1,7 @@
+@if (owner$ | async; as owner) {
+  <div class="owner">
+    <tui-avatar size="xs" [src]="owner.avatarUrl ?? ''"/>
+    <span class="owner-label">Владелец:</span>
+    <span class="owner-name" [title]="owner.username ?? 'Пользователь'">{{ owner.username ?? 'Пользователь' }}</span>
+  </div>
+}
