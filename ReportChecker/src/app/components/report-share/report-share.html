@@ -71,7 +71,7 @@
               title="Отозвать ссылку" type="button" (click)="revokeLink()"></button>
     </div>
     <p class="hint">
-      Любой, у кого есть ссылка, может просматривать отчёт. Перевыпуск отменяет старую ссылку.
+      Ссылка открывает данные отчёта через API в режиме чтения. Перевыпуск отменяет старую ссылку.
     </p>
   } @else {
     <button tuiButton appearance="outline" iconStart="@tui.link" type="button" (click)="createLink()">
