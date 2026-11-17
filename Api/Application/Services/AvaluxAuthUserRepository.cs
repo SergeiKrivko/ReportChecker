@@ -1,3 +1,4 @@
+using System.Net;
 using Avalux.Auth.ApiClient;
 using ReportChecker.Abstractions;
 using ReportChecker.Models;
@@ -8,8 +9,15 @@ public class AvaluxAuthUserRepository(IAuthClient authClient) : IUserRepository
 {
     public async Task<UserInfo?> GetUserByIdAsync(Guid id, CancellationToken ct = default)
     {
-        var resp = await authClient.GetUserAsync(id, ct);
-        return FromResponse(resp);
+        try
+        {
+            var resp = await authClient.GetUserAsync(id, ct);
+            return FromResponse(resp);
+        }
+        catch (HttpRequestException e) when (e.StatusCode == HttpStatusCode.NotFound)
+        {
+            return null;
+        }
     }
 
     public async Task<UserInfo?> GetUserByNameAsync(string name, string provider, CancellationToken ct = default)

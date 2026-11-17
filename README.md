@@ -369,6 +369,7 @@ npm test               # тесты latex-провайдера
 | Инструкции | `/reports/{reportId}/instructions`, `.../instructions/tasks` |
 | Общий доступ | `/reports/{reportId}/share/users`, `.../share/link` (только владелец) |
 | Публичная ссылка | `/shared/reports/{token}` (чтение, без авторизации) |
+| Пользователи | `/users/{id}` (публичный профиль: `username` и `avatarUrl`) |
 | Файлы | `/files` (загрузка, ссылка на скачивание) |
 | GitHub | `/github/repositories`, `/github/branches`, `/github/files`, `/github/installation` |
 | Модели | `/models` (чтение — анонимно, изменение — только админ) |

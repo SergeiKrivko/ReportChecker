@@ -1,3 +1,4 @@
+using System.Net;
 using Avalux.Auth.ApiClient;
 using FluentAssertions;
 using Moq;
@@ -78,6 +79,43 @@ public class AvaluxAuthUserRepositoryTests
             Times.Never);
     }
 
+    [Test]
+    public async Task GetUserById_ExistingUser_ReturnsMappedUser()
+    {
+        var user = CreateUser("ivan", "ivan@example.com");
+        _authClient.Setup(e => e.GetUserAsync(user.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(user);
+
+        var result = await _repository.GetUserByIdAsync(user.Id);
+
+        result.Should().NotBeNull();
+        result!.Id.Should().Be(user.Id);
+        result.Accounts.Should().ContainSingle();
+        result.Accounts[0].AvatarUrl.Should().Be(user.Accounts[0].AvatarUrl);
+    }
+
+    [Test]
+    public async Task GetUserById_MissingUser_ReturnsNull()
+    {
+        _authClient.Setup(e => e.GetUserAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new HttpRequestException("Not Found", null, HttpStatusCode.NotFound));
+
+        var result = await _repository.GetUserByIdAsync(Guid.NewGuid());
+
+        result.Should().BeNull();
+    }
+
+    [Test]
+    public async Task GetUserById_AuthServiceError_IsPropagated()
+    {
+        _authClient.Setup(e => e.GetUserAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new HttpRequestException("Error", null, HttpStatusCode.InternalServerError));
+
+        var act = () => _repository.GetUserByIdAsync(Guid.NewGuid());
+
+        await act.Should().ThrowAsync<HttpRequestException>();
+    }
+
     private void SetupSearch(string query, AuthModels.UserInfo[] byLogin, AuthModels.UserInfo[] byEmail)
     {
         _authClient.Setup(e => e.SearchUsersAsync(It.IsAny<int>(), It.IsAny<int>(), query, null, null,
@@ -100,6 +138,7 @@ public class AvaluxAuthUserRepositoryTests
                 Login = login,
                 Email = email,
                 Name = "Ivan",
+                AvatarUrl = "https://example.com/avatar.png",
             },
         ],
     };
