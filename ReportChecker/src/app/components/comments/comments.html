@@ -5,7 +5,7 @@
         @if (comment.userId | isBot) {
           <tui-avatar src="@tui.bot" size="m"/>
         } @else {
-          <tui-avatar src="@tui.user" size="m"/>
+          <tui-avatar [src]="(avatar(comment.userId) | async)?.avatarUrl ?? '@tui.user'" size="m"/>
         }
         <div class="content-container">
           @if (comment.content) {

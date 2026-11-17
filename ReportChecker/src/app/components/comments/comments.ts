@@ -5,10 +5,12 @@ import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {AsyncPipe} from '@angular/common';
 import {IssueEntity} from '../../entities/issue-entity';
 import {IssuesService} from '../../services/issues.service';
-import {Subject, tap} from 'rxjs';
+import {UserProfileService} from '../../services/user-profile.service';
+import {Observable, Subject, tap} from 'rxjs';
 import {OrderByCreatedAtPipe} from '../../pipes/order-by-created-at-pipe';
 import {IsBotPipe} from '../../pipes/is-bot-pipe';
 import {Patch} from '../patch/patch';
+import {PublicUserEntity} from '../../entities/public-user-entity';
 
 @Component({
   selector: 'app-comments',
@@ -33,6 +35,7 @@ import {Patch} from '../patch/patch';
 })
 export class Comments {
   private readonly issueService = inject(IssuesService);
+  private readonly userProfiles = inject(UserProfileService);
   private readonly detectorRef = inject(ChangeDetectorRef);
 
   issue = input.required<IssueEntity>();
@@ -41,6 +44,10 @@ export class Comments {
   protected readonly control = new FormControl<string>("");
 
   protected loading = new Subject<boolean>();
+
+  protected avatar(userId: string): Observable<PublicUserEntity> {
+    return this.userProfiles.get(userId);
+  }
 
   protected addComment(status: string | null = null) {
     this.loading.next(true);
