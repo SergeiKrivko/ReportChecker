@@ -11,6 +11,8 @@ import {TuiAvatar, TuiBadge} from '@taiga-ui/kit';
 import {IconBySourcePipe} from '../../pipes/icon-by-source-pipe';
 import {MapPriorityPipe} from '../../pipes/map-priority-pipe';
 import {DateFromNowPipe} from '../../pipes/date-from-now-pipe';
+import {ReportAccessLevel} from '../../services/api-client';
+import {ReportEntity} from '../../entities/report-entity';
 
 @Component({
   selector: 'app-home.page',
@@ -43,4 +45,8 @@ export class HomePage {
   protected readonly loaded$ = this.reportService.loaded$;
 
   readonly limits$ = this.subscriptionService.current$;
+
+  protected isOwner(report: ReportEntity): boolean {
+    return report.accessLevel === ReportAccessLevel.Owner;
+  }
 }

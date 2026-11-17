@@ -33,6 +33,9 @@
             <tui-avatar [src]="report.sourceProvider | iconBySource" size="m"/>
             <div class="info-container">
               <h4>{{ report.name }}</h4>
+              @if (isOwner(report)) {
+                <tui-badge appearance="primary">Владелец</tui-badge>
+              }
             </div>
           </div>
           <div class="right-container">
