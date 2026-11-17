@@ -13,7 +13,7 @@ import {
   TuiSelectDirective
 } from '@taiga-ui/kit';
 import {TuiResponsiveDialogService} from '@taiga-ui/addon-mobile';
-import {API_BASE_URL, ReportAccessLevel} from '../../services/api-client';
+import {ReportAccessLevel} from '../../services/api-client';
 import {
   ReportShareEntity,
   ReportShareLinkEntity,
@@ -44,7 +44,6 @@ export class ReportShare implements OnInit {
   private readonly dialogs = inject(TuiResponsiveDialogService);
   private readonly alerts = inject(TuiAlertService);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly apiBaseUrl = inject(API_BASE_URL);
 
   readonly reportId = input.required<string>();
 
@@ -84,7 +83,7 @@ export class ReportShare implements OnInit {
   }
 
   protected shareUrl(link: ReportShareLinkEntity): string {
-    return `${this.apiBaseUrl.replace(/\/+$/, '')}/api/v1/shared/reports/${encodeURIComponent(link.token)}`;
+    return `${window.location.origin}/shared/reports/${encodeURIComponent(link.token)}`;
   }
 
   protected invite() {

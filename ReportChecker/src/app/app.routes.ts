@@ -18,9 +18,19 @@ import {StatisticsPage} from './pages/statistics.page/statistics.page';
 import {BenchmarksPage} from './pages/benchmarks.page/benchmarks.page';
 import {BenchmarkRunsPage} from './pages/benchmark-runs.page/benchmark-runs.page';
 import {BenchmarkRunPage} from './pages/benchmark-run.page/benchmark-run.page';
+import {SharedReportRootPage} from './pages/shared-report-root.page/shared-report-root.page';
+import {SharedReportPage} from './pages/shared-report.page/shared-report.page';
+import {SharedIssuePage} from './pages/shared-issue.page/shared-issue.page';
 
 export const routes: Routes = [
   {path: '', pathMatch: "full", component: LandingPage},
+  {
+    path: "shared/reports/:token", component: SharedReportRootPage, children: [
+      {path: "", pathMatch: "full", component: SharedReportPage},
+      {path: "issues/:issueId", pathMatch: "full", component: SharedIssuePage},
+      {path: "**", redirectTo: ""},
+    ]
+  },
   {
     path: "reports", component: RootPage, children: [
       {path: "", pathMatch: "full", component: HomePage},

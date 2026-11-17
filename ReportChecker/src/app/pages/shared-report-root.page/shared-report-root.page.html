@@ -1,0 +1,15 @@
+@if (notFound$ | async) {
+  <div class="container page-padding">
+    <h1 class="error-code">404</h1>
+    <h2 class="error-name">Отчёт недоступен</h2>
+    <p>Возможно, ссылка отозвана или перевыпущена. Попросите владельца отчёта поделиться новой ссылкой.</p>
+    <button tuiButton iconStart="@tui.chevron-left" routerLink="/" appearance="flat">На главную</button>
+  </div>
+} @else if (loaded$ | async) {
+  <router-outlet/>
+} @else {
+  <div class="center-container page-padding">
+    <tui-loader size="xxl" class="loader"/>
+    <h2>Загрузка отчёта...</h2>
+  </div>
+}

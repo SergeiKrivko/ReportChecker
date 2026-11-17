@@ -10,8 +10,6 @@ import {
   ImageProcessingMode,
   LlmModel,
   LlmReasoningEffort,
-  Report,
-  ReportAccessLevel,
   SourceInfo,
   TestSourceRequestSchema,
   UpdateReportSchema
@@ -22,6 +20,7 @@ import {patchState, signalState} from '@ngrx/signals';
 import {toObservable} from '@angular/core/rxjs-interop';
 import {SourceInfoEntity} from '../entities/source-info-entity';
 import {LlmModelEntity} from '../entities/llm-model-entity';
+import {reportToEntity} from '../helpers/report-entity-mappers';
 
 interface ReportsStore {
   reports: ReportEntity[];
@@ -186,21 +185,6 @@ export class ReportsService {
   }
 }
 
-const reportToEntity = (report: Report): ReportEntity => ({
-  id: report.id ?? "",
-  ownerId: report.ownerId ?? "",
-  accessLevel: report.accessLevel ?? ReportAccessLevel.Read,
-  name: report.name ?? "",
-  sourceProvider: report.sourceProvider ?? "File",
-  format: report.format ?? "Latex",
-  llmModelId: report.llmModelId,
-  imageProcessingMode: imageProcessingModeMap[report.imageProcessingMode ?? ImageProcessingMode.Disable],
-  reasoningLevel: report.reasoningLevel ?? LlmReasoningEffort.Default,
-  source: report.source,
-  issueCount: report.issueCount,
-  updatedAt: report.updatedAt,
-});
-
 const sourceInfoToEntity = (info: SourceInfo): SourceInfoEntity => ({
   status: info.status,
   format: info.format,
@@ -214,13 +198,6 @@ const llmModelToEntity = (info: LlmModel): LlmModelEntity => ({
   defaultReasoningLevel: info.defaultReasoningLevel ?? LlmReasoningEffort.Default,
   isRecommended: info.isRecommended ?? false,
 });
-
-const imageProcessingModeMap: Record<ImageProcessingMode, ImageProcessingModeEntity> = {
-  [ImageProcessingMode.Auto]: ImageProcessingModeEntity.Auto,
-  [ImageProcessingMode.Disable]: ImageProcessingModeEntity.Disable,
-  [ImageProcessingMode.LowDetail]: ImageProcessingModeEntity.LowDetail,
-  [ImageProcessingMode.HighDetail]: ImageProcessingModeEntity.HighDetail,
-};
 
 const imageProcessingModeReverseMap: Record<ImageProcessingModeEntity, ImageProcessingMode> = {
   [ImageProcessingModeEntity.Auto]: ImageProcessingMode.Auto,

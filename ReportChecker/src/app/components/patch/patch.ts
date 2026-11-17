@@ -23,6 +23,7 @@ export class Patch {
   private readonly issuesService = inject(IssuesService);
 
   readonly patch = input.required<PatchEntity>();
+  readonly readOnly = input(false);
 
   protected readonly lines: Signal<PatchLineEntity[]> = computed(() => {
     const patch = this.patch();

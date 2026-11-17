@@ -36,6 +36,7 @@ export class Comments {
   private readonly detectorRef = inject(ChangeDetectorRef);
 
   issue = input.required<IssueEntity>();
+  readOnly = input(false);
 
   protected readonly control = new FormControl<string>("");
 

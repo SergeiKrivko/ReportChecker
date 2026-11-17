@@ -31,6 +31,7 @@ export class IssueHeader {
   private readonly detectorRef = inject(ChangeDetectorRef);
 
   issue = input.required<IssueEntity>();
+  readOnly = input(false);
 
   protected loading = new Subject<boolean>();
 

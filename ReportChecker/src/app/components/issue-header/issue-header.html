@@ -16,16 +16,18 @@
       <tui-icon icon="@tui.messages-square"/>
     </div>
   }
-  @if (issue().unreadCount > 0) {
+  @if (!readOnly() && issue().unreadCount > 0) {
     <tui-badge-notification size="s" tuiAppearance="primary"></tui-badge-notification>
   }
-  @if (issue().status == 'Open') {
-    <button tuiButton iconStart="@tui.check" appearance="positive" [loading]="loading | async"
-            (click)="addComment('Fixed')" size="s"></button>
-    <button tuiButton iconStart="@tui.x" appearance="negative" [loading]="loading | async"
-            (click)="addComment('Closed')" size="s"></button>
-  } @else {
-    <button tuiButton iconStart="@tui.book-open" appearance="neutral" [loading]="loading | async"
-            (click)="addComment('Open')" size="s"></button>
+  @if (!readOnly()) {
+    @if (issue().status == 'Open') {
+      <button tuiButton iconStart="@tui.check" appearance="positive" [loading]="loading | async"
+              (click)="addComment('Fixed')" size="s"></button>
+      <button tuiButton iconStart="@tui.x" appearance="negative" [loading]="loading | async"
+              (click)="addComment('Closed')" size="s"></button>
+    } @else {
+      <button tuiButton iconStart="@tui.book-open" appearance="neutral" [loading]="loading | async"
+              (click)="addComment('Open')" size="s"></button>
+    }
   }
 </div>

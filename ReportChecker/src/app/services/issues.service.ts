@@ -1,17 +1,10 @@
 import {inject, Injectable} from '@angular/core';
 import {
   ApiClient,
-  Comment,
   CreateCommentSchema,
-  IPatch,
-  IPatchLine,
-  PatchStatus,
-  Issue,
   MarkReadSchema, UpdatePatchSchema
 } from './api-client';
 import {IssueEntity} from '../entities/issue-entity';
-import {CommentEntity} from '../entities/comment-entity';
-import moment from 'moment';
 import {patchState, signalState} from '@ngrx/signals';
 import {toObservable} from '@angular/core/rxjs-interop';
 import {
@@ -28,7 +21,8 @@ import {
   timer
 } from 'rxjs';
 import {ReportsService} from './reports.service';
-import {PatchEntity, PatchLineEntity, PatchStatusEntity} from '../entities/patch-entity';
+import {PatchStatusEntity} from '../entities/patch-entity';
+import {issueToEntity} from '../helpers/issue-entity-mappers';
 
 interface IssuesStore {
   issues: IssueEntity[];
@@ -214,51 +208,4 @@ export class IssuesService {
   selectStatus(status: string | null) {
     patchState(this.store$$, {selectedStatus: status});
   }
-}
-
-const issueToEntity = (issue: Issue): IssueEntity => ({
-  id: issue.id ?? "",
-  title: issue.title ?? "",
-  status: issue.status ?? "Open",
-  priority: issue.priority ?? 10,
-  comments: issue.comments?.map(commentToEntity) ?? [],
-  chapter: issue.chapter ?? null,
-  unreadCount: issue.comments?.filter(e => e.isRead === false).length ?? 0,
-});
-
-
-const commentToEntity = (comment: Comment): CommentEntity => ({
-  id: comment.id ?? "",
-  userId: comment.userId ?? "",
-  content: comment.content ?? null,
-  status: comment.status ?? null,
-  progressStatus: comment.progressStatus ?? null,
-  isRead: comment.isRead ?? null,
-  patch: comment.patch ? patchToEntity(comment.patch) : undefined,
-  createdAt: comment.createdAt ?? moment(),
-  updatedAt: comment.modifiedAt ?? null,
-});
-
-const patchToEntity = (dto: IPatch): PatchEntity => ({
-  id: dto.id,
-  commentId: dto.commentId,
-  status: statusMap[dto.status],
-  lines: dto.lines?.map(patchLineToEntity) ?? [],
-});
-
-const patchLineToEntity = (dto: IPatchLine): PatchLineEntity => ({
-  number: dto.number,
-  content: dto.content,
-  previousContent: dto.previousContent,
-  type: dto.type ?? "Unknown",
-});
-
-const statusMap: Record<PatchStatus, PatchStatusEntity> = {
-  [PatchStatus.Pending]: PatchStatusEntity.Pending,
-  [PatchStatus.InProgress]: PatchStatusEntity.InProgress,
-  [PatchStatus.Completed]: PatchStatusEntity.Completed,
-  [PatchStatus.Accepted]: PatchStatusEntity.Accepted,
-  [PatchStatus.Rejected]: PatchStatusEntity.Rejected,
-  [PatchStatus.Applied]: PatchStatusEntity.Applied,
-  [PatchStatus.Failed]: PatchStatusEntity.Failed,
 }

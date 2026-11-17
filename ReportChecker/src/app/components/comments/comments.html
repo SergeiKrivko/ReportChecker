@@ -1,5 +1,5 @@
 <div class="container">
-  <div class="comments-container">
+  <div class="comments-container" [class.read-only]="readOnly()">
     @for (comment of issue().comments | orderByCreatedAt; track comment.id) {
       <div class="comment-container">
         @if (comment.userId | isBot) {
@@ -40,35 +40,37 @@
         </div>
       </div>
       @if (comment.patch) {
-        <app-patch [patch]="comment.patch"/>
+        <app-patch [patch]="comment.patch" [readOnly]="readOnly()"/>
       }
     }
   </div>
 </div>
 
-<div class="bottom-wrapper">
-  <div class="input-wrapper">
-    <div class="group">
-      <tui-textfield class="input-field" [tuiTextfieldCleaner]="false">
-        <textarea
-          tuiTextarea
-          placeholder="Ваш комментарий"
-          [formControl]="control"
-          (keydown)="onKeydown($event)"
-          [min]="2"
-          [max]="8">
-        </textarea>
-      </tui-textfield>
-      <button
-        tuiIconButton
-        class="button"
-        size="m"
-        iconStart="@tui.send"
-        tuiTooltip="Отправить"
-        [disabled]="!(control.valueChanges | async)"
-        [loading]="loading | async"
-        (click)="addComment()">
-      </button>
+@if (!readOnly()) {
+  <div class="bottom-wrapper">
+    <div class="input-wrapper">
+      <div class="group">
+        <tui-textfield class="input-field" [tuiTextfieldCleaner]="false">
+          <textarea
+            tuiTextarea
+            placeholder="Ваш комментарий"
+            [formControl]="control"
+            (keydown)="onKeydown($event)"
+            [min]="2"
+            [max]="8">
+          </textarea>
+        </tui-textfield>
+        <button
+          tuiIconButton
+          class="button"
+          size="m"
+          iconStart="@tui.send"
+          tuiTooltip="Отправить"
+          [disabled]="!(control.valueChanges | async)"
+          [loading]="loading | async"
+          (click)="addComment()">
+        </button>
+      </div>
     </div>
   </div>
-</div>
+}

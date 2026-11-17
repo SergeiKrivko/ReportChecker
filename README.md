@@ -368,7 +368,7 @@ npm test               # тесты latex-провайдера
 | Комментарии | `/reports/{reportId}/issues/{issueId}/comments` (+ `read`, статусы патчей) |
 | Инструкции | `/reports/{reportId}/instructions`, `.../instructions/tasks` |
 | Общий доступ | `/reports/{reportId}/share/users`, `.../share/link` (только владелец) |
-| Публичная ссылка | `/shared/reports/{token}` (чтение, без авторизации) |
+| Публичная ссылка | UI: `/shared/reports/{token}`, API: `/api/v1/shared/reports/{token}` (чтение, без авторизации) |
 | Пользователи | `/users/{id}` (публичный профиль: `username` и `avatarUrl`) |
 | Файлы | `/files` (загрузка, ссылка на скачивание) |
 | GitHub | `/github/repositories`, `/github/branches`, `/github/files`, `/github/installation` |
@@ -392,7 +392,10 @@ npm test               # тесты latex-провайдера
 
 `GET /api/v1/reports` возвращает и отчёты, которыми с пользователем поделились; фактический уровень
 передаётся в поле `accessLevel`. Публичная ссылка (`POST /api/v1/reports/{reportId}/share/link`)
-всегда даёт только чтение; её можно перевыпустить или отозвать. Токен ссылки — секрет: не логируйте его.
+всегда даёт только чтение; её можно перевыпустить или отозвать. Ссылка ведёт на страницу
+веб-интерфейса `/shared/reports/{token}`: она открывает отчёт и его ошибки без авторизации,
+использует анонимные эндпоинты `/api/v1/shared/reports/{token}` и не показывает действия
+редактирования. Токен ссылки — секрет: не логируйте его.
 
 Политики авторизации: `User` (требуется claim `UserId`) и `Admin` (claim входит в `Security__AdminIds`).
 Ошибки возвращаются в формате Problem Details.

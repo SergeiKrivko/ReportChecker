@@ -35,12 +35,18 @@
         </tui-notification>
       }
       @case (PatchStatusEntity.Completed) {
-        <button tuiButton appearance="positive" iconStart="@tui.check" size="m" (click)="acceptPatch()">
-          Применить
-        </button>
-        <button tuiButton appearance="negative" iconStart="@tui.x" size="m" (click)="rejectPatch()">
-          Отказаться
-        </button>
+        @if (readOnly()) {
+          <tui-notification appearance="info" size="m">
+            Предложено исправление
+          </tui-notification>
+        } @else {
+          <button tuiButton appearance="positive" iconStart="@tui.check" size="m" (click)="acceptPatch()">
+            Применить
+          </button>
+          <button tuiButton appearance="negative" iconStart="@tui.x" size="m" (click)="rejectPatch()">
+            Отказаться
+          </button>
+        }
       }
       @case (PatchStatusEntity.Accepted) {
         <tui-loader/>

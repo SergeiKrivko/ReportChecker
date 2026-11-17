@@ -1,0 +1,56 @@
+<div class="container page-padding">
+  @if (notFound()) {
+    <div class="not-found">
+      <h2>Ошибка не найдена</h2>
+      <p>Возможно, проверка была перезапущена или ссылка устарела.</p>
+      <a tuiButton routerLink="../.." iconStart="@tui.chevron-left" appearance="flat">К отчёту</a>
+    </div>
+  } @else {
+    @let issue = selectedIssue$ | async;
+    @if (issue) {
+      <div class="header-container">
+        <div class="side-container">
+          <a tuiIconButton routerLink="../.." iconStart="@tui.chevron-left" appearance="flat"></a>
+          <div class="title-wrapper">
+            <h2 class="issue-title no-margin" [innerHTML]="issue.title"></h2>
+            <label>{{ getChapter(issue) }}</label>
+          </div>
+        </div>
+        <div class="status-container">
+          <tui-icon [appearance]="issue | issueAppearance" [icon]="issue | issueIcon" size="xl" tuiBadge/>
+          <label tuiLabel>
+            @switch (issue.status) {
+              @case ('Open') {
+                Активная
+              }
+              @case ('Closed') {
+                Закрыта
+              }
+              @case ('Fixed') {
+                Исправлена
+              }
+            }
+          </label>
+        </div>
+      </div>
+
+      @let navigation = navigation$ | async;
+      <div class="navigation-container">
+        <button tuiButton size="s" iconStart="@tui.chevron-left" appearance="flat"
+                [disabled]="!navigation?.previous"
+                [routerLink]="navigation?.previous ? '../' + navigation?.previous?.id : null">
+          Предыдущая ошибка
+        </button>
+        <button tuiButton size="s" iconEnd="@tui.chevron-right" appearance="flat"
+                [disabled]="!navigation?.next"
+                [routerLink]="navigation?.next ? '../' + navigation?.next?.id : null">
+          Следующая ошибка
+        </button>
+      </div>
+
+      <app-comments [issue]="issue" [readOnly]="true"/>
+    } @else {
+      <tui-loader/>
+    }
+  }
+</div>
