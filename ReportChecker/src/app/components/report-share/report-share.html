@@ -20,7 +20,7 @@
       <div class="shares-list">
         @for (share of shares; track share.userId) {
           <div class="share-row">
-            <tui-avatar [src]="share.avatarUrl ?? ''" size="m"/>
+            <tui-avatar class="share-avatar" [src]="share.avatarUrl ?? ''" size="m"/>
             <div class="share-user">
               <span class="share-name">{{ shareName(share) }}</span>
               @let secondary = shareSecondary(share);
@@ -34,7 +34,8 @@
                      (ngModelChange)="changeAccess(share, $event)"/>
               <tui-data-list-wrapper *tuiTextfieldDropdown new [items]="accessLevels"/>
             </tui-textfield>
-            <button tuiIconButton iconStart="@tui.trash" appearance="flat-destructive" size="m"
+            <button tuiIconButton class="share-delete" iconStart="@tui.trash"
+                    appearance="flat-destructive" size="m"
                     title="Отозвать доступ" type="button" (click)="revoke(share)"></button>
           </div>
         }
@@ -61,7 +62,7 @@
   @if (link) {
     <div class="link-row">
       <tui-textfield class="link-input">
-        <input tuiTextfield readonly [value]="shareUrl(link)"/>
+        <input tuiTextfield [readOnly]="true" [value]="shareUrl(link)"/>
       </tui-textfield>
       <button tuiIconButton iconStart="@tui.copy" appearance="flat" size="m" title="Скопировать ссылку"
               type="button" (click)="copyLink(link)"></button>
