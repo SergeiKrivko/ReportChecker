@@ -1,9 +1,8 @@
 import {Component, computed, inject, input, Signal} from '@angular/core';
 import {PatchEntity, PatchLineEntity, PatchStatusEntity} from '../../entities/patch-entity';
-import {TuiAppearance, TuiAppearanceOptions, TuiButton, TuiLoader, TuiNotification, TuiScrollbar} from '@taiga-ui/core';
-import {TuiCardLarge} from '@taiga-ui/layout';
+import {TuiButton, TuiLoader, TuiNotification} from '@taiga-ui/core';
 import {IssuesService} from '../../services/issues.service';
-import {DiffHtmlPipe} from '../../pipes/diff-html-pipe';
+import {FixLines} from '../fix-lines/fix-lines';
 
 @Component({
   selector: 'app-patch',
@@ -11,10 +10,7 @@ import {DiffHtmlPipe} from '../../pipes/diff-html-pipe';
     TuiLoader,
     TuiNotification,
     TuiButton,
-    TuiCardLarge,
-    TuiAppearance,
-    TuiScrollbar,
-    DiffHtmlPipe
+    FixLines,
   ],
   templateUrl: './patch.html',
   styleUrl: './patch.scss',
@@ -25,23 +21,8 @@ export class Patch {
   readonly patch = input.required<PatchEntity>();
   readonly readOnly = input(false);
 
-  protected readonly lines: Signal<PatchLineEntity[]> = computed(() => {
-    const patch = this.patch();
-    const lines = patch.lines;
-    return lines.sort((a, b) => a.number - b.number);
-  });
-
-  protected appearanceByLineType(lineType: string): TuiAppearanceOptions["appearance"] {
-    switch (lineType) {
-      case 'Add':
-        return 'positive';
-      case 'Delete':
-        return 'negative';
-      case 'Modify':
-        return 'neutral';
-    }
-    return 'neutral';
-  }
+  protected readonly lines: Signal<PatchLineEntity[]> = computed(() =>
+    [...this.patch().lines].sort((a, b) => a.number - b.number));
 
   protected acceptPatch() {
     this.issuesService.setPatchStatus(this.patch().commentId, PatchStatusEntity.Accepted).subscribe();

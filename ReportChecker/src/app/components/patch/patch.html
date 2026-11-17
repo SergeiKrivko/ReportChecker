@@ -1,28 +1,5 @@
 <div class="container">
-  @if (lines().length > 0) {
-    <div tuiCardLarge class="lines-card" tuiAppearance="outline-grayscale">
-      <tui-scrollbar>
-        <div class="lines-container">
-          @for (line of lines(); track $index) {
-            <div class="line-container" [tuiAppearance]="appearanceByLineType(line.type)">
-              <span class="line-number">{{ line.number }}</span>
-              @switch (line.type) {
-                @case ("Add") {
-                  <code class="line-content">{{ line.content }}</code>
-                }
-                @case ("Delete") {
-                  <code class="line-content">{{ line.previousContent }}</code>
-                }
-                @case ("Modify") {
-                  <code class="line-content" [innerHTML]="line | diffHtml"></code>
-                }
-              }
-            </div>
-          }
-        </div>
-      </tui-scrollbar>
-    </div>
-  }
+  <app-fix-lines [lines]="lines()"/>
   <div class="status-container">
     @switch (patch().status) {
       @case (PatchStatusEntity.InProgress) {
