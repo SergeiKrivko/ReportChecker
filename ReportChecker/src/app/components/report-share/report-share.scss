@@ -1,0 +1,116 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.shares-container,
+.link-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.invite-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+
+  .invite-input {
+    flex: 1 1 12rem;
+  }
+
+  .access-input {
+    width: 10rem;
+  }
+
+  @media (max-width: 767px) {
+    .invite-input,
+    .access-input {
+      width: 100%;
+      flex-basis: 100%;
+    }
+  }
+}
+
+.shares-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.share-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--tui-border-normal);
+  border-radius: 1rem;
+
+  .share-user {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .share-name {
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .share-secondary {
+    color: var(--tui-text-secondary);
+    font-size: 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .share-access {
+    width: 10rem;
+  }
+
+  @media (max-width: 767px) {
+    flex-wrap: wrap;
+
+    .share-access {
+      width: 100%;
+    }
+  }
+}
+
+.link-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.75rem;
+
+  h4 {
+    margin: 0;
+  }
+}
+
+.link-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+
+  .link-input {
+    flex: 1 1 18rem;
+    min-width: 0;
+  }
+}
+
+.hint {
+  margin: 0;
+  color: var(--tui-text-secondary);
+  font-size: 0.875rem;
+}

@@ -24,8 +24,9 @@ import {LlmModelEntity} from '../../entities/llm-model-entity';
 import {ImageProcessingModeEntity} from '../../entities/report-entity';
 import {RoundPipe} from '../../pipes/round-pipe';
 import {LlmModelGroupsPipe, LLM_MODEL_GROUP_LABELS} from '../../pipes/llm-model-groups-pipe';
-import {LlmReasoningEffort} from '../../services/api-client';
+import {LlmReasoningEffort, ReportAccessLevel} from '../../services/api-client';
 import {REASONING_EFFORT_OPTIONS, reasoningEffortText} from '../../helpers/llm-reasoning-effort';
+import {ReportShare} from '../../components/report-share/report-share';
 
 @Component({
   selector: 'app-instructions.page',
@@ -43,7 +44,8 @@ import {REASONING_EFFORT_OPTIONS, reasoningEffortText} from '../../helpers/llm-r
     RouterLink,
     TuiBadge,
     RoundPipe,
-    LlmModelGroupsPipe
+    LlmModelGroupsPipe,
+    ReportShare,
   ],
   templateUrl: './settings-page.component.html',
   styleUrl: './settings-page.component.scss',
@@ -59,6 +61,10 @@ export class SettingsPage implements OnInit, OnDestroy {
 
   protected readonly instructions$ = this.instructionService.instructions$;
   protected readonly models$ = this.reportsService.models$;
+  protected readonly selectedReport$ = this.reportsService.selectedReport$;
+  protected readonly isOwner$ = this.selectedReport$.pipe(
+    map(report => report?.accessLevel === ReportAccessLevel.Owner),
+  );
 
   protected readonly control = new FormGroup({
     name: new FormControl<string>(""),

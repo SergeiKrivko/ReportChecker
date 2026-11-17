@@ -11,6 +11,7 @@ import {
   LlmModel,
   LlmReasoningEffort,
   Report,
+  ReportAccessLevel,
   SourceInfo,
   TestSourceRequestSchema,
   UpdateReportSchema
@@ -187,6 +188,8 @@ export class ReportsService {
 
 const reportToEntity = (report: Report): ReportEntity => ({
   id: report.id ?? "",
+  ownerId: report.ownerId ?? "",
+  accessLevel: report.accessLevel ?? ReportAccessLevel.Read,
   name: report.name ?? "",
   sourceProvider: report.sourceProvider ?? "File",
   format: report.format ?? "Latex",

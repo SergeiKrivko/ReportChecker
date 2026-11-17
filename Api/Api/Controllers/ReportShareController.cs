@@ -4,7 +4,6 @@ using ReportChecker.Abstractions;
 using ReportChecker.Api.Converters;
 using ReportChecker.Api.Dtos;
 using ReportChecker.Api.Extensions;
-using ReportChecker.Exceptions;
 
 namespace ReportChecker.Api.Controllers;
 
@@ -48,9 +47,8 @@ public class ReportShareController(IReportShareService shareService) : Controlle
     [HttpGet("link")]
     public async Task<ActionResult<ReportShareLinkDto>> GetLinkAsync(Guid reportId, CancellationToken ct)
     {
-        var link = await shareService.GetLinkAsync(reportId, User.UserId, ct) ??
-                   throw new NotFoundException("Публичная ссылка не найдена");
-        return Ok(link.ToDto());
+        var link = await shareService.GetLinkAsync(reportId, User.UserId, ct);
+        return link == null ? NoContent() : Ok(link.ToDto());
     }
 
     [HttpPost("link")]

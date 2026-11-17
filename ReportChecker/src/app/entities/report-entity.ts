@@ -1,8 +1,10 @@
-import {IReportSourceUnion, LlmReasoningEffort} from '../services/api-client';
+import {IReportSourceUnion, LlmReasoningEffort, ReportAccessLevel} from '../services/api-client';
 import {Moment} from 'moment';
 
 export interface ReportEntity {
   id: string;
+  ownerId: string;
+  accessLevel: ReportAccessLevel;
   name: string;
   sourceProvider: string;
   format: string;

@@ -1,0 +1,82 @@
+<div class="shares-container">
+  <div class="invite-row">
+    <tui-textfield class="invite-input">
+      <input tuiTextfield placeholder="Email или логин" [formControl]="inviteControl"
+             (keydown.enter)="invite()"/>
+    </tui-textfield>
+    <tui-textfield class="access-input" [stringify]="stringifyAccessLevel">
+      <input tuiSelect [formControl]="accessControl"/>
+      <tui-data-list-wrapper *tuiTextfieldDropdown new [items]="accessLevels"/>
+    </tui-textfield>
+    <button tuiButton appearance="outline" iconStart="@tui.user-plus" type="button"
+            [disabled]="busy() || !inviteControl.value.trim()" (click)="invite()">
+      Пригласить
+    </button>
+  </div>
+
+  @if (loaded$ | async) {
+    @let shares = shares$ | async;
+    @if (shares?.length) {
+      <div class="shares-list">
+        @for (share of shares; track share.userId) {
+          <div class="share-row">
+            <tui-avatar [src]="share.avatarUrl ?? ''" size="m"/>
+            <div class="share-user">
+              <span class="share-name">{{ shareName(share) }}</span>
+              @let secondary = shareSecondary(share);
+              @if (secondary) {
+                <span class="share-secondary">{{ secondary }}</span>
+              }
+            </div>
+            <tui-textfield class="share-access" [stringify]="stringifyAccessLevel">
+              <input tuiSelect [ngModel]="share.accessLevel"
+                     [ngModelOptions]="{standalone: true}"
+                     (ngModelChange)="changeAccess(share, $event)"/>
+              <tui-data-list-wrapper *tuiTextfieldDropdown new [items]="accessLevels"/>
+            </tui-textfield>
+            <button tuiIconButton iconStart="@tui.trash" appearance="flat-destructive" size="m"
+                    title="Отозвать доступ" type="button" (click)="revoke(share)"></button>
+          </div>
+        }
+      </div>
+    } @else {
+      <p class="hint">Доступ никому не выдан. Пригласите пользователя по email или логину.</p>
+    }
+  } @else {
+    <tui-loader/>
+  }
+</div>
+
+<div class="link-container">
+  <div class="link-header">
+    <h4>Публичная ссылка</h4>
+    @let link = link$ | async;
+    @if (link) {
+      <tui-badge appearance="positive">Включена</tui-badge>
+    } @else {
+      <tui-badge appearance="secondary">Выключена</tui-badge>
+    }
+  </div>
+
+  @if (link) {
+    <div class="link-row">
+      <tui-textfield class="link-input">
+        <input tuiTextfield readonly [value]="shareUrl(link)"/>
+      </tui-textfield>
+      <button tuiIconButton iconStart="@tui.copy" appearance="flat" size="m" title="Скопировать ссылку"
+              type="button" (click)="copyLink(link)"></button>
+      <button tuiIconButton iconStart="@tui.refresh-cw" appearance="flat" size="m"
+              title="Перевыпустить ссылку" type="button" (click)="rotateLink()"></button>
+      <button tuiIconButton iconStart="@tui.trash" appearance="flat-destructive" size="m"
+              title="Отозвать ссылку" type="button" (click)="revokeLink()"></button>
+    </div>
+    <p class="hint">
+      Любой, у кого есть ссылка, может просматривать отчёт. Перевыпуск отменяет старую ссылку.
+    </p>
+  } @else {
+    <button tuiButton appearance="outline" iconStart="@tui.link" type="button" (click)="createLink()">
+      Создать публичную ссылку
+    </button>
+    <p class="hint">Ссылка даёт доступ только на чтение и не требует авторизации.</p>
+  }
+</div>

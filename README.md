@@ -111,7 +111,7 @@ API построен по слоистой схеме (Abstractions → Models �
 ### Frontend (`ReportChecker/`)
 
 Angular-приложение на standalone-компонентах с Taiga UI: маршруты `/reports`, `/reports/new`,
-`/reports/:id` (вкладки отчёта, ошибки, настройки), `/admin/models`, `/admin/subscriptions`,
+`/reports/:id` (вкладки отчёта, ошибки, настройки и доступ), `/admin/models`, `/admin/subscriptions`,
 `/statistics`, `/subscriptions`, `/auth`. HTTP-клиент и типы генерируются из Swagger через
 **NSwag** (`nswag.json` → `src/app/services/api-client.ts`).
 
@@ -420,8 +420,6 @@ npm test               # тесты latex-провайдера
 
 ## Известные ограничения
 
-- **Общий доступ пока реализован только в API.** Веб-интерфейс не содержит управления
-  приглашениями и публичными ссылками; фронтенд будет обновлён отдельно.
 - **CLI не собирается из текущего дерева.** `Cli/Cli/Cli.csproj` ссылается на проект
   `Cli/FormatProviders/Cli.FormatProviders.Latex`, которого нет в репозитории (остались только
   артефакты `obj/`). Для сборки CLI этот проект нужно восстановить.

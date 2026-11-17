@@ -1,4 +1,5 @@
 <form class="container page-padding" [formGroup]="control">
+  @let report = selectedReport$ | async;
   <div class="header-container">
     <a tuiButton iconStart="@tui.chevron-left" routerLink=".." appearance="flat">Назад</a>
   </div>
@@ -42,12 +43,23 @@
     <app-instruction-input [instruction]="instruction"/>
   }
 
+  @if (isOwner$ | async) {
+    <div class="section-header">
+      <h3>Доступ</h3>
+    </div>
+    @if (report) {
+      <app-report-share [reportId]="report.id"/>
+    }
+  }
+
   <div class="section-header">
     <h3>Управление</h3>
   </div>
   <button tuiButton appearance="outline" iconStart="@tui.search" (click)="searchMoreIssues()">Искать ошибки</button>
-  <button tuiButton appearance="outline-destructive" iconStart="@tui.trash" (click)="deleteReport()">Удалить отчет
-  </button>
+  @if (isOwner$ | async) {
+    <button tuiButton appearance="outline-destructive" iconStart="@tui.trash" (click)="deleteReport()">Удалить отчет
+    </button>
+  }
 
 </form>
 
