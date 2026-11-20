@@ -49,12 +49,16 @@ public class CheckService(
 
     private async void _RunCheck(CheckContext context)
     {
+        IReportVersionCleanupService? cleanupService = null;
         try
         {
             var ctSource = new CancellationTokenSource();
             taskCancellationService.AddCheckCancellationToken(context.Check.Id, ctSource);
 
             var scope = serviceProvider.CreateScope();
+            // Сервис создаётся до первого await, пока scope запроса ещё жив: проверка
+            // продолжается в фоне и после завершения HTTP-запроса.
+            cleanupService = scope.ServiceProvider.GetRequiredService<IReportVersionCleanupService>();
             await scope.ServiceProvider.GetRequiredService<IPositionsUpdater>()
                 .UpdatePositionsAsync(context, ctSource.Token);
             await scope.ServiceProvider.GetRequiredService<ICheckService>().RunCheckAsync(context, ctSource.Token);
@@ -71,17 +75,16 @@ public class CheckService(
         finally
         {
             taskCancellationService.DeleteCheckCancellationToken(context.Check.Id);
-            await CleanupOldVersionsAsync(context.Report.Id);
+            if (cleanupService is not null)
+                await CleanupOldVersionsAsync(cleanupService, context.Report.Id);
         }
     }
 
-    private async Task CleanupOldVersionsAsync(Guid reportId)
+    private async Task CleanupOldVersionsAsync(IReportVersionCleanupService cleanupService, Guid reportId)
     {
         try
         {
-            await using var scope = serviceProvider.CreateAsyncScope();
-            await scope.ServiceProvider.GetRequiredService<IReportVersionCleanupService>()
-                .CleanupOldVersionsAsync(reportId);
+            await cleanupService.CleanupOldVersionsAsync(reportId);
         }
         catch (Exception e)
         {
