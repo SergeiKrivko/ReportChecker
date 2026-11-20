@@ -97,6 +97,8 @@ export class YandexDiskSpOptions implements OnInit {
     }
 
     this.selected.set(resource);
+    if (!resource.name.toLowerCase().endsWith('.zip'))
+      this.entryFilePath.setValue('');
   }
 
   protected selectFolder(folder: string) {
@@ -108,8 +110,7 @@ export class YandexDiskSpOptions implements OnInit {
   protected up() {
     const path = this.currentPath$.value.replace(/\/$/, '');
     const index = path.lastIndexOf('/');
-    const parent = index < 0 ? 'disk:/' : path.substring(0, index + 1);
-    this.selectFolder(parent.length <= 6 ? 'disk:/' : parent);
+    this.selectFolder(index <= 5 ? 'disk:/' : path.substring(0, index));
   }
 
   protected get isRoot(): boolean {
