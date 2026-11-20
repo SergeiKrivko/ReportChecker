@@ -43,10 +43,6 @@ Traefik (стек `infra`) сам выпускает сертификаты Let'
 | `GitHub__AppId` | заполнить (числовой App ID) |
 | `GitHub__PrivateKey` | **секрет, заполнить** (PEM-ключ GitHub App) |
 | `GitHub__WebhookSecret` | **секрет, заполнить** (без него API не стартует) |
-| `YandexDisk__ClientId` | ClientID OAuth-приложения Яндекса (права `cloud_api:disk.read`) |
-| `YandexDisk__ClientSecret` | **секрет, заполнить** (секрет OAuth-приложения Яндекса) |
-| `YandexDisk__RedirectUri` | `https://api.reportchecker.ru/api/v1/yandex/oauth/callback` (должен совпадать с настройкой приложения) |
-| `YandexDisk__TokenEncryptionKey` | **секрет, заполнить**; ключ шифрования токенов Диска (base64 32 байта или произвольная строка). Менять нельзя — иначе подключения придётся оформить заново |
 | `YandexDisk__PollingIntervalMinutes` | `10` — как часто сверять отчёты с Диском; `0` выключает автопроверку |
 | `YandexDisk__MaxSnapshotBytes` | `209715200` (200 МБ) — предел размера снимка |
 | `Ai__ApiUrl` | заполнить (OpenAI-совместимый эндпоинт) |
@@ -58,19 +54,17 @@ Traefik (стек `infra`) сам выпускает сертификаты Let'
 | `YooMoney__WalletId` / `YooMoney__AccessToken` | заполнить (секрет — токен) |
 | `YooMoney__PaymentRedirectUrl` | заполнить |
 
-## Подключение Яндекс.Диска
+## Яндекс.Диск
 
-1. Создайте OAuth-приложение на `oauth.yandex.ru` (Яндекс ID → «Создать приложение»), в правах
-   доступа выберите **«Чтение всего Диска»** (`cloud_api:disk.read`).
-2. В поле Redirect URI укажите `https://api.reportchecker.ru/api/v1/yandex/oauth/callback`
-   (то же значение — в `YandexDisk__RedirectUri`).
-3. Заполните в стеке `YandexDisk__ClientId`, `YandexDisk__ClientSecret`,
-   `YandexDisk__TokenEncryptionKey` и обновите стек.
-4. Автопроверка изменений включается через `YandexDisk__PollingIntervalMinutes` (по умолчанию
-   `10` минут); `0` выключает фоновую сверку, ручная кнопка «Проверить» продолжает работать.
+Отдельного OAuth-приложения для Диска не нужно: токен хранится в **Avalux Auth** вместе с
+привязанным Яндекс-аккаунтом и обновляется сервисом авторизации автоматически. Пользователь
+привязывает Яндекс на странице «Аккаунт» (вход через провайдера `yandex`), после чего может
+создавать отчёты из Диска. Без привязанного аккаунта или выданного токена API отклоняет создание
+отчёта.
 
-`YandexDisk__TokenEncryptionKey` нельзя менять после первого подключения: сохранённые токены
-перестанут расшифровываться, и пользователям придётся подключить Диск заново.
+`YandexDisk__PollingIntervalMinutes` (по умолчанию `10`) задаёт частоту фоновой сверки с Диском;
+`0` выключает её — ручная кнопка «Проверить» продолжает работать. `YandexDisk__MaxSnapshotBytes`
+ограничивает размер снимка версии.
 
 ## Ограничение фронтенда
 

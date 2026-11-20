@@ -171,8 +171,11 @@ Angular-приложение на standalone-компонентах с Taiga UI:
 
 ### Яндекс.Диск
 
-Пользователь подключает Диск по OAuth (приложение запрашивает только чтение) и выбирает файл или
-папку. Папка снимается в zip с сохранением относительных путей — так проверяются многофайловые
+Токен Диска не запрашивается отдельно: он хранится в **Avalux Auth** вместе с привязанным
+Яндекс-аккаунтом и обновляется сервисом авторизации автоматически. Пользователь выбирает файл или
+папку уже после входа через Яндекс; если аккаунт не привязан (или токен не выдан), создать отчёт
+из Диска нельзя — интерфейс объясняет, что привязать Яндекс можно на странице «Аккаунт».
+Папка снимается в zip с сохранением относительных путей — так проверяются многофайловые
 LaTeX-проекты; файл входа (`main.tex` и т. п.) определяется автоматически или задаётся вручную.
 
 - Каждая проверка работает не с живым файлом на Диске, а со **снимком в S3**: если файл поменяется
@@ -361,9 +364,6 @@ npm test               # тесты latex-провайдера
 | `GitHub__AppName` / `GitHub__AppId` | Параметры GitHub App |
 | `GitHub__PrivateKey` | Переменная окружения с приватным ключом GitHub App |
 | `GitHub__WebhookSecret` | Секрет webhook (обязателен) |
-| `YandexDisk__ClientId` / `YandexDisk__ClientSecret` | OAuth-приложение Яндекса (доступ `cloud_api:disk.read`) |
-| `YandexDisk__RedirectUri` | Callback OAuth, например `https://api.reportchecker.ru/api/v1/yandex/oauth/callback` |
-| `YandexDisk__TokenEncryptionKey` | Ключ шифрования токенов Диска в БД (base64 32 байта или произвольная строка) |
 | `YandexDisk__PollingIntervalMinutes` | Интервал фоновой сверки с Диском, по умолчанию `10`; `0` — выключить |
 | `YandexDisk__MaxSnapshotBytes` | Максимальный размер снимка, по умолчанию `209715200` (200 МБ) |
 | `YandexDisk__ApiUrl` | Адрес API Диска, по умолчанию `https://cloud-api.yandex.net` |
@@ -399,7 +399,7 @@ npm test               # тесты latex-провайдера
 | Пользователи | `/users/{id}` (публичный профиль: `username` и `avatarUrl`) |
 | Файлы | `/files` (загрузка, ссылка на скачивание) |
 | GitHub | `/github/repositories`, `/github/branches`, `/github/files`, `/github/installation` |
-| Яндекс.Диск | `/yandex/connection`, `/yandex/oauth/url`, `/yandex/oauth/callback`, `/yandex/resources`, `/yandex/reports/{reportId}/sync` |
+| Яндекс.Диск | `/yandex/connection`, `/yandex/resources`, `/yandex/reports/{reportId}/sync` |
 | Модели | `/models` (чтение — анонимно, изменение — только админ) |
 | Подписки | `/subscriptions`, `/subscriptions/current`, `/subscriptions/plans`, `.../offers` |
 | Статистика | `/statistics/usage`, `/statistics/timeUsage` |

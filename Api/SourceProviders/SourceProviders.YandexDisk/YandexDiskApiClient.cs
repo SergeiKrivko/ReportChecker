@@ -221,7 +221,7 @@ public class YandexDiskApiClient(HttpClient httpClient, ILogger<YandexDiskApiCli
         throw response.StatusCode switch
         {
             HttpStatusCode.Unauthorized => new UnauthorizedException(
-                "Яндекс.Диск отклонил токен. Подключите Диск заново"),
+                "Яндекс.Диск отклонил токен. Перепривяжите Яндекс-аккаунт на странице «Аккаунт»"),
             HttpStatusCode.NotFound => new NotFoundException($"На Яндекс.Диске не найдено: {description}"),
             HttpStatusCode.Forbidden => new BadRequestException(
                 $"У приложения нет доступа к ресурсу Яндекс.Диска: {description}"),

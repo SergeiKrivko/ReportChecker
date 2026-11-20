@@ -946,39 +946,6 @@ namespace ReportChecker.DataAccess.Migrations
                     b.ToTable("UserSubscriptions");
                 });
 
-            modelBuilder.Entity("ReportChecker.DataAccess.Entities.YandexDiskAccountEntity", b =>
-                {
-                    b.Property<Guid>("UserId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("AccessToken")
-                        .IsRequired()
-                        .HasMaxLength(4096)
-                        .HasColumnType("character varying(4096)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("ExpiresAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Login")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<string>("RefreshToken")
-                        .HasMaxLength(4096)
-                        .HasColumnType("character varying(4096)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("UserId");
-
-                    b.ToTable("YandexDiskAccounts");
-                });
-
             modelBuilder.Entity("ReportChecker.DataAccess.Entities.YandexDiskCheckSourceEntity", b =>
                 {
                     b.Property<Guid>("Id")

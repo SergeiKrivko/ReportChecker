@@ -64,8 +64,6 @@ builder.Services.AddScoped<IReportSourceRepository<LocalReportSource>, LocalRepo
 builder.Services.AddScoped<ICheckSourceRepository<LocalCheckSource>, LocalCheckSourceRepository>();
 builder.Services.AddScoped<IReportSourceRepository<YandexDiskReportSource>, YandexDiskReportSourceRepository>();
 builder.Services.AddScoped<ICheckSourceRepository<YandexDiskCheckSource>, YandexDiskCheckSourceRepository>();
-builder.Services.AddScoped<IYandexDiskAccountRepository, YandexDiskAccountRepository>();
-builder.Services.AddSingleton<IYandexDiskTokenProtector, YandexDiskTokenProtector>();
 builder.Services.AddSingleton<IFileRepository, S3Repository>();
 
 builder.Services.AddScoped<IReportService, ReportService>();
@@ -119,12 +117,6 @@ builder.Services.AddHttpClient<IYandexDiskClient, YandexDiskApiClient>(client =>
     client.BaseAddress = new Uri(builder.Configuration["YandexDisk:ApiUrl"] ?? "https://cloud-api.yandex.net");
     client.Timeout = TimeSpan.FromMinutes(10);
 });
-builder.Services.AddHttpClient<YandexDiskOAuthClient>(client =>
-{
-    client.BaseAddress = new Uri("https://oauth.yandex.ru");
-    client.Timeout = TimeSpan.FromSeconds(30);
-});
-
 builder.Services.AddHttpClient("YooMoney");
 builder.Services.AddScoped<IPaymentClient, YooMoneyService>();
 builder.Services.AddHttpClient("PolzaAi");

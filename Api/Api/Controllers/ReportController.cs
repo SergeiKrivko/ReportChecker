@@ -15,7 +15,8 @@ public class ReportController(
     IReportRepository reportRepository,
     IReportService reportService,
     IReportAccessService reportAccessService,
-    ISubscriptionService subscriptionService) : ControllerBase
+    ISubscriptionService subscriptionService,
+    IYandexDiskTokenService yandexDiskTokenService) : ControllerBase
 {
     [HttpGet]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -40,6 +41,11 @@ public class ReportController(
     public async Task<ActionResult<Guid>> CreateReport([FromBody] CreateReportDto dto, CancellationToken ct)
     {
         var userId = User.UserId;
+
+        // Отчёт с Диска нельзя создать без привязанного Яндекса и выданного токена:
+        // источник не сможет прочитать файл, а отчёт остался бы пустым.
+        if (string.Equals(dto.SourceProvider, "YandexDisk", StringComparison.OrdinalIgnoreCase))
+            await yandexDiskTokenService.GetAccessTokenAsync(userId, ct);
 
         if (!await subscriptionService.CheckReportsLimitAsync(userId, ct))
             return StatusCode(StatusCodes.Status402PaymentRequired, "Reports limit is reached");

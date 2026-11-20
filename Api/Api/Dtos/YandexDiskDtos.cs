@@ -4,6 +4,7 @@ namespace ReportChecker.Api.Dtos;
 
 public class YandexDiskConnectionDto
 {
+    public bool HasAccount { get; init; }
     public bool Connected { get; init; }
     public string? Login { get; init; }
 }

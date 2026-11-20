@@ -2,18 +2,18 @@
 
 namespace ReportChecker.Abstractions;
 
+/// <summary>
+/// Доступ к OAuth-токену Яндекс.Диска. Токен хранится в Avalux Auth вместе с
+/// привязанным Яндекс-аккаунтом и обновляется сервисом авторизации автоматически.
+/// </summary>
 public interface IYandexDiskTokenService
 {
-    /// <summary>Ссылка на страницу согласия Яндекс OAuth.</summary>
-    public string CreateAuthorizationUrl(string state);
-
-    /// <summary>Обменивает код авторизации на токены и сохраняет подключение.</summary>
-    public Task ConnectAsync(Guid userId, string code, CancellationToken ct = default);
-
+    /// <summary>Есть ли у пользователя привязанный Яндекс-аккаунт и действующий токен Диска.</summary>
     public Task<YandexDiskConnection> GetConnectionAsync(Guid userId, CancellationToken ct = default);
 
-    public Task DisconnectAsync(Guid userId, CancellationToken ct = default);
-
-    /// <summary>Действующий access-токен; обновляет его при истечении, если есть refresh-токен.</summary>
+    /// <summary>
+    /// Действующий токен Диска. Если Яндекс не привязан или токен не выдан —
+    /// <see cref="Exceptions.UnauthorizedException"/>.
+    /// </summary>
     public Task<string> GetAccessTokenAsync(Guid userId, CancellationToken ct = default);
 }
