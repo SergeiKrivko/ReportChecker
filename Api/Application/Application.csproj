@@ -13,7 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Avalux.Auth.ApiClient" Version="1.1.1" />
+      <PackageReference Include="Avalux.Auth.ApiClient" Version="1.1.2" />
       <PackageReference Include="DiffPlex" Version="1.9.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.5" />
       <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.5" />
