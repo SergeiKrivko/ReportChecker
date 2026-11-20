@@ -148,6 +148,7 @@ public class ReportRepository(ReportCheckerDbContext dbContext) : IReportReposit
             .Include(e => e.FileSource)
             .Include(e => e.GitHubSource)
             .Include(e => e.LocalSource)
+            .Include(e => e.YandexDiskSource)
             .Include(e => e.Checks).ThenInclude(e => e.Issues).ThenInclude(e => e.Comments);
     }
 

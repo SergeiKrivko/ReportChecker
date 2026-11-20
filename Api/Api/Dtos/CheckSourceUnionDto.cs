@@ -6,4 +6,5 @@ public class CheckSourceUnionDto
     public GitHubCheckSourceDto? GitHub { get; init; }
     public FileCheckSourceDto? File { get; init; }
     public LocalCheckSourceDto? Local { get; init; }
+    public YandexDiskCheckSourceDto? YandexDisk { get; init; }
 }

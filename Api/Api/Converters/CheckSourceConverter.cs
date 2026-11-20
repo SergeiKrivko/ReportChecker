@@ -13,6 +13,7 @@ public static class CheckSourceConverter
             GitHub = source.GitHub?.ToDto(),
             File = source.File?.ToDto(),
             Local = source.Local?.ToDto(),
+            YandexDisk = source.YandexDisk?.ToDto(),
         };
     }
 
@@ -34,6 +35,18 @@ public static class CheckSourceConverter
         };
     }
 
+    public static YandexDiskCheckSourceDto ToDto(this YandexDiskCheckSource source)
+    {
+        return new YandexDiskCheckSourceDto
+        {
+            Path = source.Path,
+            ContentHash = source.ContentHash,
+            FileName = source.FileName,
+            CreatedAt = source.CreatedAt,
+            DeletedAt = source.DeletedAt,
+        };
+    }
+
     public static LocalCheckSourceDto ToDto(this LocalCheckSource source)
     {
         return new LocalCheckSourceDto
@@ -52,6 +65,7 @@ public static class CheckSourceConverter
             GitHub = dto.GitHub?.ToDomain(),
             File = dto.File?.ToDomain(),
             Local = dto.Local?.ToDomain(),
+            YandexDisk = dto.YandexDisk?.ToDomain(),
         };
     }
 
@@ -70,6 +84,18 @@ public static class CheckSourceConverter
         return new GitHubCheckSource
         {
             CommitHash = dto.CommitHash,
+        };
+    }
+
+    public static YandexDiskCheckSource ToDomain(this YandexDiskCheckSourceDto dto)
+    {
+        return new YandexDiskCheckSource
+        {
+            Path = dto.Path,
+            ContentHash = dto.ContentHash,
+            FileName = dto.FileName,
+            CreatedAt = dto.CreatedAt,
+            DeletedAt = dto.DeletedAt,
         };
     }
 

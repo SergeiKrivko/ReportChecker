@@ -1,4 +1,5 @@
 ﻿using ReportChecker.Api.Dtos;
+using ReportChecker.Exceptions;
 using ReportChecker.Models.Sources;
 
 namespace ReportChecker.Api.Converters;
@@ -14,6 +15,7 @@ public static class ReportSourceConverter
                 GitHub = source.GitHub?.ToDto(),
                 File = source.File?.ToDto(),
                 Local = source.Local?.ToDto(),
+                YandexDisk = source.YandexDisk?.ToDto(),
             };
     }
 
@@ -36,6 +38,15 @@ public static class ReportSourceConverter
         };
     }
 
+    public static YandexDiskReportSourceDto ToDto(this YandexDiskReportSource source)
+    {
+        return new YandexDiskReportSourceDto
+        {
+            Path = source.Path,
+            EntryFilePath = source.EntryFilePath,
+        };
+    }
+
     public static LocalReportSourceDto ToDto(this LocalReportSource source)
     {
         return new LocalReportSourceDto
@@ -47,13 +58,18 @@ public static class ReportSourceConverter
         };
     }
 
-    public static ReportSourceUnion ToDomain(this ReportSourceUnionDto dto)
+    /// <param name="yandexDiskOwnerId">
+    /// Владелец Диска для источника YandexDisk: подставляется сервером из JWT,
+    /// значение из запроса не используется.
+    /// </param>
+    public static ReportSourceUnion ToDomain(this ReportSourceUnionDto dto, Guid? yandexDiskOwnerId = null)
     {
         return new ReportSourceUnion
         {
             GitHub = dto.GitHub?.ToDomain(),
             File = dto.File?.ToDomain(),
             Local = dto.Local?.ToDomain(),
+            YandexDisk = dto.YandexDisk?.ToDomain(yandexDiskOwnerId),
         };
     }
 
@@ -73,6 +89,19 @@ public static class ReportSourceConverter
             RepositoryId = dto.RepositoryId,
             Branch = dto.Branch,
             Path = dto.Path,
+        };
+    }
+
+    public static YandexDiskReportSource ToDomain(this YandexDiskReportSourceDto dto, Guid? ownerId)
+    {
+        if (ownerId == null)
+            throw new BadRequestException("Для источника YandexDisk не определён владелец Диска");
+
+        return new YandexDiskReportSource
+        {
+            OwnerId = ownerId.Value,
+            Path = dto.Path,
+            EntryFilePath = dto.EntryFilePath,
         };
     }
 

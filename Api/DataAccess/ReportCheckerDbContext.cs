@@ -32,6 +32,9 @@ public class ReportCheckerDbContext : DbContext
     public DbSet<LocalCheckSourceEntity> LocalCheckSources { get; init; }
     public DbSet<GitHubReportSourceEntity> GitHubReportSources { get; init; }
     public DbSet<GitHubCheckSourceEntity> GitHubCheckSources { get; init; }
+    public DbSet<YandexDiskReportSourceEntity> YandexDiskReportSources { get; init; }
+    public DbSet<YandexDiskCheckSourceEntity> YandexDiskCheckSources { get; init; }
+    public DbSet<YandexDiskAccountEntity> YandexDiskAccounts { get; init; }
 
     public ReportCheckerDbContext(DbContextOptions<ReportCheckerDbContext> options) : base(options)
     {

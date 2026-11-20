@@ -38,6 +38,7 @@
         <ProjectReference Include="..\SourceProviders\SourceProviders.File\SourceProviders.File.csproj" />
         <ProjectReference Include="..\SourceProviders\SourceProviders.GitHub\SourceProviders.GitHub.csproj" />
         <ProjectReference Include="..\SourceProviders\SourceProviders.Local\SourceProviders.Local.csproj" />
+        <ProjectReference Include="..\SourceProviders\SourceProviders.YandexDisk\SourceProviders.YandexDisk.csproj" />
         <ProjectReference Include="..\YooMoney\YooMoney.csproj" />
     </ItemGroup>
 

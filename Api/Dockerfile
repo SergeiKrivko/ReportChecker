@@ -7,17 +7,20 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["Api/Api.csproj", "Api/"]
 COPY ["Abstractions/Abstractions.csproj", "Abstractions/"]
+COPY ["Exceptions/Exceptions.csproj", "Exceptions/"]
 COPY ["Models/Models.csproj", "Models/"]
 COPY ["DataAccess/DataAccess.csproj", "DataAccess/"]
 COPY ["Application/Application.csproj", "Application/"]
 COPY ["SourceProviders/SourceProviders.File/SourceProviders.File.csproj", "SourceProviders/SourceProviders.File/"]
 COPY ["SourceProviders/SourceProviders.GitHub/SourceProviders.GitHub.csproj", "SourceProviders/SourceProviders.GitHub/"]
 COPY ["SourceProviders/SourceProviders.Local/SourceProviders.Local.csproj", "SourceProviders/SourceProviders.Local/"]
+COPY ["SourceProviders/SourceProviders.YandexDisk/SourceProviders.YandexDisk.csproj", "SourceProviders/SourceProviders.YandexDisk/"]
 COPY ["FormatProviders/FormatProviders.Latex/FormatProviders.Latex.csproj", "FormatProviders/FormatProviders.Latex/"]
 COPY ["FormatProviders/FormatProviders.Pdf/FormatProviders.Pdf.csproj", "FormatProviders/FormatProviders.Pdf/"]
 COPY ["FormatProviders/FormatProviders.Docx/FormatProviders.Docx.csproj", "FormatProviders/FormatProviders.Docx/"]
 COPY ["AiAgent/AiAgent.csproj", "AiAgent/"]
 COPY ["S3/S3.csproj", "S3/"]
+COPY ["YooMoney/YooMoney.csproj", "YooMoney/"]
 RUN dotnet restore "Api/Api.csproj"
 COPY . .
 WORKDIR "/src/Api"

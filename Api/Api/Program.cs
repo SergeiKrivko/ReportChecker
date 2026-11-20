@@ -20,6 +20,7 @@ using ReportChecker.S3;
 using ReportChecker.SourceProviders.File;
 using ReportChecker.SourceProviders.GitHub;
 using ReportChecker.SourceProviders.Local;
+using ReportChecker.SourceProviders.YandexDisk;
 using StackExchange.Redis;
 using YooMoney;
 using IFormatProvider = ReportChecker.Abstractions.IFormatProvider;
@@ -61,6 +62,10 @@ builder.Services.AddScoped<IReportSourceRepository<GitHubReportSource>, GitHubRe
 builder.Services.AddScoped<ICheckSourceRepository<GitHubCheckSource>, GitHubCheckSourceRepository>();
 builder.Services.AddScoped<IReportSourceRepository<LocalReportSource>, LocalReportSourceRepository>();
 builder.Services.AddScoped<ICheckSourceRepository<LocalCheckSource>, LocalCheckSourceRepository>();
+builder.Services.AddScoped<IReportSourceRepository<YandexDiskReportSource>, YandexDiskReportSourceRepository>();
+builder.Services.AddScoped<ICheckSourceRepository<YandexDiskCheckSource>, YandexDiskCheckSourceRepository>();
+builder.Services.AddScoped<IYandexDiskAccountRepository, YandexDiskAccountRepository>();
+builder.Services.AddSingleton<IYandexDiskTokenProtector, YandexDiskTokenProtector>();
 builder.Services.AddSingleton<IFileRepository, S3Repository>();
 
 builder.Services.AddScoped<IReportService, ReportService>();
@@ -93,6 +98,11 @@ builder.Services.AddSingleton<BenchmarkRunLimiter>();
 builder.Services.AddScoped<ISourceProvider, FileSourceProvider>();
 builder.Services.AddScoped<ISourceProvider, GitHubSourceProvider>();
 builder.Services.AddScoped<ISourceProvider, LocalSourceProvider>();
+builder.Services.AddScoped<ISourceProvider, YandexDiskSourceProvider>();
+builder.Services.AddScoped<IYandexDiskTokenService, YandexDiskTokenService>();
+builder.Services.AddScoped<IYandexDiskSnapshotService, YandexDiskSnapshotService>();
+builder.Services.AddScoped<IYandexDiskSyncService, YandexDiskSyncService>();
+builder.Services.AddHostedService<YandexDiskPollingService>();
 builder.Services.AddSingleton<IFormatProvider, LatexFormatProvider>();
 builder.Services.AddSingleton<IFormatProvider, PdfFormatProvider>();
 builder.Services.AddSingleton<IFormatProvider, DocxFormatProvider>();
@@ -104,6 +114,17 @@ builder.Services.AddHttpClient("Auth",
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer",
             builder.Configuration["Security:ApiToken"] ?? throw new Exception());
     });
+builder.Services.AddHttpClient<IYandexDiskClient, YandexDiskApiClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["YandexDisk:ApiUrl"] ?? "https://cloud-api.yandex.net");
+    client.Timeout = TimeSpan.FromMinutes(10);
+});
+builder.Services.AddHttpClient<YandexDiskOAuthClient>(client =>
+{
+    client.BaseAddress = new Uri("https://oauth.yandex.ru");
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
 builder.Services.AddHttpClient("YooMoney");
 builder.Services.AddScoped<IPaymentClient, YooMoneyService>();
 builder.Services.AddHttpClient("PolzaAi");

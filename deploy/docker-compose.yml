@@ -74,6 +74,13 @@ services:
       GitHub__PrivateKey: "${GitHub__PrivateKey}"
       GitHub__WebhookSecret: "${GitHub__WebhookSecret}"
 
+      YandexDisk__ClientId: "${YandexDisk__ClientId}"
+      YandexDisk__ClientSecret: "${YandexDisk__ClientSecret}"
+      YandexDisk__RedirectUri: "${YandexDisk__RedirectUri}"
+      YandexDisk__TokenEncryptionKey: "${YandexDisk__TokenEncryptionKey}"
+      YandexDisk__PollingIntervalMinutes: "${YandexDisk__PollingIntervalMinutes:-10}"
+      YandexDisk__MaxSnapshotBytes: "${YandexDisk__MaxSnapshotBytes:-209715200}"
+
       Ai__ApiUrl: "${Ai__ApiUrl}"
       Ai__ApiKey: "${Ai__ApiKey}"
       Ai__DefaultModelId: "${Ai__DefaultModelId}"

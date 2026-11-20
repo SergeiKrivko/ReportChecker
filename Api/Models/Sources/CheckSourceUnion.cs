@@ -6,4 +6,5 @@ public class CheckSourceUnion
     public GitHubCheckSource? GitHub { get; init; }
     public FileCheckSource? File { get; init; }
     public LocalCheckSource? Local { get; init; }
+    public YandexDiskCheckSource? YandexDisk { get; init; }
 }

@@ -16,6 +16,7 @@
     <Project Path="Api/SourceProviders/SourceProviders.File/SourceProviders.File.csproj" />
     <Project Path="Api/SourceProviders/SourceProviders.GitHub/SourceProviders.GitHub.csproj" />
     <Project Path="Api/SourceProviders/SourceProviders.Local/SourceProviders.Local.csproj" />
+    <Project Path="Api/SourceProviders/SourceProviders.YandexDisk/SourceProviders.YandexDisk.csproj" />
   </Folder>
   <Folder Name="/Api/FormatProviders/">
     <Project Path="Api/FormatProviders/FormatProviders.Docx/FormatProviders.Docx.csproj" />

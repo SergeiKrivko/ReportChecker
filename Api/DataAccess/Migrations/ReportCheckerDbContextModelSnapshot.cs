@@ -946,6 +946,105 @@ namespace ReportChecker.DataAccess.Migrations
                     b.ToTable("UserSubscriptions");
                 });
 
+            modelBuilder.Entity("ReportChecker.DataAccess.Entities.YandexDiskAccountEntity", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AccessToken")
+                        .IsRequired()
+                        .HasMaxLength(4096)
+                        .HasColumnType("character varying(4096)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Login")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("RefreshToken")
+                        .HasMaxLength(4096)
+                        .HasColumnType("character varying(4096)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("YandexDiskAccounts");
+                });
+
+            modelBuilder.Entity("ReportChecker.DataAccess.Entities.YandexDiskCheckSourceEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("CheckId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContentHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FileName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CheckId")
+                        .IsUnique();
+
+                    b.ToTable("YandexDiskCheckSources");
+                });
+
+            modelBuilder.Entity("ReportChecker.DataAccess.Entities.YandexDiskReportSourceEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("EntryFilePath")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
+
+                    b.Property<Guid>("ReportId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReportId")
+                        .IsUnique();
+
+                    b.ToTable("YandexDiskReportSources");
+                });
+
             modelBuilder.Entity("ReportChecker.DataAccess.Entities.BenchmarkResultEntity", b =>
                 {
                     b.HasOne("ReportChecker.DataAccess.Entities.BenchmarkRunEntity", "Run")
@@ -1231,6 +1330,26 @@ namespace ReportChecker.DataAccess.Migrations
                     b.Navigation("Plan");
                 });
 
+            modelBuilder.Entity("ReportChecker.DataAccess.Entities.YandexDiskCheckSourceEntity", b =>
+                {
+                    b.HasOne("ReportChecker.DataAccess.Entities.CheckEntity", "Check")
+                        .WithOne("YandexDiskSource")
+                        .HasForeignKey("ReportChecker.DataAccess.Entities.YandexDiskCheckSourceEntity", "CheckId");
+
+                    b.Navigation("Check");
+                });
+
+            modelBuilder.Entity("ReportChecker.DataAccess.Entities.YandexDiskReportSourceEntity", b =>
+                {
+                    b.HasOne("ReportChecker.DataAccess.Entities.ReportEntity", "Report")
+                        .WithOne("YandexDiskSource")
+                        .HasForeignKey("ReportChecker.DataAccess.Entities.YandexDiskReportSourceEntity", "ReportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Report");
+                });
+
             modelBuilder.Entity("ReportChecker.DataAccess.Entities.BenchmarkRunEntity", b =>
                 {
                     b.Navigation("Results");
@@ -1247,6 +1366,8 @@ namespace ReportChecker.DataAccess.Migrations
                     b.Navigation("Issues");
 
                     b.Navigation("LocalSource");
+
+                    b.Navigation("YandexDiskSource");
                 });
 
             modelBuilder.Entity("ReportChecker.DataAccess.Entities.CommentEntity", b =>
@@ -1301,6 +1422,8 @@ namespace ReportChecker.DataAccess.Migrations
                     b.Navigation("Shares");
 
                     b.Navigation("Usages");
+
+                    b.Navigation("YandexDiskSource");
                 });
 
             modelBuilder.Entity("ReportChecker.DataAccess.Entities.SubscriptionPlanEntity", b =>

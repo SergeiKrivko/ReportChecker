@@ -19,6 +19,7 @@ public class ReportVersionCleanupServiceTests
     private Mock<IReportSourceRepository<LocalReportSource>> _localReportSourceRepository = null!;
     private Mock<ICheckSourceRepository<FileCheckSource>> _fileCheckSourceRepository = null!;
     private Mock<ICheckSourceRepository<LocalCheckSource>> _localCheckSourceRepository = null!;
+    private Mock<ICheckSourceRepository<YandexDiskCheckSource>> _yandexDiskCheckSourceRepository = null!;
     private Mock<IFileRepository> _fileRepository = null!;
     private ReportVersionCleanupService _service = null!;
 
@@ -31,6 +32,7 @@ public class ReportVersionCleanupServiceTests
         _localReportSourceRepository = new Mock<IReportSourceRepository<LocalReportSource>>();
         _fileCheckSourceRepository = new Mock<ICheckSourceRepository<FileCheckSource>>();
         _localCheckSourceRepository = new Mock<ICheckSourceRepository<LocalCheckSource>>();
+        _yandexDiskCheckSourceRepository = new Mock<ICheckSourceRepository<YandexDiskCheckSource>>();
         _fileRepository = new Mock<IFileRepository>();
 
         _fileReportSourceRepository
@@ -43,6 +45,7 @@ public class ReportVersionCleanupServiceTests
         _service = new ReportVersionCleanupService(_reportRepository.Object, _checkRepository.Object,
             _fileReportSourceRepository.Object, _localReportSourceRepository.Object,
             _fileCheckSourceRepository.Object, _localCheckSourceRepository.Object,
+            _yandexDiskCheckSourceRepository.Object,
             _fileRepository.Object, NullLogger<ReportVersionCleanupService>.Instance);
     }
 

@@ -28,6 +28,7 @@ public static class ReportConverter
                 File = entity.FileSource?.ToDomain(),
                 GitHub = entity.GitHubSource?.ToDomain(),
                 Local = entity.LocalSource?.ToDomain(),
+                YandexDisk = entity.YandexDiskSource?.ToDomain(),
             },
         };
     }

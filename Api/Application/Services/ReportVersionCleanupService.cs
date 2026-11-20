@@ -17,6 +17,7 @@ public class ReportVersionCleanupService(
     IReportSourceRepository<LocalReportSource> localReportSourceRepository,
     ICheckSourceRepository<FileCheckSource> fileCheckSourceRepository,
     ICheckSourceRepository<LocalCheckSource> localCheckSourceRepository,
+    ICheckSourceRepository<YandexDiskCheckSource> yandexDiskCheckSourceRepository,
     IFileRepository fileRepository,
     ILogger<ReportVersionCleanupService> logger) : IReportVersionCleanupService
 {
@@ -46,6 +47,12 @@ public class ReportVersionCleanupService(
                 ?.Data.InitialFileId;
             await DeleteOldSourcesAsync(localCheckSourceRepository, FileRepositoryBucket.LocalSources, checks,
                 keptCheckIds, initialFileId, e => e.FileName, reportId, ct);
+        }
+        else if (string.Equals(report.SourceProvider, "YandexDisk", StringComparison.OrdinalIgnoreCase))
+        {
+            // Снимки версий Диска лежат в бакете sources; InitialFileId у источника нет.
+            await DeleteOldSourcesAsync(yandexDiskCheckSourceRepository, FileRepositoryBucket.Sources, checks,
+                keptCheckIds, null, e => e.FileName, reportId, ct);
         }
     }
 

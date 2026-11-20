@@ -5,4 +5,5 @@ public class ReportSourceUnionDto
     public GitHubReportSourceDto? GitHub { get; init; }
     public FileReportSourceDto? File { get; init; }
     public LocalReportSourceDto? Local { get; init; }
+    public YandexDiskReportSourceDto? YandexDisk { get; init; }
 }

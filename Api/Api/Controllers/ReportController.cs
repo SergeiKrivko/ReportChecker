@@ -46,7 +46,7 @@ public class ReportController(
 
         var reportId = await
             reportService.CreateReportAsync(userId, dto.Name, dto.Format, dto.SourceProvider,
-                dto.Source.ToDomain(), dto.LlmModelId, dto.ImageProcessingMode, dto.ReasoningLevel);
+                dto.Source.ToDomain(userId), dto.LlmModelId, dto.ImageProcessingMode, dto.ReasoningLevel);
         return Ok(reportId);
     }
 
@@ -73,7 +73,7 @@ public class ReportController(
     [Authorize]
     public async Task<ActionResult<SourceInfoDto>> CheckReportSource([FromBody] TestSourceRequestDto dto)
     {
-        var res = await reportService.GetSourceInfoAsync(dto.Provider, dto.Source.ToDomain());
+        var res = await reportService.GetSourceInfoAsync(dto.Provider, dto.Source.ToDomain(User.UserId));
         return Ok(res.ToDto());
     }
 }
