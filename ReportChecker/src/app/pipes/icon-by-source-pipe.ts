@@ -15,4 +15,5 @@ const sourceIcons: Record<string, string> = {
   "GitHub": "github.svg",
   "File": "@tui.file",
   "Local": "@tui.computer",
+  "YandexDisk": "yandex-disk.svg",
 }

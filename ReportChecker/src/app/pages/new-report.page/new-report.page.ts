@@ -5,6 +5,7 @@ import {ReactiveFormsModule} from '@angular/forms';
 import {TuiCard} from '@taiga-ui/layout';
 import {FileSpOptions} from '../../components/source-provider-options/file-sp-options/file-sp-options';
 import {GithubSpOptions} from '../../components/source-provider-options/github-sp-options/github-sp-options';
+import {YandexDiskSpOptions} from '../../components/source-provider-options/yandex-disk-sp-options/yandex-disk-sp-options';
 import {ActivatedRoute, Router, RouterLink} from '@angular/router';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {map, tap} from 'rxjs';
@@ -26,6 +27,7 @@ interface SourceProvider {
     TuiAppearance,
     FileSpOptions,
     GithubSpOptions,
+    YandexDiskSpOptions,
     TuiButton,
     RouterLink,
   ],
@@ -53,6 +55,12 @@ export class NewReportPage implements OnInit {
       name: "GitHub",
       description: "Использование файла/файлов из репозитория GitHub. После push новая версия будет проверена автоматически",
       icon: "github.svg"
+    },
+    {
+      key: "YandexDisk",
+      name: "Яндекс.Диск",
+      description: "Файл или папка с Диска. При изменении содержимого новая версия проверяется автоматически",
+      icon: "yandex-disk.svg"
     },
   ];
 

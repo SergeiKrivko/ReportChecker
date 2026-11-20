@@ -10,6 +10,7 @@ import {TuiCard} from '@taiga-ui/layout';
 import {ReportsService} from '../../services/reports.service';
 import {FileSpVersion} from '../../components/file-sp-version/file-sp-version';
 import {GithubSpVersion} from '../../components/github-sp-version/github-sp-version';
+import {YandexDiskSpVersion} from '../../components/yandex-disk-sp-version/yandex-disk-sp-version';
 import {InstructionService} from '../../services/instruction.service';
 import {TuiSegmented} from '@taiga-ui/kit';
 
@@ -26,6 +27,7 @@ import {TuiSegmented} from '@taiga-ui/kit';
     TuiSurface,
     FileSpVersion,
     GithubSpVersion,
+    YandexDiskSpVersion,
     TuiSegmented,
     TuiIcon,
     TuiNotification,

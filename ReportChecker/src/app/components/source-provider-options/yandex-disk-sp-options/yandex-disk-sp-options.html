@@ -1,0 +1,59 @@
+<div class="container">
+  @if (connection$ | async; as connection) {
+    @if (!connection.connected) {
+      <div class="connect-container">
+        <tui-notification appearance="info">
+          Подключите Яндекс.Диск, чтобы ReportChecker мог читать отчёт с вашего Диска.
+          Доступ только на чтение.
+        </tui-notification>
+        <button tuiButton iconStart="@tui.link" appearance="primary" (click)="connect()">
+          Подключить Яндекс.Диск
+        </button>
+      </div>
+    } @else {
+      @let folder = folder$ | async;
+      <div class="browser">
+        <div class="breadcrumbs">
+          <button tuiIconButton iconStart="@tui.chevron-left" appearance="flat" size="s"
+                  [disabled]="isRoot" (click)="up()"></button>
+          <span class="path">{{ folder?.path ?? 'disk:/' }}</span>
+          @if (connection.login) {
+            <span class="login">{{ connection.login }}</span>
+          }
+        </div>
+
+        <div class="items">
+          @for (item of folder?.items ?? []; track item.path) {
+            <button tuiButton appearance="flat" size="m" class="item"
+                    [class.selected]="selected()?.path === item.path"
+                    (click)="open(item)">
+              <tui-icon [icon]="item.type === 'dir' ? '@tui.folder' : '@tui.file'"/>
+              <span class="name">{{ item.name }}</span>
+            </button>
+          } @empty {
+            <span class="empty">Подходящих файлов нет</span>
+          }
+        </div>
+      </div>
+
+      @let resource = selected();
+      @if (resource) {
+        <form tuiForm>
+          <tui-notification appearance="secondary">
+            Выбрано: {{ resource.type === 'dir' ? 'папка' : 'файл' }} <b>{{ resource.name }}</b>
+          </tui-notification>
+
+          @if (needsEntryFile) {
+            <label tuiLabel>Главный файл (необязательно, определится автоматически):</label>
+            <tui-textfield>
+              <input tuiTextfield [formControl]="entryFilePath" placeholder="например, main.tex"/>
+            </tui-textfield>
+          }
+
+          <app-source-tester provider="YandexDisk" [source]="source$ | async"
+                             [name]="reportName$ | async"/>
+        </form>
+      }
+    }
+  }
+</div>

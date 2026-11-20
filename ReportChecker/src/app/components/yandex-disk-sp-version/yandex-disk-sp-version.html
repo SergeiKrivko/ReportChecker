@@ -1,0 +1,13 @@
+@let reportSource = source();
+<a tuiNotification appearance="secondary" class="card" href="https://disk.yandex.ru/client/disk">
+  <div class="container">
+    <tui-icon icon="@tui.cloud"/>
+    <span tuiTitle>
+      Яндекс.Диск
+      <span class="path">{{ reportSource?.path }}</span>
+    </span>
+    <button tuiButton size="s" appearance="outline" (click)="sync(); $event.preventDefault(); $event.stopPropagation()">
+      Проверить
+    </button>
+  </div>
+</a>

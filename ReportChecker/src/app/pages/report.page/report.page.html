@@ -12,6 +12,9 @@
           @case ('GitHub') {
             <app-github-sp-version [source]="report?.source?.gitHub"/>
           }
+          @case ('YandexDisk') {
+            <app-yandex-disk-sp-version [source]="report?.source?.yandexDisk"/>
+          }
         }
       </div>
       <a tuiIconButton iconStart="@tui.settings" appearance="flat" routerLink="./settings"></a>

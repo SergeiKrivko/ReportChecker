@@ -5,7 +5,12 @@ import {ReportsService} from '../../services/reports.service';
 import {SourceInfoEntity} from '../../entities/source-info-entity';
 import {TuiButton, TuiLabel, TuiNotification, TuiTextfield, TuiTextfieldComponent} from '@taiga-ui/core';
 import {Router} from '@angular/router';
-import {IFileReportSource, IGitHubReportSource, LlmReasoningEffort} from '../../services/api-client';
+import {
+  IFileReportSource,
+  IGitHubReportSource,
+  IYandexDiskReportSource,
+  LlmReasoningEffort
+} from '../../services/api-client';
 import {AsyncPipe} from "@angular/common";
 import {FormControl, FormGroup, ReactiveFormsModule} from "@angular/forms";
 import {
@@ -47,7 +52,7 @@ export class SourceTester implements OnInit {
   private readonly router = inject(Router);
 
   name = input<string | null>();
-  source = input.required<IFileReportSource | IGitHubReportSource | null>();
+  source = input.required<IFileReportSource | IGitHubReportSource | IYandexDiskReportSource | null>();
   provider = input.required<string>();
 
   protected readonly source$ = toObservable(this.source);

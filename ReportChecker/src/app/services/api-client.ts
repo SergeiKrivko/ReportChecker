@@ -5953,6 +5953,7 @@ export class CheckSourceUnion implements ICheckSourceUnion {
     gitHub?: GitHubCheckSource;
     file?: FileCheckSource;
     local?: LocalCheckSource;
+    yandexDisk?: YandexDiskCheckSource;
 
     constructor(data?: ICheckSourceUnion) {
         if (data) {
@@ -5969,6 +5970,7 @@ export class CheckSourceUnion implements ICheckSourceUnion {
             this.gitHub = _data["gitHub"] ? GitHubCheckSource.fromJS(_data["gitHub"]) : <any>undefined;
             this.file = _data["file"] ? FileCheckSource.fromJS(_data["file"]) : <any>undefined;
             this.local = _data["local"] ? LocalCheckSource.fromJS(_data["local"]) : <any>undefined;
+            this.yandexDisk = _data["yandexDisk"] ? YandexDiskCheckSource.fromJS(_data["yandexDisk"]) : <any>undefined;
         }
     }
 
@@ -5985,6 +5987,7 @@ export class CheckSourceUnion implements ICheckSourceUnion {
         data["gitHub"] = this.gitHub ? this.gitHub.toJSON() : <any>undefined;
         data["file"] = this.file ? this.file.toJSON() : <any>undefined;
         data["local"] = this.local ? this.local.toJSON() : <any>undefined;
+        data["yandexDisk"] = this.yandexDisk ? this.yandexDisk.toJSON() : <any>undefined;
         return data;
     }
 }
@@ -5994,6 +5997,7 @@ export interface ICheckSourceUnion {
     gitHub?: GitHubCheckSource;
     file?: FileCheckSource;
     local?: LocalCheckSource;
+    yandexDisk?: YandexDiskCheckSource;
 }
 
 export class Comment implements IComment {
@@ -7829,6 +7833,7 @@ export class ReportSourceUnion implements IReportSourceUnion {
     gitHub?: GitHubReportSource;
     file?: FileReportSource;
     local?: LocalReportSource;
+    yandexDisk?: YandexDiskReportSource;
 
     constructor(data?: IReportSourceUnion) {
         if (data) {
@@ -7844,6 +7849,7 @@ export class ReportSourceUnion implements IReportSourceUnion {
             this.gitHub = _data["gitHub"] ? GitHubReportSource.fromJS(_data["gitHub"]) : <any>undefined;
             this.file = _data["file"] ? FileReportSource.fromJS(_data["file"]) : <any>undefined;
             this.local = _data["local"] ? LocalReportSource.fromJS(_data["local"]) : <any>undefined;
+            this.yandexDisk = _data["yandexDisk"] ? YandexDiskReportSource.fromJS(_data["yandexDisk"]) : <any>undefined;
         }
     }
 
@@ -7859,6 +7865,7 @@ export class ReportSourceUnion implements IReportSourceUnion {
         data["gitHub"] = this.gitHub ? this.gitHub.toJSON() : <any>undefined;
         data["file"] = this.file ? this.file.toJSON() : <any>undefined;
         data["local"] = this.local ? this.local.toJSON() : <any>undefined;
+        data["yandexDisk"] = this.yandexDisk ? this.yandexDisk.toJSON() : <any>undefined;
         return data;
     }
 }
@@ -7867,6 +7874,7 @@ export interface IReportSourceUnion {
     gitHub?: GitHubReportSource;
     file?: FileReportSource;
     local?: LocalReportSource;
+    yandexDisk?: YandexDiskReportSource;
 }
 
 export class Repository implements IRepository {
@@ -8600,4 +8608,97 @@ function blobToText(blob: any): Observable<string> {
             reader.readAsText(blob);
         }
     });
+}
+
+/** Ручная правка поверх генератора: источник Яндекс.Диска. */
+export class YandexDiskReportSource implements IYandexDiskReportSource {
+    path!: string;
+    entryFilePath?: string | undefined;
+
+    constructor(data?: IYandexDiskReportSource) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.path = _data["path"];
+            this.entryFilePath = _data["entryFilePath"];
+        }
+    }
+
+    static fromJS(data: any): YandexDiskReportSource {
+        data = typeof data === 'object' ? data : {};
+        let result = new YandexDiskReportSource();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["path"] = this.path;
+        data["entryFilePath"] = this.entryFilePath;
+        return data;
+    }
+}
+
+export interface IYandexDiskReportSource {
+    path: string;
+    entryFilePath?: string | undefined;
+}
+
+export class YandexDiskCheckSource implements IYandexDiskCheckSource {
+    path!: string;
+    contentHash!: string;
+    fileName?: string | undefined;
+    createdAt?: moment.Moment;
+    deletedAt?: moment.Moment | undefined;
+
+    constructor(data?: IYandexDiskCheckSource) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.path = _data["path"];
+            this.contentHash = _data["contentHash"];
+            this.fileName = _data["fileName"];
+            this.createdAt = _data["createdAt"] ? moment(_data["createdAt"].toString()) : <any>undefined;
+            this.deletedAt = _data["deletedAt"] ? moment(_data["deletedAt"].toString()) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): YandexDiskCheckSource {
+        data = typeof data === 'object' ? data : {};
+        let result = new YandexDiskCheckSource();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["path"] = this.path;
+        data["contentHash"] = this.contentHash;
+        data["fileName"] = this.fileName;
+        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
+        data["deletedAt"] = this.deletedAt ? this.deletedAt.toISOString() : <any>undefined;
+        return data;
+    }
+}
+
+export interface IYandexDiskCheckSource {
+    path: string;
+    contentHash: string;
+    fileName?: string | undefined;
+    createdAt?: moment.Moment;
+    deletedAt?: moment.Moment | undefined;
 }

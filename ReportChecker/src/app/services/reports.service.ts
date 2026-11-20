@@ -7,6 +7,8 @@ import {
   IFileReportSource,
   IGitHubCheckSource,
   IGitHubReportSource,
+  IYandexDiskCheckSource,
+  IYandexDiskReportSource,
   ImageProcessingMode,
   LlmModel,
   LlmReasoningEffort,
@@ -73,7 +75,7 @@ export class ReportsService {
   }
 
   createReport(name: string,
-               source: IGitHubReportSource | IFileReportSource,
+               source: IGitHubReportSource | IFileReportSource | IYandexDiskReportSource,
                sourceProvider: string,
                format: string,
                llmModelId?: string,
@@ -81,7 +83,11 @@ export class ReportsService {
                reasoningLevel: LlmReasoningEffort = LlmReasoningEffort.Default): Observable<string> {
     return this.apiClient.reportsPOST(CreateReportSchema.fromJS({
       name: name,
-      source: sourceProvider == 'GitHub' ? {gitHub: source} : {file: source},
+      source: sourceProvider == 'GitHub'
+        ? {gitHub: source}
+        : sourceProvider == 'YandexDisk'
+          ? {yandexDisk: source}
+          : {file: source},
       sourceProvider: sourceProvider,
       format: format,
       llmModelId,
@@ -90,13 +96,17 @@ export class ReportsService {
     }));
   }
 
-  createCheck(source: IGitHubCheckSource | IFileCheckSource, id?: string): Observable<boolean> {
+  createCheck(source: IGitHubCheckSource | IFileCheckSource | IYandexDiskCheckSource, id?: string): Observable<boolean> {
     return this.selectedReport$.pipe(
       take(1),
       switchMap(report => {
         if (report)
           return this.apiClient.checksPOST(report.id, CreateCheckSchema.fromJS({
-            source: report.sourceProvider == 'GitHub' ? {gitHub: source, id} : {file: source, id},
+            source: report.sourceProvider == 'GitHub'
+              ? {gitHub: source, id}
+              : report.sourceProvider == 'YandexDisk'
+                ? {yandexDisk: source, id}
+                : {file: source, id},
           }));
         return NEVER;
       })
@@ -149,10 +159,14 @@ export class ReportsService {
     );
   }
 
-  testSource(provider: string, source: IGitHubReportSource | IFileReportSource) {
+  testSource(provider: string, source: IGitHubReportSource | IFileReportSource | IYandexDiskReportSource) {
     return this.apiClient.testSource(TestSourceRequestSchema.fromJS({
       provider,
-      source: provider == 'GitHub' ? {gitHub: source} : {file: source}
+      source: provider == 'GitHub'
+        ? {gitHub: source}
+        : provider == 'YandexDisk'
+          ? {yandexDisk: source}
+          : {file: source}
     })).pipe(
       map(sourceInfoToEntity),
     )
