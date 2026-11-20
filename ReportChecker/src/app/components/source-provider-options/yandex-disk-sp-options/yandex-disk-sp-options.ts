@@ -1,12 +1,11 @@
-import {ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject, signal} from '@angular/core';
 import {AsyncPipe} from '@angular/common';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
-import {BehaviorSubject, combineLatest, map, Observable, startWith, switchMap, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, startWith, switchMap} from 'rxjs';
 import {TuiButton, TuiIcon, TuiLabel, TuiNotification, TuiTextfield} from '@taiga-ui/core';
 import {TuiForm} from '@taiga-ui/layout';
-import {toObservable, takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {ActivatedRoute} from '@angular/router';
-import {TuiAlertService} from '@taiga-ui/core';
+import {toObservable} from '@angular/core/rxjs-interop';
+import {RouterLink} from '@angular/router';
 import {SourceTester} from '../../source-tester/source-tester';
 import {YandexDiskService} from '../../../services/yandex-disk.service';
 import {IYandexDiskReportSource} from '../../../services/api-client';
@@ -21,6 +20,7 @@ import {
   imports: [
     AsyncPipe,
     ReactiveFormsModule,
+    RouterLink,
     TuiButton,
     TuiIcon,
     TuiLabel,
@@ -33,11 +33,8 @@ import {
   styleUrl: './yandex-disk-sp-options.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class YandexDiskSpOptions implements OnInit {
+export class YandexDiskSpOptions {
   private readonly yandexDiskService = inject(YandexDiskService);
-  private readonly alerts = inject(TuiAlertService);
-  private readonly activatedRoute = inject(ActivatedRoute);
-  private readonly destroyRef = inject(DestroyRef);
 
   protected readonly connection$ = this.yandexDiskService.connection();
   protected readonly currentPath$ = new BehaviorSubject<string>('disk:/');
@@ -65,28 +62,6 @@ export class YandexDiskSpOptions implements OnInit {
   protected readonly reportName$ = toObservable(this.selected).pipe(
     map(resource => resource?.name ?? null),
   );
-
-  ngOnInit() {
-    this.activatedRoute.queryParamMap.pipe(
-      tap(params => {
-        const status = params.get('yandex');
-        if (status === 'connected')
-          this.alerts.open('Яндекс.Диск подключён', {label: 'Готово'}).subscribe();
-        if (status === 'error')
-          this.alerts.open('Не удалось подключить Яндекс.Диск', {
-            label: 'Ошибка',
-            appearance: 'negative',
-          }).subscribe();
-      }),
-      takeUntilDestroyed(this.destroyRef),
-    ).subscribe();
-  }
-
-  protected connect() {
-    this.yandexDiskService.oauthUrl().pipe(
-      takeUntilDestroyed(this.destroyRef),
-    ).subscribe(url => window.location.href = url);
-  }
 
   protected open(resource: YandexDiskResourceEntity) {
     if (resource.type === 'dir') {

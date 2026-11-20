@@ -59,7 +59,7 @@ export class NewReportPage implements OnInit {
     {
       key: "YandexDisk",
       name: "Яндекс.Диск",
-      description: "Файл или папка с Диска. При изменении содержимого новая версия проверяется автоматически",
+      description: "Файл или папка с Диска. Нужен вход через Яндекс; изменения проверяются автоматически",
       icon: "yandex-disk.svg"
     },
   ];

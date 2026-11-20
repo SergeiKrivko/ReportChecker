@@ -3,12 +3,20 @@
     @if (!connection.connected) {
       <div class="connect-container">
         <tui-notification appearance="info">
-          Подключите Яндекс.Диск, чтобы ReportChecker мог читать отчёт с вашего Диска.
-          Доступ только на чтение.
+          @if (connection.hasAccount) {
+            Яндекс-аккаунт привязан, но приложение не получило токен доступа к Диску.
+            Перепривяжите аккаунт или войдите через Яндекс заново — токен выдаётся автоматически
+            при входе.
+          } @else {
+            Для отчётов из Яндекс.Диска нужен привязанный Яндекс-аккаунт: токен доступа к Диску
+            хранится в сервисе авторизации и выдаётся автоматически при входе через Яндекс.
+            Без него создать отчёт из Диска нельзя.
+          }
         </tui-notification>
-        <button tuiButton iconStart="@tui.link" appearance="primary" (click)="connect()">
-          Подключить Яндекс.Диск
-        </button>
+        <a tuiButton appearance="primary" iconStart="@tui.user" routerLink="/auth"
+           [queryParams]="{returnUrl: '/reports/new?source=YandexDisk'}">
+          Перейти в аккаунт
+        </a>
       </div>
     } @else {
       @let folder = folder$ | async;

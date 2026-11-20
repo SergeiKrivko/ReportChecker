@@ -1,4 +1,7 @@
 export interface YandexDiskConnectionEntity {
+  /** Привязан ли Яндекс-аккаунт в Avalux Auth. */
+  hasAccount: boolean;
+  /** Выдан ли токен доступа к Диску. */
   connected: boolean;
   login?: string;
 }
