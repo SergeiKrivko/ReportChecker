@@ -71,6 +71,21 @@ public class CheckService(
         finally
         {
             taskCancellationService.DeleteCheckCancellationToken(context.Check.Id);
+            await CleanupOldVersionsAsync(context.Report.Id);
+        }
+    }
+
+    private async Task CleanupOldVersionsAsync(Guid reportId)
+    {
+        try
+        {
+            await using var scope = serviceProvider.CreateAsyncScope();
+            await scope.ServiceProvider.GetRequiredService<IReportVersionCleanupService>()
+                .CleanupOldVersionsAsync(reportId);
+        }
+        catch (Exception e)
+        {
+            logger.LogWarning(e, "Failed to delete old versions of report '{reportId}' from S3", reportId);
         }
     }
 

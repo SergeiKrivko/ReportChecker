@@ -67,6 +67,7 @@ builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IReportAccessService, ReportAccessService>();
 builder.Services.AddScoped<IReportShareService, ReportShareService>();
 builder.Services.AddScoped<ICheckService, CheckService>();
+builder.Services.AddScoped<IReportVersionCleanupService, ReportVersionCleanupService>();
 builder.Services.AddScoped<IAiAgentFactory, AiAgentFactory>();
 builder.Services.AddScoped<IAiService, AiService>();
 builder.Services.AddScoped<IPatchService, PatchService>();
