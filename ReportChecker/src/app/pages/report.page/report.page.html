@@ -15,6 +15,9 @@
           @case ('YandexDisk') {
             <app-yandex-disk-sp-version [source]="report?.source?.yandexDisk"/>
           }
+          @case ('GoogleDrive') {
+            <app-google-drive-sp-version [source]="report?.source?.googleDrive"/>
+          }
         }
       </div>
       <a tuiIconButton iconStart="@tui.settings" appearance="flat" routerLink="./settings"></a>

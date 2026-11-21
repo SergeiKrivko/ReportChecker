@@ -6,6 +6,7 @@ import {TuiCard} from '@taiga-ui/layout';
 import {FileSpOptions} from '../../components/source-provider-options/file-sp-options/file-sp-options';
 import {GithubSpOptions} from '../../components/source-provider-options/github-sp-options/github-sp-options';
 import {YandexDiskSpOptions} from '../../components/source-provider-options/yandex-disk-sp-options/yandex-disk-sp-options';
+import {GoogleDriveSpOptions} from '../../components/source-provider-options/google-drive-sp-options/google-drive-sp-options';
 import {ActivatedRoute, Router, RouterLink} from '@angular/router';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {map, tap} from 'rxjs';
@@ -28,6 +29,7 @@ interface SourceProvider {
     FileSpOptions,
     GithubSpOptions,
     YandexDiskSpOptions,
+    GoogleDriveSpOptions,
     TuiButton,
     RouterLink,
   ],
@@ -61,6 +63,12 @@ export class NewReportPage implements OnInit {
       name: "Яндекс.Диск",
       description: "Файл или папка с Диска. Нужен вход через Яндекс; изменения проверяются автоматически",
       icon: "yandex-disk.svg"
+    },
+    {
+      key: "GoogleDrive",
+      name: "Google Диск",
+      description: "Файл или папка с Google Диска. Нужен вход через Google; изменения проверяются автоматически",
+      icon: "google-drive.svg"
     },
   ];
 

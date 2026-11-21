@@ -1,0 +1,13 @@
+@let reportSource = source();
+<a tuiNotification appearance="secondary" class="card">
+  <div class="container">
+    <tui-icon icon="@tui.cloud"/>
+    <span tuiTitle>
+      Google Диск
+      <span class="path">{{ reportSource?.name }}</span>
+    </span>
+    <button tuiButton size="s" appearance="outline" (click)="sync()">
+      Проверить
+    </button>
+  </div>
+</a>

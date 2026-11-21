@@ -1,0 +1,81 @@
+<div class="container">
+  @if (connection$ | async; as connection) {
+    @if (!connection.connected) {
+      <div class="connect-container">
+        <tui-notification appearance="info">
+          @if (connection.hasAccount) {
+            Google-аккаунт привязан, но приложение не получило токен доступа к Диску.
+            Перепривяжите аккаунт или войдите через Google заново — токен выдаётся автоматически
+            при входе.
+          } @else {
+            Для отчётов из Google Диска нужен привязанный Google-аккаунт: токен доступа к Диску
+            хранится в сервисе авторизации Avalux и выдаётся автоматически при входе через Google.
+            Без него создать отчёт из Диска нельзя.
+          }
+        </tui-notification>
+        <a tuiButton appearance="primary" iconStart="@tui.user" routerLink="/auth"
+           [queryParams]="{returnUrl: '/reports/new?source=GoogleDrive'}">
+          Перейти в аккаунт
+        </a>
+      </div>
+    } @else {
+      <div class="browser">
+        <div class="breadcrumbs">
+          <button tuiIconButton iconStart="@tui.chevron-left" appearance="flat" size="s"
+                  [disabled]="isRoot" (click)="up()"></button>
+          <div class="path">
+            @for (crumb of breadcrumbs(); track crumb.id; let index = $index, last = $last) {
+              @if (index > 0) {
+                <span class="separator">/</span>
+              }
+              <button class="crumb" [class.current]="last" [disabled]="last"
+                      (click)="goTo(index)">{{ crumb.name }}</button>
+            }
+          </div>
+          @if (connection.login) {
+            <span class="login">{{ connection.login }}</span>
+          }
+        </div>
+
+        <div class="items">
+          @for (item of items(); track item.id) {
+            <button tuiButton appearance="flat" size="m" class="item"
+                    [class.selected]="selected()?.id === item.id"
+                    (click)="open(item)">
+              <tui-icon [icon]="item.type === 'dir' ? '@tui.folder' : '@tui.file'"/>
+              <span class="name">{{ item.name }}</span>
+            </button>
+          } @empty {
+            <span class="empty">{{ loading() ? 'Загрузка...' : 'Подходящих файлов нет' }}</span>
+          }
+        </div>
+
+        @if (nextPageToken()) {
+          <button tuiButton appearance="flat" size="s" class="more" [disabled]="loading()"
+                  (click)="loadMore()">
+            Показать ещё
+          </button>
+        }
+      </div>
+
+      @let resource = selected();
+      @if (resource) {
+        <form tuiForm>
+          <tui-notification appearance="secondary">
+            Выбрано: {{ resource.type === 'dir' ? 'папка' : 'файл' }} <b>{{ resource.name }}</b>
+          </tui-notification>
+
+          @if (needsEntryFile) {
+            <label tuiLabel>Главный файл (необязательно, определится автоматически):</label>
+            <tui-textfield>
+              <input tuiTextfield [formControl]="entryFilePath" placeholder="например, main.tex"/>
+            </tui-textfield>
+          }
+
+          <app-source-tester provider="GoogleDrive" [source]="source$ | async"
+                             [name]="reportName$ | async"/>
+        </form>
+      }
+    }
+  }
+</div>

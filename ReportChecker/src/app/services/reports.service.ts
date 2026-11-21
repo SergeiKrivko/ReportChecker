@@ -7,6 +7,8 @@ import {
   IFileReportSource,
   IGitHubCheckSource,
   IGitHubReportSource,
+  IGoogleDriveCheckSource,
+  IGoogleDriveReportSource,
   IYandexDiskCheckSource,
   IYandexDiskReportSource,
   ImageProcessingMode,
@@ -75,7 +77,7 @@ export class ReportsService {
   }
 
   createReport(name: string,
-               source: IGitHubReportSource | IFileReportSource | IYandexDiskReportSource,
+               source: IGitHubReportSource | IFileReportSource | IYandexDiskReportSource | IGoogleDriveReportSource,
                sourceProvider: string,
                format: string,
                llmModelId?: string,
@@ -87,7 +89,9 @@ export class ReportsService {
         ? {gitHub: source}
         : sourceProvider == 'YandexDisk'
           ? {yandexDisk: source}
-          : {file: source},
+          : sourceProvider == 'GoogleDrive'
+            ? {googleDrive: source}
+            : {file: source},
       sourceProvider: sourceProvider,
       format: format,
       llmModelId,
@@ -96,7 +100,7 @@ export class ReportsService {
     }));
   }
 
-  createCheck(source: IGitHubCheckSource | IFileCheckSource | IYandexDiskCheckSource, id?: string): Observable<boolean> {
+  createCheck(source: IGitHubCheckSource | IFileCheckSource | IYandexDiskCheckSource | IGoogleDriveCheckSource, id?: string): Observable<boolean> {
     return this.selectedReport$.pipe(
       take(1),
       switchMap(report => {
@@ -106,7 +110,9 @@ export class ReportsService {
               ? {gitHub: source, id}
               : report.sourceProvider == 'YandexDisk'
                 ? {yandexDisk: source, id}
-                : {file: source, id},
+                : report.sourceProvider == 'GoogleDrive'
+                  ? {googleDrive: source, id}
+                  : {file: source, id},
           }));
         return NEVER;
       })
@@ -159,14 +165,16 @@ export class ReportsService {
     );
   }
 
-  testSource(provider: string, source: IGitHubReportSource | IFileReportSource | IYandexDiskReportSource) {
+  testSource(provider: string, source: IGitHubReportSource | IFileReportSource | IYandexDiskReportSource | IGoogleDriveReportSource) {
     return this.apiClient.testSource(TestSourceRequestSchema.fromJS({
       provider,
       source: provider == 'GitHub'
         ? {gitHub: source}
         : provider == 'YandexDisk'
           ? {yandexDisk: source}
-          : {file: source}
+          : provider == 'GoogleDrive'
+            ? {googleDrive: source}
+            : {file: source}
     })).pipe(
       map(sourceInfoToEntity),
     )

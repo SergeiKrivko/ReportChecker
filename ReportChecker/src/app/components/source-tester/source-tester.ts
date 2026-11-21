@@ -8,6 +8,7 @@ import {Router} from '@angular/router';
 import {
   IFileReportSource,
   IGitHubReportSource,
+  IGoogleDriveReportSource,
   IYandexDiskReportSource,
   LlmReasoningEffort
 } from '../../services/api-client';
@@ -52,7 +53,7 @@ export class SourceTester implements OnInit {
   private readonly router = inject(Router);
 
   name = input<string | null>();
-  source = input.required<IFileReportSource | IGitHubReportSource | IYandexDiskReportSource | null>();
+  source = input.required<IFileReportSource | IGitHubReportSource | IYandexDiskReportSource | IGoogleDriveReportSource | null>();
   provider = input.required<string>();
 
   protected readonly source$ = toObservable(this.source);

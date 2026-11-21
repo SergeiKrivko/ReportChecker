@@ -16,4 +16,5 @@ const sourceIcons: Record<string, string> = {
   "File": "@tui.file",
   "Local": "@tui.computer",
   "YandexDisk": "yandex-disk.svg",
+  "GoogleDrive": "google-drive.svg",
 }

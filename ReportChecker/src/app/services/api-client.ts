@@ -5954,6 +5954,7 @@ export class CheckSourceUnion implements ICheckSourceUnion {
     file?: FileCheckSource;
     local?: LocalCheckSource;
     yandexDisk?: YandexDiskCheckSource;
+    googleDrive?: GoogleDriveCheckSource;
 
     constructor(data?: ICheckSourceUnion) {
         if (data) {
@@ -5971,6 +5972,7 @@ export class CheckSourceUnion implements ICheckSourceUnion {
             this.file = _data["file"] ? FileCheckSource.fromJS(_data["file"]) : <any>undefined;
             this.local = _data["local"] ? LocalCheckSource.fromJS(_data["local"]) : <any>undefined;
             this.yandexDisk = _data["yandexDisk"] ? YandexDiskCheckSource.fromJS(_data["yandexDisk"]) : <any>undefined;
+            this.googleDrive = _data["googleDrive"] ? GoogleDriveCheckSource.fromJS(_data["googleDrive"]) : <any>undefined;
         }
     }
 
@@ -5988,6 +5990,7 @@ export class CheckSourceUnion implements ICheckSourceUnion {
         data["file"] = this.file ? this.file.toJSON() : <any>undefined;
         data["local"] = this.local ? this.local.toJSON() : <any>undefined;
         data["yandexDisk"] = this.yandexDisk ? this.yandexDisk.toJSON() : <any>undefined;
+        data["googleDrive"] = this.googleDrive ? this.googleDrive.toJSON() : <any>undefined;
         return data;
     }
 }
@@ -5998,6 +6001,7 @@ export interface ICheckSourceUnion {
     file?: FileCheckSource;
     local?: LocalCheckSource;
     yandexDisk?: YandexDiskCheckSource;
+    googleDrive?: GoogleDriveCheckSource;
 }
 
 export class Comment implements IComment {
@@ -7834,6 +7838,7 @@ export class ReportSourceUnion implements IReportSourceUnion {
     file?: FileReportSource;
     local?: LocalReportSource;
     yandexDisk?: YandexDiskReportSource;
+    googleDrive?: GoogleDriveReportSource;
 
     constructor(data?: IReportSourceUnion) {
         if (data) {
@@ -7850,6 +7855,7 @@ export class ReportSourceUnion implements IReportSourceUnion {
             this.file = _data["file"] ? FileReportSource.fromJS(_data["file"]) : <any>undefined;
             this.local = _data["local"] ? LocalReportSource.fromJS(_data["local"]) : <any>undefined;
             this.yandexDisk = _data["yandexDisk"] ? YandexDiskReportSource.fromJS(_data["yandexDisk"]) : <any>undefined;
+            this.googleDrive = _data["googleDrive"] ? GoogleDriveReportSource.fromJS(_data["googleDrive"]) : <any>undefined;
         }
     }
 
@@ -7866,6 +7872,7 @@ export class ReportSourceUnion implements IReportSourceUnion {
         data["file"] = this.file ? this.file.toJSON() : <any>undefined;
         data["local"] = this.local ? this.local.toJSON() : <any>undefined;
         data["yandexDisk"] = this.yandexDisk ? this.yandexDisk.toJSON() : <any>undefined;
+        data["googleDrive"] = this.googleDrive ? this.googleDrive.toJSON() : <any>undefined;
         return data;
     }
 }
@@ -7875,6 +7882,7 @@ export interface IReportSourceUnion {
     file?: FileReportSource;
     local?: LocalReportSource;
     yandexDisk?: YandexDiskReportSource;
+    googleDrive?: GoogleDriveReportSource;
 }
 
 export class Repository implements IRepository {
@@ -8697,6 +8705,103 @@ export class YandexDiskCheckSource implements IYandexDiskCheckSource {
 
 export interface IYandexDiskCheckSource {
     path: string;
+    contentHash: string;
+    fileName?: string | undefined;
+    createdAt?: moment.Moment;
+    deletedAt?: moment.Moment | undefined;
+}
+
+/** Ручная правка поверх генератора: источник Google Диска. */
+export class GoogleDriveReportSource implements IGoogleDriveReportSource {
+    fileId!: string;
+    name!: string;
+    entryFilePath?: string | undefined;
+
+    constructor(data?: IGoogleDriveReportSource) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.fileId = _data["fileId"];
+            this.name = _data["name"];
+            this.entryFilePath = _data["entryFilePath"];
+        }
+    }
+
+    static fromJS(data: any): GoogleDriveReportSource {
+        data = typeof data === 'object' ? data : {};
+        let result = new GoogleDriveReportSource();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["fileId"] = this.fileId;
+        data["name"] = this.name;
+        data["entryFilePath"] = this.entryFilePath;
+        return data;
+    }
+}
+
+export interface IGoogleDriveReportSource {
+    fileId: string;
+    name: string;
+    entryFilePath?: string | undefined;
+}
+
+export class GoogleDriveCheckSource implements IGoogleDriveCheckSource {
+    fileId!: string;
+    contentHash!: string;
+    fileName?: string | undefined;
+    createdAt?: moment.Moment;
+    deletedAt?: moment.Moment | undefined;
+
+    constructor(data?: IGoogleDriveCheckSource) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.fileId = _data["fileId"];
+            this.contentHash = _data["contentHash"];
+            this.fileName = _data["fileName"];
+            this.createdAt = _data["createdAt"] ? moment(_data["createdAt"].toString()) : <any>undefined;
+            this.deletedAt = _data["deletedAt"] ? moment(_data["deletedAt"].toString()) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): GoogleDriveCheckSource {
+        data = typeof data === 'object' ? data : {};
+        let result = new GoogleDriveCheckSource();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["fileId"] = this.fileId;
+        data["contentHash"] = this.contentHash;
+        data["fileName"] = this.fileName;
+        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
+        data["deletedAt"] = this.deletedAt ? this.deletedAt.toISOString() : <any>undefined;
+        return data;
+    }
+}
+
+export interface IGoogleDriveCheckSource {
+    fileId: string;
     contentHash: string;
     fileName?: string | undefined;
     createdAt?: moment.Moment;
