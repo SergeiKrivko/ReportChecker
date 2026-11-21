@@ -29,4 +29,5 @@ public class ReportEntity
     public virtual FileReportSourceEntity? FileSource { get; init; }
     public virtual LocalReportSourceEntity? LocalSource { get; init; }
     public virtual YandexDiskReportSourceEntity? YandexDiskSource { get; init; }
+    public virtual GoogleDriveReportSourceEntity? GoogleDriveSource { get; init; }
 }

@@ -103,7 +103,7 @@ API построен по слоистой схеме (Abstractions → Models �
 | `Application` | Сервисы: проверки, отчёты, патчи, подписки, инструкции, статистика, бенчмарк |
 | `AiAgent` | Клиент LLM, промпты агентов, учёт расхода токенов, поиск и сопоставление для бенчмарка |
 | `FormatProviders.{Latex,Pdf,Docx}` | Разбор документов на главы и применение патчей |
-| `SourceProviders.{File,Local,GitHub,YandexDisk}` | Получение исходных файлов отчёта |
+| `SourceProviders.{File,Local,GitHub,YandexDisk,GoogleDrive}` | Получение исходных файлов отчёта |
 | `S3` | Работа с объектным хранилищем |
 | `YooMoney` | Платёжный клиент |
 | `Exceptions` | Типы доменных исключений |
@@ -165,6 +165,7 @@ Angular-приложение на standalone-компонентах с Taiga UI:
 | Local | `Local` | Версии, отправленные CLI / Studio / VS Code (бакет `local`) |
 | GitHub | `GitHub` | Файлы репозитория по коммиту; запуск проверок по push-webhook |
 | YandexDisk | `YandexDisk` | Файл (`.tex`, `.docx`, `.pdf`, `.zip`) или папка на Диске пользователя; снимок версии хранится в S3 |
+| GoogleDrive | `GoogleDrive` | Файл (`.tex`, `.docx`, `.pdf`, `.zip`) или папка на Google Диске пользователя; снимок версии хранится в S3 |
 
 Для GitHub API дополнительно создаёт Check Run в репозитории со сводкой найденных ошибок и
 ссылкой на веб-версию отчёта.
@@ -188,6 +189,25 @@ LaTeX-проекты; файл входа (`main.tex` и т. п.) определ
   поэтому в новой проверке анализируются только изменённые главы.
 - Приложение работает с Диском только на чтение: исправления применяются к снимку версии, а не к
   файлу на Диске. Параллельные поллинги одного отчёта исключаются блокировкой в Redis.
+
+### Google Диск
+
+Устроен так же, как источник Яндекс.Диска, но работает с Google Drive API v3. Отдельного
+OAuth-приложения не нужно: токен хранится в **Avalux Auth** вместе с привязанным Google-аккаунтом
+(`providerKey = google`) и обновляется сервисом авторизации автоматически. В настройках провайдера
+Google в Avalux Auth в scope должны быть разрешения на чтение Диска
+(`https://www.googleapis.com/auth/drive.readonly`). Пользователь привязывает Google на странице
+«Аккаунт» и выбирает файл или папку в браузере Диска по `fileId`; навигация по папкам идёт через
+`nextPageToken`.
+
+- Отчёт запоминает `fileId`, имя ресурса и (для папок и zip) файл входа; при каждой проверке
+  снимается **снимок в S3**, поэтому патчи не меняют файл на Диске — приложение работает только
+  на чтение.
+- **Отпечаток содержимого** — md5 файла или sha256 отсортированного списка файлов папки. Фоновый
+  поллинг (`GoogleDrive:PollingIntervalMinutes`, по умолчанию 10 минут) создаёт проверку только при
+  изменении отпечатка и не дублирует уже идущую.
+- Документы Google (Docs/Sheets/Slides) не скачиваются как файлы: для отчёта нужны `.tex`, `.docx`,
+  `.pdf` или `.zip`, загруженные на Диск.
 
 ---
 
@@ -367,6 +387,9 @@ npm test               # тесты latex-провайдера
 | `YandexDisk__PollingIntervalMinutes` | Интервал фоновой сверки с Диском, по умолчанию `10`; `0` — выключить |
 | `YandexDisk__MaxSnapshotBytes` | Максимальный размер снимка, по умолчанию `209715200` (200 МБ) |
 | `YandexDisk__ApiUrl` | Адрес API Диска, по умолчанию `https://cloud-api.yandex.net` |
+| `GoogleDrive__PollingIntervalMinutes` | Интервал фоновой сверки с Google Диском, по умолчанию `10`; `0` — выключить |
+| `GoogleDrive__MaxSnapshotBytes` | Максимальный размер снимка, по умолчанию `209715200` (200 МБ) |
+| `GoogleDrive__ApiUrl` | Адрес API Диска, по умолчанию `https://www.googleapis.com` |
 | `Ai__ApiUrl` / `Ai__ApiKey` | OpenAI-совместимый эндпоинт и ключ |
 | `Ai__DefaultModelId` | Модель по умолчанию |
 | `S3__AccessKey` / `S3__SecretKey` / `S3__ServiceUrl` / `S3__AuthorizationRegion` | Доступ к S3 |
@@ -400,6 +423,7 @@ npm test               # тесты latex-провайдера
 | Файлы | `/files` (загрузка, ссылка на скачивание) |
 | GitHub | `/github/repositories`, `/github/branches`, `/github/files`, `/github/installation` |
 | Яндекс.Диск | `/yandex/connection`, `/yandex/resources`, `/yandex/reports/{reportId}/sync` |
+| Google Диск | `/google/connection`, `/google/resources`, `/google/reports/{reportId}/sync` |
 | Модели | `/models` (чтение — анонимно, изменение — только админ) |
 | Подписки | `/subscriptions`, `/subscriptions/current`, `/subscriptions/plans`, `.../offers` |
 | Статистика | `/statistics/usage`, `/statistics/timeUsage` |

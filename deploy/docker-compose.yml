@@ -77,6 +77,9 @@ services:
       YandexDisk__PollingIntervalMinutes: "${YandexDisk__PollingIntervalMinutes:-10}"
       YandexDisk__MaxSnapshotBytes: "${YandexDisk__MaxSnapshotBytes:-209715200}"
 
+      GoogleDrive__PollingIntervalMinutes: "${GoogleDrive__PollingIntervalMinutes:-10}"
+      GoogleDrive__MaxSnapshotBytes: "${GoogleDrive__MaxSnapshotBytes:-209715200}"
+
       Ai__ApiUrl: "${Ai__ApiUrl}"
       Ai__ApiKey: "${Ai__ApiKey}"
       Ai__DefaultModelId: "${Ai__DefaultModelId}"

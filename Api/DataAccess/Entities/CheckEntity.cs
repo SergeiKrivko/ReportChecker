@@ -20,5 +20,6 @@ public class CheckEntity
     public virtual FileCheckSourceEntity? FileSource { get; init; }
     public virtual LocalCheckSourceEntity? LocalSource { get; init; }
     public virtual YandexDiskCheckSourceEntity? YandexDiskSource { get; init; }
+    public virtual GoogleDriveCheckSourceEntity? GoogleDriveSource { get; init; }
     public virtual ICollection<IssueLocationEntity> IssueLocations { get; init; } = null!;
 }

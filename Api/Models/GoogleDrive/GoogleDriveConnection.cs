@@ -1,0 +1,12 @@
+namespace ReportChecker.Models.GoogleDrive;
+
+public class GoogleDriveConnection
+{
+    /// <summary>Привязан ли Google-аккаунт в Avalux Auth.</summary>
+    public bool HasAccount { get; init; }
+
+    /// <summary>Можно ли работать с Диском: аккаунт привязан и токен выдан.</summary>
+    public bool Connected { get; init; }
+
+    public string? Login { get; init; }
+}

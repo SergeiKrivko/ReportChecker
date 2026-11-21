@@ -15,6 +15,7 @@ COPY ["SourceProviders/SourceProviders.File/SourceProviders.File.csproj", "Sourc
 COPY ["SourceProviders/SourceProviders.GitHub/SourceProviders.GitHub.csproj", "SourceProviders/SourceProviders.GitHub/"]
 COPY ["SourceProviders/SourceProviders.Local/SourceProviders.Local.csproj", "SourceProviders/SourceProviders.Local/"]
 COPY ["SourceProviders/SourceProviders.YandexDisk/SourceProviders.YandexDisk.csproj", "SourceProviders/SourceProviders.YandexDisk/"]
+COPY ["SourceProviders/SourceProviders.GoogleDrive/SourceProviders.GoogleDrive.csproj", "SourceProviders/SourceProviders.GoogleDrive/"]
 COPY ["FormatProviders/FormatProviders.Latex/FormatProviders.Latex.csproj", "FormatProviders/FormatProviders.Latex/"]
 COPY ["FormatProviders/FormatProviders.Pdf/FormatProviders.Pdf.csproj", "FormatProviders/FormatProviders.Pdf/"]
 COPY ["FormatProviders/FormatProviders.Docx/FormatProviders.Docx.csproj", "FormatProviders/FormatProviders.Docx/"]

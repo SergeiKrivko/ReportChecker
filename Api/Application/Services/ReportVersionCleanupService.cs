@@ -18,6 +18,7 @@ public class ReportVersionCleanupService(
     ICheckSourceRepository<FileCheckSource> fileCheckSourceRepository,
     ICheckSourceRepository<LocalCheckSource> localCheckSourceRepository,
     ICheckSourceRepository<YandexDiskCheckSource> yandexDiskCheckSourceRepository,
+    ICheckSourceRepository<GoogleDriveCheckSource> googleDriveCheckSourceRepository,
     IFileRepository fileRepository,
     ILogger<ReportVersionCleanupService> logger) : IReportVersionCleanupService
 {
@@ -52,6 +53,12 @@ public class ReportVersionCleanupService(
         {
             // Снимки версий Диска лежат в бакете sources; InitialFileId у источника нет.
             await DeleteOldSourcesAsync(yandexDiskCheckSourceRepository, FileRepositoryBucket.Sources, checks,
+                keptCheckIds, null, e => e.FileName, reportId, ct);
+        }
+        else if (string.Equals(report.SourceProvider, "GoogleDrive", StringComparison.OrdinalIgnoreCase))
+        {
+            // Снимки версий Google Диска лежат в бакете sources; InitialFileId у источника нет.
+            await DeleteOldSourcesAsync(googleDriveCheckSourceRepository, FileRepositoryBucket.Sources, checks,
                 keptCheckIds, null, e => e.FileName, reportId, ct);
         }
     }

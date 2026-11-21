@@ -19,6 +19,7 @@ using ReportChecker.Models.Sources;
 using ReportChecker.S3;
 using ReportChecker.SourceProviders.File;
 using ReportChecker.SourceProviders.GitHub;
+using ReportChecker.SourceProviders.GoogleDrive;
 using ReportChecker.SourceProviders.Local;
 using ReportChecker.SourceProviders.YandexDisk;
 using StackExchange.Redis;
@@ -64,6 +65,8 @@ builder.Services.AddScoped<IReportSourceRepository<LocalReportSource>, LocalRepo
 builder.Services.AddScoped<ICheckSourceRepository<LocalCheckSource>, LocalCheckSourceRepository>();
 builder.Services.AddScoped<IReportSourceRepository<YandexDiskReportSource>, YandexDiskReportSourceRepository>();
 builder.Services.AddScoped<ICheckSourceRepository<YandexDiskCheckSource>, YandexDiskCheckSourceRepository>();
+builder.Services.AddScoped<IReportSourceRepository<GoogleDriveReportSource>, GoogleDriveReportSourceRepository>();
+builder.Services.AddScoped<ICheckSourceRepository<GoogleDriveCheckSource>, GoogleDriveCheckSourceRepository>();
 builder.Services.AddSingleton<IFileRepository, S3Repository>();
 
 builder.Services.AddScoped<IReportService, ReportService>();
@@ -100,7 +103,12 @@ builder.Services.AddScoped<ISourceProvider, YandexDiskSourceProvider>();
 builder.Services.AddScoped<IYandexDiskTokenService, YandexDiskTokenService>();
 builder.Services.AddScoped<IYandexDiskSnapshotService, YandexDiskSnapshotService>();
 builder.Services.AddScoped<IYandexDiskSyncService, YandexDiskSyncService>();
+builder.Services.AddScoped<ISourceProvider, GoogleDriveSourceProvider>();
+builder.Services.AddScoped<IGoogleDriveTokenService, GoogleDriveTokenService>();
+builder.Services.AddScoped<IGoogleDriveSnapshotService, GoogleDriveSnapshotService>();
+builder.Services.AddScoped<IGoogleDriveSyncService, GoogleDriveSyncService>();
 builder.Services.AddHostedService<YandexDiskPollingService>();
+builder.Services.AddHostedService<GoogleDrivePollingService>();
 builder.Services.AddSingleton<IFormatProvider, LatexFormatProvider>();
 builder.Services.AddSingleton<IFormatProvider, PdfFormatProvider>();
 builder.Services.AddSingleton<IFormatProvider, DocxFormatProvider>();
@@ -115,6 +123,11 @@ builder.Services.AddHttpClient("Auth",
 builder.Services.AddHttpClient<IYandexDiskClient, YandexDiskApiClient>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["YandexDisk:ApiUrl"] ?? "https://cloud-api.yandex.net");
+    client.Timeout = TimeSpan.FromMinutes(10);
+});
+builder.Services.AddHttpClient<IGoogleDriveClient, GoogleDriveApiClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["GoogleDrive:ApiUrl"] ?? "https://www.googleapis.com");
     client.Timeout = TimeSpan.FromMinutes(10);
 });
 builder.Services.AddHttpClient("YooMoney");

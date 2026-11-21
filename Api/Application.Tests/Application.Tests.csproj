@@ -34,6 +34,7 @@
       <ProjectReference Include="..\DataAccess\DataAccess.csproj" />
       <ProjectReference Include="..\FormatProviders\FormatProviders.Latex\FormatProviders.Latex.csproj" />
       <ProjectReference Include="..\SourceProviders\SourceProviders.YandexDisk\SourceProviders.YandexDisk.csproj" />
+      <ProjectReference Include="..\SourceProviders\SourceProviders.GoogleDrive\SourceProviders.GoogleDrive.csproj" />
     </ItemGroup>
 
     <ItemGroup>

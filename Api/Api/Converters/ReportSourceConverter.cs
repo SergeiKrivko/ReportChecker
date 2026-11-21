@@ -16,6 +16,7 @@ public static class ReportSourceConverter
                 File = source.File?.ToDto(),
                 Local = source.Local?.ToDto(),
                 YandexDisk = source.YandexDisk?.ToDto(),
+                GoogleDrive = source.GoogleDrive?.ToDto(),
             };
     }
 
@@ -47,6 +48,16 @@ public static class ReportSourceConverter
         };
     }
 
+    public static GoogleDriveReportSourceDto ToDto(this GoogleDriveReportSource source)
+    {
+        return new GoogleDriveReportSourceDto
+        {
+            FileId = source.FileId,
+            Name = source.Name,
+            EntryFilePath = source.EntryFilePath,
+        };
+    }
+
     public static LocalReportSourceDto ToDto(this LocalReportSource source)
     {
         return new LocalReportSourceDto
@@ -58,18 +69,19 @@ public static class ReportSourceConverter
         };
     }
 
-    /// <param name="yandexDiskOwnerId">
-    /// Владелец Диска для источника YandexDisk: подставляется сервером из JWT,
-    /// значение из запроса не используется.
+    /// <param name="diskOwnerId">
+    /// Владелец Диска для источников YandexDisk и GoogleDrive: подставляется сервером
+    /// из JWT, значение из запроса не используется.
     /// </param>
-    public static ReportSourceUnion ToDomain(this ReportSourceUnionDto dto, Guid? yandexDiskOwnerId = null)
+    public static ReportSourceUnion ToDomain(this ReportSourceUnionDto dto, Guid? diskOwnerId = null)
     {
         return new ReportSourceUnion
         {
             GitHub = dto.GitHub?.ToDomain(),
             File = dto.File?.ToDomain(),
             Local = dto.Local?.ToDomain(),
-            YandexDisk = dto.YandexDisk?.ToDomain(yandexDiskOwnerId),
+            YandexDisk = dto.YandexDisk?.ToDomain(diskOwnerId),
+            GoogleDrive = dto.GoogleDrive?.ToDomain(diskOwnerId),
         };
     }
 
@@ -101,6 +113,20 @@ public static class ReportSourceConverter
         {
             OwnerId = ownerId.Value,
             Path = dto.Path,
+            EntryFilePath = dto.EntryFilePath,
+        };
+    }
+
+    public static GoogleDriveReportSource ToDomain(this GoogleDriveReportSourceDto dto, Guid? ownerId)
+    {
+        if (ownerId == null)
+            throw new BadRequestException("Для источника GoogleDrive не определён владелец Диска");
+
+        return new GoogleDriveReportSource
+        {
+            OwnerId = ownerId.Value,
+            FileId = dto.FileId,
+            Name = dto.Name,
             EntryFilePath = dto.EntryFilePath,
         };
     }

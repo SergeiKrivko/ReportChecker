@@ -6,4 +6,5 @@ public record ReportSourceUnion
     public FileReportSource? File { get; init; }
     public LocalReportSource? Local { get; init; }
     public YandexDiskReportSource? YandexDisk { get; init; }
+    public GoogleDriveReportSource? GoogleDrive { get; init; }
 }

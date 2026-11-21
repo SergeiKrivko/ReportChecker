@@ -14,6 +14,7 @@ public static class CheckSourceConverter
             File = source.File?.ToDto(),
             Local = source.Local?.ToDto(),
             YandexDisk = source.YandexDisk?.ToDto(),
+            GoogleDrive = source.GoogleDrive?.ToDto(),
         };
     }
 
@@ -47,6 +48,18 @@ public static class CheckSourceConverter
         };
     }
 
+    public static GoogleDriveCheckSourceDto ToDto(this GoogleDriveCheckSource source)
+    {
+        return new GoogleDriveCheckSourceDto
+        {
+            FileId = source.FileId,
+            ContentHash = source.ContentHash,
+            FileName = source.FileName,
+            CreatedAt = source.CreatedAt,
+            DeletedAt = source.DeletedAt,
+        };
+    }
+
     public static LocalCheckSourceDto ToDto(this LocalCheckSource source)
     {
         return new LocalCheckSourceDto
@@ -66,6 +79,7 @@ public static class CheckSourceConverter
             File = dto.File?.ToDomain(),
             Local = dto.Local?.ToDomain(),
             YandexDisk = dto.YandexDisk?.ToDomain(),
+            GoogleDrive = dto.GoogleDrive?.ToDomain(),
         };
     }
 
@@ -92,6 +106,18 @@ public static class CheckSourceConverter
         return new YandexDiskCheckSource
         {
             Path = dto.Path,
+            ContentHash = dto.ContentHash,
+            FileName = dto.FileName,
+            CreatedAt = dto.CreatedAt,
+            DeletedAt = dto.DeletedAt,
+        };
+    }
+
+    public static GoogleDriveCheckSource ToDomain(this GoogleDriveCheckSourceDto dto)
+    {
+        return new GoogleDriveCheckSource
+        {
+            FileId = dto.FileId,
             ContentHash = dto.ContentHash,
             FileName = dto.FileName,
             CreatedAt = dto.CreatedAt,

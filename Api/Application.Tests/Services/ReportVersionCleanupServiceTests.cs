@@ -20,6 +20,7 @@ public class ReportVersionCleanupServiceTests
     private Mock<ICheckSourceRepository<FileCheckSource>> _fileCheckSourceRepository = null!;
     private Mock<ICheckSourceRepository<LocalCheckSource>> _localCheckSourceRepository = null!;
     private Mock<ICheckSourceRepository<YandexDiskCheckSource>> _yandexDiskCheckSourceRepository = null!;
+    private Mock<ICheckSourceRepository<GoogleDriveCheckSource>> _googleDriveCheckSourceRepository = null!;
     private Mock<IFileRepository> _fileRepository = null!;
     private ReportVersionCleanupService _service = null!;
 
@@ -33,6 +34,7 @@ public class ReportVersionCleanupServiceTests
         _fileCheckSourceRepository = new Mock<ICheckSourceRepository<FileCheckSource>>();
         _localCheckSourceRepository = new Mock<ICheckSourceRepository<LocalCheckSource>>();
         _yandexDiskCheckSourceRepository = new Mock<ICheckSourceRepository<YandexDiskCheckSource>>();
+        _googleDriveCheckSourceRepository = new Mock<ICheckSourceRepository<GoogleDriveCheckSource>>();
         _fileRepository = new Mock<IFileRepository>();
 
         _fileReportSourceRepository
@@ -46,6 +48,7 @@ public class ReportVersionCleanupServiceTests
             _fileReportSourceRepository.Object, _localReportSourceRepository.Object,
             _fileCheckSourceRepository.Object, _localCheckSourceRepository.Object,
             _yandexDiskCheckSourceRepository.Object,
+            _googleDriveCheckSourceRepository.Object,
             _fileRepository.Object, NullLogger<ReportVersionCleanupService>.Instance);
     }
 
@@ -263,6 +266,23 @@ public class ReportVersionCleanupServiceTests
         _fileRepository.VerifyNoOtherCalls();
     }
 
+    [Test]
+    public async Task Cleanup_GoogleDriveSource_DeletesOldSnapshotsFromSourcesBucket()
+    {
+        var completed = CreateCheck(ProgressStatus.Completed, 1);
+        var latest = CreateCheck(ProgressStatus.Completed, 2);
+        SetupReport("GoogleDrive");
+        SetupChecks(completed, latest);
+        var completedSource = AddGoogleDriveSource(completed, "sources.zip");
+        AddGoogleDriveSource(latest, "sources.zip");
+
+        await _service.CleanupOldVersionsAsync(ReportId);
+
+        _fileRepository.Verify(
+            e => e.DeleteFileAsync(FileRepositoryBucket.Sources, completedSource, "sources.zip"), Times.Once);
+        _yandexDiskCheckSourceRepository.VerifyNoOtherCalls();
+    }
+
     private void SetupReport(string sourceProvider)
     {
         _reportRepository
@@ -307,6 +327,26 @@ public class ReportVersionCleanupServiceTests
                 Id = sourceId,
                 CheckId = check.Id,
                 Data = new LocalCheckSource { FileName = fileName, CreatedAt = check.CreatedAt },
+            });
+        return sourceId;
+    }
+
+    private Guid AddGoogleDriveSource(Check check, string? fileName = null)
+    {
+        var sourceId = Guid.NewGuid();
+        _googleDriveCheckSourceRepository
+            .Setup(e => e.GetByCheckIdAsync(check.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new CheckSource<GoogleDriveCheckSource>
+            {
+                Id = sourceId,
+                CheckId = check.Id,
+                Data = new GoogleDriveCheckSource
+                {
+                    FileId = "file-id",
+                    ContentHash = "hash",
+                    FileName = fileName,
+                    CreatedAt = check.CreatedAt,
+                },
             });
         return sourceId;
     }

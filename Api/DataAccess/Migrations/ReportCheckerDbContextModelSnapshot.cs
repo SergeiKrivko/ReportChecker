@@ -389,6 +389,77 @@ namespace ReportChecker.DataAccess.Migrations
                     b.ToTable("GitHubReportSources");
                 });
 
+            modelBuilder.Entity("ReportChecker.DataAccess.Entities.GoogleDriveCheckSourceEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("CheckId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContentHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FileId")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("FileName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CheckId")
+                        .IsUnique();
+
+                    b.ToTable("GoogleDriveCheckSources");
+                });
+
+            modelBuilder.Entity("ReportChecker.DataAccess.Entities.GoogleDriveReportSourceEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("EntryFilePath")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("FileId")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ReportId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReportId")
+                        .IsUnique();
+
+                    b.ToTable("GoogleDriveReportSources");
+                });
+
             modelBuilder.Entity("ReportChecker.DataAccess.Entities.InstructionEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1107,6 +1178,26 @@ namespace ReportChecker.DataAccess.Migrations
                     b.Navigation("Report");
                 });
 
+            modelBuilder.Entity("ReportChecker.DataAccess.Entities.GoogleDriveCheckSourceEntity", b =>
+                {
+                    b.HasOne("ReportChecker.DataAccess.Entities.CheckEntity", "Check")
+                        .WithOne("GoogleDriveSource")
+                        .HasForeignKey("ReportChecker.DataAccess.Entities.GoogleDriveCheckSourceEntity", "CheckId");
+
+                    b.Navigation("Check");
+                });
+
+            modelBuilder.Entity("ReportChecker.DataAccess.Entities.GoogleDriveReportSourceEntity", b =>
+                {
+                    b.HasOne("ReportChecker.DataAccess.Entities.ReportEntity", "Report")
+                        .WithOne("GoogleDriveSource")
+                        .HasForeignKey("ReportChecker.DataAccess.Entities.GoogleDriveReportSourceEntity", "ReportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Report");
+                });
+
             modelBuilder.Entity("ReportChecker.DataAccess.Entities.InstructionEntity", b =>
                 {
                     b.HasOne("ReportChecker.DataAccess.Entities.CommentEntity", "Comment")
@@ -1328,6 +1419,8 @@ namespace ReportChecker.DataAccess.Migrations
 
                     b.Navigation("GitHubSource");
 
+                    b.Navigation("GoogleDriveSource");
+
                     b.Navigation("IssueLocations");
 
                     b.Navigation("Issues");
@@ -1377,6 +1470,8 @@ namespace ReportChecker.DataAccess.Migrations
                     b.Navigation("FileSource");
 
                     b.Navigation("GitHubSource");
+
+                    b.Navigation("GoogleDriveSource");
 
                     b.Navigation("InstructionTasks");
 

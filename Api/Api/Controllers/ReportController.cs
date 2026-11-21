@@ -16,7 +16,8 @@ public class ReportController(
     IReportService reportService,
     IReportAccessService reportAccessService,
     ISubscriptionService subscriptionService,
-    IYandexDiskTokenService yandexDiskTokenService) : ControllerBase
+    IYandexDiskTokenService yandexDiskTokenService,
+    IGoogleDriveTokenService googleDriveTokenService) : ControllerBase
 {
     [HttpGet]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -42,10 +43,12 @@ public class ReportController(
     {
         var userId = User.UserId;
 
-        // Отчёт с Диска нельзя создать без привязанного Яндекса и выданного токена:
-        // источник не сможет прочитать файл, а отчёт остался бы пустым.
+        // Отчёт с Диска нельзя создать без привязанного облачного аккаунта и выданного
+        // токена: источник не сможет прочитать файл, а отчёт остался бы пустым.
         if (string.Equals(dto.SourceProvider, "YandexDisk", StringComparison.OrdinalIgnoreCase))
             await yandexDiskTokenService.GetAccessTokenAsync(userId, ct);
+        else if (string.Equals(dto.SourceProvider, "GoogleDrive", StringComparison.OrdinalIgnoreCase))
+            await googleDriveTokenService.GetAccessTokenAsync(userId, ct);
 
         if (!await subscriptionService.CheckReportsLimitAsync(userId, ct))
             return StatusCode(StatusCodes.Status402PaymentRequired, "Reports limit is reached");

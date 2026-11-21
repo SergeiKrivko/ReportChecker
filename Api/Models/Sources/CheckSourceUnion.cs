@@ -7,4 +7,5 @@ public class CheckSourceUnion
     public FileCheckSource? File { get; init; }
     public LocalCheckSource? Local { get; init; }
     public YandexDiskCheckSource? YandexDisk { get; init; }
+    public GoogleDriveCheckSource? GoogleDrive { get; init; }
 }

@@ -6,4 +6,5 @@ public class ReportSourceUnionDto
     public FileReportSourceDto? File { get; init; }
     public LocalReportSourceDto? Local { get; init; }
     public YandexDiskReportSourceDto? YandexDisk { get; init; }
+    public GoogleDriveReportSourceDto? GoogleDrive { get; init; }
 }
