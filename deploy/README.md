@@ -85,6 +85,41 @@ Traefik (стек `infra`) сам выпускает сертификаты Let'
 `0` выключает её — ручная кнопка «Проверить» продолжает работать. `GoogleDrive__MaxSnapshotBytes`
 ограничивает размер снимка версии.
 
+### Пока приложение Google не проверено: тестовые пользователи
+
+`drive.readonly` — restricted scope, поэтому непроверенное приложение не может открыть Диск
+произвольному аккаунту. Пока Google-приложение не прошло проверку, доступ получают только
+аккаунты из списка тестировщиков (до 100). Список ведётся в том Google Cloud проекте, где создан
+OAuth-клиент для провайдера `google` в Avalux Auth:
+
+1. Консоль Google Cloud → нужный проект → **Google Auth Platform → Audience**
+   (`https://console.cloud.google.com/auth/audience`).
+2. User type = **External**, Publishing status = **Testing**.
+3. **Test users → + Add users** → точный адрес Google-аккаунта (личный Gmail или адрес
+   Workspace) → **Save**. Группы и алиасы не подходят — нужен адрес, под которым человек входит.
+4. На странице **Data Access** (`/auth/scopes`) в scope должны быть `.../auth/drive.readonly`,
+   а в **APIs & Services → Library** включён **Google Drive API** (иначе Drive API отвечает 403).
+5. Пользователь заново входит через Google на странице «Аккаунт»: при первом входе Google
+   показывает «Google hasn't verified this app» → **Advanced → Go to … (unsafe)**, после чего
+   выдаёт согласие на чтение Диска. Avalux Auth при повторном входе отзывает старый refresh token
+   и сохраняет новый — уже с нужным scope.
+
+Ограничения режима **Testing** (external user type):
+
+- аккаунт вне списка тестировщиков получает «Access blocked: … has not completed the Google
+  verification process» — это не ошибка приложения;
+- **refresh token живёт 7 дней**: после этого фоновая сверка отваливается (в логах — предупреждение
+  «Google Drive is not connected…», в UI — «привяжите Google-аккаунт»), пока пользователь снова не
+  войдёт через Google. Для постоянной работы выберите один из вариантов:
+  - Publishing status = **In production**: для restricted scope нужна проверка OAuth-приложения и
+    ежегодная независимая оценка безопасности (CASA), плюс домен, политика конфиденциальности и
+    демо-видео;
+  - User type = **Internal**, если аккаунты — Google Workspace одного домена: проверка не нужна,
+    тестовые пользователи и 7-дневное ограничение не действуют (для личных Gmail не подходит);
+  - отказаться от restricted scope в пользу `drive.file` — проверка не нужна, но приложение видит
+    только файлы, которые само создало или которые пользователь выбрал через Google Picker;
+    текущий браузер папок (`files.list` по всему Диску) с этим scope работать не будет.
+
 ## Ограничение фронтенда
 
 Образ `ghcr.io/sergeikrivko/reportchecker-frontend:master` собран со «вшитыми» адресами
